@@ -9,6 +9,7 @@ Use this first when you want to discover business automation opportunities from 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
+python3 -m ensurepip --upgrade
 python3 -m pip install --upgrade pip setuptools
 python3 -m pip install -e .
 ai-automation-kit doctor --output .tmp/doctor
