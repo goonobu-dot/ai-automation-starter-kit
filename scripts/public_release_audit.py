@@ -16,6 +16,7 @@ REQUIRED_FILES = [
     "pyproject.toml",
     "setup.py",
     ".gitignore",
+    ".github/dependabot.yml",
     ".github/workflows/ci.yml",
     "docs/PUBLISHING.md",
     "docs/RELEASE_CHECKLIST.md",
@@ -123,8 +124,10 @@ REQUIRED_OSS_POLICY_SNIPPETS = [
 ]
 
 REQUIRED_CI_SNIPPETS = [
-    "actions/checkout",
-    "actions/setup-python",
+    "permissions:",
+    "contents: read",
+    "actions/checkout@v5",
+    "actions/setup-python@v6",
     "python3 scripts/release_smoke.py --skip-github",
 ]
 

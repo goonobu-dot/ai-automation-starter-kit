@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Updated CI to use minimal read permissions and Node 24-compatible GitHub Actions.
+- Added Dependabot coverage for GitHub Actions and Python packaging updates.
 - Removed local absolute paths from checked-in research examples.
 - Fixed CI release smoke setup by installing `pytest` before running the smoke suite.
 - Added public release audit coverage for local `/Users/` paths in public examples and docs.
