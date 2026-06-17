@@ -1,0 +1,5 @@
+{
+  "app_name": "Customer CRM",
+  "csv_path": "examples/excel-to-internal-app/sample_data/customers.csv"
+}
+

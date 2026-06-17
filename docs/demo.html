@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Automation Starter Kit Demo</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f7f8f5;
+        --ink: #16201c;
+        --muted: #5d6963;
+        --line: #d9dfd8;
+        --surface: #ffffff;
+        --surface-2: #eef3ef;
+        --accent: #087f6f;
+        --accent-2: #b66a20;
+        --danger: #a33b35;
+        --shadow: 0 18px 48px rgba(22, 32, 28, 0.10);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.5;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .shell {
+        width: min(1180px, calc(100% - 40px));
+        margin: 0 auto;
+      }
+
+      header {
+        border-bottom: 1px solid var(--line);
+        background: rgba(247, 248, 245, 0.92);
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        backdrop-filter: blur(14px);
+      }
+
+      nav {
+        min-height: 68px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+      }
+
+      .brand {
+        font-weight: 760;
+        letter-spacing: 0;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 18px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .hero {
+        padding: 76px 0 36px;
+        display: grid;
+        grid-template-columns: minmax(0, 0.95fr) minmax(420px, 1.05fr);
+        gap: 44px;
+        align-items: center;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(40px, 6vw, 76px);
+        line-height: 0.96;
+        letter-spacing: 0;
+      }
+
+      .lead {
+        margin: 24px 0 0;
+        color: var(--muted);
+        font-size: 19px;
+        max-width: 620px;
+      }
+
+      .command {
+        margin-top: 30px;
+        padding: 18px 20px;
+        border: 1px solid #1c2a25;
+        background: #111915;
+        color: #e9fff8;
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 14px;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+
+      .demo-panel {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .panel-top {
+        min-height: 44px;
+        border-bottom: 1px solid var(--line);
+        background: var(--surface-2);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .traffic {
+        display: flex;
+        gap: 7px;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: #b9c2bc;
+      }
+
+      .dot:nth-child(1) {
+        background: #d06a5f;
+      }
+
+      .dot:nth-child(2) {
+        background: #d8a84c;
+      }
+
+      .dot:nth-child(3) {
+        background: #55a96e;
+      }
+
+      .panel-body {
+        padding: 24px;
+      }
+
+      .score-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 22px;
+      }
+
+      .metric {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 14px;
+        background: #fbfcfa;
+      }
+
+      .metric strong {
+        display: block;
+        font-size: 24px;
+        line-height: 1.1;
+      }
+
+      .metric span {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .candidate {
+        border-top: 1px solid var(--line);
+        padding: 15px 0;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 16px;
+      }
+
+      .candidate:first-of-type {
+        border-top: 0;
+      }
+
+      .candidate h3 {
+        margin: 0 0 6px;
+        font-size: 16px;
+      }
+
+      .candidate p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .fit {
+        align-self: start;
+        color: #fff;
+        background: var(--accent);
+        border-radius: 999px;
+        padding: 5px 9px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .fit.review {
+        background: var(--accent-2);
+      }
+
+      section {
+        padding: 54px 0;
+      }
+
+      .section-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 32px;
+        margin-bottom: 24px;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: clamp(28px, 4vw, 44px);
+        line-height: 1.04;
+      }
+
+      .section-head p {
+        max-width: 470px;
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 12px;
+      }
+
+      .step {
+        min-height: 178px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 18px;
+        background: var(--surface);
+      }
+
+      .step .num {
+        width: 32px;
+        height: 32px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        display: grid;
+        place-items: center;
+        margin-bottom: 18px;
+        color: var(--accent);
+        font-weight: 760;
+      }
+
+      .step h3 {
+        margin: 0 0 8px;
+        font-size: 16px;
+      }
+
+      .step p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .output-grid {
+        display: grid;
+        grid-template-columns: 1.1fr 0.9fr;
+        gap: 18px;
+      }
+
+      .artifact {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 22px;
+      }
+
+      .artifact h3 {
+        margin: 0 0 12px;
+      }
+
+      .artifact ul,
+      .artifact ol {
+        margin: 0;
+        padding-left: 20px;
+        color: var(--muted);
+      }
+
+      .artifact li {
+        margin: 8px 0;
+      }
+
+      .risk {
+        color: var(--danger);
+        font-weight: 760;
+      }
+
+      .run-box {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: #111915;
+        color: #e9fff8;
+        padding: 22px;
+      }
+
+      .run-box h2 {
+        color: #ffffff;
+      }
+
+      .run-box p {
+        color: #bdd4ca;
+      }
+
+      .run-box code {
+        display: block;
+        margin-top: 18px;
+        color: #d8fff3;
+        white-space: pre-wrap;
+        font-family: "SFMono-Regular", Consolas, monospace;
+        font-size: 14px;
+      }
+
+      footer {
+        border-top: 1px solid var(--line);
+        padding: 28px 0 44px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      @media (max-width: 920px) {
+        .hero,
+        .output-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .flow {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      @media (max-width: 620px) {
+        .shell {
+          width: min(100% - 24px, 1180px);
+        }
+
+        .nav-links {
+          display: none;
+        }
+
+        .hero {
+          padding-top: 48px;
+        }
+
+        .score-row,
+        .flow {
+          grid-template-columns: 1fr;
+        }
+
+        .section-head {
+          display: block;
+        }
+
+        .section-head p {
+          margin-top: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav class="shell">
+        <div class="brand">AI Automation Starter Kit</div>
+        <div class="nav-links">
+          <a href="#flow">Flow</a>
+          <a href="#outputs">Outputs</a>
+          <a href="#run">Run This Demo</a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero shell">
+        <div>
+          <h1>Turn GitHub signals into business automation plans.</h1>
+          <p class="lead">
+            A local demo for discovering useful OSS projects, ranking adoption risk, and producing reusable workflow artifacts across five automation templates.
+          </p>
+          <div class="command">ai-automation-kit github-discover --business-area operations --limit 2 --output .tmp/operations-discovery</div>
+        </div>
+
+        <div class="demo-panel" aria-label="GitHub Discovery dashboard preview">
+          <div class="panel-top">
+            <div class="traffic"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
+            <span>GitHub Discovery</span>
+          </div>
+          <div class="panel-body">
+            <div class="score-row">
+              <div class="metric"><strong>6</strong><span>candidates reviewed</span></div>
+              <div class="metric"><strong>2</strong><span>strong candidates</span></div>
+              <div class="metric"><strong>2</strong><span>license reviews</span></div>
+            </div>
+            <div class="candidate">
+              <div>
+                <h3>apache/airflow</h3>
+                <p>Workflow orchestration candidate. Prototype an adapter and extract reusable workflow ideas.</p>
+              </div>
+              <span class="fit">strong</span>
+            </div>
+            <div class="candidate">
+              <div>
+                <h3>wshobson/agents</h3>
+                <p>Agent workflow reference. Review examples, maintenance profile, and integration surface.</p>
+              </div>
+              <span class="fit">strong</span>
+            </div>
+            <div class="candidate">
+              <div>
+                <h3>review candidates</h3>
+                <p><span class="risk">License review required</span> before reuse. Keep as idea references until cleared.</p>
+              </div>
+              <span class="fit review">review</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="flow" class="shell">
+        <div class="section-head">
+          <h2>Five Reusable Templates</h2>
+          <p>Use the kit as one workflow: discover an opportunity, research it, answer internal questions, draft approved handoffs, convert operational spreadsheets, and package the result.</p>
+        </div>
+        <div class="flow">
+          <div class="step"><div class="num">1</div><h3>research-agent</h3><p>Source-backed reports, GitHub metadata, candidate ranking, and run records.</p></div>
+          <div class="step"><div class="num">2</div><h3>docs-rag</h3><p>Grounded answers with citations, confidence, and next actions.</p></div>
+          <div class="step"><div class="num">3</div><h3>internal-ai-workflow</h3><p>Draft replies with approval checks, risk level, and dry-run safety.</p></div>
+          <div class="step"><div class="num">4</div><h3>excel-to-internal-app</h3><p>CSV to typed schema, admin view, migration report, and data quality report.</p></div>
+          <div class="step"><div class="num">5</div><h3>delivery-pipeline</h3><p>Delivery package with environment placeholders, checklist, smoke test, and success metrics.</p></div>
+        </div>
+      </section>
+
+      <section id="outputs" class="shell">
+        <div class="section-head">
+          <h2>Business Automation Plan</h2>
+          <p>The demo focuses on decision artifacts a team can inspect, repeat, and hand off.</p>
+        </div>
+        <div class="output-grid">
+          <div class="artifact">
+            <h3>What the plan gives you</h3>
+            <ol>
+              <li>Recommended repositories worth reviewing first.</li>
+              <li>License and maintenance risk before reuse.</li>
+              <li>Which starter-kit template to use next.</li>
+              <li>Dry-run implementation path before production use.</li>
+              <li>Success metrics such as Manual handoffs reduced and time saved per repeated workflow.</li>
+            </ol>
+          </div>
+          <div class="artifact">
+            <h3>Generated files</h3>
+            <ul>
+              <li><code>report.md</code></li>
+              <li><code>github_candidates.md</code></li>
+              <li><code>business_automation_plan.md</code></li>
+              <li><code>business_automation_summary.json</code></li>
+              <li><code>runs/run-*.json</code></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="run" class="shell">
+        <div class="run-box">
+          <h2>Run This Demo</h2>
+          <p>No external services required for local examples. GitHub discovery uses public GitHub data; set GITHUB_TOKEN only when you need higher API limits.</p>
+          <code>python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip setuptools
+python3 -m pip install -e .
+ai-automation-kit github-discover --business-area operations --limit 2 --output .tmp/operations-discovery
+sed -n '1,180p' .tmp/operations-discovery/business_automation_plan.md</code>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="shell">Designed for local-first automation review, dry-run delivery, and public OSS-friendly workflows.</div>
+    </footer>
+  </body>
+</html>

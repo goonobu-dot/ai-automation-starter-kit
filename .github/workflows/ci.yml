@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install package
+        run: |
+          python3 -m pip install --upgrade pip setuptools
+          python3 -m pip install -e .
+      - name: Run tests
+        run: python3 -m pytest -q
+      - name: Run all demos
+        run: python3 scripts/run_all_demos.py

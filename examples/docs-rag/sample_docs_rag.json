@@ -1,0 +1,14 @@
+{
+  "question": "How long can customers return unopened items?",
+  "documents": [
+    {
+      "path": "examples/docs-rag/sample_docs/return_policy.md",
+      "title": "Return Policy"
+    },
+    {
+      "path": "examples/docs-rag/sample_docs/shipping_policy.md",
+      "title": "Shipping Policy"
+    }
+  ]
+}
+

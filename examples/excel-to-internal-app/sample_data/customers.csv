@@ -1,0 +1,4 @@
+customer_id,name,signup_date,monthly_fee,active
+1,Ada,2026-06-01,29.5,true
+2,Grace,2026-06-02,35.0,false
+

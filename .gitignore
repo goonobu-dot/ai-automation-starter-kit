@@ -1,0 +1,16 @@
+.env
+.env.*
+!.env.example
+.tmp/
+runs/
+sources/
+exports/
+crawl-cache/
+vector-index/
+customer-docs/
+delivery-zips/
+__pycache__/
+.pytest_cache/
+.venv/
+*.egg-info/
+*.pyc

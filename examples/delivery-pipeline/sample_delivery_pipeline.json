@@ -1,0 +1,12 @@
+{
+  "project_name": "Example AI Delivery",
+  "template_name": "docs-rag",
+  "env_vars": [
+    "OPENAI_API_KEY",
+    "VECTOR_STORE_URL"
+  ],
+  "services": [
+    "app",
+    "worker"
+  ]
+}

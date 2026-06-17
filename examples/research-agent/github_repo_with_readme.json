@@ -1,0 +1,5 @@
+{
+  "topic": "GitHub repository research with README download",
+  "github_repositories": ["octocat/Hello-World"],
+  "include_readme": true
+}

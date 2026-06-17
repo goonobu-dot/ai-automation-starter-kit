@@ -1,0 +1,12 @@
+{
+  "topic": "High-star GitHub repositories for AI automation ideas",
+  "github_searches": [
+    {
+      "query": "topic:ai-agents stars:>1000",
+      "sort": "stars",
+      "order": "desc",
+      "per_page": 5
+    }
+  ],
+  "include_readme": false
+}
