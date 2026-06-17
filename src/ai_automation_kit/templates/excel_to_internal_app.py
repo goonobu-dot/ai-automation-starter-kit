@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
+from ai_automation_kit.core.artifacts import write_artifact_index
 from ai_automation_kit.core.models import Artifact, RunRecord
 from ai_automation_kit.core.store import JsonRunStore
 
@@ -25,6 +26,14 @@ def run_excel_to_internal_app(config_path: Path | str, output_dir: Path | str) -
     quality = _analyze_data_quality(rows)
     table_name = _slug(app_name)
     artifacts = _write_app_artifacts(output, app_name, table_name, csv_path, fields, len(rows), quality)
+    artifacts.extend(
+        write_artifact_index(
+            output,
+            "excel-to-internal-app",
+            artifacts,
+            first_read=["migration-report.md", "app-spec.md", "data-quality-report.json"],
+        )
+    )
     finished_at = _now()
     run = RunRecord(
         run_id=run_id,
@@ -85,12 +94,14 @@ def _write_app_artifacts(
     (output / "data-quality-report.json").write_text(json.dumps(quality, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (output / "admin-view.md").write_text(admin_view, encoding="utf-8")
     (output / "migration-report.md").write_text(report, encoding="utf-8")
+    (output / "app-spec.md").write_text(_render_app_spec(app_name, table_name, fields, quality), encoding="utf-8")
     return [
         Artifact(kind="sql", path="schema.sql"),
         Artifact(kind="json", path="fields.json"),
         Artifact(kind="json", path="data-quality-report.json"),
         Artifact(kind="markdown", path="admin-view.md"),
         Artifact(kind="markdown", path="migration-report.md"),
+        Artifact(kind="markdown", path="app-spec.md"),
     ]
 
 
@@ -138,11 +149,60 @@ def _render_migration_report(
     lines.extend(
         [
             "",
+            "## Permissions",
+            "",
+            "- Admin: create, update, delete, export, and manage roles.",
+            "- Operator: create and update records; export only with approval.",
+            "- Viewer: read-only access to approved records.",
+            "",
+            "## Suggested App Screens",
+            "",
+            "- List view with filters for high-volume daily work.",
+            "- Detail/edit view with validation messages for each inferred field.",
+            "- Import review screen that blocks promotion until blanks and duplicates are accepted.",
+        ]
+    )
+    lines.extend(
+        [
+            "",
             "## Next Steps",
             "",
             "- Review field names and types before importing production data.",
             "- Resolve blank required fields before using the generated schema in production.",
             "- Add permissions and audit logging before exposing this as an internal app.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _render_app_spec(app_name: str, table_name: str, fields: list[dict[str, str]], quality: dict) -> str:
+    lines = [
+        f"# Internal App Spec: {app_name}",
+        "",
+        f"- Primary table: `{table_name}`",
+        f"- Rows inspected: `{quality['row_count']}`",
+        "",
+        "## Roles",
+        "",
+        "- Admin: owns schema changes, imports, exports, and permissions.",
+        "- Operator: handles day-to-day record updates.",
+        "- Viewer: checks records without edit access.",
+        "",
+        "## Fields And Validation",
+        "",
+    ]
+    for field in fields:
+        lines.append(f"- `{field['name']}`: `{field['type']}`; require review before production import.")
+    lines.extend(
+        [
+            "",
+            "## Workflow",
+            "",
+            "1. Import CSV into a staging table.",
+            "2. Review blank fields and unusual values.",
+            "3. Approve migration into the production table.",
+            "4. Record operator, timestamp, and source file for audit.",
             "",
         ]
     )

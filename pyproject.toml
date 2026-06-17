@@ -6,7 +6,19 @@ build-backend = "setuptools.build_meta"
 name = "ai-automation-starter-kit"
 version = "0.1.0"
 description = "Starter kit for reusable AI automation workflows."
+readme = "README.md"
+license = {file = "LICENSE"}
 requires-python = ">=3.9"
+keywords = ["ai", "automation", "github", "agents", "workflow", "starter-kit"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Office/Business",
+]
 
 [project.scripts]
 ai-automation-kit = "ai_automation_kit.cli:main"

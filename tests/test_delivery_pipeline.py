@@ -26,6 +26,8 @@ def test_delivery_pipeline_generates_delivery_assets_without_real_secrets(tmp_pa
     assert (output / "docker-compose.yml").exists()
     assert (output / "docs" / "operation-manual.md").exists()
     assert (output / "docs" / "delivery-checklist.md").exists()
+    assert (output / "docs" / "release-plan.md").exists()
+    assert (output / "docs" / "rollback-plan.md").exists()
     assert (output / "docs" / "success-metrics.md").exists()
     assert (output / "tests" / "smoke-test.md").exists()
     env_text = (output / ".env.example").read_text()
@@ -34,5 +36,10 @@ def test_delivery_pipeline_generates_delivery_assets_without_real_secrets(tmp_pa
     checklist = (output / "docs" / "delivery-checklist.md").read_text()
     metrics = (output / "docs" / "success-metrics.md").read_text()
     assert "Research Agent Starter" in checklist
+    assert "Release Plan" in (output / "docs" / "release-plan.md").read_text()
+    assert "Rollback Plan" in (output / "docs" / "rollback-plan.md").read_text()
+    artifact_index = (output / "artifact_index.md").read_text()
+    assert "Artifact Index: delivery-pipeline" in artifact_index
+    assert "docs/delivery-checklist.md" in artifact_index
     assert "Manual time saved per week" in metrics
     assert (output / "runs" / f"{run.run_id}.json").exists()

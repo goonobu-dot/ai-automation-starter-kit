@@ -49,6 +49,14 @@ def test_parser_accepts_github_discover_command():
     assert args.include_readme is True
 
 
+def test_parser_accepts_doctor_command():
+    parser = build_parser()
+    args = parser.parse_args(["doctor", "--output", "out", "--check-github"])
+    assert args.command == "doctor"
+    assert args.output == "out"
+    assert args.check_github is True
+
+
 def test_main_runs_research_agent(tmp_path):
     source = tmp_path / "source.html"
     source.write_text("<html><head><title>CLI Source</title></head><body><p>Research output works.</p></body></html>")
@@ -162,3 +170,115 @@ def test_main_runs_github_discover_without_config(tmp_path, monkeypatch):
     assert len(generated_config["github_searches"]) >= 2
     assert "sales" in generated_config["business_context"]["business_area"]
     assert captured["output_dir"] == tmp_path / "out"
+
+
+def test_main_github_discover_prints_next_read_for_adapter_output(tmp_path, monkeypatch, capsys):
+    def fake_run(config_path, output_dir):
+        output_dir.mkdir(parents=True, exist_ok=True)
+        (output_dir / "report.md").write_text("# Report\n")
+        (output_dir / "artifact_index.md").write_text("# Artifact Index\n")
+        (output_dir / "adapter_starter").mkdir()
+        (output_dir / "adapter_starter" / "README.md").write_text("# Adapter\n")
+        from ai_automation_kit.core.models import RunRecord
+
+        return RunRecord(
+            run_id="run-adapter",
+            template_name="research-agent",
+            input=json.loads(config_path.read_text()),
+            started_at="2026-06-17T00:00:00Z",
+            finished_at="2026-06-17T00:00:01Z",
+            status="succeeded",
+            errors=[],
+            artifacts=[],
+            source_ids=[],
+            failed_fetches=[],
+        )
+
+    monkeypatch.setattr("ai_automation_kit.cli.run_research_agent", fake_run)
+
+    exit_code = main(["github-discover", "--business-area", "operations", "--output", str(tmp_path / "out")])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert f"next_read={tmp_path / 'out' / 'adapter_starter' / 'README.md'}" in captured.out
+    assert f"artifact_index={tmp_path / 'out' / 'artifact_index.md'}" in captured.out
+
+
+def test_main_github_discover_prints_manual_review_next_read(tmp_path, monkeypatch, capsys):
+    def fake_run(config_path, output_dir):
+        output_dir.mkdir(parents=True, exist_ok=True)
+        (output_dir / "report.md").write_text("# Report\n")
+        (output_dir / "manual_review_pack.md").write_text("# Manual Review Pack\n")
+        from ai_automation_kit.core.models import RunRecord
+
+        return RunRecord(
+            run_id="run-review",
+            template_name="research-agent",
+            input=json.loads(config_path.read_text()),
+            started_at="2026-06-17T00:00:00Z",
+            finished_at="2026-06-17T00:00:01Z",
+            status="succeeded",
+            errors=[],
+            artifacts=[],
+            source_ids=[],
+            failed_fetches=[],
+        )
+
+    monkeypatch.setattr("ai_automation_kit.cli.run_research_agent", fake_run)
+
+    exit_code = main(["github-discover", "--business-area", "support", "--output", str(tmp_path / "out")])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert f"next_read={tmp_path / 'out' / 'manual_review_pack.md'}" in captured.out
+
+
+def test_main_github_discover_only_prints_existing_optional_outputs(tmp_path, monkeypatch, capsys):
+    def fake_run(config_path, output_dir):
+        output_dir.mkdir(parents=True, exist_ok=True)
+        (output_dir / "report.md").write_text("# Report\n")
+        (output_dir / "artifact_index.md").write_text("# Artifact Index\n")
+        (output_dir / "query_recovery.md").write_text("# Query Recovery\n")
+        from ai_automation_kit.core.models import RunRecord
+
+        return RunRecord(
+            run_id="run-empty",
+            template_name="research-agent",
+            input=json.loads(config_path.read_text()),
+            started_at="2026-06-17T00:00:00Z",
+            finished_at="2026-06-17T00:00:01Z",
+            status="succeeded",
+            errors=[],
+            artifacts=[],
+            source_ids=[],
+            failed_fetches=[],
+        )
+
+    monkeypatch.setattr("ai_automation_kit.cli.run_research_agent", fake_run)
+
+    exit_code = main(["github-discover", "--business-area", "support", "--output", str(tmp_path / "out")])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert f"report={tmp_path / 'out' / 'report.md'}" in captured.out
+    assert f"artifact_index={tmp_path / 'out' / 'artifact_index.md'}" in captured.out
+    assert f"next_read={tmp_path / 'out' / 'query_recovery.md'}" in captured.out
+    assert "candidates=" not in captured.out
+    assert "business_plan=" not in captured.out
+
+
+def test_main_runs_doctor_without_network(tmp_path):
+    output = tmp_path / "doctor"
+
+    exit_code = main(["doctor", "--output", str(output)])
+
+    assert exit_code == 0
+    report = (output / "doctor_report.md").read_text()
+    payload = json.loads((output / "doctor_report.json").read_text())
+    assert "AI Automation Starter Kit Doctor" in report
+    assert payload["status"] in {"ready", "warning"}
+    assert payload["checks"][0]["name"] == "python_version"
+    check_names = [check["name"] for check in payload["checks"]]
+    assert "package_metadata" in check_names
+    assert "console_script" in check_names
+    assert (output / "doctor_report.json").exists()

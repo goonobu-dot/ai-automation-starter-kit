@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
+from ai_automation_kit.core.artifacts import write_artifact_index
 from ai_automation_kit.core.models import Artifact, RunRecord
 from ai_automation_kit.core.store import JsonRunStore
 
@@ -27,6 +28,14 @@ def run_delivery_pipeline(config_path: Path | str, output_dir: Path | str) -> Ru
         template_name=template_name,
         env_vars=env_vars,
         services=services,
+    )
+    artifacts.extend(
+        write_artifact_index(
+            output,
+            "delivery-pipeline",
+            artifacts,
+            first_read=["docs/delivery-checklist.md", "docs/release-plan.md", "docs/rollback-plan.md"],
+        )
     )
     finished_at = _now()
     run = RunRecord(
@@ -61,6 +70,8 @@ def _write_delivery_artifacts(
         "docker-compose.yml": _render_compose(project_name, env_vars, services),
         "docs/operation-manual.md": _render_operation_manual(project_name, template_name, env_vars, services),
         "docs/delivery-checklist.md": _render_delivery_checklist(project_name, env_vars, services),
+        "docs/release-plan.md": _render_release_plan(project_name, services),
+        "docs/rollback-plan.md": _render_rollback_plan(project_name, services),
         "docs/success-metrics.md": _render_success_metrics(project_name, template_name),
         "tests/smoke-test.md": _render_smoke_test(project_name, services),
     }
@@ -88,6 +99,8 @@ def _render_readme(project_name: str, template_name: str, env_vars: list[str], s
         "- `docker-compose.yml`\n"
         "- `docs/operation-manual.md`\n"
         "- `docs/delivery-checklist.md`\n"
+        "- `docs/release-plan.md`\n"
+        "- `docs/rollback-plan.md`\n"
         "- `docs/success-metrics.md`\n"
         "- `tests/smoke-test.md`\n"
     )
@@ -184,6 +197,58 @@ def _render_smoke_test(project_name: str, services: list[str]) -> str:
     if services:
         lines.extend(f"- `{service}`: pending" for service in services)
     else:
+        lines.append("- No services configured.")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _render_release_plan(project_name: str, services: list[str]) -> str:
+    lines = [
+        f"# Release Plan: {project_name}",
+        "",
+        "## Preflight",
+        "",
+        "- [ ] Confirm `.env.example` has placeholders only.",
+        "- [ ] Run `docker compose config`.",
+        "- [ ] Complete smoke test evidence before handoff.",
+        "",
+        "## Release Steps",
+        "",
+        "1. Deploy to a dry-run or staging environment first.",
+        "2. Run one representative workflow with synthetic data.",
+        "3. Review logs, approvals, and generated artifacts.",
+        "4. Promote only after the project owner signs off.",
+        "",
+        "## Services",
+        "",
+    ]
+    lines.extend(f"- `{service}`: release after smoke test passes." for service in services)
+    if not services:
+        lines.append("- No services configured.")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _render_rollback_plan(project_name: str, services: list[str]) -> str:
+    lines = [
+        f"# Rollback Plan: {project_name}",
+        "",
+        "## Rollback Triggers",
+        "",
+        "- Secret exposure, failed smoke test, incorrect customer-facing output, or approval bypass.",
+        "",
+        "## Rollback Steps",
+        "",
+        "1. Stop the affected service.",
+        "2. Preserve logs and generated artifacts for review.",
+        "3. Revert to the previous known-good configuration.",
+        "4. Notify the project owner with impact and next action.",
+        "",
+        "## Services",
+        "",
+    ]
+    lines.extend(f"- `{service}`: stop container and preserve logs before restart." for service in services)
+    if not services:
         lines.append("- No services configured.")
     lines.append("")
     return "\n".join(lines)

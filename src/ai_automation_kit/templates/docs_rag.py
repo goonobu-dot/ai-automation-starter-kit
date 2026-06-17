@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
+from ai_automation_kit.core.artifacts import write_artifact_index
 from ai_automation_kit.core.models import Artifact, RunRecord, SourceRecord
 from ai_automation_kit.core.store import JsonRunStore
 
@@ -79,6 +80,7 @@ def run_docs_rag(config_path: Path | str, output_dir: Path | str) -> RunRecord:
     selected = _select_best_chunk(question, chunks)
     answer = _answer_from_chunk(question, selected)
     artifacts = _write_docs_rag_artifacts(output, question, answer, chunks, source_map)
+    artifacts.extend(write_artifact_index(output, "docs-rag", artifacts, first_read=["answer.md", "artifact_index.md"]))
     finished_at = _now()
     run = RunRecord(
         run_id=run_id,
@@ -117,7 +119,13 @@ def _answer_from_chunk(question: str, chunk: dict | None) -> dict:
             "answer": "Insufficient evidence: no document chunk matched the question strongly enough.",
             "grounded": False,
             "confidence": "low",
+            "usage_gate": "Blocked until more evidence is added.",
             "citations": [],
+            "operator_checklist": [
+                "Add at least one relevant source document.",
+                "Rerun the question and confirm a citation is present.",
+                "Keep this answer out of customer or production workflows until grounded.",
+            ],
             "next_actions": [
                 "Add more source documents or refine the question.",
                 "Do not use this answer for customer or production decisions until evidence is available.",
@@ -129,12 +137,18 @@ def _answer_from_chunk(question: str, chunk: dict | None) -> dict:
         "answer": sentence,
         "grounded": True,
         "confidence": "high",
+        "usage_gate": "Safe to use after source review and approval.",
         "citations": [
             {
                 "title": chunk["title"],
                 "path": chunk["path"],
                 "chunk_id": chunk["chunk_id"],
             }
+        ],
+        "operator_checklist": [
+            "Open the cited source and confirm the answer is still current.",
+            "Confirm the answer does not expose private or customer-specific data.",
+            "Route customer-facing use through the approval owner.",
         ],
         "next_actions": [
             "Review the cited source before using this answer in production.",
@@ -170,12 +184,16 @@ def _render_answer_markdown(question: str, answer: dict) -> str:
     lines = ["# Docs RAG Answer", "", f"## Question", "", question, "", "## Answer", "", answer["answer"], ""]
     lines.extend(["## Grounding", "", f"- Grounded: `{str(answer['grounded']).lower()}`"])
     lines.extend(["", "## Confidence", "", f"- `{answer.get('confidence', 'unknown')}`"])
+    lines.extend(["", "## Usage Gate", "", answer.get("usage_gate", "Manual review required."), ""])
     citations = answer.get("citations") or []
     if citations:
         for citation in citations:
             lines.append(f"- {citation['title']} ({citation['path']}) - `{citation['chunk_id']}`")
     else:
         lines.append("- No citations")
+    lines.extend(["", "## Operator Checklist", ""])
+    for item in answer.get("operator_checklist", []):
+        lines.append(f"- [ ] {item}")
     lines.extend(["", "## Next Actions", ""])
     for action in answer.get("next_actions", []):
         lines.append(f"- {action}")

@@ -32,8 +32,17 @@ def test_internal_ai_workflow_generates_draft_and_pending_approval(tmp_path):
     assert draft_json["inquiry_text"] == "Can you send pricing and onboarding details for the automation starter kit?"
     assert draft_json["risk_level"] == "medium"
     assert "approval_checks" in draft_json
+    assert draft_json["sla"] == "Respond within 1 business day after approval."
+    assert draft_json["owner_role"] == "Customer success or sales owner"
+    assert "Escalate to the account owner" in draft_json["escalation_path"][0]
     assert (output / "review-checklist.md").exists()
-    assert "Confirm pricing is current" in (output / "review-checklist.md").read_text(encoding="utf-8")
+    checklist = (output / "review-checklist.md").read_text(encoding="utf-8")
+    assert "Confirm pricing is current" in checklist
+    assert "## SLA And Ownership" in checklist
+    assert "Customer success or sales owner" in checklist
+    artifact_index = (output / "artifact_index.md").read_text(encoding="utf-8")
+    assert "Artifact Index: internal-ai-workflow" in artifact_index
+    assert "review-checklist.md" in artifact_index
     assert approval["status"] == "pending"
     assert approval["dry_run"] is True
     assert approval["action_type"] == "send_reply"
@@ -44,6 +53,8 @@ def test_internal_ai_workflow_generates_draft_and_pending_approval(tmp_path):
         {"kind": "json", "path": "draft_reply.json"},
         {"kind": "markdown", "path": "review-checklist.md"},
         {"kind": "approval_request", "path": "approval_request.json"},
+        {"kind": "artifact_index_json", "path": "artifact_index.json"},
+        {"kind": "artifact_index", "path": "artifact_index.md"},
     ]
 
 

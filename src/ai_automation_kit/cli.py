@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import shutil
 import sys
 from pathlib import Path
 
@@ -44,6 +46,10 @@ def build_parser() -> argparse.ArgumentParser:
     delivery.add_argument("--config", required=True)
     delivery.add_argument("--output", required=True)
 
+    doctor = subparsers.add_parser("doctor")
+    doctor.add_argument("--output", required=True)
+    doctor.add_argument("--check-github", action="store_true")
+
     return parser
 
 
@@ -76,8 +82,14 @@ def main(argv: list[str] | None = None) -> int:
         print(f"run_id={run.run_id}")
         print(f"status={run.status}")
         print(f"report={output}/report.md")
-        print(f"candidates={output}/github_candidates.md")
-        print(f"business_plan={output}/business_automation_plan.md")
+        for label, path in [
+            ("candidates", output / "github_candidates.md"),
+            ("business_plan", output / "business_automation_plan.md"),
+        ]:
+            if path.exists():
+                print(f"{label}={path}")
+        for line in _github_discover_output_hints(output):
+            print(line)
         return 0 if run.status == "succeeded" else 1
     if args.command == "docs-rag":
         run = run_docs_rag(config_path=args.config, output_dir=args.output)
@@ -103,6 +115,11 @@ def main(argv: list[str] | None = None) -> int:
         print(f"status={run.status}")
         print(f"checklist={args.output}/docs/delivery-checklist.md")
         return 0 if run.status == "succeeded" else 1
+    if args.command == "doctor":
+        payload = _run_doctor(output_dir=Path(args.output), check_github=args.check_github)
+        print(f"status={payload['status']}")
+        print(f"report={args.output}/doctor_report.md")
+        return 0 if payload["status"] in {"ready", "warning"} else 1
     return 0
 
 
@@ -130,6 +147,26 @@ def _build_github_discover_config(
     }
 
 
+def _github_discover_output_hints(output: Path) -> list[str]:
+    hints = []
+    artifact_index = output / "artifact_index.md"
+    if artifact_index.exists():
+        hints.append(f"artifact_index={artifact_index}")
+
+    candidates = [
+        output / "adapter_starter" / "README.md",
+        output / "manual_review_pack.md",
+        output / "query_recovery.md",
+        output / "business_automation_plan.md",
+        output / "report.md",
+    ]
+    for path in candidates:
+        if path.exists():
+            hints.append(f"next_read={path}")
+            break
+    return hints
+
+
 def _default_business_queries(business_area: str) -> list[str]:
     terms = {
         "sales": ["sales automation crm stars:>100", "crm workflow automation stars:>100", "lead generation automation stars:>100"],
@@ -140,6 +177,122 @@ def _default_business_queries(business_area: str) -> list[str]:
         "hr": ["recruiting onboarding hr automation stars:>100", "resume screening automation stars:>100", "employee onboarding automation stars:>100"],
     }
     return terms.get(business_area, [f"{business_area} automation stars:>100", f"{business_area} ai-agent stars:>100"])
+
+
+def _run_doctor(output_dir: Path, check_github: bool) -> dict:
+    output_dir.mkdir(parents=True, exist_ok=True)
+    checks = [
+        _doctor_check("python_version", sys.version_info >= (3, 9), f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"),
+        _doctor_check("pip_available", shutil.which("pip") is not None or shutil.which("pip3") is not None, "pip or pip3 on PATH"),
+        _doctor_check("output_writable", _can_write(output_dir), str(output_dir)),
+        _doctor_check("git_available", shutil.which("git") is not None, "git on PATH"),
+        _doctor_check("package_metadata", _package_metadata_ready(), "pyproject.toml, README.md, and LICENSE are present"),
+        _doctor_check("console_script", _console_script_ready(), "ai-automation-kit console script is declared"),
+        {
+            "name": "github_token",
+            "status": "pass" if os.environ.get("GITHUB_TOKEN") else "warn",
+            "detail": "GITHUB_TOKEN is set" if os.environ.get("GITHUB_TOKEN") else "GITHUB_TOKEN is not set; public unauthenticated GitHub requests still work with lower limits.",
+        },
+        _doctor_check("env_files_ignored", Path(".gitignore").exists() and ".env" in Path(".gitignore").read_text(encoding="utf-8"), ".gitignore protects local env files"),
+    ]
+    if check_github:
+        checks.append(_github_doctor_check())
+    status = "ready"
+    if any(check["status"] == "fail" for check in checks):
+        status = "blocked"
+    elif any(check["status"] == "warn" for check in checks):
+        status = "warning"
+    payload = {
+        "status": status,
+        "checks": checks,
+        "next_actions": _doctor_next_actions(checks),
+    }
+    (output_dir / "doctor_report.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output_dir / "doctor_report.md").write_text(_render_doctor_report(payload), encoding="utf-8")
+    return payload
+
+
+def _doctor_check(name: str, passed: bool, detail: str) -> dict:
+    return {"name": name, "status": "pass" if passed else "fail", "detail": detail}
+
+
+def _github_doctor_check() -> dict:
+    try:
+        from ai_automation_kit.core.github import search_github_repositories
+
+        result = search_github_repositories(
+            query="workflow automation stars:>100",
+            sort="stars",
+            order="desc",
+            per_page=1,
+            token=os.environ.get("GITHUB_TOKEN"),
+        )
+        return {
+            "name": "github_api",
+            "status": "pass" if result.get("repositories") else "warn",
+            "detail": f"GitHub search returned {len(result.get('repositories', []))} repositories; rate remaining {result.get('rate_limit_remaining')}.",
+        }
+    except Exception as exc:  # noqa: BLE001 - doctor reports the problem instead of hiding it.
+        return {"name": "github_api", "status": "fail", "detail": str(exc)}
+
+
+def _can_write(path: Path) -> bool:
+    try:
+        probe = path / ".doctor-write-test"
+        probe.write_text("ok\n", encoding="utf-8")
+        probe.unlink()
+        return True
+    except OSError:
+        return False
+
+
+def _package_metadata_ready() -> bool:
+    pyproject = Path("pyproject.toml")
+    return (
+        pyproject.exists()
+        and Path("README.md").exists()
+        and Path("LICENSE").exists()
+        and 'readme = "README.md"' in pyproject.read_text(encoding="utf-8")
+    )
+
+
+def _console_script_ready() -> bool:
+    pyproject = Path("pyproject.toml")
+    setup_py = Path("setup.py")
+    pyproject_ready = pyproject.exists() and 'ai-automation-kit = "ai_automation_kit.cli:main"' in pyproject.read_text(encoding="utf-8")
+    setup_ready = setup_py.exists() and "ai-automation-kit=ai_automation_kit.cli:main" in setup_py.read_text(encoding="utf-8")
+    return pyproject_ready and setup_ready
+
+
+def _doctor_next_actions(checks: list[dict]) -> list[str]:
+    actions = []
+    for check in checks:
+        if check["status"] == "fail":
+            actions.append(f"Fix `{check['name']}` before running business automation workflows.")
+        if check["name"] == "github_token" and check["status"] == "warn":
+            actions.append("Set `GITHUB_TOKEN` when running many GitHub discovery searches.")
+    if not actions:
+        actions.append("Run `ai-automation-kit github-discover --business-area operations --limit 2 --output .tmp/doctor-smoke` next.")
+    return actions
+
+
+def _render_doctor_report(payload: dict) -> str:
+    lines = [
+        "# AI Automation Starter Kit Doctor",
+        "",
+        f"- Status: `{payload['status']}`",
+        "",
+        "## Checks",
+        "",
+        "| Check | Status | Detail |",
+        "|---|---|---|",
+    ]
+    for check in payload["checks"]:
+        lines.append(f"| `{check['name']}` | `{check['status']}` | {check['detail']} |")
+    lines.extend(["", "## Next Actions", ""])
+    lines.extend(f"- {action}" for action in payload["next_actions"])
+    lines.append("")
+    return "\n".join(lines)
 
 
 if __name__ == "__main__":

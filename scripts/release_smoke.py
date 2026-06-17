@@ -1,0 +1,166 @@
+from __future__ import annotations
+
+import argparse
+import os
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_OUTPUT = ROOT / ".tmp" / "release-smoke"
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Run the public-readiness smoke suite.")
+    parser.add_argument("--output", default=str(DEFAULT_OUTPUT), help="Directory for smoke outputs.")
+    parser.add_argument("--skip-github", action="store_true", help="Skip live GitHub API checks.")
+    args = parser.parse_args()
+
+    output = Path(args.output)
+    if output.exists():
+        shutil.rmtree(output)
+    output.mkdir(parents=True, exist_ok=True)
+
+    env = _env_with_src()
+    _run([sys.executable, "scripts/public_release_audit.py"], env=env)
+    _run([sys.executable, "-m", "pytest", "-q"], env=env)
+    _run([sys.executable, "scripts/run_all_demos.py"], env=env)
+    _run([sys.executable, "-m", "ai_automation_kit.cli", "doctor", "--output", str(output / "doctor")], env=env)
+
+    wheelhouse = output / "wheelhouse"
+    _run([sys.executable, "-m", "pip", "wheel", ".", "-w", str(wheelhouse)], env=env)
+    _verify_wheel_install(wheelhouse, output)
+
+    if not args.skip_github:
+        _run_github_smokes(output, env)
+
+    print(f"release smoke passed: {output}")
+    return 0
+
+
+def _run_github_smokes(output: Path, env: dict[str, str]) -> None:
+    adapter_output = output / "github-operations"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "github-discover",
+            "--business-area",
+            "operations",
+            "--limit",
+            "2",
+            "--output",
+            str(adapter_output),
+        ],
+        env=env,
+    )
+    _require_file(adapter_output / "run_summary.md")
+    _require_file(adapter_output / "run_summary.json")
+    _require_file(adapter_output / "executive_decision_brief.md")
+    _require_file(adapter_output / "executive_decision_brief.json")
+    _require_file(adapter_output / "pilot_scorecard.md")
+    _require_file(adapter_output / "pilot_scorecard.json")
+    _require_file(adapter_output / "pilot_scorecard.csv")
+    _require_file(adapter_output / "enterprise_readiness.md")
+    _require_file(adapter_output / "enterprise_readiness.json")
+    _require_file(adapter_output / "value_realization_plan.md")
+    _require_file(adapter_output / "value_realization_plan.json")
+    _require_file(adapter_output / "value_measurement_report.md")
+    _require_file(adapter_output / "value_measurement_report.json")
+    _require_file(adapter_output / "stakeholder_rollout_map.md")
+    _require_file(adapter_output / "stakeholder_rollout_map.json")
+    _require_file(adapter_output / "risk_exception_register.md")
+    _require_file(adapter_output / "risk_exception_register.json")
+    _require_file(adapter_output / "operational_audit_plan.md")
+    _require_file(adapter_output / "operational_audit_plan.json")
+    _run([sys.executable, "adapter_starter/smoke_test.py"], cwd=adapter_output, env=env)
+
+    review_output = output / "github-support"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "github-discover",
+            "--business-area",
+            "support",
+            "--limit",
+            "2",
+            "--output",
+            str(review_output),
+        ],
+        env=env,
+    )
+    _require_file(review_output / "run_summary.md")
+    _require_file(review_output / "run_summary.json")
+    _require_file(review_output / "executive_decision_brief.md")
+    _require_file(review_output / "executive_decision_brief.json")
+    _require_file(review_output / "pilot_scorecard.md")
+    _require_file(review_output / "pilot_scorecard.json")
+    _require_file(review_output / "pilot_scorecard.csv")
+    _require_file(review_output / "enterprise_readiness.md")
+    _require_file(review_output / "enterprise_readiness.json")
+    _require_file(review_output / "value_realization_plan.md")
+    _require_file(review_output / "value_realization_plan.json")
+    _require_file(review_output / "value_measurement_report.md")
+    _require_file(review_output / "value_measurement_report.json")
+    _require_file(review_output / "stakeholder_rollout_map.md")
+    _require_file(review_output / "stakeholder_rollout_map.json")
+    _require_file(review_output / "risk_exception_register.md")
+    _require_file(review_output / "risk_exception_register.json")
+    _require_file(review_output / "operational_audit_plan.md")
+    _require_file(review_output / "operational_audit_plan.json")
+    _require_file(review_output / "manual_review_pack.md")
+    _require_file(review_output / "manual_review_pack.json")
+
+
+def _env_with_src() -> dict[str, str]:
+    env = os.environ.copy()
+    src_path = str(ROOT / "src")
+    env["PYTHONPATH"] = src_path if not env.get("PYTHONPATH") else f"{src_path}{os.pathsep}{env['PYTHONPATH']}"
+    return env
+
+
+def _verify_wheel_install(wheelhouse: Path, output: Path) -> None:
+    wheels = sorted(wheelhouse.glob("ai_automation_starter_kit-*.whl"))
+    if not wheels:
+        raise FileNotFoundError(f"No ai_automation_starter_kit wheel found in {wheelhouse}")
+
+    venv_dir = output / "install-venv"
+    _run([sys.executable, "-m", "venv", str(venv_dir)], env=os.environ.copy())
+    python_bin = _venv_python(venv_dir)
+    _run([str(python_bin), "-m", "pip", "install", str(wheels[-1])], env=os.environ.copy())
+    cli_bin = _venv_console_script(venv_dir, "ai-automation-kit")
+    _run([str(cli_bin), "--version"], env=os.environ.copy())
+    _run([str(cli_bin), "doctor", "--output", str(output / "installed-doctor")], env=os.environ.copy())
+
+
+def _venv_python(venv_dir: Path) -> Path:
+    posix_python = venv_dir / "bin" / "python"
+    if posix_python.exists():
+        return posix_python
+    return venv_dir / "Scripts" / "python.exe"
+
+
+def _venv_console_script(venv_dir: Path, name: str) -> Path:
+    posix_script = venv_dir / "bin" / name
+    if posix_script.exists():
+        return posix_script
+    return venv_dir / "Scripts" / f"{name}.exe"
+
+
+def _run(command: list[str], env: dict[str, str], cwd: Path | None = None) -> None:
+    print("$ " + " ".join(command))
+    subprocess.run(command, cwd=cwd or ROOT, env=env, check=True)
+
+
+def _require_file(path: Path) -> None:
+    if not path.exists():
+        raise FileNotFoundError(f"Expected release smoke artifact was not created: {path}")
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

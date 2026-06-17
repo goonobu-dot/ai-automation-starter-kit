@@ -29,9 +29,16 @@ def test_excel_to_internal_app_generates_schema_and_migration_report(tmp_path):
     assert fields["fields"][0]["name"] == "customer_id"
     assert "Customer CRM" in report
     assert "## Data Quality" in report
+    assert "## Permissions" in report
+    assert "## Suggested App Screens" in report
     assert validation["row_count"] == 2
     assert validation["columns"][0]["name"] == "customer_id"
     assert validation["columns"][0]["blank_count"] == 0
+    assert (output / "app-spec.md").exists()
+    assert "## Roles" in (output / "app-spec.md").read_text()
+    artifact_index = (output / "artifact_index.md").read_text()
+    assert "Artifact Index: excel-to-internal-app" in artifact_index
+    assert "migration-report.md" in artifact_index
     assert (output / "runs" / f"{run.run_id}.json").exists()
 
 

@@ -31,6 +31,22 @@ def test_all_template_contracts_exist():
             assert section in text
 
 
+def test_template_readmes_match_current_executable_outputs():
+    for name in ["research-agent", "docs-rag", "internal-ai-workflow", "excel-to-internal-app", "delivery-pipeline"]:
+        text = (Path("templates") / name / "README.md").read_text()
+        assert "artifact_index.md" in text
+        assert "Contract only" not in text
+        assert "Not executable" not in text
+
+    excel_text = Path("templates/excel-to-internal-app/README.md").read_text()
+    assert "app-spec.md" in excel_text
+    assert "Executable" in excel_text
+
+    delivery_text = Path("templates/delivery-pipeline/README.md").read_text()
+    assert "docs/release-plan.md" in delivery_text
+    assert "docs/rollback-plan.md" in delivery_text
+
+
 def test_oss_integrations_policy_exists():
     text = Path("docs/OSS_INTEGRATIONS.md").read_text()
     assert "adapter-only" in text
@@ -84,6 +100,8 @@ def test_docs_rag_expected_answer_exists():
     text = answer.read_text()
     assert "Docs RAG Answer" in text
     assert "Grounding" in text
+    assert "Usage Gate" in text
+    assert "Operator Checklist" in text
     assert "30 days" in text
 
 
@@ -100,3 +118,14 @@ def test_excel_to_internal_app_expected_report_exists():
     assert "Migration Report" in text
     assert "Customer CRM" in text
     assert "customer_id" in text
+    assert "Permissions" in text
+    assert "Suggested App Screens" in text
+
+
+def test_delivery_pipeline_expected_release_and_rollback_exist():
+    release = Path("examples/delivery-pipeline/expected/release-plan.md").read_text()
+    rollback = Path("examples/delivery-pipeline/expected/rollback-plan.md").read_text()
+    assert "Release Plan" in release
+    assert "dry-run or staging" in release
+    assert "Rollback Plan" in rollback
+    assert "Preserve logs" in rollback

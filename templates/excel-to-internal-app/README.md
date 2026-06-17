@@ -12,10 +12,13 @@ Convert CSV or spreadsheet-based business tracking into a database schema, admin
 
 ## Outputs
 
+- `artifact_index.md`
 - `schema.sql`
 - `fields.json`
+- `data-quality-report.json`
 - `admin-view.md`
 - `migration-report.md`
+- `app-spec.md`
 - Optional n8n/NocoDB/Directus configuration
 
 ## Required Connectors
@@ -30,9 +33,8 @@ Convert CSV or spreadsheet-based business tracking into a database schema, admin
 
 ## Current Status
 
-Contract only. Not executable in Phase 1.
+Executable. Generates schema, field metadata, data-quality report, admin view plan, migration report, app spec, artifact index, and run history from a CSV config.
 
 ## Next Implementation Step
 
-Add a sample customer CSV and deterministic schema inference.
-
+Add optional XLSX input support and export adapters for NocoDB or Directus.

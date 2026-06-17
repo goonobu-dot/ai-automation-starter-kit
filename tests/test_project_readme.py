@@ -12,6 +12,16 @@ def test_project_readme_has_public_quickstart_and_all_templates():
     assert "ai-automation-kit research-agent" in text
     assert "ai-automation-kit github-discover --business-area sales" in text
     assert "business_automation_plan.md" in text
+    assert "value_realization_plan.md" in text
+    assert "value_measurement_report.md" in text
+    assert "stakeholder_rollout_map.md" in text
+    assert "risk_exception_register.md" in text
+    assert "operational_audit_plan.md" in text
+    assert "artifact_index.md" in text
+    assert "adoption_shortlist.md" in text
+    assert "adapter_blueprint.md" in text
+    assert "adapter_starter/" in text
+    assert "candidate_briefs/" in text
     assert "examples/research-agent/github_repos.json" in text
     assert "GITHUB_TOKEN" in text
     assert "ai-automation-kit docs-rag" in text
@@ -35,6 +45,12 @@ def test_showcase_doc_explains_demo_flow_and_outputs():
     assert "Decide" in text
     assert "Deliver" in text
     assert "business_automation_plan.md" in text
+    assert "value_realization_plan.md" in text
+    assert "value_measurement_report.md" in text
+    assert "stakeholder_rollout_map.md" in text
+    assert "risk_exception_register.md" in text
+    assert "operational_audit_plan.md" in text
+    assert "go/no-go criteria" in text
     assert "local-agent-workbench" in text
     assert "claude-code-workbench" in text
 
@@ -51,10 +67,23 @@ def test_static_demo_html_exists_and_shows_value_story():
     assert "No external services required for local examples" in text
 
 
+def test_publishing_doc_uses_release_smoke_entrypoint():
+    text = Path("docs/PUBLISHING.md").read_text()
+    assert "python3 scripts/public_release_audit.py" in text
+    assert "python3 scripts/release_smoke.py" in text
+    assert "--skip-github" in text
+    assert "release-smoke" in text
+    assert "release-smoke-discovery" not in text
+
+
 def test_pyproject_exposes_console_script():
     text = Path("pyproject.toml").read_text()
     assert "[build-system]" in text
     assert "setuptools" in text
+    assert 'readme = "README.md"' in text
+    assert 'license = {file = "LICENSE"}' in text
+    assert "keywords =" in text
+    assert "Programming Language :: Python :: 3" in text
     assert "[project.scripts]" in text
     assert 'ai-automation-kit = "ai_automation_kit.cli:main"' in text
 
@@ -62,4 +91,7 @@ def test_pyproject_exposes_console_script():
 def test_legacy_editable_install_setup_py_exists():
     text = Path("setup.py").read_text()
     assert "setuptools" in text
+    assert "long_description" in text
+    assert 'license="MIT"' in text
+    assert 'description="Starter kit for reusable AI automation workflows."' in text
     assert "ai_automation_kit.cli:main" in text

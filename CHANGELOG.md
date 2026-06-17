@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Hardened public release audit checks for GitHub publishing readiness.
+
 ## 0.1.0 - 2026-06-17
 
 - Added five executable starter templates:
@@ -13,4 +17,3 @@
 - Added checked-in examples and expected outputs.
 - Added one-command demo runner.
 - Added public-readiness docs and CI workflow.
-

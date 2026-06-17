@@ -12,9 +12,12 @@ Generate a cited Markdown, HTML, and JSON research report from explicit source U
 
 ## Outputs
 
+- `artifact_index.md`
 - `report.md`
 - `report.html`
 - `report.json`
+- `failed_fetches.json`
+- Optional GitHub ranking artifacts such as `github_candidates.md`, `adoption_shortlist.md`, `adapter_blueprint.md`, and `adapter_starter/`
 - `runs/<run_id>.json`
 - `sources/<source_id>.json`
 
@@ -32,9 +35,8 @@ Generate a cited Markdown, HTML, and JSON research report from explicit source U
 
 ## Current Status
 
-Executable in Phase 1.
+Executable. Supports explicit sources, known GitHub repositories, GitHub repository search, candidate ranking, adapter blueprint generation, adapter starter generation, and query recovery when searches return no candidates.
 
 ## Next Implementation Step
 
-Add optional search provider adapters after the explicit-URL workflow is stable.
-
+Add optional non-GitHub search provider adapters after the current GitHub discovery workflow is stable.

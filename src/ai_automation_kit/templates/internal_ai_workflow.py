@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from uuid import uuid4
 
+from ai_automation_kit.core.artifacts import write_artifact_index
 from ai_automation_kit.core.models import ApprovalRequest, Artifact, RunRecord
 from ai_automation_kit.core.store import JsonRunStore
 
@@ -29,6 +30,14 @@ def run_internal_ai_workflow(config_path: Path | str, output_dir: Path | str) ->
         },
     )
     artifacts = _write_internal_workflow_artifacts(output, draft, approval)
+    artifacts.extend(
+        write_artifact_index(
+            output,
+            "internal-ai-workflow",
+            artifacts,
+            first_read=["review-checklist.md", "draft_reply.md", "approval_request.json"],
+        )
+    )
     finished_at = _now()
     run = RunRecord(
         run_id=run_id,
@@ -60,6 +69,9 @@ def _build_draft(inquiry_text: str, customer_name: str | None) -> dict:
         "reply_markdown": body,
         "risk_level": _risk_level(inquiry_text),
         "approval_checks": _approval_checks(inquiry_text),
+        "sla": _sla(inquiry_text),
+        "owner_role": _owner_role(inquiry_text),
+        "escalation_path": _escalation_path(inquiry_text),
     }
 
 
@@ -109,8 +121,52 @@ def _render_review_checklist(draft: dict) -> str:
         "",
     ]
     lines.extend(f"- [ ] {check}" for check in draft["approval_checks"])
+    lines.extend(
+        [
+            "",
+            "## SLA And Ownership",
+            "",
+            f"- Owner role: {draft['owner_role']}",
+            f"- SLA: {draft['sla']}",
+            "",
+            "## Escalation Path",
+            "",
+        ]
+    )
+    lines.extend(f"- {step}" for step in draft["escalation_path"])
     lines.extend(["", "## Decision", "", "- [ ] Approve and send", "- [ ] Revise draft", "- [ ] Escalate to owner", ""])
     return "\n".join(lines)
+
+
+def _sla(inquiry_text: str) -> str:
+    risk = _risk_level(inquiry_text)
+    if risk == "high":
+        return "Respond only after owner review; target same business day triage."
+    if risk == "medium":
+        return "Respond within 1 business day after approval."
+    return "Respond within 2 business days after approval."
+
+
+def _owner_role(inquiry_text: str) -> str:
+    text = inquiry_text.lower()
+    if any(term in text for term in ["pricing", "onboarding", "account", "customer"]):
+        return "Customer success or sales owner"
+    if any(term in text for term in ["security", "legal", "contract", "delete"]):
+        return "Compliance or account owner"
+    return "Workflow owner"
+
+
+def _escalation_path(inquiry_text: str) -> list[str]:
+    if _risk_level(inquiry_text) == "high":
+        return [
+            "Escalate to the account owner before sending.",
+            "Attach the original inquiry and draft reply.",
+            "Wait for explicit approval in the run record.",
+        ]
+    return [
+        "Escalate to the account owner if pricing, policy, or timeline is uncertain.",
+        "Attach the draft reply and review checklist.",
+    ]
 
 
 def _now() -> str:

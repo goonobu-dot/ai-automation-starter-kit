@@ -26,22 +26,44 @@ ai-automation-kit github-discover --business-area operations --limit 2 --output 
 
 Key output:
 
+- `run_summary.md`
+- `value_realization_plan.md`
+- `value_measurement_report.md`
+- `stakeholder_rollout_map.md`
+- `risk_exception_register.md`
+- `operational_audit_plan.md`
+- `enterprise_readiness.md`
 - `report.md`
+- `artifact_index.md`
 - `github_candidates.md`
+- `adoption_shortlist.md`
+- `adapter_blueprint.md`
+- `adapter_starter/`
+- `candidate_briefs/<owner>__<repo>.md`
 - `business_automation_plan.md`
 - `business_automation_summary.json`
 
 ### 2. Decide
 
-Open `business_automation_plan.md`.
+Open `value_realization_plan.md`, then `business_automation_plan.md`.
 
 The plan shows:
 
+- KPI hypotheses and baseline measurement
+- metric cards, baseline fields, pilot measurements, and value thresholds
+- 90-day rollout phases
+- go/no-go criteria
+- role ownership, approval matrix, operating cadence, and escalation rules
+- unresolved risks, required evidence, and stop conditions
+- audit scope, sampling cadence, evidence requirements, and stop triggers
 - recommended repositories
+- production gates such as `ready_for_adapter` or `blocked_until_license_review`
 - license and maintenance risk
 - suggested starter-kit templates
 - implementation path
 - success metrics
+- adoption decision and 30-day implementation plan
+- risk register for each candidate brief
 
 ### 3. Deliver
 
@@ -62,6 +84,9 @@ The kit does not stop at an AI answer. It creates reusable files:
 - candidate rankings
 - approval checklists
 - data-quality reports
+- usage gates and operator checklists
+- internal app specs with roles and permissions
+- release and rollback plans
 - delivery checklists
 - success metrics
 - run records
@@ -85,9 +110,8 @@ Then use the five templates for research, docs Q&A, approved replies, spreadshee
 
 ## Release Checklist
 
-- Run `python3 -m pytest -q`
-- Run `python3 scripts/run_all_demos.py`
-- Run one live `github-discover` smoke test
+- Run `python3 scripts/public_release_audit.py`
+- Run `python3 scripts/release_smoke.py`
 - Confirm `.tmp/` outputs are ignored
 - Confirm `.env` files are ignored
 - Confirm `business_automation_plan.md` is useful without extra explanation

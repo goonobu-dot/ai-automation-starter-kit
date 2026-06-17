@@ -12,10 +12,12 @@ Convert company documents into searchable knowledge with source-backed answers.
 
 ## Outputs
 
+- `artifact_index.md`
+- `answer.md`
+- `answer.json`
 - Normalized Markdown documents
-- Chunk records
-- Source map
-- Rooted answers with file references
+- `chunks.jsonl`
+- `source_map.json`
 
 ## Required Connectors
 
@@ -30,7 +32,7 @@ Convert company documents into searchable knowledge with source-backed answers.
 
 ## Current Status
 
-Executable for local Markdown fixtures.
+Executable for local Markdown fixtures. Answers include citations, confidence, usage gate, operator checklist, and insufficient-evidence handling.
 
 ## Next Implementation Step
 

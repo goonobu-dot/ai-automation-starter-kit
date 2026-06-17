@@ -11,9 +11,12 @@ Turn a single internal business task, such as inquiry reply drafting, into an AI
 
 ## Outputs
 
-- Draft reply or task list
-- Approval request
-- Run history
+- `artifact_index.md`
+- `draft_reply.md`
+- `draft_reply.json`
+- `review-checklist.md`
+- `approval_request.json`
+- Run history under `runs/`
 - Optional n8n/Dify export
 
 ## Required Connectors
@@ -28,8 +31,8 @@ Turn a single internal business task, such as inquiry reply drafting, into an AI
 
 ## Current Status
 
-Executable inquiry-reply fixture. It reads a JSON config with `inquiry_text` and optional `customer_name`, then writes `draft_reply.md`, `draft_reply.json`, `approval_request.json`, and `runs/<run_id>.json`.
+Executable inquiry-reply fixture. It reads a JSON config with `inquiry_text` and optional `customer_name`, then writes draft, approval, SLA, owner role, escalation path, review checklist, artifact index, and run history.
 
 ## Next Implementation Step
 
-Wire the executable fixture into CLI scaffolding and optional connector exports.
+Add optional connector exports while keeping send/write actions dry-run until approved.

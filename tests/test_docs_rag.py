@@ -30,7 +30,19 @@ def test_docs_rag_answers_with_grounded_source_from_markdown(tmp_path):
     assert str(doc) in answer
     assert "## Confidence" in answer
     assert "high" in answer
+    assert "## Usage Gate" in answer
+    assert "Safe to use after source review" in answer
+    assert "## Operator Checklist" in answer
     assert "## Next Actions" in answer
+    artifact_index = (output / "artifact_index.md").read_text()
+    artifact_index_json = json.loads((output / "artifact_index.json").read_text())
+    assert "Artifact Index: docs-rag" in artifact_index
+    assert "answer.md" in artifact_index
+    assert "artifact_index.md" in artifact_index
+    assert artifact_index_json["template_name"] == "docs-rag"
+    assert any(item["path"] == "answer.md" for item in artifact_index_json["artifacts"])
+    assert any(item["path"] == "artifact_index.md" for item in artifact_index_json["artifacts"])
+    assert any(item["path"] == "artifact_index.json" for item in artifact_index_json["artifacts"])
     assert (output / "chunks.jsonl").exists()
     assert (output / "source_map.json").exists()
     assert (output / "runs" / f"{run.run_id}.json").exists()
@@ -57,3 +69,4 @@ def test_docs_rag_marks_answer_as_insufficient_when_no_evidence(tmp_path):
     assert run.status == "succeeded"
     assert "Insufficient evidence" in answer
     assert "low" in answer
+    assert "Blocked until more evidence is added" in answer
