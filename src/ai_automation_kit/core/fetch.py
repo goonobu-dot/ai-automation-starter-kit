@@ -23,6 +23,11 @@ class FetchedContent:
 
 def fetch_uri(uri: str, policy: FetchPolicy) -> FetchedContent:
     parts = urlsplit(uri)
+    if not parts.scheme:
+        path = Path(unquote(parts.path))
+        content = path.read_text(encoding="utf-8")
+        return FetchedContent(uri=uri, content=content, content_type="text/html")
+
     if parts.scheme == "file":
         path = Path(unquote(parts.path))
         content = path.read_text(encoding="utf-8")

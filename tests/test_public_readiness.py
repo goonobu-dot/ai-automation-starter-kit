@@ -30,6 +30,7 @@ def test_public_repo_metadata_files_exist():
 
 def test_ci_runs_tests_from_project_root():
     workflow = Path(".github/workflows/ci.yml").read_text()
+    assert "python3 -m pip install pytest" in workflow
     assert "python3 scripts/release_smoke.py --skip-github" in workflow
 
 
@@ -85,6 +86,7 @@ def test_public_release_audit_script_exposes_loop_quality_checks():
     assert "REQUIRED_DEMO_RUNNER_SNIPPETS" in text
     assert "REQUIRED_PACKAGING_FILES" in text
     assert "FORBIDDEN_SECRET_SNIPPETS" in text
+    assert '"/Users/"' in text
     assert "SECRET_SCAN_PATHS" in text
     assert "REQUIRED_EXPECTED_OUTPUT_FILES" in text
     assert "REQUIRED_STATIC_DEMO_SNIPPETS" in text

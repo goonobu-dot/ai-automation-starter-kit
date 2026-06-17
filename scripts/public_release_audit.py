@@ -190,6 +190,8 @@ FORBIDDEN_SECRET_SNIPPETS = [
     "ghp_",
     "BEGIN PRIVATE KEY",
     "AWS_SECRET_ACCESS_KEY=",
+    "/Users/",
+    "file:///Users/",
 ]
 
 REQUIRED_RELEASE_SMOKE_SNIPPETS = [

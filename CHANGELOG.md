@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Removed local absolute paths from checked-in research examples.
+- Fixed CI release smoke setup by installing `pytest` before running the smoke suite.
+- Added public release audit coverage for local `/Users/` paths in public examples and docs.
 - Hardened public release audit checks for GitHub publishing readiness.
 
 ## 0.1.0 - 2026-06-17

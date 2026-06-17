@@ -2,11 +2,10 @@
   "topic": "AI automation starter kit value",
   "sources": [
     {
-      "uri": "file:///Users/admin/Documents/New%20project/ai-automation-starter-kit/examples/research-agent/sample_sources/ai_workflows.html"
+      "uri": "examples/research-agent/sample_sources/ai_workflows.html"
     },
     {
-      "uri": "file:///Users/admin/Documents/New%20project/ai-automation-starter-kit/examples/research-agent/sample_sources/rag_docs.html"
+      "uri": "examples/research-agent/sample_sources/rag_docs.html"
     }
   ]
 }
-

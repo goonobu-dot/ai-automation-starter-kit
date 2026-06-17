@@ -9,7 +9,7 @@ def test_research_example_points_to_existing_sources():
     assert data["topic"]
     for source in data["sources"]:
         parts = urlsplit(source["uri"])
-        assert parts.scheme == "file"
+        assert parts.scheme in {"", "file"}
         assert Path(unquote(parts.path)).exists()
 
 
