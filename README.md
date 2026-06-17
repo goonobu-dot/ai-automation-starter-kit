@@ -1,6 +1,45 @@
 # AI Automation Starter Kit
 
-Cloneable starter kit for reusable AI automation workflows. It turns five OSS-inspired ideas into local, testable templates with run records, source/provenance files, and checked-in examples.
+GitHub-data-driven AI automation starter kit for developers, AI agent builders, and automation consultants.
+
+It finds promising public OSS projects for a business area, ranks them, and turns the result into practical adoption artifacts: executive decisions, value scorecards, rollout maps, risk registers, audit plans, and dry-run adapter starters.
+
+## What Is This?
+
+AI Automation Starter Kit is a local Python CLI for turning public GitHub signals into repeatable business automation plans.
+
+Instead of stopping at "this repository looks interesting", it creates the files a team needs before trying automation in a real company:
+
+- what to try first
+- why it is worth trying
+- what blocks production use
+- who must approve the pilot
+- how to measure whether it worked
+- how to keep the first prototype in dry-run mode
+
+The project also includes five reusable workflow templates for research, document Q&A, approved replies, spreadsheet-to-app migration, and delivery packaging.
+
+## Who Is This For?
+
+- Developers who want a useful open-source automation project they can run locally.
+- AI agent builders who need repeatable workflow artifacts instead of one-off chat output.
+- Automation consultants who want to turn GitHub research into client-ready pilot plans.
+- Business operations teams that need approvals, audit evidence, and value metrics before adopting AI automation.
+
+## What You Get
+
+The main `github-discover` command generates a practical output folder. The first files to read are:
+
+| File | Why it matters |
+|---|---|
+| `run_summary.md` | Short status, candidate count, and next file to read. |
+| `executive_decision_brief.md` | Buy, wait, or recovery recommendation with risks and approval request. |
+| `pilot_scorecard.csv` | Spreadsheet-ready baseline and pilot metrics. |
+| `value_realization_plan.md` | KPI hypotheses, rollout phases, and go/no-go criteria. |
+| `stakeholder_rollout_map.md` | Owners, approvers, cadence, and escalation rules. |
+| `risk_exception_register.md` | Open risks, owners, evidence needed, and stop conditions. |
+| `operational_audit_plan.md` | Audit scope and required evidence before promotion. |
+| `adapter_starter/` | Runnable dry-run adapter skeleton when a safe candidate exists. |
 
 ## 1-Minute Demo
 
@@ -28,6 +67,17 @@ Or open the artifact index when you want to know what to read first:
 sed -n '1,180p' .tmp/operations-discovery/artifact_index.md
 ```
 
+## 3-Minute Walkthrough
+
+After the first run, read these in order:
+
+1. `run_summary.md` to see whether the run found a ready candidate, a manual-review candidate, or needs better search terms.
+2. `executive_decision_brief.md` to decide whether to approve a controlled pilot, hold for manual review, or rerun discovery.
+3. `pilot_scorecard.csv` to see which baseline and pilot metrics the team should track.
+4. `artifact_index.md` to explore every generated artifact and decide what to inspect next.
+
+If `next_read` points to `adapter_starter/README.md`, the kit generated a dry-run adapter starter. If it points to `manual_review_pack.md`, inspect license, maintenance, and examples before reuse. If it points to `query_recovery.md`, broaden the GitHub search before planning implementation.
+
 ### Example Output
 
 The plan tells you:
@@ -49,6 +99,15 @@ Example generated files:
 - `.tmp/operations-discovery/adapter_starter/`
 - `.tmp/operations-discovery/business_automation_plan.md`
 - `.tmp/operations-discovery/business_automation_summary.json`
+
+## Example Use Cases
+
+- Operations: find workflow orchestration projects and turn them into controlled internal pilots.
+- Support: discover helpdesk, chatbot, and ticket automation ideas with human review gates.
+- Finance: review invoice, expense, and spreadsheet automation candidates before touching real data.
+- Sales: identify CRM and outreach automation patterns without copying unsafe code.
+- HR: explore onboarding or recruiting workflow ideas with approval and audit requirements.
+- Marketing: turn content and campaign automation repositories into measurable pilot plans.
 
 ## How This Differs From Chat AI
 

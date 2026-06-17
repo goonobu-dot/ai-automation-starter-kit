@@ -1,8 +1,44 @@
 # AI Automation Starter Kit Showcase
 
-This showcase explains the public demo story for the starter kit.
+This showcase explains the public demo story for the starter kit. Use it when you want to explain the project in a README, release note, demo call, or social post.
 
 Open `docs/demo.html` in a browser when you want a visual demo page for this story.
+
+## 30-Second Summary
+
+AI Automation Starter Kit is a local Python CLI that turns public GitHub projects into business automation pilot plans.
+
+It does three things:
+
+1. Finds and ranks OSS projects for a business area.
+2. Converts the best candidates into decision, value, risk, rollout, and audit artifacts.
+3. Generates dry-run adapter starters and reusable local workflow templates.
+
+## What A Visitor Should Understand
+
+- This is not a landing page or a chat prompt collection.
+- It is a runnable CLI project with tests, examples, release checks, and generated artifacts.
+- The main use case is moving from GitHub research to a controlled automation pilot.
+- The outputs are designed for teams that need evidence before adopting automation.
+
+## Audience
+
+- Developers building AI automation tooling.
+- AI agent builders who need repeatable local workflows.
+- Automation consultants preparing client pilot plans.
+- Operations, support, finance, sales, marketing, and HR teams evaluating workflow automation.
+
+## Outcome
+
+After running the demo, a user should have:
+
+- a ranked GitHub candidate list
+- `executive_decision_brief.md` for approve, wait, or rerun decisions
+- `pilot_scorecard.csv` for tracking baseline and pilot metrics
+- `value_realization_plan.md` for KPIs and rollout phases
+- `risk_exception_register.md` for blockers and stop conditions
+- `operational_audit_plan.md` for required evidence
+- `adapter_starter/` when a safe dry-run prototype can be generated
 
 ## Positioning
 
@@ -27,6 +63,8 @@ ai-automation-kit github-discover --business-area operations --limit 2 --output 
 Key output:
 
 - `run_summary.md`
+- `executive_decision_brief.md`
+- `pilot_scorecard.csv`
 - `value_realization_plan.md`
 - `value_measurement_report.md`
 - `stakeholder_rollout_map.md`
@@ -45,10 +83,13 @@ Key output:
 
 ### 2. Decide
 
-Open `value_realization_plan.md`, then `business_automation_plan.md`.
+Open `run_summary.md`, then `executive_decision_brief.md`, then `pilot_scorecard.csv`.
 
 The plan shows:
 
+- approve, wait, or discovery-recovery recommendation
+- investment case and approval request
+- baseline and pilot metric fields for spreadsheet tracking
 - KPI hypotheses and baseline measurement
 - metric cards, baseline fields, pilot measurements, and value thresholds
 - 90-day rollout phases
@@ -100,7 +141,7 @@ Use this short story in a README, release note, or X post:
 ```text
 I open-sourced AI Automation Starter Kit.
 
-It discovers business automation opportunities from GitHub, ranks candidate OSS projects, and turns the result into repeatable workflow artifacts.
+It discovers business automation opportunities from GitHub, ranks candidate OSS projects, and turns the result into executive decisions, value scorecards, rollout maps, risk registers, audit plans, and dry-run adapter starters.
 
 Start with:
 ai-automation-kit github-discover --business-area operations --limit 2 --output .tmp/operations-discovery

@@ -4,6 +4,14 @@ from pathlib import Path
 def test_project_readme_has_public_quickstart_and_all_templates():
     text = Path("README.md").read_text()
     assert "AI Automation Starter Kit" in text
+    assert "What Is This?" in text
+    assert "Who Is This For?" in text
+    assert "What You Get" in text
+    assert "3-Minute Walkthrough" in text
+    assert "Example Use Cases" in text
+    assert "GitHub-data-driven AI automation starter kit" in text
+    assert "executive_decision_brief.md" in text
+    assert "pilot_scorecard.csv" in text
     assert "python3 -m venv .venv" in text
     assert "source .venv/bin/activate" in text
     assert "python3 -m ensurepip --upgrade" in text
@@ -41,6 +49,12 @@ def test_project_readme_has_public_quickstart_and_all_templates():
 def test_showcase_doc_explains_demo_flow_and_outputs():
     text = Path("docs/SHOWCASE.md").read_text()
     assert "AI Automation Starter Kit Showcase" in text
+    assert "30-Second Summary" in text
+    assert "What A Visitor Should Understand" in text
+    assert "Audience" in text
+    assert "Outcome" in text
+    assert "executive_decision_brief.md" in text
+    assert "pilot_scorecard.csv" in text
     assert "Discover" in text
     assert "Decide" in text
     assert "Deliver" in text
