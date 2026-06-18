@@ -42,7 +42,9 @@ Need a practical first path or use-case examples?
 
 ## What You Get
 
-The main `github-discover` command generates a practical output folder. The first files to read are:
+The easiest first command is `onboard`. It checks the local environment, runs GitHub discovery, and writes a short onboarding summary that tells you what to read next.
+
+The main `github-discover` workflow generates a practical output folder. The first files to read are:
 
 | File | Why it matters |
 |---|---|
@@ -66,19 +68,19 @@ python3 -m ensurepip --upgrade
 python3 -m pip install --upgrade pip setuptools
 python3 -m pip install -e .
 ai-automation-kit doctor --output .tmp/doctor
-ai-automation-kit github-discover --business-area operations --limit 2 --output .tmp/operations-discovery
+ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding
 ```
 
-Open the generated plan:
+Open the onboarding summary:
 
 ```bash
-sed -n '1,180p' .tmp/operations-discovery/business_automation_plan.md
+sed -n '1,180p' .tmp/onboarding/onboarding_summary.md
 ```
 
 Or open the artifact index when you want to know what to read first:
 
 ```bash
-sed -n '1,180p' .tmp/operations-discovery/artifact_index.md
+sed -n '1,180p' .tmp/onboarding/artifact_index.md
 ```
 
 ## 3-Minute Walkthrough
@@ -149,7 +151,11 @@ python3 -m pytest -q
 python3 scripts/run_all_demos.py
 ```
 
-The demo outputs are written to `.tmp/all-templates/`.
+The demo outputs are written to `.tmp/all-templates/`. To run the guided GitHub onboarding path after setup:
+
+```bash
+ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding
+```
 
 ## How This Fits With Local Agent Workbenches
 
@@ -168,6 +174,16 @@ The workbenches give you a local multi-agent cockpit for parallel Codex CLI or C
 6. Package the workflow for delivery with metrics and safety checks.
 
 ## Template Commands
+
+### onboard
+
+Run this first when you want the shortest path from install to a usable business automation discovery result:
+
+```bash
+ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding
+```
+
+Creates `doctor/doctor_report.md`, `github_discover_config.json`, `onboarding_summary.md`, `onboarding_summary.json`, and the normal GitHub discovery artifacts. The summary prints and records the first files to read, recommended next actions, and the exact rerun command.
 
 ### doctor
 
@@ -189,6 +205,12 @@ Start here when you want a one-command GitHub discovery workflow for business au
 
 ```bash
 ai-automation-kit github-discover --business-area sales --limit 5 --output .tmp/sales-automation-discovery
+```
+
+For operations automation discovery:
+
+```bash
+ai-automation-kit github-discover --business-area operations --limit 2 --output .tmp/operations-discovery
 ```
 
 Creates `run_summary.md`, `run_summary.json`, `executive_decision_brief.md`, `executive_decision_brief.json`, `pilot_scorecard.md`, `pilot_scorecard.json`, `pilot_scorecard.csv`, `value_realization_plan.md`, `value_realization_plan.json`, `value_measurement_report.md`, `value_measurement_report.json`, `stakeholder_rollout_map.md`, `stakeholder_rollout_map.json`, `risk_exception_register.md`, `risk_exception_register.json`, `operational_audit_plan.md`, `operational_audit_plan.json`, `enterprise_readiness.md`, `enterprise_readiness.json`, `artifact_index.md`, `artifact_index.json`, `report.md`, `github_candidates.md`, `github_candidates.csv`, `github_candidates.json`, `adoption_shortlist.md`, `adoption_shortlist.json`, `adapter_blueprint.md`, `adapter_blueprint.json`, `adapter_starter/`, `manual_review_pack.md`, `manual_review_pack.json`, `candidate_briefs/`, `business_automation_plan.md`, `business_automation_summary.json`, run records, and the generated `github_discover_config.json`. The run summary gives the shortest status, candidate count, and next file to read. The executive decision brief turns discovery into a buy, wait, or recovery recommendation with investment case, risks, and approval request. The pilot scorecard gives spreadsheet-ready baseline and pilot fields for measuring value. The value realization plan turns the GitHub candidate into KPI hypotheses, measurement baselines, a 90-day rollout, and go/no-go criteria. The value measurement report defines metric cards, required baseline data, pilot measurements, and decision thresholds. The stakeholder rollout map assigns owners, approvers, operating cadence, and escalation rules so the pilot has a real operating model. The risk exception register lists unresolved rollout risks with owner, evidence, and stop condition. The operational audit plan defines post-pilot audit scope, cadence, required evidence, and stop triggers. Enterprise readiness keeps production release blocked until license review, dry-run, approval, audit log, and secret review controls are complete. The artifact index tells you what else was generated. The business plan recommends which starter-kit template to use next and includes success metrics for the workflow. Candidate briefs include adoption decision, deployment shape, 30-day implementation plan, and risk register. The adapter blueprint turns the top safe candidate into an adapter-only implementation contract, and `adapter_starter/` gives you a dry-run Python skeleton plus smoke test. If no candidate is safe enough for adapter generation, `manual_review_pack.md` explains what to inspect before reuse.

@@ -90,6 +90,7 @@ def test_public_release_audit_script_checks_publish_prerequisites():
     assert "docs/OSS_INTEGRATIONS.md::adapter-only" in result.stdout
     assert "README.md::python3 -m pip install -e ." in result.stdout
     assert "README.md::python3 scripts/run_all_demos.py" in result.stdout
+    assert "README.md::ai-automation-kit onboard --business-area operations" in result.stdout
     assert "README.md::ai-automation-kit github-discover --business-area operations" in result.stdout
     assert "docs/PUBLISHING.md::--skip-github" in result.stdout
     assert "docs/PUBLISHING.md::Suggested First Release" in result.stdout
@@ -182,6 +183,8 @@ def test_public_release_audit_script_checks_final_release_evidence():
     assert "scripts/release_smoke.py::public_release_audit.py" in result.stdout
     assert "scripts/release_smoke.py::pip wheel" in result.stdout
     assert "scripts/release_smoke.py::_verify_wheel_install" in result.stdout
+    assert "scripts/release_smoke.py::onboard" in result.stdout
+    assert "scripts/release_smoke.py::onboarding_summary.md" in result.stdout
     assert "scripts/release_smoke.py::github-discover" in result.stdout
     assert "scripts/release_smoke.py::adapter_starter/smoke_test.py" in result.stdout
     assert "scripts/release_smoke.py::manual_review_pack.md" in result.stdout
@@ -200,6 +203,8 @@ def test_release_checklist_mentions_doctor_and_live_github_smoke():
     assert "--skip-github" in checklist
     assert ".tmp/release-smoke/doctor/doctor_report.md" in checklist
     assert ".tmp/release-smoke/installed-doctor/doctor_report.md" in checklist
+    assert ".tmp/release-smoke/onboard-operations/onboarding_summary.md" in checklist
+    assert ".tmp/release-smoke/onboard-operations/doctor/doctor_report.md" in checklist
     assert ".tmp/release-smoke/github-operations/run_summary.md" in checklist
     assert ".tmp/release-smoke/github-operations/enterprise_readiness.md" in checklist
     assert ".tmp/release-smoke/github-operations/value_realization_plan.md" in checklist

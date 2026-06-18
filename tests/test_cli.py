@@ -49,6 +49,27 @@ def test_parser_accepts_github_discover_command():
     assert args.include_readme is True
 
 
+def test_parser_accepts_onboard_command():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "onboard",
+            "--business-area",
+            "support",
+            "--limit",
+            "3",
+            "--output",
+            "out",
+            "--include-readme",
+        ]
+    )
+    assert args.command == "onboard"
+    assert args.business_area == "support"
+    assert args.limit == 3
+    assert args.output == "out"
+    assert args.include_readme is True
+
+
 def test_parser_accepts_doctor_command():
     parser = build_parser()
     args = parser.parse_args(["doctor", "--output", "out", "--check-github"])
@@ -265,6 +286,57 @@ def test_main_github_discover_only_prints_existing_optional_outputs(tmp_path, mo
     assert f"next_read={tmp_path / 'out' / 'query_recovery.md'}" in captured.out
     assert "candidates=" not in captured.out
     assert "business_plan=" not in captured.out
+
+
+def test_main_runs_onboard_and_writes_summary(tmp_path, monkeypatch, capsys):
+    def fake_doctor(output_dir, check_github=False):
+        output_dir.mkdir(parents=True, exist_ok=True)
+        (output_dir / "doctor_report.md").write_text("# Doctor\n")
+        return {"status": "warning", "checks": [], "next_actions": ["Set GITHUB_TOKEN for higher limits."]}
+
+    def fake_run(config_path, output_dir):
+        output_dir.mkdir(parents=True, exist_ok=True)
+        (output_dir / "run_summary.md").write_text("# Run Summary\n")
+        (output_dir / "executive_decision_brief.md").write_text("# Executive Decision Brief\n")
+        (output_dir / "pilot_scorecard.csv").write_text("metric,owner\n")
+        (output_dir / "artifact_index.md").write_text("# Artifact Index\n")
+        (output_dir / "manual_review_pack.md").write_text("# Manual Review Pack\n")
+        from ai_automation_kit.core.models import RunRecord
+
+        return RunRecord(
+            run_id="run-onboard",
+            template_name="research-agent",
+            input=json.loads(config_path.read_text()),
+            started_at="2026-06-17T00:00:00Z",
+            finished_at="2026-06-17T00:00:01Z",
+            status="succeeded",
+            errors=[],
+            artifacts=[],
+            source_ids=[],
+            failed_fetches=[],
+        )
+
+    monkeypatch.setattr("ai_automation_kit.cli._run_doctor", fake_doctor)
+    monkeypatch.setattr("ai_automation_kit.cli.run_research_agent", fake_run)
+
+    output = tmp_path / "onboard"
+    exit_code = main(["onboard", "--business-area", "support", "--limit", "3", "--output", str(output)])
+
+    captured = capsys.readouterr()
+    summary = (output / "onboarding_summary.md").read_text()
+    payload = json.loads((output / "onboarding_summary.json").read_text())
+    generated_config = json.loads((output / "github_discover_config.json").read_text())
+    assert exit_code == 0
+    assert "onboarding_summary=" in captured.out
+    assert "next_read=" in captured.out
+    assert "AI Automation Starter Kit Onboarding Summary" in summary
+    assert "support" in summary
+    assert payload["business_area"] == "support"
+    assert payload["doctor_status"] == "warning"
+    assert payload["run_status"] == "succeeded"
+    assert payload["next_read"][0] == "run_summary.md"
+    assert generated_config["business_context"]["business_area"] == "support"
+    assert generated_config["github_searches"][0]["per_page"] == 3
 
 
 def test_main_runs_doctor_without_network(tmp_path):

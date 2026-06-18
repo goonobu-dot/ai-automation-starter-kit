@@ -20,6 +20,7 @@ def test_project_readme_has_public_quickstart_and_all_templates():
     assert "python3 -m ensurepip --upgrade" in text
     assert "python3 -m pip install --upgrade pip setuptools" in text
     assert "pip install -e ." in text
+    assert "ai-automation-kit onboard --business-area operations" in text
     assert "ai-automation-kit research-agent" in text
     assert "ai-automation-kit github-discover --business-area sales" in text
     assert "business_automation_plan.md" in text

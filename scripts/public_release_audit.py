@@ -73,6 +73,7 @@ FORBIDDEN_TRACKED_PATHS = [
 ]
 
 REQUIRED_README_SNIPPETS = [
+    "ai-automation-kit onboard",
     "ai-automation-kit github-discover",
     "python3 scripts/release_smoke.py",
     "Public Release Readiness",
@@ -85,6 +86,7 @@ REQUIRED_CLI_DOC_SNIPPETS = [
     "python3 scripts/run_all_demos.py",
     "ai-automation-kit --version",
     "ai-automation-kit doctor",
+    "ai-automation-kit onboard --business-area operations",
     "ai-automation-kit github-discover --business-area operations",
     "docs/SHOWCASE.md",
     "docs/demo.html",
@@ -201,6 +203,8 @@ REQUIRED_RELEASE_SMOKE_SNIPPETS = [
     ("public_release_audit.py", "public_release_audit.py"),
     ("pip wheel", '"pip", "wheel"'),
     ("_verify_wheel_install", "_verify_wheel_install"),
+    ("onboard", "onboard"),
+    ("onboarding_summary.md", "onboarding_summary.md"),
     ("github-discover", "github-discover"),
     ("adapter_starter/smoke_test.py", "adapter_starter/smoke_test.py"),
     ("manual_review_pack.md", "manual_review_pack.md"),

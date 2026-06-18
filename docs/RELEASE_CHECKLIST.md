@@ -15,6 +15,10 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 
 - `.tmp/release-smoke/doctor/doctor_report.md`
 - `.tmp/release-smoke/installed-doctor/doctor_report.md`
+- `.tmp/release-smoke/onboard-operations/onboarding_summary.md`
+- `.tmp/release-smoke/onboard-operations/onboarding_summary.json`
+- `.tmp/release-smoke/onboard-operations/doctor/doctor_report.md`
+- `.tmp/release-smoke/onboard-operations/github_discover_config.json`
 - `.tmp/release-smoke/github-operations/run_summary.md`
 - `.tmp/release-smoke/github-operations/executive_decision_brief.md`
 - `.tmp/release-smoke/github-operations/pilot_scorecard.csv`

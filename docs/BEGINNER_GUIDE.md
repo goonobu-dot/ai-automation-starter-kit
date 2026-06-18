@@ -40,7 +40,11 @@ This project exists to turn an idea into a practical workflow. It creates files 
 
 ## What it can do
 
-The main command is `github-discover`.
+The easiest first command is `onboard`.
+
+It checks your setup, searches GitHub, creates decision files, and writes one summary that tells you what to read next.
+
+The lower-level discovery command is `github-discover`.
 
 It searches GitHub for automation projects in a business area such as operations, support, finance, sales, marketing, or HR.
 
@@ -77,24 +81,24 @@ python3 -m pip install --upgrade pip setuptools
 python3 -m pip install -e .
 ```
 
-Check your setup:
+Run the guided first workflow:
 
 ```bash
-ai-automation-kit doctor --output .tmp/doctor
+ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding
 ```
 
-Run GitHub discovery:
+Then read the onboarding summary:
 
 ```bash
-ai-automation-kit github-discover --business-area operations --limit 2 --output .tmp/operations-discovery
+sed -n '1,180p' .tmp/onboarding/onboarding_summary.md
 ```
 
 Then read these files in order:
 
-1. `.tmp/operations-discovery/run_summary.md`
-2. `.tmp/operations-discovery/executive_decision_brief.md`
-3. `.tmp/operations-discovery/pilot_scorecard.csv`
-4. `.tmp/operations-discovery/artifact_index.md`
+1. `.tmp/onboarding/run_summary.md`
+2. `.tmp/onboarding/executive_decision_brief.md`
+3. `.tmp/onboarding/pilot_scorecard.csv`
+4. `.tmp/onboarding/artifact_index.md`
 
 ## How it is different from normal chat AI
 
@@ -144,4 +148,3 @@ It helps you check:
 - how to practice safely before serving it for real
 
 That is the main purpose of this project: move from an interesting open-source idea to a controlled automation pilot.
-

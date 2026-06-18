@@ -22,19 +22,18 @@ python3 -m ensurepip --upgrade
 python3 -m pip install --upgrade pip setuptools
 python3 -m pip install -e .
 ai-automation-kit doctor --output .tmp/doctor
-ai-automation-kit github-discover --business-area operations --limit 2 --output .tmp/operations-discovery
+ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding
 ```
 
 ## コマンド実行後に読むもの
 
-1. `.tmp/operations-discovery/run_summary.md`
-2. `.tmp/operations-discovery/executive_decision_brief.md`
-3. `.tmp/operations-discovery/pilot_scorecard.csv`
-4. `.tmp/operations-discovery/artifact_index.md`
+1. `.tmp/onboarding/onboarding_summary.md`
+2. onboarding summary に表示される最初の `next_read` ファイル
+3. `.tmp/onboarding/executive_decision_brief.md`
+4. `.tmp/onboarding/pilot_scorecard.csv`
 
 ## 結果の見方
 
 - `adapter_starter/README.md`: dry-run 用の adapter starter があります。
 - `manual_review_pack.md`: ライセンス、メンテナンス、安全性の確認が先に必要です。
 - `query_recovery.md`: 自動化計画の前に検索条件を広げる必要があります。
-

@@ -22,19 +22,18 @@ python3 -m ensurepip --upgrade
 python3 -m pip install --upgrade pip setuptools
 python3 -m pip install -e .
 ai-automation-kit doctor --output .tmp/doctor
-ai-automation-kit github-discover --business-area operations --limit 2 --output .tmp/operations-discovery
+ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding
 ```
 
 ## Read after the command
 
-1. `.tmp/operations-discovery/run_summary.md`
-2. `.tmp/operations-discovery/executive_decision_brief.md`
-3. `.tmp/operations-discovery/pilot_scorecard.csv`
-4. `.tmp/operations-discovery/artifact_index.md`
+1. `.tmp/onboarding/onboarding_summary.md`
+2. The first `next_read` file listed in the onboarding summary.
+3. `.tmp/onboarding/executive_decision_brief.md`
+4. `.tmp/onboarding/pilot_scorecard.csv`
 
 ## Result meanings
 
 - `adapter_starter/README.md`: a dry-run adapter starter is available.
 - `manual_review_pack.md`: review license, maintenance, and safety first.
 - `query_recovery.md`: broaden the search before planning a pilot.
-

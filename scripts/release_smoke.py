@@ -41,6 +41,27 @@ def main() -> int:
 
 
 def _run_github_smokes(output: Path, env: dict[str, str]) -> None:
+    onboard_output = output / "onboard-operations"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "onboard",
+            "--business-area",
+            "operations",
+            "--limit",
+            "1",
+            "--output",
+            str(onboard_output),
+        ],
+        env=env,
+    )
+    _require_file(onboard_output / "onboarding_summary.md")
+    _require_file(onboard_output / "onboarding_summary.json")
+    _require_file(onboard_output / "doctor" / "doctor_report.md")
+    _require_file(onboard_output / "github_discover_config.json")
+
     adapter_output = output / "github-operations"
     _run(
         [

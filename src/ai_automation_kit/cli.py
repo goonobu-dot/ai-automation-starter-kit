@@ -30,6 +30,14 @@ def build_parser() -> argparse.ArgumentParser:
     discover.add_argument("--output", required=True)
     discover.add_argument("--include-readme", action="store_true")
 
+    onboard = subparsers.add_parser("onboard")
+    onboard.add_argument("--business-area", default="operations")
+    onboard.add_argument("--query")
+    onboard.add_argument("--limit", type=int, default=2)
+    onboard.add_argument("--output", required=True)
+    onboard.add_argument("--include-readme", action="store_true")
+    onboard.add_argument("--check-github", action="store_true")
+
     docs_rag = subparsers.add_parser("docs-rag")
     docs_rag.add_argument("--config", required=True)
     docs_rag.add_argument("--output", required=True)
@@ -91,6 +99,20 @@ def main(argv: list[str] | None = None) -> int:
         for line in _github_discover_output_hints(output):
             print(line)
         return 0 if run.status == "succeeded" else 1
+    if args.command == "onboard":
+        payload = _run_onboard(
+            output=Path(args.output),
+            business_area=args.business_area,
+            query=args.query,
+            limit=args.limit,
+            include_readme=args.include_readme,
+            check_github=args.check_github,
+        )
+        print(f"status={payload['run_status']}")
+        print(f"onboarding_summary={Path(args.output) / 'onboarding_summary.md'}")
+        for path in payload["next_read"]:
+            print(f"next_read={Path(args.output) / path}")
+        return 0 if payload["run_status"] == "succeeded" else 1
     if args.command == "docs-rag":
         run = run_docs_rag(config_path=args.config, output_dir=args.output)
         print(f"run_id={run.run_id}")
@@ -165,6 +187,125 @@ def _github_discover_output_hints(output: Path) -> list[str]:
             hints.append(f"next_read={path}")
             break
     return hints
+
+
+def _run_onboard(
+    output: Path,
+    business_area: str,
+    query: str | None,
+    limit: int,
+    include_readme: bool,
+    check_github: bool,
+) -> dict:
+    output.mkdir(parents=True, exist_ok=True)
+    doctor_payload = _run_doctor(output_dir=output / "doctor", check_github=check_github)
+    config = _build_github_discover_config(
+        business_area=business_area,
+        query=query,
+        limit=limit,
+        include_readme=include_readme,
+    )
+    config_path = output / "github_discover_config.json"
+    config_path.write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    run = run_research_agent(config_path=config_path, output_dir=output)
+    payload = {
+        "status": "ready" if run.status == "succeeded" and doctor_payload["status"] in {"ready", "warning"} else "needs_attention",
+        "business_area": business_area,
+        "output_dir": str(output),
+        "doctor_status": doctor_payload["status"],
+        "run_status": run.status,
+        "run_id": run.run_id,
+        "next_read": _onboarding_next_read(output),
+        "next_actions": _onboarding_next_actions(output, run.status, doctor_payload),
+        "rerun_command": _onboarding_rerun_command(business_area, query, limit, output, include_readme, check_github),
+    }
+    (output / "onboarding_summary.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output / "onboarding_summary.md").write_text(_render_onboarding_summary(payload), encoding="utf-8")
+    return payload
+
+
+def _onboarding_next_read(output: Path) -> list[str]:
+    priority = [
+        "run_summary.md",
+        "executive_decision_brief.md",
+        "pilot_scorecard.csv",
+        "artifact_index.md",
+        "adapter_starter/README.md",
+        "manual_review_pack.md",
+        "query_recovery.md",
+        "business_automation_plan.md",
+        "report.md",
+        "doctor/doctor_report.md",
+    ]
+    return [path for path in priority if (output / path).exists()]
+
+
+def _onboarding_next_actions(output: Path, run_status: str, doctor_payload: dict) -> list[str]:
+    actions = []
+    if run_status != "succeeded":
+        actions.append("Open `query_recovery.md` or `run_summary.md`, then rerun with a narrower `--query`.")
+    if (output / "pilot_scorecard.csv").exists():
+        actions.append("Use `pilot_scorecard.csv` to choose one workflow for a small internal pilot.")
+    if (output / "adapter_starter" / "README.md").exists():
+        actions.append("Open `adapter_starter/README.md` and connect the generated adapter to one real business data source.")
+    actions.extend(doctor_payload.get("next_actions", []))
+    if not actions:
+        actions.append("Open `artifact_index.md` and choose the first workflow to test with real business data.")
+    return actions
+
+
+def _onboarding_rerun_command(
+    business_area: str,
+    query: str | None,
+    limit: int,
+    output: Path,
+    include_readme: bool,
+    check_github: bool,
+) -> str:
+    parts = [
+        "ai-automation-kit",
+        "onboard",
+        "--business-area",
+        business_area,
+        "--limit",
+        str(max(1, min(25, limit))),
+        "--output",
+        str(output),
+    ]
+    if query:
+        parts.extend(["--query", query])
+    if include_readme:
+        parts.append("--include-readme")
+    if check_github:
+        parts.append("--check-github")
+    return " ".join(parts)
+
+
+def _render_onboarding_summary(payload: dict) -> str:
+    lines = [
+        "# AI Automation Starter Kit Onboarding Summary",
+        "",
+        f"- Status: `{payload['status']}`",
+        f"- Business area: `{payload['business_area']}`",
+        f"- Doctor status: `{payload['doctor_status']}`",
+        f"- Research run status: `{payload['run_status']}`",
+        f"- Run ID: `{payload['run_id']}`",
+        "",
+        "## What Happened",
+        "",
+        "The onboarding command checked the local environment, generated a GitHub discovery configuration, ran the discovery workflow, and collected the first files to read.",
+        "",
+        "## Read Next",
+        "",
+    ]
+    if payload["next_read"]:
+        lines.extend(f"- `{path}`" for path in payload["next_read"])
+    else:
+        lines.append("- No readable output files were generated. Check the run status and recovery notes.")
+    lines.extend(["", "## Recommended Next Actions", ""])
+    lines.extend(f"- {action}" for action in payload["next_actions"])
+    lines.extend(["", "## Rerun Command", "", "```bash", payload["rerun_command"], "```", ""])
+    return "\n".join(lines)
 
 
 def _default_business_queries(business_area: str) -> list[str]:
