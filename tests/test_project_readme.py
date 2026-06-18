@@ -7,6 +7,9 @@ def test_project_readme_has_public_quickstart_and_all_templates():
     assert "What Is This?" in text
     assert "Who Is This For?" in text
     assert "What You Get" in text
+    assert "Beginner-Friendly Guides" in text
+    assert "docs/BEGINNER_GUIDE.md" in text
+    assert "docs/BEGINNER_GUIDE.ja.md" in text
     assert "3-Minute Walkthrough" in text
     assert "Example Use Cases" in text
     assert "GitHub-data-driven AI automation starter kit" in text
@@ -44,6 +47,29 @@ def test_project_readme_has_public_quickstart_and_all_templates():
     assert "Public Release Readiness" in text
     assert "docs/SHOWCASE.md" in text
     assert "docs/demo.html" in text
+
+
+def test_beginner_guides_explain_project_in_english_and_japanese():
+    english = Path("docs/BEGINNER_GUIDE.md").read_text()
+    japanese = Path("docs/BEGINNER_GUIDE.ja.md").read_text()
+
+    assert "Beginner-Friendly Guide" in english
+    assert "What this project is" in english
+    assert "Why it exists" in english
+    assert "How to use it" in english
+    assert "How it is different from normal chat AI" in english
+    assert "run_summary.md" in english
+    assert "executive_decision_brief.md" in english
+    assert "pilot_scorecard.csv" in english
+
+    assert "やさしい解説" in japanese
+    assert "このプロジェクトは何か" in japanese
+    assert "何のために作ったのか" in japanese
+    assert "どうやって使うのか" in japanese
+    assert "普通のAIチャットと何が違うのか" in japanese
+    assert "run_summary.md" in japanese
+    assert "executive_decision_brief.md" in japanese
+    assert "pilot_scorecard.csv" in japanese
 
 
 def test_showcase_doc_explains_demo_flow_and_outputs():

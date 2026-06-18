@@ -19,6 +19,13 @@ Instead of stopping at "this repository looks interesting", it creates the files
 
 The project also includes five reusable workflow templates for research, document Q&A, approved replies, spreadsheet-to-app migration, and delivery packaging.
 
+## Beginner-Friendly Guides
+
+New to this project? Start with a plain-language explanation:
+
+- [English beginner guide](docs/BEGINNER_GUIDE.md)
+- [日本語のやさしい解説](docs/BEGINNER_GUIDE.ja.md)
+
 ## Who Is This For?
 
 - Developers who want a useful open-source automation project they can run locally.
