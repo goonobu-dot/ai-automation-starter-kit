@@ -28,6 +28,29 @@ def test_public_repo_metadata_files_exist():
         assert Path(path).exists(), path
 
 
+def test_readme_links_start_here_and_use_cases_docs():
+    readme = Path("README.md").read_text()
+    assert "docs/START_HERE.md" in readme
+    assert "docs/START_HERE.ja.md" in readme
+    assert "docs/USE_CASES.md" in readme
+    assert "docs/USE_CASES.ja.md" in readme
+
+
+def test_start_here_and_use_cases_docs_help_first_time_users():
+    english_start = Path("docs/START_HERE.md").read_text()
+    japanese_start = Path("docs/START_HERE.ja.md").read_text()
+    english_cases = Path("docs/USE_CASES.md").read_text()
+    japanese_cases = Path("docs/USE_CASES.ja.md").read_text()
+    assert "Start Here" in english_start
+    assert "First 3 minutes" in english_start
+    assert "まずここから" in japanese_start
+    assert "最初の3分" in japanese_start
+    assert "Use Cases" in english_cases
+    assert "business automation" in english_cases
+    assert "ユースケース" in japanese_cases
+    assert "業務自動化" in japanese_cases
+
+
 def test_ci_runs_tests_from_project_root():
     workflow = Path(".github/workflows/ci.yml").read_text()
     assert "permissions:" in workflow

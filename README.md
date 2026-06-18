@@ -26,6 +26,13 @@ New to this project? Start with a plain-language explanation:
 - [English beginner guide](docs/BEGINNER_GUIDE.md)
 - [日本語のやさしい解説](docs/BEGINNER_GUIDE.ja.md)
 
+Need a practical first path or use-case examples?
+
+- [Start Here](docs/START_HERE.md)
+- [まずここから](docs/START_HERE.ja.md)
+- [Use Cases](docs/USE_CASES.md)
+- [ユースケース](docs/USE_CASES.ja.md)
+
 ## Who Is This For?
 
 - Developers who want a useful open-source automation project they can run locally.
