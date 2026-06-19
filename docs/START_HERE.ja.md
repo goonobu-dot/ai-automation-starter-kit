@@ -22,7 +22,7 @@ python3 -m ensurepip --upgrade
 python3 -m pip install --upgrade pip setuptools
 python3 -m pip install -e .
 ai-automation-kit doctor --output .tmp/doctor
-ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding
+ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding --create-offer-pack
 ```
 
 ## コマンド実行後に読むもの
@@ -31,9 +31,11 @@ ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onb
 2. onboarding summary に表示される最初の `next_read` ファイル
 3. `.tmp/onboarding/executive_decision_brief.md`
 4. `.tmp/onboarding/pilot_scorecard.csv`
+5. 副業・受託の小さな提案に変える場合は `.tmp/onboarding/offer_pack/README.md`
 
 ## 結果の見方
 
 - `adapter_starter/README.md`: dry-run 用の adapter starter があります。
+- `offer_pack/README.md`: 顧客向けの提案・納品資料があります。
 - `manual_review_pack.md`: ライセンス、メンテナンス、安全性の確認が先に必要です。
 - `query_recovery.md`: 自動化計画の前に検索条件を広げる必要があります。

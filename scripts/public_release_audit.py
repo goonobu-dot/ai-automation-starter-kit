@@ -74,6 +74,7 @@ FORBIDDEN_TRACKED_PATHS = [
 
 REQUIRED_README_SNIPPETS = [
     "ai-automation-kit onboard",
+    "ai-automation-kit offer-pack",
     "ai-automation-kit github-discover",
     "python3 scripts/release_smoke.py",
     "Public Release Readiness",
@@ -87,6 +88,7 @@ REQUIRED_CLI_DOC_SNIPPETS = [
     "ai-automation-kit --version",
     "ai-automation-kit doctor",
     "ai-automation-kit onboard --business-area operations",
+    "ai-automation-kit offer-pack --business-area operations",
     "ai-automation-kit github-discover --business-area operations",
     "docs/SHOWCASE.md",
     "docs/demo.html",
@@ -99,6 +101,9 @@ REQUIRED_GENERATED_ARTIFACT_SNIPPETS = [
     "operational_audit_plan.md",
     "risk_exception_register.md",
     "stakeholder_rollout_map.md",
+    "offer_pack/",
+    "statement_of_work.md",
+    "pricing_model.md",
 ]
 
 REQUIRED_PYPROJECT_SNIPPETS = [
@@ -205,6 +210,10 @@ REQUIRED_RELEASE_SMOKE_SNIPPETS = [
     ("_verify_wheel_install", "_verify_wheel_install"),
     ("onboard", "onboard"),
     ("onboarding_summary.md", "onboarding_summary.md"),
+    ("offer-pack", "offer-pack"),
+    ("offer_pack/README.md", '"offer_pack" / "README.md"'),
+    ("proposal.md", "proposal.md"),
+    ("pricing_model.md", "pricing_model.md"),
     ("github-discover", "github-discover"),
     ("adapter_starter/smoke_test.py", "adapter_starter/smoke_test.py"),
     ("manual_review_pack.md", "manual_review_pack.md"),

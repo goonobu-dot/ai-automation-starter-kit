@@ -21,6 +21,10 @@ def test_project_readme_has_public_quickstart_and_all_templates():
     assert "python3 -m pip install --upgrade pip setuptools" in text
     assert "pip install -e ." in text
     assert "ai-automation-kit onboard --business-area operations" in text
+    assert "ai-automation-kit offer-pack --business-area operations" in text
+    assert "offer_pack/" in text
+    assert "statement_of_work.md" in text
+    assert "pricing_model.md" in text
     assert "ai-automation-kit research-agent" in text
     assert "ai-automation-kit github-discover --business-area sales" in text
     assert "business_automation_plan.md" in text
@@ -62,6 +66,8 @@ def test_beginner_guides_explain_project_in_english_and_japanese():
     assert "run_summary.md" in english
     assert "executive_decision_brief.md" in english
     assert "pilot_scorecard.csv" in english
+    assert "offer_pack/" in english
+    assert "does not guarantee income" in english
 
     assert "やさしい解説" in japanese
     assert "このプロジェクトは何か" in japanese
@@ -71,6 +77,8 @@ def test_beginner_guides_explain_project_in_english_and_japanese():
     assert "run_summary.md" in japanese
     assert "executive_decision_brief.md" in japanese
     assert "pilot_scorecard.csv" in japanese
+    assert "offer_pack/" in japanese
+    assert "収益を保証するものではありません" in japanese
 
 
 def test_showcase_doc_explains_demo_flow_and_outputs():

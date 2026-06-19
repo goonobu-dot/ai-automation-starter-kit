@@ -61,6 +61,7 @@ Important files include:
 | `risk_exception_register.md` | A list of risks that must be handled before production use. |
 | `operational_audit_plan.md` | A plan for what evidence must be checked later. |
 | `adapter_starter/` | A safe dry-run starter when a candidate is ready to prototype. |
+| `offer_pack/` | Proposal, service menu, pricing model, outreach copy, and safety boundaries for a scoped client pilot. |
 
 ## How to use it
 
@@ -84,7 +85,7 @@ python3 -m pip install -e .
 Run the guided first workflow:
 
 ```bash
-ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding
+ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding --create-offer-pack
 ```
 
 Then read the onboarding summary:
@@ -99,6 +100,9 @@ Then read these files in order:
 2. `.tmp/onboarding/executive_decision_brief.md`
 3. `.tmp/onboarding/pilot_scorecard.csv`
 4. `.tmp/onboarding/artifact_index.md`
+5. `.tmp/onboarding/offer_pack/README.md` if you want to package the result as a small client pilot.
+
+The offer pack can help with freelance or consulting work because it creates proposal and delivery documents. It does not guarantee income.
 
 ## How it is different from normal chat AI
 

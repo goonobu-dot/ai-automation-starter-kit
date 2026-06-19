@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 from ai_automation_kit import __version__
+from ai_automation_kit.core.offer_pack import generate_offer_pack
 from ai_automation_kit.templates.docs_rag import run_docs_rag
 from ai_automation_kit.templates.delivery_pipeline import run_delivery_pipeline
 from ai_automation_kit.templates.excel_to_internal_app import run_excel_to_internal_app
@@ -37,6 +38,14 @@ def build_parser() -> argparse.ArgumentParser:
     onboard.add_argument("--output", required=True)
     onboard.add_argument("--include-readme", action="store_true")
     onboard.add_argument("--check-github", action="store_true")
+    onboard.add_argument("--create-offer-pack", action="store_true")
+    onboard.add_argument("--client-type", default="small-business")
+
+    offer_pack = subparsers.add_parser("offer-pack")
+    offer_pack.add_argument("--business-area", default="operations")
+    offer_pack.add_argument("--client-type", default="small-business")
+    offer_pack.add_argument("--source-output", required=True)
+    offer_pack.add_argument("--output", required=True)
 
     docs_rag = subparsers.add_parser("docs-rag")
     docs_rag.add_argument("--config", required=True)
@@ -107,12 +116,28 @@ def main(argv: list[str] | None = None) -> int:
             limit=args.limit,
             include_readme=args.include_readme,
             check_github=args.check_github,
+            create_offer_pack=args.create_offer_pack,
+            client_type=args.client_type,
         )
         print(f"status={payload['run_status']}")
         print(f"onboarding_summary={Path(args.output) / 'onboarding_summary.md'}")
+        if payload.get("offer_pack_dir"):
+            print(f"offer_pack={payload['offer_pack_dir']}")
         for path in payload["next_read"]:
             print(f"next_read={Path(args.output) / path}")
         return 0 if payload["run_status"] == "succeeded" else 1
+    if args.command == "offer-pack":
+        payload = generate_offer_pack(
+            source_output=Path(args.source_output),
+            output=Path(args.output),
+            business_area=args.business_area,
+            client_type=args.client_type,
+        )
+        print(f"offer_pack={args.output}/README.md")
+        print(f"proposal={args.output}/proposal.md")
+        print(f"statement_of_work={args.output}/statement_of_work.md")
+        print(f"status={payload['source_status']}")
+        return 0
     if args.command == "docs-rag":
         run = run_docs_rag(config_path=args.config, output_dir=args.output)
         print(f"run_id={run.run_id}")
@@ -196,6 +221,8 @@ def _run_onboard(
     limit: int,
     include_readme: bool,
     check_github: bool,
+    create_offer_pack: bool = False,
+    client_type: str = "small-business",
 ) -> dict:
     output.mkdir(parents=True, exist_ok=True)
     doctor_payload = _run_doctor(output_dir=output / "doctor", check_github=check_github)
@@ -208,6 +235,15 @@ def _run_onboard(
     config_path = output / "github_discover_config.json"
     config_path.write_text(json.dumps(config, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     run = run_research_agent(config_path=config_path, output_dir=output)
+    offer_pack_dir = None
+    if create_offer_pack:
+        offer_pack_dir = output / "offer_pack"
+        generate_offer_pack(
+            source_output=output,
+            output=offer_pack_dir,
+            business_area=business_area,
+            client_type=client_type,
+        )
     payload = {
         "status": "ready" if run.status == "succeeded" and doctor_payload["status"] in {"ready", "warning"} else "needs_attention",
         "business_area": business_area,
@@ -219,6 +255,8 @@ def _run_onboard(
         "next_actions": _onboarding_next_actions(output, run.status, doctor_payload),
         "rerun_command": _onboarding_rerun_command(business_area, query, limit, output, include_readme, check_github),
     }
+    if offer_pack_dir:
+        payload["offer_pack_dir"] = str(offer_pack_dir)
     (output / "onboarding_summary.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (output / "onboarding_summary.md").write_text(_render_onboarding_summary(payload), encoding="utf-8")
     return payload
@@ -234,6 +272,7 @@ def _onboarding_next_read(output: Path) -> list[str]:
         "manual_review_pack.md",
         "query_recovery.md",
         "business_automation_plan.md",
+        "offer_pack/README.md",
         "report.md",
         "doctor/doctor_report.md",
     ]

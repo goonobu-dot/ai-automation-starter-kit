@@ -22,7 +22,7 @@ python3 -m ensurepip --upgrade
 python3 -m pip install --upgrade pip setuptools
 python3 -m pip install -e .
 ai-automation-kit doctor --output .tmp/doctor
-ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding
+ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding --create-offer-pack
 ```
 
 ## Read after the command
@@ -31,9 +31,11 @@ ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onb
 2. The first `next_read` file listed in the onboarding summary.
 3. `.tmp/onboarding/executive_decision_brief.md`
 4. `.tmp/onboarding/pilot_scorecard.csv`
+5. `.tmp/onboarding/offer_pack/README.md` if you want to package the result as a scoped consulting or freelance pilot.
 
 ## Result meanings
 
 - `adapter_starter/README.md`: a dry-run adapter starter is available.
+- `offer_pack/README.md`: client-facing proposal and delivery files are available.
 - `manual_review_pack.md`: review license, maintenance, and safety first.
 - `query_recovery.md`: broaden the search before planning a pilot.

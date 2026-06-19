@@ -19,6 +19,16 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - `.tmp/release-smoke/onboard-operations/onboarding_summary.json`
 - `.tmp/release-smoke/onboard-operations/doctor/doctor_report.md`
 - `.tmp/release-smoke/onboard-operations/github_discover_config.json`
+- `.tmp/release-smoke/onboard-operations/offer_pack/README.md`
+- `.tmp/release-smoke/onboard-operations/offer_pack/proposal.md`
+- `.tmp/release-smoke/onboard-operations/offer_pack/statement_of_work.md`
+- `.tmp/release-smoke/onboard-operations/offer_pack/pricing_model.md`
+- `.tmp/release-smoke/offer-pack-operations/README.md`
+- `.tmp/release-smoke/offer-pack-operations/service_catalog.md`
+- `.tmp/release-smoke/offer-pack-operations/proposal.md`
+- `.tmp/release-smoke/offer-pack-operations/statement_of_work.md`
+- `.tmp/release-smoke/offer-pack-operations/pricing_model.md`
+- `.tmp/release-smoke/offer-pack-operations/risk_boundaries.md`
 - `.tmp/release-smoke/github-operations/run_summary.md`
 - `.tmp/release-smoke/github-operations/executive_decision_brief.md`
 - `.tmp/release-smoke/github-operations/pilot_scorecard.csv`
@@ -66,6 +76,7 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - [ ] Confirm `operational_audit_plan.md` defines audit scope, cadence, evidence requirements, and stop triggers.
 - [ ] Confirm dry-run, approval, rollback, and audit guidance is visible in generated outputs.
 - [ ] Confirm `artifact_index.md` points to the right first-read files.
+- [ ] Confirm offer-pack files do not guarantee income and clearly define scope, pricing model, client approval, and safety boundaries.
 - [ ] Run the generated adapter starter smoke test when `adapter_starter/` is present.
 - [ ] Confirm README quickstart works from a fresh virtual environment.
 

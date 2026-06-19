@@ -2,7 +2,7 @@
 
 GitHub-data-driven AI automation starter kit for developers, AI agent builders, and automation consultants.
 
-It finds promising public OSS projects for a business area, ranks them, and turns the result into practical adoption artifacts: executive decisions, value scorecards, rollout maps, risk registers, audit plans, and dry-run adapter starters.
+It finds promising public OSS projects for a business area, ranks them, and turns the result into practical adoption artifacts: executive decisions, value scorecards, rollout maps, risk registers, audit plans, dry-run adapter starters, and client-ready offer packs.
 
 ## What Is This?
 
@@ -16,6 +16,7 @@ Instead of stopping at "this repository looks interesting", it creates the files
 - who must approve the pilot
 - how to measure whether it worked
 - how to keep the first prototype in dry-run mode
+- how to turn a safe pilot into a responsible consulting or freelance offer
 
 The project also includes five reusable workflow templates for research, document Q&A, approved replies, spreadsheet-to-app migration, and delivery packaging.
 
@@ -56,6 +57,7 @@ The main `github-discover` workflow generates a practical output folder. The fir
 | `risk_exception_register.md` | Open risks, owners, evidence needed, and stop conditions. |
 | `operational_audit_plan.md` | Audit scope and required evidence before promotion. |
 | `adapter_starter/` | Runnable dry-run adapter skeleton when a safe candidate exists. |
+| `offer_pack/` | Client-facing proposal, service catalog, SOW, pricing model, demo script, outreach copy, and risk boundaries. |
 
 ## 1-Minute Demo
 
@@ -68,7 +70,7 @@ python3 -m ensurepip --upgrade
 python3 -m pip install --upgrade pip setuptools
 python3 -m pip install -e .
 ai-automation-kit doctor --output .tmp/doctor
-ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding
+ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding --create-offer-pack
 ```
 
 Open the onboarding summary:
@@ -81,6 +83,12 @@ Or open the artifact index when you want to know what to read first:
 
 ```bash
 sed -n '1,180p' .tmp/onboarding/artifact_index.md
+```
+
+Open the client-ready offer pack when you want to turn the research into a small paid automation pilot:
+
+```bash
+sed -n '1,180p' .tmp/onboarding/offer_pack/README.md
 ```
 
 ## 3-Minute Walkthrough
@@ -105,6 +113,7 @@ The plan tells you:
 - which success metrics prove the automation is actually useful
 - which candidates are ready for a 30-day adapter prototype
 - which risks block production use until review
+- which client-facing documents can support a scoped paid pilot
 
 Example generated files:
 
@@ -115,6 +124,8 @@ Example generated files:
 - `.tmp/operations-discovery/adapter_starter/`
 - `.tmp/operations-discovery/business_automation_plan.md`
 - `.tmp/operations-discovery/business_automation_summary.json`
+- `.tmp/onboarding/offer_pack/proposal.md`
+- `.tmp/onboarding/offer_pack/statement_of_work.md`
 
 ## Example Use Cases
 
@@ -124,6 +135,7 @@ Example generated files:
 - Sales: identify CRM and outreach automation patterns without copying unsafe code.
 - HR: explore onboarding or recruiting workflow ideas with approval and audit requirements.
 - Marketing: turn content and campaign automation repositories into measurable pilot plans.
+- Freelance/consulting: turn discovery results into a bounded automation audit, dry-run prototype, proposal, statement of work, and maintenance offer. The kit does not guarantee income; it helps package the work responsibly.
 
 ## How This Differs From Chat AI
 
@@ -180,10 +192,20 @@ The workbenches give you a local multi-agent cockpit for parallel Codex CLI or C
 Run this first when you want the shortest path from install to a usable business automation discovery result:
 
 ```bash
-ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding
+ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding --create-offer-pack
 ```
 
-Creates `doctor/doctor_report.md`, `github_discover_config.json`, `onboarding_summary.md`, `onboarding_summary.json`, and the normal GitHub discovery artifacts. The summary prints and records the first files to read, recommended next actions, and the exact rerun command.
+Creates `doctor/doctor_report.md`, `github_discover_config.json`, `onboarding_summary.md`, `onboarding_summary.json`, optional `offer_pack/`, and the normal GitHub discovery artifacts. The summary prints and records the first files to read, recommended next actions, and the exact rerun command.
+
+### offer-pack
+
+Generate a client-ready offer pack from an existing discovery output folder:
+
+```bash
+ai-automation-kit offer-pack --business-area operations --client-type small-business --source-output .tmp/onboarding --output .tmp/offer-pack
+```
+
+Creates `README.md`, `service_catalog.md`, `client_discovery_questions.md`, `proposal.md`, `statement_of_work.md`, `pricing_model.md`, `demo_script.md`, `outreach_messages.md`, `delivery_checklist.md`, `risk_boundaries.md`, and `offer_pack.json`. These files are designed for scoped automation consulting or freelance pilots. They include risk boundaries and avoid income guarantees.
 
 ### doctor
 

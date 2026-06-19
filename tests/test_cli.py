@@ -70,6 +70,28 @@ def test_parser_accepts_onboard_command():
     assert args.include_readme is True
 
 
+def test_parser_accepts_offer_pack_command():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "offer-pack",
+            "--business-area",
+            "operations",
+            "--client-type",
+            "small-business",
+            "--source-output",
+            "discovery",
+            "--output",
+            "offer",
+        ]
+    )
+    assert args.command == "offer-pack"
+    assert args.business_area == "operations"
+    assert args.client_type == "small-business"
+    assert args.source_output == "discovery"
+    assert args.output == "offer"
+
+
 def test_parser_accepts_doctor_command():
     parser = build_parser()
     args = parser.parse_args(["doctor", "--output", "out", "--check-github"])
@@ -337,6 +359,100 @@ def test_main_runs_onboard_and_writes_summary(tmp_path, monkeypatch, capsys):
     assert payload["next_read"][0] == "run_summary.md"
     assert generated_config["business_context"]["business_area"] == "support"
     assert generated_config["github_searches"][0]["per_page"] == 3
+
+
+def test_main_runs_offer_pack_and_prints_key_files(tmp_path, capsys):
+    source = tmp_path / "discovery"
+    source.mkdir()
+    (source / "business_automation_summary.json").write_text(
+        json.dumps(
+            {
+                "business_area": "operations",
+                "executive_recommendation": "Start with a workflow automation pilot.",
+                "recommended_projects": [{"full_name": "n8n-io/n8n", "url": "https://github.com/n8n-io/n8n"}],
+            }
+        )
+    )
+    (source / "pilot_scorecard.csv").write_text("metric,owner\nmanual_handoffs,ops\n")
+    output = tmp_path / "offer"
+
+    exit_code = main(
+        [
+            "offer-pack",
+            "--business-area",
+            "operations",
+            "--client-type",
+            "small-business",
+            "--source-output",
+            str(source),
+            "--output",
+            str(output),
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "offer_pack=" in captured.out
+    assert "proposal=" in captured.out
+    assert "statement_of_work=" in captured.out
+    assert (output / "README.md").exists()
+    assert (output / "proposal.md").exists()
+    assert (output / "pricing_model.md").exists()
+    assert "small-business" in (output / "offer_pack.json").read_text()
+
+
+def test_onboard_can_create_offer_pack(tmp_path, monkeypatch, capsys):
+    def fake_doctor(output_dir, check_github=False):
+        output_dir.mkdir(parents=True, exist_ok=True)
+        (output_dir / "doctor_report.md").write_text("# Doctor\n")
+        return {"status": "warning", "checks": [], "next_actions": []}
+
+    def fake_run(config_path, output_dir):
+        output_dir.mkdir(parents=True, exist_ok=True)
+        (output_dir / "run_summary.md").write_text("# Run Summary\n")
+        (output_dir / "executive_decision_brief.md").write_text("# Executive Decision Brief\n")
+        (output_dir / "pilot_scorecard.csv").write_text("metric,owner\n")
+        (output_dir / "business_automation_summary.json").write_text(
+            json.dumps({"business_area": "support", "executive_recommendation": "Start with support triage."})
+        )
+        from ai_automation_kit.core.models import RunRecord
+
+        return RunRecord(
+            run_id="run-onboard-offer",
+            template_name="research-agent",
+            input=json.loads(config_path.read_text()),
+            started_at="2026-06-17T00:00:00Z",
+            finished_at="2026-06-17T00:00:01Z",
+            status="succeeded",
+            errors=[],
+            artifacts=[],
+            source_ids=[],
+            failed_fetches=[],
+        )
+
+    monkeypatch.setattr("ai_automation_kit.cli._run_doctor", fake_doctor)
+    monkeypatch.setattr("ai_automation_kit.cli.run_research_agent", fake_run)
+
+    output = tmp_path / "onboard"
+    exit_code = main(
+        [
+            "onboard",
+            "--business-area",
+            "support",
+            "--output",
+            str(output),
+            "--create-offer-pack",
+            "--client-type",
+            "local-business",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads((output / "onboarding_summary.json").read_text())
+    assert exit_code == 0
+    assert "offer_pack=" in captured.out
+    assert (output / "offer_pack" / "proposal.md").exists()
+    assert "offer_pack/README.md" in payload["next_read"]
 
 
 def test_main_runs_doctor_without_network(tmp_path):

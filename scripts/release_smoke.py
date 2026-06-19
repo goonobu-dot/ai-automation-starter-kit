@@ -54,6 +54,7 @@ def _run_github_smokes(output: Path, env: dict[str, str]) -> None:
             "1",
             "--output",
             str(onboard_output),
+            "--create-offer-pack",
         ],
         env=env,
     )
@@ -61,6 +62,36 @@ def _run_github_smokes(output: Path, env: dict[str, str]) -> None:
     _require_file(onboard_output / "onboarding_summary.json")
     _require_file(onboard_output / "doctor" / "doctor_report.md")
     _require_file(onboard_output / "github_discover_config.json")
+    _require_file(onboard_output / "offer_pack" / "README.md")
+    _require_file(onboard_output / "offer_pack" / "proposal.md")
+    _require_file(onboard_output / "offer_pack" / "statement_of_work.md")
+    _require_file(onboard_output / "offer_pack" / "pricing_model.md")
+
+    offer_output = output / "offer-pack-operations"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "offer-pack",
+            "--business-area",
+            "operations",
+            "--client-type",
+            "small-business",
+            "--source-output",
+            str(onboard_output),
+            "--output",
+            str(offer_output),
+        ],
+        env=env,
+    )
+    _require_file(offer_output / "README.md")
+    _require_file(offer_output / "service_catalog.md")
+    _require_file(offer_output / "client_discovery_questions.md")
+    _require_file(offer_output / "proposal.md")
+    _require_file(offer_output / "statement_of_work.md")
+    _require_file(offer_output / "pricing_model.md")
+    _require_file(offer_output / "risk_boundaries.md")
 
     adapter_output = output / "github-operations"
     _run(
