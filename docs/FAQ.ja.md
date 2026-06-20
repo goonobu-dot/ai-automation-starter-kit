@@ -18,7 +18,7 @@ AIチャットは会話で終わりやすいです。このプロジェクトは
 ai-automation-kit complete-workspace --flow-id invoice-document-followup --output .tmp/complete
 ```
 
-`FINAL_DELIVERY_GUIDE.md`、`completion_checklist.md`、顧客レポート、デモサイト、共有用 zip、収益化評価、営業クロージング台本、有償PoC範囲、価値測定シート、契約前チェック、提案メール、30日運用計画、成果証明テンプレートまで作られます。
+`FINAL_DELIVERY_GUIDE.md`、`completion_checklist.md`、顧客レポート、デモサイト、共有用 zip、収益化評価、営業クロージング台本、有償PoC範囲、価値測定シート、契約前チェック、提案メール、30日運用計画、成果証明テンプレート、公開OSSパターン比較、統合バックログ、導入方式、運用監視計画まで作られます。
 
 ## 企業に何を見せればいいですか？
 
@@ -26,4 +26,4 @@ ai-automation-kit complete-workspace --flow-id invoice-document-followup --outpu
 
 ## 本番接続はできますか？
 
-設計上は進められますが、初期状態では無効です。`connector-doctor` で不足設定を確認し、顧客の承認、認証情報、データ分類、停止手順を決めてから進めます。
+設計上は進められますが、初期状態では無効です。`connector-doctor` で不足設定を確認し、`deployment_options.md` と `production_observability_plan.md` で self-host、Webhook、MCP、リトライ、キュー、承認監査、停止手順を決めてから進めます。

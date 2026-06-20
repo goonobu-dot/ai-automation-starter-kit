@@ -6,6 +6,7 @@
 - Added final delivery guide, completion checklist, connector report, client report, demo site, and demo zip packaging to the operator workflow.
 - Added revenue readiness scoring, sales closing script, paid PoC scope, and value measurement sheet to the complete workspace.
 - Added pre-contract checklist, proposal email, first 30 days plan, and proof-of-value template to reduce gaps between demo, paid PoC, and measurable follow-through.
+- Added OSS pattern benchmark, integration backlog, deployment options, and production observability plan to align generated workspaces with public automation patterns from n8n, Activepieces, Windmill, and Trigger.dev-style systems.
 - Updated CI to use minimal read permissions and Node 24-compatible GitHub Actions.
 - Added Dependabot coverage for non-major GitHub Actions and Python packaging updates.
 - Removed local absolute paths from checked-in research examples.

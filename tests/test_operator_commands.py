@@ -152,10 +152,16 @@ def test_generate_complete_workspace_creates_done_for_you_delivery(tmp_path):
     assert (output / "client_proposal_email.md").exists()
     assert (output / "first_30_days_plan.md").exists()
     assert (output / "proof_of_value_template.md").exists()
+    assert (output / "oss_pattern_benchmark.md").exists()
+    assert (output / "integration_backlog.md").exists()
+    assert (output / "deployment_options.md").exists()
+    assert (output / "production_observability_plan.md").exists()
     guide = (output / "FINAL_DELIVERY_GUIDE.md").read_text()
     assert "Open These Files In This Order" in guide
     assert "revenue_readiness_scorecard.md" in guide
     assert "pre_contract_checklist.md" in guide
+    assert "oss_pattern_benchmark.md" in guide
+    assert "production_observability_plan.md" in guide
     assert "No next recommendation is required" in guide
     scorecard = (output / "revenue_readiness_scorecard.md").read_text()
     assert "Revenue Readiness Scorecard" in scorecard
@@ -165,6 +171,21 @@ def test_generate_complete_workspace_creates_done_for_you_delivery(tmp_path):
     assert "Subject:" in (output / "client_proposal_email.md").read_text()
     assert "Day 1" in (output / "first_30_days_plan.md").read_text()
     assert "Before / After" in (output / "proof_of_value_template.md").read_text()
+    benchmark = (output / "oss_pattern_benchmark.md").read_text()
+    assert "n8n" in benchmark
+    assert "Activepieces" in benchmark
+    assert "Windmill" in benchmark
+    assert "Trigger.dev" in benchmark
+    backlog = (output / "integration_backlog.md").read_text()
+    assert "MCP" in backlog
+    assert "Google Sheets" in backlog
+    deployment = (output / "deployment_options.md").read_text()
+    assert "self-host" in deployment
+    assert "dry-run" in deployment
+    observability = (output / "production_observability_plan.md").read_text()
+    assert "retries" in observability
+    assert "queues" in observability
+    assert "approval audit" in observability
 
 
 def test_parser_accepts_operator_commands():

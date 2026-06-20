@@ -252,6 +252,10 @@ def generate_complete_workspace(
     (output / "client_proposal_email.md").write_text(_render_client_proposal_email(payload), encoding="utf-8")
     (output / "first_30_days_plan.md").write_text(_render_first_30_days_plan(payload), encoding="utf-8")
     (output / "proof_of_value_template.md").write_text(_render_proof_of_value_template(payload), encoding="utf-8")
+    (output / "oss_pattern_benchmark.md").write_text(_render_oss_pattern_benchmark(payload), encoding="utf-8")
+    (output / "integration_backlog.md").write_text(_render_integration_backlog(payload), encoding="utf-8")
+    (output / "deployment_options.md").write_text(_render_deployment_options(payload), encoding="utf-8")
+    (output / "production_observability_plan.md").write_text(_render_production_observability_plan(payload), encoding="utf-8")
     return payload
 
 
@@ -430,6 +434,10 @@ def _render_complete_delivery_guide(payload: dict) -> str:
             "11. `client_proposal_email.md`",
             "12. `first_30_days_plan.md`",
             "13. `proof_of_value_template.md`",
+            "14. `oss_pattern_benchmark.md`",
+            "15. `integration_backlog.md`",
+            "16. `deployment_options.md`",
+            "17. `production_observability_plan.md`",
             "",
             "## What To Tell The Client",
             "",
@@ -461,6 +469,10 @@ def _render_completion_checklist(payload: dict) -> str:
         ("Client proposal email prepared", "client_proposal_email.md"),
         ("First 30 days plan prepared", "first_30_days_plan.md"),
         ("Proof of value template prepared", "proof_of_value_template.md"),
+        ("OSS pattern benchmark prepared", "oss_pattern_benchmark.md"),
+        ("Integration backlog prepared", "integration_backlog.md"),
+        ("Deployment options prepared", "deployment_options.md"),
+        ("Production observability plan prepared", "production_observability_plan.md"),
     ]
     lines = ["# Completion Checklist", ""]
     for label, detail in checks:
@@ -727,6 +739,153 @@ def _render_proof_of_value_template(payload: dict) -> str:
             f"- Client report: `{payload['client_report']}`",
             f"- Demo site: `{payload['demo_site']}`",
             f"- Connector doctor: `{payload['connector_doctor']}`",
+            "",
+        ]
+    )
+
+
+def _render_oss_pattern_benchmark(payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# OSS Pattern Benchmark: {payload['flow_name']}",
+            "",
+            "This benchmark translates proven public automation patterns into this sellable local-first workspace.",
+            "",
+            "## Patterns To Imitate",
+            "",
+            "| Source | Public pattern | What this workspace should copy |",
+            "|---|---|---|",
+            "| n8n | Visual workflow templates, self-hosted AI starter kits, many integrations | Keep flows visible, template-driven, and easy to adapt before production connectors are enabled. |",
+            "| Activepieces | Type-safe pieces and integrations that can become MCP servers for AI tools | Treat every connector as a reusable piece with a clear schema, permission boundary, and MCP-ready future path. |",
+            "| Windmill | Scripts can become webhooks, workflows, schedules, and auto-generated UIs | Keep each flow scriptable first, then expose it as a webhook or simple UI only after the dry-run works. |",
+            "| Trigger.dev | Long-running AI workflows with retries, queues, observability, and human approval | Add production execution rules before any client workflow moves beyond a local dry-run. |",
+            "| Community template libraries | Large ready-to-import workflow examples | Convert common templates into reviewed business flows instead of copying unknown automation blindly. |",
+            "",
+            "## Design Rule",
+            "",
+            "Copy patterns, not code. Keep this project adapter-only unless a license review explicitly approves importing third-party code.",
+            "",
+            "## Next Product Standard",
+            "",
+            "- Every flow has a dry-run path, approval point, connector boundary, and measurable report.",
+            "- Every external integration has a setup checklist and stop condition.",
+            "- Every production candidate has retries, queues, logs, approval audit, and rollback notes.",
+            "",
+        ]
+    )
+
+
+def _render_integration_backlog(payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Integration Backlog: {payload['flow_name']}",
+            "",
+            "Prioritize integrations that make the first paid PoC easier to sell, safer to run, and easier to measure.",
+            "",
+            "## Priority 1: Common Business Data",
+            "",
+            "- Google Sheets adapter: import/export queues, status, and value measurement rows.",
+            "- CSV folder adapter: keep the zero-credential dry-run path for cautious clients.",
+            "- Gmail or Outlook draft adapter: create drafts only until the client approves sending.",
+            "- Slack or Teams draft adapter: write approval-ready messages before posting is enabled.",
+            "- Webhook input adapter: receive form, CRM, or support payloads behind a validation step.",
+            "",
+            "## Priority 2: Sales And Operations Systems",
+            "",
+            "- CRM adapter for HubSpot, Salesforce, or Pipedrive field updates after approval.",
+            "- Airtable or Notion adapter for lightweight client databases.",
+            "- Calendar adapter for follow-up scheduling and missed-response reminders.",
+            "- File storage adapter for Google Drive, OneDrive, or Dropbox document handoff.",
+            "",
+            "## Priority 3: OSS Platform Bridges",
+            "",
+            "- n8n import notes for converting a flow into a visual workflow.",
+            "- Activepieces piece notes with MCP compatibility targets.",
+            "- Windmill deployment notes for script-to-webhook and script-to-UI delivery.",
+            "- Trigger.dev-style worker notes for long-running queues and retries.",
+            "",
+            "## Connector Acceptance Criteria",
+            "",
+            "- Includes `.env.example` keys and a no-secret sample.",
+            "- Supports dry-run mode and approval-only mode.",
+            "- Writes run logs and error states.",
+            "- Documents required scopes, data touched, and rollback.",
+            "- Can be explained to a non-programmer in one paragraph.",
+            "",
+        ]
+    )
+
+
+def _render_deployment_options(payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Deployment Options: {payload['flow_name']}",
+            "",
+            "Choose the smallest deployment that proves value without creating hidden maintenance risk.",
+            "",
+            "## Option 1: Local dry-run",
+            "",
+            "- Best for first meetings, PoCs, and clients who cannot approve credentials yet.",
+            "- Runs on local files and produces reports, drafts, approval CSVs, and demo assets.",
+            "- Stop if the client cannot name the owner, sample data, or approval rule.",
+            "",
+            "## Option 2: Client machine or VPS self-host",
+            "",
+            "- Best when the client wants data control and predictable cost.",
+            "- Use Docker or a managed VPS only after backup, update, and access rules are written.",
+            "- Stop if there is no owner for uptime, backups, and credential rotation.",
+            "",
+            "## Option 3: n8n or Activepieces visual workflow",
+            "",
+            "- Best when the client wants a low-code operations team to inspect and adjust steps.",
+            "- Keep the generated flow as the source explanation, then rebuild the approved steps visually.",
+            "- Stop if the visual workflow cannot preserve approval and dry-run boundaries.",
+            "",
+            "## Option 4: Windmill-style script, webhook, or UI",
+            "",
+            "- Best when the client wants code-first scripts exposed as internal tools.",
+            "- Promote only one stable script at a time into a webhook or UI.",
+            "- Stop if inputs are not validated or the output cannot be rolled back.",
+            "",
+            "## Option 5: Durable worker or Trigger.dev-style queue",
+            "",
+            "- Best for long-running automations, retries, queues, scheduled tasks, and AI steps.",
+            "- Add explicit retry limits, queue ownership, observability, and dead-letter handling.",
+            "- Stop if failures would be invisible to the client or operator.",
+            "",
+        ]
+    )
+
+
+def _render_production_observability_plan(payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Production Observability Plan: {payload['flow_name']}",
+            "",
+            "Do not move from dry-run to production until the operator can see what happened, why it happened, and what to do next.",
+            "",
+            "## Required Signals",
+            "",
+            "- Run history: start time, end time, status, rows processed, and operator.",
+            "- retries: attempt count, last error, next retry time, and retry limit.",
+            "- queues: pending, running, succeeded, failed, and dead-letter item counts.",
+            "- approval audit: who approved, what was approved, when it was approved, and where the evidence is stored.",
+            "- Connector health: credential present, scope reviewed, last successful call, and disabled state.",
+            "- Value tracking: baseline time, pilot time, avoided manual steps, and client decision.",
+            "",
+            "## Alert Rules",
+            "",
+            "- Alert the operator when any production write fails.",
+            "- Alert the approval owner when queue age exceeds the agreed service window.",
+            "- Pause external actions when connector health changes from ready to review.",
+            "- Escalate dead-letter items before the next scheduled run.",
+            "",
+            "## Monthly Review",
+            "",
+            "- Review top errors and remove brittle steps.",
+            "- Confirm credentials, scopes, and approval owners are still current.",
+            "- Compare measured value against the paid PoC assumptions.",
+            "- Decide continue, revise, reduce scope, or retire the automation.",
             "",
         ]
     )
