@@ -9,6 +9,8 @@
 - Added OSS pattern benchmark, integration backlog, deployment options, and production observability plan to align generated workspaces with public automation patterns from n8n, Activepieces, Windmill, and Trigger.dev-style systems.
 - Added automation opportunity scorecard, client onboarding form, and go-live decision gate to close the gap between sales discovery, client approval, and production readiness.
 - Added a browser-friendly client command center so non-technical users can navigate the generated delivery workspace without guessing which file to open first.
+- Added `opportunity-catalog`, `recommend-flow`, and `share-check` so users can choose sellable work, turn client pain into a recommended flow, and review generated files before sharing.
+- Added side-business starter 10 and before/after demo outputs to the complete workspace.
 - Updated CI to use minimal read permissions and Node 24-compatible GitHub Actions.
 - Added Dependabot coverage for non-major GitHub Actions and Python packaging updates.
 - Removed local absolute paths from checked-in research examples.

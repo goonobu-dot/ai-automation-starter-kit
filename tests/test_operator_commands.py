@@ -9,7 +9,10 @@ from ai_automation_kit.core.operator_console import generate_demo_site
 from ai_automation_kit.core.operator_console import generate_flow_guide
 from ai_automation_kit.core.operator_console import generate_install_bundle
 from ai_automation_kit.core.operator_console import generate_complete_workspace
+from ai_automation_kit.core.operator_console import generate_opportunity_catalog
 from ai_automation_kit.core.operator_console import generate_quickstart_workspace
+from ai_automation_kit.core.operator_console import generate_recommended_flow_from_intake
+from ai_automation_kit.core.operator_console import generate_share_check
 from ai_automation_kit.core.operator_console import package_client_demo
 from ai_automation_kit.core.flows import install_flow
 from ai_automation_kit.core.flow_runtime import run_flow_project
@@ -160,6 +163,8 @@ def test_generate_complete_workspace_creates_done_for_you_delivery(tmp_path):
     assert (output / "client_onboarding_form.md").exists()
     assert (output / "go_live_decision.md").exists()
     assert (output / "client_command_center.html").exists()
+    assert (output / "side_business_starter_10.md").exists()
+    assert (output / "before_after_demo.html").exists()
     guide = (output / "FINAL_DELIVERY_GUIDE.md").read_text()
     assert "Open These Files In This Order" in guide
     assert "revenue_readiness_scorecard.md" in guide
@@ -169,6 +174,8 @@ def test_generate_complete_workspace_creates_done_for_you_delivery(tmp_path):
     assert "automation_opportunity_scorecard.csv" in guide
     assert "go_live_decision.md" in guide
     assert "client_command_center.html" in guide
+    assert "side_business_starter_10.md" in guide
+    assert "before_after_demo.html" in guide
     assert "No next recommendation is required" in guide
     scorecard = (output / "revenue_readiness_scorecard.md").read_text()
     assert "Revenue Readiness Scorecard" in scorecard
@@ -207,6 +214,53 @@ def test_generate_complete_workspace_creates_done_for_you_delivery(tmp_path):
     assert "Sellable PoC" in command_center
     assert "Go-Live Gate" in command_center
     assert "FINAL_DELIVERY_GUIDE.md" in command_center
+    assert "Before / After Demo" in (output / "before_after_demo.html").read_text()
+    assert "Starter 10" in (output / "side_business_starter_10.md").read_text()
+
+
+def test_generate_opportunity_catalog_creates_sales_catalog(tmp_path):
+    output = tmp_path / "catalog"
+
+    payload = generate_opportunity_catalog(industry="finance", output=output)
+
+    assert payload["count"] >= 1
+    assert (output / "opportunity_catalog.html").exists()
+    assert (output / "opportunity_catalog.md").exists()
+    html = (output / "opportunity_catalog.html").read_text()
+    assert "Automation Opportunity Catalog" in html
+    assert "Price Range" in html
+
+
+def test_generate_recommended_flow_from_intake_creates_actionable_recommendation(tmp_path):
+    output = tmp_path / "recommend"
+
+    payload = generate_recommended_flow_from_intake(
+        industry="finance",
+        pain="missing invoice follow up takes too long",
+        tools="Google Sheets Gmail Slack",
+        monthly_items=80,
+        output=output,
+    )
+
+    assert payload["recommended_flow"]["id"] == "invoice-document-followup"
+    assert (output / "recommended_flow.md").exists()
+    assert (output / "recommended_poc_scope.md").exists()
+    assert "invoice-document-followup" in (output / "recommended_flow.md").read_text()
+    assert "Paid PoC" in (output / "recommended_poc_scope.md").read_text()
+
+
+def test_generate_share_check_blocks_secret_like_content(tmp_path):
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "README.md").write_text("# Demo\n")
+    (source / "secret.txt").write_text("token=sk-test-secret\n")
+    output = tmp_path / "share-check"
+
+    payload = generate_share_check(source=source, output=output)
+
+    assert payload["status"] == "blocked"
+    assert (output / "share_check.md").exists()
+    assert "sk-" in (output / "share_check.md").read_text()
 
 
 def test_parser_accepts_operator_commands():
@@ -220,6 +274,9 @@ def test_parser_accepts_operator_commands():
     assert parser.parse_args(["client-report", "--flow-project", "flow", "--output", "out"]).command == "client-report"
     assert parser.parse_args(["package-client-demo", "--source", "src", "--output", "out"]).command == "package-client-demo"
     assert parser.parse_args(["complete-workspace", "--output", "out"]).command == "complete-workspace"
+    assert parser.parse_args(["opportunity-catalog", "--output", "out"]).command == "opportunity-catalog"
+    assert parser.parse_args(["recommend-flow", "--pain", "late invoices", "--output", "out"]).command == "recommend-flow"
+    assert parser.parse_args(["share-check", "--source", "src", "--output", "out"]).command == "share-check"
 
 
 def test_main_runs_operator_commands(tmp_path, capsys):
@@ -247,8 +304,20 @@ def test_main_runs_operator_commands(tmp_path, capsys):
     complete = tmp_path / "complete"
     assert main(["complete-workspace", "--flow-id", "invoice-document-followup", "--output", str(complete)]) == 0
 
+    catalog = tmp_path / "catalog"
+    assert main(["opportunity-catalog", "--industry", "finance", "--output", str(catalog)]) == 0
+
+    recommend = tmp_path / "recommend"
+    assert main(["recommend-flow", "--industry", "finance", "--pain", "missing invoice follow up", "--tools", "Google Sheets Gmail", "--output", str(recommend)]) == 0
+
+    share_check = tmp_path / "share-check"
+    assert main(["share-check", "--source", str(quickstart), "--output", str(share_check)]) == 0
+
     captured = capsys.readouterr()
     assert "quickstart=" in captured.out
     assert "client_demo_package=" in captured.out
     assert "final_delivery_guide=" in captured.out
+    assert "opportunity_catalog=" in captured.out
+    assert "recommended_flow=" in captured.out
+    assert "share_check=" in captured.out
     assert json.loads((package / "client_demo_manifest.json").read_text())["file_count"] >= 1

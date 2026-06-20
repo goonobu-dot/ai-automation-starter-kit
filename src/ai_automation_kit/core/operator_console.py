@@ -16,6 +16,85 @@ from ai_automation_kit.core.flows import list_flows
 
 
 DEMO_EXTENSIONS = {".md", ".html", ".csv", ".json", ".mmd", ".yaml", ".yml", ".txt"}
+SHARE_CHECK_SECRET_MARKERS = ["sk-", "ghp_", "BEGIN PRIVATE KEY", "AWS_SECRET_ACCESS_KEY=", "token=", "password="]
+STARTER_FLOW_IDS = [
+    "invoice-document-followup",
+    "support-reply-draft",
+    "weekly-kpi-report",
+    "crm-lead-cleanup",
+    "lead-routing-followup",
+    "appointment-reminder",
+    "order-shipping-status",
+    "inventory-reorder-alert",
+    "candidate-interview-scheduling",
+    "field-service-dispatch",
+]
+
+
+def generate_opportunity_catalog(industry: str | None, output: Path) -> dict:
+    output.mkdir(parents=True, exist_ok=True)
+    flows = list_flows(industry=industry) if industry else _starter_flows()
+    if not flows:
+        flows = _starter_flows()
+    rows = [_catalog_row(flow, index) for index, flow in enumerate(flows[:24], start=1)]
+    payload = {"status": "ready", "industry": industry or "starter", "count": len(rows), "opportunities": rows}
+    (output / "opportunity_catalog.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output / "opportunity_catalog.md").write_text(_render_opportunity_catalog_md(payload), encoding="utf-8")
+    (output / "opportunity_catalog.html").write_text(_render_opportunity_catalog_html(payload), encoding="utf-8")
+    return payload
+
+
+def generate_recommended_flow_from_intake(
+    industry: str | None,
+    pain: str,
+    tools: str,
+    monthly_items: int,
+    output: Path,
+) -> dict:
+    output.mkdir(parents=True, exist_ok=True)
+    candidates = list_flows(industry=industry) if industry else list_flows()
+    if not candidates:
+        candidates = list_flows()
+    scored = sorted(
+        (_intake_score(flow, pain=pain, tools=tools, monthly_items=monthly_items) for flow in candidates),
+        key=lambda item: item["score"],
+        reverse=True,
+    )
+    recommended = scored[0]
+    payload = {
+        "status": "ready",
+        "industry": industry or "any",
+        "pain": pain,
+        "tools": tools,
+        "monthly_items": monthly_items,
+        "recommended_flow": recommended,
+        "alternatives": scored[1:4],
+    }
+    (output / "recommended_flow.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output / "recommended_flow.md").write_text(_render_recommended_flow(payload), encoding="utf-8")
+    (output / "recommended_poc_scope.md").write_text(_render_recommended_poc_scope(payload), encoding="utf-8")
+    return payload
+
+
+def generate_share_check(source: Path, output: Path) -> dict:
+    output.mkdir(parents=True, exist_ok=True)
+    findings = []
+    for path in _collect_demo_file_paths(source):
+        try:
+            text = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError as exc:
+            findings.append({"path": path.relative_to(source).as_posix(), "severity": "warning", "marker": "read_error", "detail": str(exc)})
+            continue
+        for marker in SHARE_CHECK_SECRET_MARKERS:
+            if marker in text:
+                findings.append({"path": path.relative_to(source).as_posix(), "severity": "blocked", "marker": marker, "detail": "Secret-like marker found."})
+        if "/Users/" in text or "file:///Users/" in text:
+            findings.append({"path": path.relative_to(source).as_posix(), "severity": "warning", "marker": "local_path", "detail": "Local machine path found; review before sharing."})
+    status = "blocked" if any(item["severity"] == "blocked" for item in findings) else "warning" if findings else "ready"
+    payload = {"status": status, "source": str(source), "findings": findings, "files_scanned": len(_collect_demo_file_paths(source))}
+    (output / "share_check.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output / "share_check.md").write_text(_render_share_check(payload), encoding="utf-8")
+    return payload
 
 
 def generate_flow_guide(industry: str | None, genre: str | None, niche: str, output: Path) -> dict:
@@ -260,6 +339,8 @@ def generate_complete_workspace(
     (output / "client_onboarding_form.md").write_text(_render_client_onboarding_form(payload), encoding="utf-8")
     (output / "go_live_decision.md").write_text(_render_go_live_decision(payload), encoding="utf-8")
     (output / "client_command_center.html").write_text(_render_client_command_center(payload), encoding="utf-8")
+    (output / "side_business_starter_10.md").write_text(_render_side_business_starter_10(payload), encoding="utf-8")
+    (output / "before_after_demo.html").write_text(_render_before_after_demo(payload), encoding="utf-8")
     return payload
 
 
@@ -293,6 +374,200 @@ def _render_flow_guide(payload: dict) -> str:
             "- Start with a flow the client already understands.",
             "- Prefer workflows with clear input, approval owner, and measurable output.",
             "- Avoid production connectors until a dry-run proves value.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _starter_flows() -> list[dict]:
+    return [get_flow(flow_id) for flow_id in STARTER_FLOW_IDS]
+
+
+def _catalog_row(flow: dict, index: int) -> dict:
+    base_price = 500 + index * 150
+    return {
+        "rank": index,
+        "flow_id": flow["id"],
+        "name": flow["name"],
+        "industry": flow["industry"],
+        "genre": flow["genre"],
+        "summary": flow["summary"],
+        "price_range": f"${base_price}-${base_price + 1200}",
+        "delivery_days": "3-10 days",
+        "proof_metric": flow["success_metrics"][0] if flow.get("success_metrics") else "hours_saved",
+        "safe_first_step": "Local dry-run with human approval before external actions.",
+    }
+
+
+def _render_opportunity_catalog_md(payload: dict) -> str:
+    lines = [
+        "# Automation Opportunity Catalog",
+        "",
+        f"- Industry: `{payload['industry']}`",
+        f"- Opportunities: `{payload['count']}`",
+        "",
+        "| Rank | Flow | Industry | Price Range | Delivery | Proof Metric |",
+        "|---:|---|---|---|---|---|",
+    ]
+    for item in payload["opportunities"]:
+        lines.append(
+            f"| {item['rank']} | `{item['flow_id']}` {item['name']} | {item['industry']} | {item['price_range']} | {item['delivery_days']} | {item['proof_metric']} |"
+        )
+    lines.extend(
+        [
+            "",
+            "## How To Sell",
+            "",
+            "- Pick one workflow the client already understands.",
+            "- Show the before/after demo before discussing tools.",
+            "- Sell a bounded dry-run PoC first, not a production automation promise.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _render_opportunity_catalog_html(payload: dict) -> str:
+    rows = "\n".join(
+        "<tr>"
+        f"<td>{item['rank']}</td>"
+        f"<td><strong>{html.escape(item['name'])}</strong><br><code>{html.escape(item['flow_id'])}</code></td>"
+        f"<td>{html.escape(item['summary'])}</td>"
+        f"<td>{html.escape(item['price_range'])}</td>"
+        f"<td>{html.escape(item['delivery_days'])}</td>"
+        f"<td>{html.escape(item['proof_metric'])}</td>"
+        "</tr>"
+        for item in payload["opportunities"]
+    )
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Automation Opportunity Catalog</title>
+  <style>
+    body {{ margin: 0; font-family: Arial, sans-serif; color: #172033; background: #f7f8fa; }}
+    header {{ background: #ffffff; border-bottom: 1px solid #d9dee7; padding: 28px; }}
+    main {{ max-width: 1180px; margin: 0 auto; padding: 24px; }}
+    table {{ width: 100%; border-collapse: collapse; background: #ffffff; border: 1px solid #d9dee7; }}
+    th, td {{ padding: 12px; border-bottom: 1px solid #e6e9ef; text-align: left; vertical-align: top; }}
+    th {{ background: #eef2f7; }}
+    code {{ background: #eef2f7; padding: 2px 5px; border-radius: 4px; }}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Automation Opportunity Catalog</h1>
+    <p>Use this catalog to pick one sellable dry-run PoC before proposing production automation.</p>
+  </header>
+  <main>
+    <table>
+      <thead><tr><th>Rank</th><th>Flow</th><th>Client Problem</th><th>Price Range</th><th>Delivery</th><th>Proof Metric</th></tr></thead>
+      <tbody>{rows}</tbody>
+    </table>
+  </main>
+</body>
+</html>
+"""
+
+
+def _intake_score(flow: dict, pain: str, tools: str, monthly_items: int) -> dict:
+    text = " ".join([flow["id"], flow["name"], flow["summary"], flow["industry"], flow["genre"], " ".join(flow.get("tools", []))]).lower()
+    pain_terms = [term for term in pain.lower().replace("-", " ").split() if len(term) >= 4]
+    tool_terms = [term for term in tools.lower().replace("/", " ").split() if len(term) >= 3]
+    score = 50
+    score += sum(8 for term in pain_terms if term in text)
+    score += sum(5 for term in tool_terms if term in text)
+    score += min(20, max(0, monthly_items // 10))
+    if "approval" in text or "draft" in text:
+        score += 8
+    return {**flow, "score": min(100, score), "why": _intake_reason(flow, pain_terms, tool_terms)}
+
+
+def _intake_reason(flow: dict, pain_terms: list[str], tool_terms: list[str]) -> str:
+    matched = [term for term in pain_terms + tool_terms if term in " ".join([flow["id"], flow["name"], flow["summary"], " ".join(flow.get("tools", []))]).lower()]
+    if matched:
+        return "Matched intake terms: " + ", ".join(sorted(set(matched))[:8])
+    return "Best available workflow by industry and safe dry-run fit."
+
+
+def _render_recommended_flow(payload: dict) -> str:
+    flow = payload["recommended_flow"]
+    lines = [
+        "# Recommended Flow From Client Intake",
+        "",
+        f"- Recommended flow: `{flow['id']}`",
+        f"- Name: {flow['name']}",
+        f"- Score: `{flow['score']}/100`",
+        f"- Why: {flow['why']}",
+        f"- Client pain: {payload['pain']}",
+        f"- Tools mentioned: {payload['tools']}",
+        f"- Monthly items: `{payload['monthly_items']}`",
+        "",
+        "## First Action",
+        "",
+        f"Run `ai-automation-kit complete-workspace --flow-id {flow['id']} --output .tmp/{flow['id']}-workspace` and open `client_command_center.html`.",
+        "",
+        "## Alternatives",
+        "",
+    ]
+    lines.extend(f"- `{item['id']}` {item['name']} - score `{item['score']}/100`" for item in payload["alternatives"])
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _render_recommended_poc_scope(payload: dict) -> str:
+    flow = payload["recommended_flow"]
+    return "\n".join(
+        [
+            f"# Paid PoC Recommendation: {flow['name']}",
+            "",
+            "## Offer",
+            "",
+            f"Create a safe dry-run for `{flow['id']}` using one approved sample data source, human approval, and a before/after report.",
+            "",
+            "## Scope",
+            "",
+            "- Confirm workflow owner and approval owner.",
+            "- Import or paste one sample data export.",
+            "- Generate queue, draft output, approval list, report, and demo.",
+            "- Measure baseline minutes per item against dry-run minutes per item.",
+            "- Decide continue, revise, or stop.",
+            "",
+            "## Do Not Include Yet",
+            "",
+            "- Production sends or writes.",
+            "- Payment, access, legal, hiring, or regulated decisions.",
+            "- Unreviewed client secrets or sensitive data.",
+            "",
+        ]
+    )
+
+
+def _render_share_check(payload: dict) -> str:
+    lines = [
+        "# Share Check",
+        "",
+        f"- Status: `{payload['status']}`",
+        f"- Source: `{payload['source']}`",
+        f"- Files scanned: `{payload['files_scanned']}`",
+        "",
+    ]
+    if payload["findings"]:
+        lines.extend(["## Findings", "", "| Severity | File | Marker | Detail |", "|---|---|---|---|"])
+        for item in payload["findings"]:
+            lines.append(f"| `{item['severity']}` | `{item['path']}` | `{item['marker']}` | {item['detail']} |")
+    else:
+        lines.extend(["## Findings", "", "No secret-like markers or local machine paths were found in shareable text assets."])
+    lines.extend(
+        [
+            "",
+            "## Decision",
+            "",
+            "- `ready`: share after normal client review.",
+            "- `warning`: review findings, remove local paths if needed, then share.",
+            "- `blocked`: do not share until secret-like markers are removed.",
             "",
         ]
     )
@@ -446,6 +721,8 @@ def _render_complete_delivery_guide(payload: dict) -> str:
             "19. `client_onboarding_form.md`",
             "20. `go_live_decision.md`",
             "21. `client_command_center.html`",
+            "22. `side_business_starter_10.md`",
+            "23. `before_after_demo.html`",
             "",
             "## What To Tell The Client",
             "",
@@ -485,6 +762,8 @@ def _render_completion_checklist(payload: dict) -> str:
         ("Client onboarding form prepared", "client_onboarding_form.md"),
         ("Go-live decision gate prepared", "go_live_decision.md"),
         ("Client command center prepared", "client_command_center.html"),
+        ("Side business starter 10 prepared", "side_business_starter_10.md"),
+        ("Before/after demo prepared", "before_after_demo.html"),
     ]
     lines = ["# Completion Checklist", ""]
     for label, detail in checks:
@@ -1105,6 +1384,103 @@ def _command_center_card(title: str, body: str, links: list[tuple[str, str]]) ->
   <p>{html.escape(body)}</p>
   <ul>{items}</ul>
 </article>"""
+
+
+def _render_side_business_starter_10(payload: dict) -> str:
+    lines = [
+        "# Side Business Starter 10",
+        "",
+        "These are the easiest workflows to explain, demo, and sell as bounded dry-run PoCs. Start here before browsing the full catalog.",
+        "",
+        "| Rank | Flow ID | Buyer | Why It Sells | First Proof |",
+        "|---:|---|---|---|---|",
+    ]
+    buyers = {
+        "invoice-document-followup": "accounting teams",
+        "support-reply-draft": "support teams",
+        "weekly-kpi-report": "operations managers",
+        "crm-lead-cleanup": "sales teams",
+        "lead-routing-followup": "local service businesses",
+        "appointment-reminder": "clinics and salons",
+        "order-shipping-status": "ecommerce shops",
+        "inventory-reorder-alert": "retail and ecommerce teams",
+        "candidate-interview-scheduling": "small HR teams",
+        "field-service-dispatch": "field service teams",
+    }
+    for index, flow in enumerate(_starter_flows(), start=1):
+        lines.append(
+            f"| {index} | `{flow['id']}` | {buyers.get(flow['id'], flow['industry'])} | {flow['summary']} | `{flow['success_metrics'][0]}` |"
+        )
+    lines.extend(
+        [
+            "",
+            "## Rule",
+            "",
+            "Sell one visible workflow, run one dry-run, measure one before/after metric, then decide continue, revise, or stop.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _render_before_after_demo(payload: dict) -> str:
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Before / After Demo - {html.escape(payload['flow_name'])}</title>
+  <style>
+    body {{ margin: 0; font-family: Arial, sans-serif; background: #f7f8fa; color: #172033; }}
+    header {{ background: #ffffff; border-bottom: 1px solid #d9dee7; padding: 28px; }}
+    main {{ max-width: 1060px; margin: 0 auto; padding: 24px; }}
+    .grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }}
+    section {{ background: #ffffff; border: 1px solid #d9dee7; border-radius: 8px; padding: 18px; }}
+    .metric {{ display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 16px; }}
+    .metric div {{ background: #eef2f7; padding: 14px; border-radius: 8px; }}
+    code {{ background: #eef2f7; padding: 2px 5px; border-radius: 4px; }}
+    @media (max-width: 760px) {{ .grid, .metric {{ grid-template-columns: 1fr; }} }}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Before / After Demo</h1>
+    <p>{html.escape(payload['flow_name'])} for {html.escape(payload['niche'])}</p>
+  </header>
+  <main>
+    <div class="grid">
+      <section>
+        <h2>Before</h2>
+        <ul>
+          <li>Manual queue review across spreadsheets, email, and chat.</li>
+          <li>Follow-up drafts are written from scratch.</li>
+          <li>Approval evidence is scattered or missing.</li>
+          <li>Value is hard to prove after the work is done.</li>
+        </ul>
+      </section>
+      <section>
+        <h2>After Dry-Run</h2>
+        <ul>
+          <li>Work queue, drafts, approval list, and report are generated locally.</li>
+          <li>Human approval remains required before any external action.</li>
+          <li>Client can inspect evidence before committing to production.</li>
+          <li>Value is measured in the generated scorecards.</li>
+        </ul>
+      </section>
+    </div>
+    <section>
+      <h2>Proof From This Workspace</h2>
+      <div class="metric">
+        <div><strong>{html.escape(str(payload['rows_processed']))}</strong><br>rows processed</div>
+        <div><strong>{html.escape(str(payload['approved_items']))}</strong><br>approved drafts</div>
+        <div><strong>{html.escape(str(payload['revenue_score']['total']))}/100</strong><br>sellable PoC score</div>
+      </div>
+      <p>Open <code>client_command_center.html</code> to navigate the full delivery pack.</p>
+    </section>
+  </main>
+</body>
+</html>
+"""
 
 
 def _collect_demo_assets(source: Path) -> list[dict]:

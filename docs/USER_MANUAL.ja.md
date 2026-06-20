@@ -49,8 +49,39 @@ ai-automation-kit complete-workspace \
 - `.tmp/complete-accounting/client_onboarding_form.md`
 - `.tmp/complete-accounting/go_live_decision.md`
 - `.tmp/complete-accounting/client_command_center.html`
+- `.tmp/complete-accounting/side_business_starter_10.md`
+- `.tmp/complete-accounting/before_after_demo.html`
 
 個別に作業したい場合は、次の `quickstart` から順番に進めます。
+
+## 2.5. 何を売り込むか迷った場合
+
+営業用の案件カタログを作ります。
+
+```bash
+ai-automation-kit opportunity-catalog --industry finance --output .tmp/opportunity-catalog
+```
+
+`opportunity_catalog.html` を開くと、提案しやすい自動化案件、価格目安、導入日数、証明する指標を一覧できます。
+
+顧客の困りごとからおすすめフローを選ぶ場合:
+
+```bash
+ai-automation-kit recommend-flow \
+  --industry finance \
+  --pain "missing invoice follow up" \
+  --tools "Google Sheets Gmail" \
+  --monthly-items 80 \
+  --output .tmp/recommend-flow
+```
+
+共有前に安全確認する場合:
+
+```bash
+ai-automation-kit share-check --source .tmp/complete-accounting --output .tmp/share-check
+```
+
+`share_check.md` が `blocked` の場合は、秘密情報らしい文字列を消してから共有します。
 
 ```bash
 ai-automation-kit quickstart \

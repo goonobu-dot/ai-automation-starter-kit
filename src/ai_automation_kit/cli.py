@@ -23,7 +23,10 @@ from ai_automation_kit.core.operator_console import generate_connector_doctor
 from ai_automation_kit.core.operator_console import generate_demo_site
 from ai_automation_kit.core.operator_console import generate_flow_guide
 from ai_automation_kit.core.operator_console import generate_install_bundle
+from ai_automation_kit.core.operator_console import generate_opportunity_catalog
 from ai_automation_kit.core.operator_console import generate_quickstart_workspace
+from ai_automation_kit.core.operator_console import generate_recommended_flow_from_intake
+from ai_automation_kit.core.operator_console import generate_share_check
 from ai_automation_kit.core.operator_console import package_client_demo
 from ai_automation_kit.templates.docs_rag import run_docs_rag
 from ai_automation_kit.templates.delivery_pipeline import run_delivery_pipeline
@@ -120,6 +123,21 @@ def build_parser() -> argparse.ArgumentParser:
     complete_workspace.add_argument("--niche", default="accounting")
     complete_workspace.add_argument("--approver", default="local-operator")
     complete_workspace.add_argument("--output", required=True)
+
+    opportunity_catalog = subparsers.add_parser("opportunity-catalog")
+    opportunity_catalog.add_argument("--industry")
+    opportunity_catalog.add_argument("--output", required=True)
+
+    recommend_flow = subparsers.add_parser("recommend-flow")
+    recommend_flow.add_argument("--industry")
+    recommend_flow.add_argument("--pain", required=True)
+    recommend_flow.add_argument("--tools", default="")
+    recommend_flow.add_argument("--monthly-items", type=int, default=40)
+    recommend_flow.add_argument("--output", required=True)
+
+    share_check = subparsers.add_parser("share-check")
+    share_check.add_argument("--source", required=True)
+    share_check.add_argument("--output", required=True)
 
     flows = subparsers.add_parser("flows")
     flow_subparsers = flows.add_subparsers(dest="flow_command", required=True)
@@ -326,6 +344,27 @@ def main(argv: list[str] | None = None) -> int:
         print(f"client_demo_package={payload['client_demo_package']}")
         print(f"status={payload['status']}")
         return 0 if payload["status"] == "ready_to_share" else 1
+    if args.command == "opportunity-catalog":
+        payload = generate_opportunity_catalog(industry=args.industry, output=Path(args.output))
+        print(f"opportunity_catalog={args.output}/opportunity_catalog.html")
+        print(f"count={payload['count']}")
+        return 0
+    if args.command == "recommend-flow":
+        payload = generate_recommended_flow_from_intake(
+            industry=args.industry,
+            pain=args.pain,
+            tools=args.tools,
+            monthly_items=args.monthly_items,
+            output=Path(args.output),
+        )
+        print(f"recommended_flow={args.output}/recommended_flow.md")
+        print(f"flow_id={payload['recommended_flow']['id']}")
+        return 0
+    if args.command == "share-check":
+        payload = generate_share_check(source=Path(args.source), output=Path(args.output))
+        print(f"share_check={args.output}/share_check.md")
+        print(f"status={payload['status']}")
+        return 0 if payload["status"] in {"ready", "warning"} else 1
     if args.command == "flows":
         if args.flow_command == "list":
             flows = list_flows(industry=args.industry, genre=args.genre)

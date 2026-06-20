@@ -155,6 +155,46 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
     )
     _require_file(guide_output / "recommended_flows.md")
 
+    catalog_output = output / "opportunity-catalog"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "opportunity-catalog",
+            "--industry",
+            "finance",
+            "--output",
+            str(catalog_output),
+        ],
+        env=env,
+    )
+    _require_file(catalog_output / "opportunity_catalog.html")
+    _require_file(catalog_output / "opportunity_catalog.md")
+
+    recommend_output = output / "recommend-flow"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "recommend-flow",
+            "--industry",
+            "finance",
+            "--pain",
+            "missing invoice follow up",
+            "--tools",
+            "Google Sheets Gmail",
+            "--monthly-items",
+            "80",
+            "--output",
+            str(recommend_output),
+        ],
+        env=env,
+    )
+    _require_file(recommend_output / "recommended_flow.md")
+    _require_file(recommend_output / "recommended_poc_scope.md")
+
     connector_output = output / "connector-doctor"
     _run(
         [
@@ -256,6 +296,23 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(package_output / "client_demo_manifest.json")
     _require_file(package_output / "client_demo_package.zip")
 
+    share_check_output = output / "share-check"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "share-check",
+            "--source",
+            str(quickstart_output),
+            "--output",
+            str(share_check_output),
+        ],
+        env=env,
+    )
+    _require_file(share_check_output / "share_check.md")
+    _require_file(share_check_output / "share_check.json")
+
     complete_output = output / "complete-accounting"
     _run(
         [
@@ -295,6 +352,8 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(complete_output / "client_onboarding_form.md")
     _require_file(complete_output / "go_live_decision.md")
     _require_file(complete_output / "client_command_center.html")
+    _require_file(complete_output / "side_business_starter_10.md")
+    _require_file(complete_output / "before_after_demo.html")
     _require_file(complete_output / "quickstart" / "flow_project" / "automation_output" / "run_log.json")
     _require_file(complete_output / "quickstart" / "flow_project" / "local_outbox" / "email_drafts.md")
     _require_file(complete_output / "connector_doctor" / "connector_doctor.md")

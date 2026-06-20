@@ -24,6 +24,10 @@ ai-automation-kit complete-workspace --flow-id invoice-document-followup --outpu
 
 まず `demo_site/index.html` と `beginner_sales/selected_flow_demo.html` を見せます。そのあと `client_questions.md` でヒアリングし、`proposal_one_pager.md` で小さなPoCを提案します。
 
+## 何を売り込めばいいか分からない場合は？
+
+`opportunity-catalog` で営業用カタログを作り、`recommend-flow` で顧客の困りごとからおすすめフローを選びます。共有前は `share-check` で秘密情報らしい文字列が混ざっていないか確認します。
+
 ## 本番接続はできますか？
 
 設計上は進められますが、初期状態では無効です。`connector-doctor` で不足設定を確認し、`client_onboarding_form.md`、`deployment_options.md`、`production_observability_plan.md`、`go_live_decision.md` で self-host、Webhook、MCP、リトライ、キュー、承認監査、停止手順、承認者、本番移行可否を決めてから進めます。
