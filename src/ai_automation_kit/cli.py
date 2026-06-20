@@ -17,6 +17,13 @@ from ai_automation_kit.core.flows import validate_flow_project
 from ai_automation_kit.core.flow_runtime import approve_all_pending
 from ai_automation_kit.core.flow_runtime import run_flow_project
 from ai_automation_kit.core.offer_pack import generate_offer_pack
+from ai_automation_kit.core.operator_console import generate_client_report
+from ai_automation_kit.core.operator_console import generate_connector_doctor
+from ai_automation_kit.core.operator_console import generate_demo_site
+from ai_automation_kit.core.operator_console import generate_flow_guide
+from ai_automation_kit.core.operator_console import generate_install_bundle
+from ai_automation_kit.core.operator_console import generate_quickstart_workspace
+from ai_automation_kit.core.operator_console import package_client_demo
 from ai_automation_kit.templates.docs_rag import run_docs_rag
 from ai_automation_kit.templates.delivery_pipeline import run_delivery_pipeline
 from ai_automation_kit.templates.excel_to_internal_app import run_excel_to_internal_app
@@ -68,6 +75,42 @@ def build_parser() -> argparse.ArgumentParser:
     beginner_sales.add_argument("--client-type", default="small-business")
     beginner_sales.add_argument("--niche", default="local-business")
     beginner_sales.add_argument("--output", required=True)
+
+    flow_guide = subparsers.add_parser("flow-guide")
+    flow_guide.add_argument("--industry")
+    flow_guide.add_argument("--genre")
+    flow_guide.add_argument("--niche", default="local-business")
+    flow_guide.add_argument("--output", required=True)
+
+    quickstart = subparsers.add_parser("quickstart")
+    quickstart.add_argument("--flow-id")
+    quickstart.add_argument("--industry", default="finance")
+    quickstart.add_argument("--client-type", default="local-business")
+    quickstart.add_argument("--niche", default="accounting")
+    quickstart.add_argument("--output", required=True)
+
+    demo_site = subparsers.add_parser("demo-site")
+    demo_site.add_argument("--source", required=True)
+    demo_site.add_argument("--output", required=True)
+    demo_site.add_argument("--title", default="Client Automation Demo")
+
+    install_bundle = subparsers.add_parser("install-bundle")
+    install_bundle.add_argument("--flow-id", required=True)
+    install_bundle.add_argument("--client-type", default="local-business")
+    install_bundle.add_argument("--niche", default="accounting")
+    install_bundle.add_argument("--output", required=True)
+
+    connector_doctor = subparsers.add_parser("connector-doctor")
+    connector_doctor.add_argument("--project", required=True)
+    connector_doctor.add_argument("--output", required=True)
+
+    client_report = subparsers.add_parser("client-report")
+    client_report.add_argument("--flow-project", required=True)
+    client_report.add_argument("--output", required=True)
+
+    package_demo = subparsers.add_parser("package-client-demo")
+    package_demo.add_argument("--source", required=True)
+    package_demo.add_argument("--output", required=True)
 
     flows = subparsers.add_parser("flows")
     flow_subparsers = flows.add_subparsers(dest="flow_command", required=True)
@@ -211,6 +254,54 @@ def main(argv: list[str] | None = None) -> int:
         print(f"selected_demo={args.output}/selected_flow_demo.html")
         print(f"proposal={args.output}/proposal_one_pager.md")
         print(f"score={payload['beginner_score']['total']}")
+        return 0
+    if args.command == "flow-guide":
+        payload = generate_flow_guide(industry=args.industry, genre=args.genre, niche=args.niche, output=Path(args.output))
+        print(f"flow_guide={args.output}/recommended_flows.md")
+        print(f"count={payload['count']}")
+        return 0
+    if args.command == "quickstart":
+        payload = generate_quickstart_workspace(
+            flow_id=args.flow_id,
+            industry=args.industry,
+            client_type=args.client_type,
+            niche=args.niche,
+            output=Path(args.output),
+        )
+        print(f"quickstart={args.output}/START_HERE.md")
+        print(f"flow_project={payload['flow_project']}")
+        print(f"demo_site={payload['demo_site']}")
+        return 0
+    if args.command == "demo-site":
+        payload = generate_demo_site(source=Path(args.source), output=Path(args.output), title=args.title)
+        print(f"demo_site={args.output}/index.html")
+        print(f"asset_count={payload['asset_count']}")
+        return 0
+    if args.command == "install-bundle":
+        payload = generate_install_bundle(
+            flow_id=args.flow_id,
+            client_type=args.client_type,
+            niche=args.niche,
+            output=Path(args.output),
+        )
+        print(f"bundle={args.output}/bundle_index.md")
+        print(f"flow_project={payload['flow_project']}")
+        print(f"demo_site={payload['demo_site']}")
+        return 0
+    if args.command == "connector-doctor":
+        payload = generate_connector_doctor(project=Path(args.project), output=Path(args.output))
+        print(f"connector_doctor={args.output}/connector_doctor.md")
+        print(f"status={payload['status']}")
+        return 0 if payload["status"] in {"ready", "needs_setup"} else 1
+    if args.command == "client-report":
+        payload = generate_client_report(flow_project=Path(args.flow_project), output=Path(args.output))
+        print(f"client_report={args.output}/client_report.md")
+        print(f"status={payload['status']}")
+        return 0 if payload["status"] == "ready" else 1
+    if args.command == "package-client-demo":
+        payload = package_client_demo(source=Path(args.source), output=Path(args.output))
+        print(f"client_demo_package={args.output}/client_demo_package.zip")
+        print(f"file_count={payload['file_count']}")
         return 0
     if args.command == "flows":
         if args.flow_command == "list":

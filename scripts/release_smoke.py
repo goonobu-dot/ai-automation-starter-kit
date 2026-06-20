@@ -30,6 +30,7 @@ def main() -> int:
     _run([sys.executable, "-m", "ai_automation_kit.cli", "doctor", "--output", str(output / "doctor")], env=env)
     _run_flow_smoke(output, env)
     _run_beginner_sales_smoke(output, env)
+    _run_operator_console_smoke(output, env)
 
     wheelhouse = output / "wheelhouse"
     _run([sys.executable, "-m", "pip", "wheel", ".", "-w", str(wheelhouse)], env=env)
@@ -110,6 +111,150 @@ def _run_beginner_sales_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(beginner_output / "three_day_poc_plan.md")
     _require_file(beginner_output / "client_delivery_checklist.md")
     _require_file(beginner_output / "differentiation_matrix.md")
+
+
+def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
+    quickstart_output = output / "quickstart-accounting"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "quickstart",
+            "--flow-id",
+            "invoice-document-followup",
+            "--client-type",
+            "local-business",
+            "--niche",
+            "accounting",
+            "--output",
+            str(quickstart_output),
+        ],
+        env=env,
+    )
+    _require_file(quickstart_output / "START_HERE.md")
+    _require_file(quickstart_output / "flow_project" / "flow.yaml")
+    _require_file(quickstart_output / "beginner_sales" / "selected_flow_demo.html")
+    _require_file(quickstart_output / "demo_site" / "index.html")
+
+    guide_output = output / "flow-guide-finance"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "flow-guide",
+            "--industry",
+            "finance",
+            "--niche",
+            "accounting",
+            "--output",
+            str(guide_output),
+        ],
+        env=env,
+    )
+    _require_file(guide_output / "recommended_flows.md")
+
+    connector_output = output / "connector-doctor"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "connector-doctor",
+            "--project",
+            str(quickstart_output / "flow_project"),
+            "--output",
+            str(connector_output),
+        ],
+        env=env,
+    )
+    _require_file(connector_output / "connector_doctor.md")
+
+    _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "run", str(quickstart_output / "flow_project")], env=env)
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "flows",
+            "approve",
+            str(quickstart_output / "flow_project"),
+            "--approver",
+            "release@example.com",
+        ],
+        env=env,
+    )
+    report_output = output / "client-report"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "client-report",
+            "--flow-project",
+            str(quickstart_output / "flow_project"),
+            "--output",
+            str(report_output),
+        ],
+        env=env,
+    )
+    _require_file(report_output / "client_report.md")
+    _require_file(report_output / "client_report.html")
+
+    site_output = output / "operator-demo-site"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "demo-site",
+            "--source",
+            str(quickstart_output),
+            "--output",
+            str(site_output),
+        ],
+        env=env,
+    )
+    _require_file(site_output / "index.html")
+
+    bundle_output = output / "install-bundle"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "install-bundle",
+            "--flow-id",
+            "invoice-document-followup",
+            "--client-type",
+            "local-business",
+            "--niche",
+            "accounting",
+            "--output",
+            str(bundle_output),
+        ],
+        env=env,
+    )
+    _require_file(bundle_output / "bundle_index.md")
+    _require_file(bundle_output / "client_ready" / "maintenance_plan.md")
+
+    package_output = output / "client-demo-package"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "package-client-demo",
+            "--source",
+            str(quickstart_output),
+            "--output",
+            str(package_output),
+        ],
+        env=env,
+    )
+    _require_file(package_output / "client_demo_manifest.json")
+    _require_file(package_output / "client_demo_package.zip")
 
 
 def _run_github_smokes(output: Path, env: dict[str, str]) -> None:

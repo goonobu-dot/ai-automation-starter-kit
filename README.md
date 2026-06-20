@@ -22,6 +22,8 @@ The project also includes five reusable workflow templates for research, documen
 
 For monetization work, `offer-pack` creates proposal assets, `client-ready` creates the deeper sales-to-delivery pack, and `beginner-sales` creates the first side-business operating pack: visual flow gallery, selected-flow demo, proposal one-pager, pitch script, client questions, ROI calculator, price menu, outreach copy, objection handling, 3-day PoC plan, and delivery checklist.
 
+For the easiest hands-on path, `quickstart` creates one complete local workspace with a runnable flow project, beginner sales materials, and a browser-friendly demo site. `install-bundle`, `client-report`, `connector-doctor`, and `package-client-demo` help turn that workspace into a safer client-facing delivery package.
+
 For hands-on automation work, `flows` gives users a research-backed catalog of 60+ ready-made business automation flows. A user can choose a flow by industry or genre, install it into a local project folder, inspect `flow.yaml`, view `workflow_map.mmd`, and run the local automation runtime to generate a work queue, draft outputs, an approval queue, connector tasks, a status report, and a run log. The installed project also includes `.env.example`, `config/connectors.json`, a system runbook, approval scripts, and local outbox files so the flow can become a real integration project without sending anything by accident. See [Automation Demand Research](docs/AUTOMATION_DEMAND_RESEARCH.md) for the industry and workflow demand map behind the catalog.
 
 ## Beginner-Friendly Guides
@@ -35,6 +37,12 @@ Need a practical first path or use-case examples?
 
 - [Start Here](docs/START_HERE.md)
 - [まずここから](docs/START_HERE.ja.md)
+- [日本語の使い方マニュアル](docs/USER_MANUAL.ja.md)
+- [業務自動化を企業へ提案するガイド](docs/SELLING_AUTOMATION_GUIDE.ja.md)
+- [フロー選択ガイド](docs/FLOW_SELECTION_GUIDE.ja.md)
+- [顧客デモ台本](docs/CLIENT_DEMO_SCRIPT.ja.md)
+- [実運用セットアップガイド](docs/REAL_WORLD_SETUP_GUIDE.ja.md)
+- [FAQ](docs/FAQ.ja.md)
 - [Use Cases](docs/USE_CASES.md)
 - [ユースケース](docs/USE_CASES.ja.md)
 
@@ -64,6 +72,9 @@ The main `github-discover` workflow generates a practical output folder. The fir
 | `offer_pack/` | Client-facing proposal, service catalog, SOW, pricing model, demo script, outreach copy, and risk boundaries. |
 | `client-ready/` | Intake, ROI calculator, proposal tiers, readiness score, tool selection, security review, maintenance plan, marketplace profile, and case-study templates. |
 | `beginner-sales/` | Beginner-friendly side-business pack for choosing a flow, showing the client what it does, estimating ROI, pitching, scoping a 3-day PoC, and delivering safely. |
+| `quickstart/` | One complete local workspace with flow project, sales pack, and demo site. |
+| `client-report/` | Client-readable report generated from dry-run output files. |
+| `client-demo-package.zip` | Shareable demo package manifest and zip for review, after checking secrets. |
 
 ## 1-Minute Demo
 
@@ -76,19 +87,19 @@ python3 -m ensurepip --upgrade
 python3 -m pip install --upgrade pip setuptools
 python3 -m pip install -e .
 ai-automation-kit doctor --output .tmp/doctor
-ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding --create-offer-pack
+ai-automation-kit quickstart --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/quickstart-accounting
 ```
 
-Open the onboarding summary:
+Open the generated quickstart guide:
 
 ```bash
-sed -n '1,180p' .tmp/onboarding/onboarding_summary.md
+sed -n '1,180p' .tmp/quickstart-accounting/START_HERE.md
 ```
 
-Or open the artifact index when you want to know what to read first:
+Open the browser-friendly demo site:
 
 ```bash
-sed -n '1,180p' .tmp/onboarding/artifact_index.md
+open .tmp/quickstart-accounting/demo_site/index.html
 ```
 
 Open the client-ready offer pack when you want to turn the research into a small paid automation pilot:
@@ -164,6 +175,10 @@ Example generated files:
 - `.tmp/beginner-sales/selected_flow_demo.html`
 - `.tmp/beginner-sales/proposal_one_pager.md`
 - `.tmp/beginner-sales/three_day_poc_plan.md`
+- `.tmp/quickstart-accounting/START_HERE.md`
+- `.tmp/quickstart-accounting/demo_site/index.html`
+- `.tmp/client-report/client_report.md`
+- `.tmp/client-demo-package/client_demo_package.zip`
 - `.tmp/flow-invoice-document-followup/flow.yaml`
 - `.tmp/flow-invoice-document-followup/workflow_map.mmd`
 - `.tmp/flow-invoice-document-followup/scripts/run_dry_run.py`
@@ -278,6 +293,76 @@ ai-automation-kit beginner-sales --flow-id invoice-document-followup --client-ty
 Creates `START_HERE_FOR_SIDE_BUSINESS.md`, `flow_gallery.html`, `selected_flow_demo.html`, `proposal_one_pager.md`, `beginner_pitch_script.md`, `client_questions.md`, `roi_simple_calculator.csv`, `three_day_poc_plan.md`, `price_menu.md`, `outreach_messages.md`, `objection_handling.md`, `demo_walkthrough.md`, `client_delivery_checklist.md`, `positioning.md`, `differentiation_matrix.md`, and `beginner_sales.json`.
 
 This is the shortest route for a new AI-agent user who wants to show a company what can be automated. It is deliberately visual and client-facing: pick one flow, explain the before/after, estimate value, run a dry PoC, and keep human approval before real-world actions.
+
+### quickstart
+
+Create the fastest beginner workspace: runnable flow, sales materials, and demo site in one folder.
+
+```bash
+ai-automation-kit quickstart --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/quickstart-accounting
+```
+
+Creates `START_HERE.md`, `quickstart.json`, `flow_project/`, `beginner_sales/`, and `demo_site/index.html`.
+
+### flow-guide
+
+Choose a good first workflow by industry, genre, or niche:
+
+```bash
+ai-automation-kit flow-guide --industry finance --niche accounting --output .tmp/flow-guide
+```
+
+Creates `recommended_flows.md` and `recommended_flows.json`.
+
+### install-bundle
+
+Create a fuller client bundle with flow project, beginner sales materials, client-ready delivery assets, and demo site:
+
+```bash
+ai-automation-kit install-bundle --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/client-bundle
+```
+
+Creates `bundle_index.md`, `flow_project/`, `beginner_sales/`, `client_ready/`, and `demo_site/index.html`.
+
+### demo-site
+
+Turn an existing generated folder into a browser-friendly index:
+
+```bash
+ai-automation-kit demo-site --source .tmp/quickstart-accounting --output .tmp/quickstart-accounting/demo_site
+```
+
+Creates `index.html` and `demo_site.json`.
+
+### connector-doctor
+
+Check which local and future external connectors are ready or still need setup:
+
+```bash
+ai-automation-kit connector-doctor --project .tmp/quickstart-accounting/flow_project --output .tmp/connector-doctor
+```
+
+Creates `connector_doctor.md` and `connector_doctor.json`. Real external connectors remain disabled until credentials, data handling, approval owner, and rollback rules are defined.
+
+### client-report
+
+Turn a dry-run flow execution into a client-readable report:
+
+```bash
+ai-automation-kit client-report --flow-project .tmp/quickstart-accounting/flow_project --output .tmp/client-report
+```
+
+Creates `client_report.md`, `client_report.html`, and `client_report.json`.
+
+### package-client-demo
+
+Create a review package from generated demo materials:
+
+```bash
+ai-automation-kit package-client-demo --source .tmp/quickstart-accounting --output .tmp/client-demo-package
+```
+
+Creates `client_demo_manifest.json`, `README.md`, and `client_demo_package.zip`. Check for secrets or private client data before sharing.
 
 ### flows
 
