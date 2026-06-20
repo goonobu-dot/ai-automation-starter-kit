@@ -22,7 +22,7 @@ The project also includes five reusable workflow templates for research, documen
 
 For monetization work, `offer-pack` creates proposal assets, `client-ready` creates the deeper sales-to-delivery pack, and `beginner-sales` creates the first side-business operating pack: visual flow gallery, selected-flow demo, proposal one-pager, pitch script, client questions, ROI calculator, price menu, outreach copy, objection handling, 3-day PoC plan, and delivery checklist.
 
-For the easiest hands-on path, `complete-workspace` creates the full local delivery folder in one command: quickstart workspace, dry-run execution, approval export, connector check, client report, demo site, shareable demo zip, and final checklist. `quickstart` remains useful when you want only the workspace, while `install-bundle`, `client-report`, `connector-doctor`, and `package-client-demo` are available as separate steps.
+For the easiest hands-on path, `complete-workspace` creates the full local delivery folder in one command: quickstart workspace, dry-run execution, approval export, connector check, client report, demo site, shareable demo zip, final checklist, revenue readiness scorecard, sales closing script, paid PoC scope, and value measurement sheet. `quickstart` remains useful when you want only the workspace, while `install-bundle`, `client-report`, `connector-doctor`, and `package-client-demo` are available as separate steps.
 
 For hands-on automation work, `flows` gives users a research-backed catalog of 60+ ready-made business automation flows. A user can choose a flow by industry or genre, install it into a local project folder, inspect `flow.yaml`, view `workflow_map.mmd`, and run the local automation runtime to generate a work queue, draft outputs, an approval queue, connector tasks, a status report, and a run log. The installed project also includes `.env.example`, `config/connectors.json`, a system runbook, approval scripts, and local outbox files so the flow can become a real integration project without sending anything by accident. See [Automation Demand Research](docs/AUTOMATION_DEMAND_RESEARCH.md) for the industry and workflow demand map behind the catalog.
 
@@ -77,6 +77,10 @@ The main `github-discover` workflow generates a practical output folder. The fir
 | `client-demo-package.zip` | Shareable demo package manifest and zip for review, after checking secrets. |
 | `FINAL_DELIVERY_GUIDE.md` | One-page final handoff guide for reviewing the generated workspace with a client. |
 | `completion_checklist.md` | Confirmed evidence list for dry-run execution, approvals, connector review, report, demo, and package. |
+| `revenue_readiness_scorecard.md` | 100-point check for whether the workspace is sellable as a bounded paid PoC. |
+| `sales_closing_script.md` | Talk track for moving from demo review to paid PoC discussion. |
+| `paid_poc_scope.md` | Clear included/excluded scope for a small paid pilot. |
+| `value_measurement_sheet.csv` | Baseline, pilot, savings, and pilot fee worksheet. |
 
 ## 1-Minute Demo
 
@@ -180,6 +184,10 @@ Example generated files:
 - `.tmp/complete-accounting/FINAL_DELIVERY_GUIDE.md`
 - `.tmp/complete-accounting/completion_checklist.md`
 - `.tmp/complete-accounting/client_demo_package/client_demo_package.zip`
+- `.tmp/complete-accounting/revenue_readiness_scorecard.md`
+- `.tmp/complete-accounting/sales_closing_script.md`
+- `.tmp/complete-accounting/paid_poc_scope.md`
+- `.tmp/complete-accounting/value_measurement_sheet.csv`
 - `.tmp/quickstart-accounting/START_HERE.md`
 - `.tmp/quickstart-accounting/demo_site/index.html`
 - `.tmp/client-report/client_report.md`
@@ -317,7 +325,7 @@ Create the full ready-to-review local delivery workspace in one command:
 ai-automation-kit complete-workspace --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/complete-accounting
 ```
 
-Creates `FINAL_DELIVERY_GUIDE.md`, `completion_checklist.md`, `delivery_manifest.json`, `quickstart/`, `connector_doctor/`, `client_report/`, `demo_site/index.html`, and `client_demo_package/client_demo_package.zip`. The command also runs the local dry-run flow and exports approval records. Real external sends and production changes remain disabled until the client approves credentials, data handling, rollback, and human approval rules.
+Creates `FINAL_DELIVERY_GUIDE.md`, `completion_checklist.md`, `delivery_manifest.json`, `revenue_readiness_scorecard.md`, `sales_closing_script.md`, `paid_poc_scope.md`, `value_measurement_sheet.csv`, `quickstart/`, `connector_doctor/`, `client_report/`, `demo_site/index.html`, and `client_demo_package/client_demo_package.zip`. The command also runs the local dry-run flow and exports approval records. Real external sends and production changes remain disabled until the client approves credentials, data handling, rollback, and human approval rules.
 
 ### flow-guide
 

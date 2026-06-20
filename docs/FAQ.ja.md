@@ -18,7 +18,7 @@ AIチャットは会話で終わりやすいです。このプロジェクトは
 ai-automation-kit complete-workspace --flow-id invoice-document-followup --output .tmp/complete
 ```
 
-`FINAL_DELIVERY_GUIDE.md`、`completion_checklist.md`、顧客レポート、デモサイト、共有用 zip まで作られます。
+`FINAL_DELIVERY_GUIDE.md`、`completion_checklist.md`、顧客レポート、デモサイト、共有用 zip、収益化評価、営業クロージング台本、有償PoC範囲、価値測定シートまで作られます。
 
 ## 企業に何を見せればいいですか？
 

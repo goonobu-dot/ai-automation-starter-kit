@@ -144,9 +144,18 @@ def test_generate_complete_workspace_creates_done_for_you_delivery(tmp_path):
     assert (output / "connector_doctor" / "connector_doctor.md").exists()
     assert (output / "client_report" / "client_report.html").exists()
     assert (output / "client_demo_package" / "client_demo_package.zip").exists()
+    assert (output / "revenue_readiness_scorecard.md").exists()
+    assert (output / "sales_closing_script.md").exists()
+    assert (output / "paid_poc_scope.md").exists()
+    assert (output / "value_measurement_sheet.csv").exists()
     guide = (output / "FINAL_DELIVERY_GUIDE.md").read_text()
     assert "Open These Files In This Order" in guide
+    assert "revenue_readiness_scorecard.md" in guide
     assert "No next recommendation is required" in guide
+    scorecard = (output / "revenue_readiness_scorecard.md").read_text()
+    assert "Revenue Readiness Scorecard" in scorecard
+    assert "Paid PoC" in scorecard
+    assert "pilot_fee_floor" in (output / "value_measurement_sheet.csv").read_text()
 
 
 def test_parser_accepts_operator_commands():

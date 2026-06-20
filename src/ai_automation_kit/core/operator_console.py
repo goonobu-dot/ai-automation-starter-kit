@@ -223,6 +223,10 @@ def generate_complete_workspace(
         "status": "ready_to_share" if run_payload["status"] == "succeeded" and approval_payload["status"] == "approved" else "needs_attention",
         "flow_id": quickstart["flow_id"],
         "flow_name": flow["name"],
+        "industry": flow["industry"],
+        "genre": flow["genre"],
+        "client_type": client_type,
+        "niche": niche,
         "quickstart": str(quickstart_dir),
         "flow_project": str(flow_project),
         "connector_doctor": str(output / "connector_doctor" / "connector_doctor.md"),
@@ -236,9 +240,14 @@ def generate_complete_workspace(
         "demo_asset_count": demo["asset_count"],
         "package_file_count": package["file_count"],
     }
+    payload["revenue_score"] = _revenue_readiness_score(payload)
     (output / "delivery_manifest.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (output / "FINAL_DELIVERY_GUIDE.md").write_text(_render_complete_delivery_guide(payload), encoding="utf-8")
     (output / "completion_checklist.md").write_text(_render_completion_checklist(payload), encoding="utf-8")
+    (output / "revenue_readiness_scorecard.md").write_text(_render_revenue_scorecard(payload), encoding="utf-8")
+    (output / "sales_closing_script.md").write_text(_render_sales_closing_script(payload), encoding="utf-8")
+    (output / "paid_poc_scope.md").write_text(_render_paid_poc_scope(payload), encoding="utf-8")
+    (output / "value_measurement_sheet.csv").write_text(_render_value_measurement_csv(payload), encoding="utf-8")
     return payload
 
 
@@ -409,6 +418,10 @@ def _render_complete_delivery_guide(payload: dict) -> str:
             f"3. `{payload['client_report']}`",
             f"4. `{payload['demo_site']}`",
             f"5. `{payload['client_demo_package']}`",
+            "6. `revenue_readiness_scorecard.md`",
+            "7. `sales_closing_script.md`",
+            "8. `paid_poc_scope.md`",
+            "9. `value_measurement_sheet.csv`",
             "",
             "## What To Tell The Client",
             "",
@@ -433,6 +446,9 @@ def _render_completion_checklist(payload: dict) -> str:
         ("Client report generated", payload["client_report"]),
         ("Demo site generated", payload["demo_site"]),
         ("Client demo zip packaged", payload["client_demo_package"]),
+        ("Revenue readiness scored", f"score={payload['revenue_score']['total']}"),
+        ("Paid PoC scope prepared", "paid_poc_scope.md"),
+        ("Value measurement sheet prepared", "value_measurement_sheet.csv"),
     ]
     lines = ["# Completion Checklist", ""]
     for label, detail in checks:
@@ -449,6 +465,144 @@ def _render_completion_checklist(payload: dict) -> str:
         ]
     )
     return "\n".join(lines)
+
+
+def _revenue_readiness_score(payload: dict) -> dict:
+    criteria = [
+        ("visible_demo", 15, payload["demo_asset_count"] > 0, "Demo site and visual flow assets exist."),
+        ("working_dry_run", 20, payload["rows_processed"] > 0, "The local flow produced dry-run evidence."),
+        ("approval_evidence", 15, payload["approved_items"] > 0, "Approval records and local outbox files exist."),
+        ("client_report", 15, payload["report_status"] == "ready", "Client-readable report exists."),
+        ("safe_boundary", 15, payload["connector_status"] in {"needs_setup", "ready"}, "Production connectors are explicitly gated."),
+        ("share_package", 10, payload["package_file_count"] > 0, "Shareable demo package exists."),
+        ("paid_scope", 10, True, "Paid PoC scope, closing script, and value sheet are generated."),
+    ]
+    items = [
+        {"id": item_id, "points": points if passed else 0, "max_points": points, "passed": passed, "evidence": evidence}
+        for item_id, points, passed, evidence in criteria
+    ]
+    total = sum(item["points"] for item in items)
+    level = "sellable_poc" if total >= 85 else "review_before_selling" if total >= 70 else "not_ready"
+    return {"total": total, "level": level, "items": items}
+
+
+def _render_revenue_scorecard(payload: dict) -> str:
+    score = payload["revenue_score"]
+    lines = [
+        "# Revenue Readiness Scorecard",
+        "",
+        f"- Flow: `{payload['flow_name']}`",
+        f"- Niche: `{payload['niche']}`",
+        f"- Score: `{score['total']}/100`",
+        f"- Level: `{score['level']}`",
+        "",
+        "## Score Detail",
+        "",
+        "| Item | Points | Evidence |",
+        "|---|---:|---|",
+    ]
+    for item in score["items"]:
+        lines.append(f"| `{item['id']}` | {item['points']}/{item['max_points']} | {item['evidence']} |")
+    lines.extend(
+        [
+            "",
+            "## Paid PoC Positioning",
+            "",
+            "This is ready to sell as a bounded Paid PoC when the client accepts three limits: local dry-run first, human approval before external actions, and measurable baseline comparison.",
+            "",
+            "## Do Not Sell As",
+            "",
+            "- Fully autonomous production automation.",
+            "- Guaranteed income system.",
+            "- A replacement for client approval, credentials review, or legal/security review.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _render_sales_closing_script(payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Sales Closing Script: {payload['flow_name']}",
+            "",
+            "## Opening",
+            "",
+            f"I prepared a local dry-run for your {payload['niche']} workflow. It does not send messages or update production systems, but it shows the queue, draft outputs, approval points, and report evidence.",
+            "",
+            "## Proof To Show",
+            "",
+            f"- Demo site: `{payload['demo_site']}`",
+            f"- Client report: `{payload['client_report']}`",
+            f"- Approval evidence: `{payload['quickstart']}/flow_project/automation_output/approved_actions.csv`",
+            f"- Local outbox: `{payload['quickstart']}/flow_project/local_outbox/email_drafts.md`",
+            "",
+            "## Close",
+            "",
+            "If this matches the real workflow, the next paid step is a small PoC: we connect one approved sample data source, keep human approval, measure time saved, and decide whether to continue.",
+            "",
+            "## Buyer Questions",
+            "",
+            "- Who owns this workflow today?",
+            "- How many items are processed each week?",
+            "- What mistakes or delays are most expensive?",
+            "- Who must approve before anything reaches a customer or production system?",
+            "- What result would make a paid PoC worth continuing?",
+            "",
+        ]
+    )
+
+
+def _render_paid_poc_scope(payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Paid PoC Scope: {payload['flow_name']}",
+            "",
+            "## Objective",
+            "",
+            f"Validate whether `{payload['flow_id']}` can reduce repeated manual work for a {payload['client_type']} without bypassing human approval.",
+            "",
+            "## Included",
+            "",
+            "- One workflow map and before/after explanation.",
+            "- One approved sample input source or CSV export.",
+            "- Local dry-run automation with queue, drafts, approval list, and report.",
+            "- Connector readiness review.",
+            "- One value measurement sheet.",
+            "- One handoff call or written handoff note.",
+            "",
+            "## Excluded Until Separate Approval",
+            "",
+            "- Production sends or writes.",
+            "- Payment, hiring, access, or legal decisions.",
+            "- Handling secrets or regulated personal data without a data review.",
+            "- Ongoing monitoring beyond the PoC window.",
+            "",
+            "## Acceptance Criteria",
+            "",
+            "- The client can identify the queue and approval owner.",
+            "- The dry-run output is useful enough to revise rather than discard.",
+            "- The value sheet has baseline time, pilot time, and decision notes.",
+            "- The client chooses continue, revise, or stop.",
+            "",
+        ]
+    )
+
+
+def _render_value_measurement_csv(payload: dict) -> str:
+    rows = [
+        ["metric", "example_value", "owner", "notes"],
+        ["manual_items_per_month", "80", "client", "Ask for current monthly volume."],
+        ["manual_minutes_per_item", "8", "client", "Baseline before automation."],
+        ["pilot_minutes_per_item", "4", "operator", "Measured during dry-run PoC."],
+        ["loaded_hourly_cost", "35", "client", "Use realistic labor cost."],
+        ["monthly_tool_cost", "0", "operator", "Local dry-run starts at zero tool cost."],
+        ["estimated_monthly_hours_saved", "=manual_items_per_month*(manual_minutes_per_item-pilot_minutes_per_item)/60", "sheet", "Formula for spreadsheet users."],
+        ["estimated_monthly_savings", "=estimated_monthly_hours_saved*loaded_hourly_cost-monthly_tool_cost", "sheet", "Use as directional estimate, not guarantee."],
+        ["pilot_fee_floor", "=estimated_monthly_savings*1.5", "operator", "Sanity check for PoC pricing discussion."],
+        ["continue_threshold", "client says output is useful and measurable", "client", "Continue only if value and safety are visible."],
+    ]
+    return "\n".join(",".join(str(cell) for cell in row) for row in rows) + "\n"
 
 
 def _collect_demo_assets(source: Path) -> list[dict]:
