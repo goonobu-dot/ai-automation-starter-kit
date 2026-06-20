@@ -62,6 +62,7 @@ Important files include:
 | `operational_audit_plan.md` | A plan for what evidence must be checked later. |
 | `adapter_starter/` | A safe dry-run starter when a candidate is ready to prototype. |
 | `offer_pack/` | Proposal, service menu, pricing model, outreach copy, and safety boundaries for a scoped client pilot. |
+| `beginner-sales/` | Visual flow gallery, selected-flow demo, pitch script, ROI calculator, proposal one-pager, and 3-day PoC plan for a beginner-friendly client conversation. |
 
 ## How to use it
 
@@ -103,6 +104,22 @@ Then read these files in order:
 5. `.tmp/onboarding/offer_pack/README.md` if you want to package the result as a small client pilot.
 
 The offer pack can help with freelance or consulting work because it creates proposal and delivery documents. It does not guarantee income.
+
+If you are new to AI agents and want to explain one automation idea to a business, generate the beginner sales pack:
+
+```bash
+ai-automation-kit beginner-sales --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/beginner-sales
+```
+
+Then open:
+
+1. `.tmp/beginner-sales/flow_gallery.html`
+2. `.tmp/beginner-sales/selected_flow_demo.html`
+3. `.tmp/beginner-sales/client_questions.md`
+4. `.tmp/beginner-sales/roi_simple_calculator.csv`
+5. `.tmp/beginner-sales/proposal_one_pager.md`
+
+This gives you a clearer way to show a company what the automation does before asking them to approve a pilot.
 
 ## How it is different from normal chat AI
 

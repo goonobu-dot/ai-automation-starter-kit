@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 from ai_automation_kit import __version__
+from ai_automation_kit.core.beginner_sales import generate_beginner_sales_pack
 from ai_automation_kit.core.client_ready import generate_client_ready_pack
 from ai_automation_kit.core.flows import get_flow
 from ai_automation_kit.core.flows import install_flow
@@ -60,6 +61,13 @@ def build_parser() -> argparse.ArgumentParser:
     client_ready.add_argument("--niche", default="local-business")
     client_ready.add_argument("--source-output", required=True)
     client_ready.add_argument("--output", required=True)
+
+    beginner_sales = subparsers.add_parser("beginner-sales")
+    beginner_sales.add_argument("--flow-id")
+    beginner_sales.add_argument("--industry", default="operations")
+    beginner_sales.add_argument("--client-type", default="small-business")
+    beginner_sales.add_argument("--niche", default="local-business")
+    beginner_sales.add_argument("--output", required=True)
 
     flows = subparsers.add_parser("flows")
     flow_subparsers = flows.add_subparsers(dest="flow_command", required=True)
@@ -189,6 +197,20 @@ def main(argv: list[str] | None = None) -> int:
         print(f"roi_calculator={args.output}/roi_calculator.csv")
         print(f"maintenance_plan={args.output}/maintenance_plan.md")
         print(f"score={payload['score']['total']}")
+        return 0
+    if args.command == "beginner-sales":
+        payload = generate_beginner_sales_pack(
+            flow_id=args.flow_id,
+            output=Path(args.output),
+            client_type=args.client_type,
+            niche=args.niche,
+            industry=args.industry,
+        )
+        print(f"beginner_sales={args.output}/README.md")
+        print(f"flow_gallery={args.output}/flow_gallery.html")
+        print(f"selected_demo={args.output}/selected_flow_demo.html")
+        print(f"proposal={args.output}/proposal_one_pager.md")
+        print(f"score={payload['beginner_score']['total']}")
         return 0
     if args.command == "flows":
         if args.flow_command == "list":

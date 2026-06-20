@@ -29,6 +29,7 @@ def main() -> int:
     _run([sys.executable, "scripts/run_all_demos.py"], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "doctor", "--output", str(output / "doctor")], env=env)
     _run_flow_smoke(output, env)
+    _run_beginner_sales_smoke(output, env)
 
     wheelhouse = output / "wheelhouse"
     _run([sys.executable, "-m", "pip", "wheel", ".", "-w", str(wheelhouse)], env=env)
@@ -79,6 +80,36 @@ def _run_flow_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(flow_output / "automation_output" / "approved_actions.csv")
     _require_file(flow_output / "local_outbox" / "email_drafts.md")
     _require_file(flow_output / "local_outbox" / "slack_messages.md")
+
+
+def _run_beginner_sales_smoke(output: Path, env: dict[str, str]) -> None:
+    beginner_output = output / "beginner-sales-accounting"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "beginner-sales",
+            "--flow-id",
+            "invoice-document-followup",
+            "--client-type",
+            "local-business",
+            "--niche",
+            "accounting",
+            "--output",
+            str(beginner_output),
+        ],
+        env=env,
+    )
+    _require_file(beginner_output / "README.md")
+    _require_file(beginner_output / "START_HERE_FOR_SIDE_BUSINESS.md")
+    _require_file(beginner_output / "flow_gallery.html")
+    _require_file(beginner_output / "selected_flow_demo.html")
+    _require_file(beginner_output / "proposal_one_pager.md")
+    _require_file(beginner_output / "roi_simple_calculator.csv")
+    _require_file(beginner_output / "three_day_poc_plan.md")
+    _require_file(beginner_output / "client_delivery_checklist.md")
+    _require_file(beginner_output / "differentiation_matrix.md")
 
 
 def _run_github_smokes(output: Path, env: dict[str, str]) -> None:

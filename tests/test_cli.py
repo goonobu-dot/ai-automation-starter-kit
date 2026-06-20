@@ -117,6 +117,28 @@ def test_parser_accepts_client_ready_command():
     assert args.output == "client-ready"
 
 
+def test_parser_accepts_beginner_sales_command():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "beginner-sales",
+            "--flow-id",
+            "invoice-document-followup",
+            "--client-type",
+            "local-business",
+            "--niche",
+            "accounting",
+            "--output",
+            "beginner-sales",
+        ]
+    )
+    assert args.command == "beginner-sales"
+    assert args.flow_id == "invoice-document-followup"
+    assert args.client_type == "local-business"
+    assert args.niche == "accounting"
+    assert args.output == "beginner-sales"
+
+
 def test_parser_accepts_flows_commands():
     parser = build_parser()
 
@@ -490,6 +512,33 @@ def test_main_runs_client_ready_and_prints_key_files(tmp_path, capsys):
     assert (output / "README.md").exists()
     assert (output / "implementation_readiness_score.json").exists()
     assert (output / "marketplace_profile.md").exists()
+
+
+def test_main_runs_beginner_sales_and_prints_key_files(tmp_path, capsys):
+    output = tmp_path / "beginner-sales"
+
+    exit_code = main(
+        [
+            "beginner-sales",
+            "--flow-id",
+            "invoice-document-followup",
+            "--client-type",
+            "local-business",
+            "--niche",
+            "accounting",
+            "--output",
+            str(output),
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "beginner_sales=" in captured.out
+    assert "flow_gallery=" in captured.out
+    assert "proposal=" in captured.out
+    assert (output / "START_HERE_FOR_SIDE_BUSINESS.md").exists()
+    assert (output / "selected_flow_demo.html").exists()
+    assert (output / "proposal_one_pager.md").exists()
 
 
 def test_main_runs_flows_list_show_install_and_validate(tmp_path, capsys):

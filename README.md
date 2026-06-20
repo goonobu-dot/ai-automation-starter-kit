@@ -20,7 +20,7 @@ Instead of stopping at "this repository looks interesting", it creates the files
 
 The project also includes five reusable workflow templates for research, document Q&A, approved replies, spreadsheet-to-app migration, and delivery packaging.
 
-For monetization work, `offer-pack` creates proposal assets and `client-ready` creates the deeper sales-to-delivery pack: intake, ROI, pricing, security, tool choice, maintenance, outreach, and case-study templates.
+For monetization work, `offer-pack` creates proposal assets, `client-ready` creates the deeper sales-to-delivery pack, and `beginner-sales` creates the first side-business operating pack: visual flow gallery, selected-flow demo, proposal one-pager, pitch script, client questions, ROI calculator, price menu, outreach copy, objection handling, 3-day PoC plan, and delivery checklist.
 
 For hands-on automation work, `flows` gives users a research-backed catalog of 60+ ready-made business automation flows. A user can choose a flow by industry or genre, install it into a local project folder, inspect `flow.yaml`, view `workflow_map.mmd`, and run the local automation runtime to generate a work queue, draft outputs, an approval queue, connector tasks, a status report, and a run log. The installed project also includes `.env.example`, `config/connectors.json`, a system runbook, approval scripts, and local outbox files so the flow can become a real integration project without sending anything by accident. See [Automation Demand Research](docs/AUTOMATION_DEMAND_RESEARCH.md) for the industry and workflow demand map behind the catalog.
 
@@ -63,6 +63,7 @@ The main `github-discover` workflow generates a practical output folder. The fir
 | `adapter_starter/` | Runnable dry-run adapter skeleton when a safe candidate exists. |
 | `offer_pack/` | Client-facing proposal, service catalog, SOW, pricing model, demo script, outreach copy, and risk boundaries. |
 | `client-ready/` | Intake, ROI calculator, proposal tiers, readiness score, tool selection, security review, maintenance plan, marketplace profile, and case-study templates. |
+| `beginner-sales/` | Beginner-friendly side-business pack for choosing a flow, showing the client what it does, estimating ROI, pitching, scoping a 3-day PoC, and delivering safely. |
 
 ## 1-Minute Demo
 
@@ -100,6 +101,12 @@ Generate the deeper sales-to-delivery pack when you want to package the work for
 
 ```bash
 ai-automation-kit client-ready --business-area operations --client-type local-business --niche accounting --source-output .tmp/onboarding --output .tmp/client-ready
+```
+
+Generate the beginner side-business pack when you want a visual, client-explainable offer around one concrete flow:
+
+```bash
+ai-automation-kit beginner-sales --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/beginner-sales
 ```
 
 Choose and install a local automation-flow scaffold when you want to turn an idea into a concrete project folder:
@@ -152,6 +159,11 @@ Example generated files:
 - `.tmp/client-ready/roi_calculator.csv`
 - `.tmp/client-ready/implementation_readiness_score.json`
 - `.tmp/client-ready/maintenance_plan.md`
+- `.tmp/beginner-sales/START_HERE_FOR_SIDE_BUSINESS.md`
+- `.tmp/beginner-sales/flow_gallery.html`
+- `.tmp/beginner-sales/selected_flow_demo.html`
+- `.tmp/beginner-sales/proposal_one_pager.md`
+- `.tmp/beginner-sales/three_day_poc_plan.md`
 - `.tmp/flow-invoice-document-followup/flow.yaml`
 - `.tmp/flow-invoice-document-followup/workflow_map.mmd`
 - `.tmp/flow-invoice-document-followup/scripts/run_dry_run.py`
@@ -170,6 +182,7 @@ Example generated files:
 - Marketing: turn content and campaign automation repositories into measurable pilot plans.
 - Freelance/consulting: turn discovery results into a bounded automation audit, dry-run prototype, proposal, statement of work, and maintenance offer. The kit does not guarantee income; it helps package the work responsibly.
 - Client-ready delivery: turn an automation idea into intake, ROI, pricing, security, tool selection, outreach, handoff, case-study, and monthly maintenance assets.
+- Beginner side-business path: choose one visible flow, explain it with `selected_flow_demo.html`, ask discovery questions, estimate ROI, send a one-page proposal, and deliver a 3-day dry-run PoC without touching production systems.
 - Flow installer: choose a concrete workflow from 60+ researched patterns across finance, support, sales, HR, operations, healthcare, real estate, legal, ecommerce, education, manufacturing, hospitality, field service, IT, and marketing, then install a local dry-run project scaffold.
 
 ## How This Differs From Chat AI
@@ -253,6 +266,18 @@ ai-automation-kit client-ready --business-area operations --client-type local-bu
 Creates `client_intake.md`, `client_intake.json`, `roi_calculator.csv`, `pricing_recommendation.md`, `proposal_tiers.md`, `implementation_readiness_score.json`, `security_review.md`, `prompt_injection_checklist.md`, `approval_map.md`, `data_classification.md`, `tool_stack_recommendation.md`, `maintenance_plan.md`, `retainer_offer.md`, `monthly_review.md`, `case_study_template.md`, `before_after_report.md`, `marketplace_profile.md`, `outreach_sequence.md`, `handoff_training.md`, `tool_comparison.md`, `template_adaptation_guide.md`, `compliance_boundaries.md`, `niche_playbook.md`, `connector_blueprints.md`, `demo_inputs.csv`, and `client_ready.json`.
 
 This is the strongest monetization-oriented command. It still does not guarantee income; it gives a user the practical assets needed to sell, scope, deliver, and maintain a small automation pilot responsibly.
+
+### beginner-sales
+
+Generate a beginner-friendly side-business pack for one concrete flow:
+
+```bash
+ai-automation-kit beginner-sales --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/beginner-sales
+```
+
+Creates `START_HERE_FOR_SIDE_BUSINESS.md`, `flow_gallery.html`, `selected_flow_demo.html`, `proposal_one_pager.md`, `beginner_pitch_script.md`, `client_questions.md`, `roi_simple_calculator.csv`, `three_day_poc_plan.md`, `price_menu.md`, `outreach_messages.md`, `objection_handling.md`, `demo_walkthrough.md`, `client_delivery_checklist.md`, `positioning.md`, `differentiation_matrix.md`, and `beginner_sales.json`.
+
+This is the shortest route for a new AI-agent user who wants to show a company what can be automated. It is deliberately visual and client-facing: pick one flow, explain the before/after, estimate value, run a dry PoC, and keep human approval before real-world actions.
 
 ### flows
 
