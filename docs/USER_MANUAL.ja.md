@@ -16,7 +16,7 @@ ai-automation-kit doctor --output .tmp/doctor
 
 ## 2. まず1つの案件フォルダを作る
 
-迷った場合は、まずこの1コマンドを使います。案件フォルダ、dry-run 実行結果、承認記録、コネクタ診断、顧客レポート、デモサイト、共有用 zip、最終チェックリスト、収益化評価、営業クロージング台本、有償PoC範囲、価値測定シートまでまとめて作ります。
+迷った場合は、まずこの1コマンドを使います。案件フォルダ、dry-run 実行結果、承認記録、コネクタ診断、顧客レポート、デモサイト、共有用 zip、最終チェックリスト、収益化評価、営業クロージング台本、有償PoC範囲、価値測定シート、契約前チェック、提案メール、30日運用計画、成果証明テンプレートまでまとめて作ります。
 
 ```bash
 ai-automation-kit complete-workspace \
@@ -37,6 +37,10 @@ ai-automation-kit complete-workspace \
 - `.tmp/complete-accounting/sales_closing_script.md`
 - `.tmp/complete-accounting/paid_poc_scope.md`
 - `.tmp/complete-accounting/value_measurement_sheet.csv`
+- `.tmp/complete-accounting/pre_contract_checklist.md`
+- `.tmp/complete-accounting/client_proposal_email.md`
+- `.tmp/complete-accounting/first_30_days_plan.md`
+- `.tmp/complete-accounting/proof_of_value_template.md`
 
 個別に作業したい場合は、次の `quickstart` から順番に進めます。
 

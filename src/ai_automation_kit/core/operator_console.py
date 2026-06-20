@@ -248,6 +248,10 @@ def generate_complete_workspace(
     (output / "sales_closing_script.md").write_text(_render_sales_closing_script(payload), encoding="utf-8")
     (output / "paid_poc_scope.md").write_text(_render_paid_poc_scope(payload), encoding="utf-8")
     (output / "value_measurement_sheet.csv").write_text(_render_value_measurement_csv(payload), encoding="utf-8")
+    (output / "pre_contract_checklist.md").write_text(_render_pre_contract_checklist(payload), encoding="utf-8")
+    (output / "client_proposal_email.md").write_text(_render_client_proposal_email(payload), encoding="utf-8")
+    (output / "first_30_days_plan.md").write_text(_render_first_30_days_plan(payload), encoding="utf-8")
+    (output / "proof_of_value_template.md").write_text(_render_proof_of_value_template(payload), encoding="utf-8")
     return payload
 
 
@@ -422,6 +426,10 @@ def _render_complete_delivery_guide(payload: dict) -> str:
             "7. `sales_closing_script.md`",
             "8. `paid_poc_scope.md`",
             "9. `value_measurement_sheet.csv`",
+            "10. `pre_contract_checklist.md`",
+            "11. `client_proposal_email.md`",
+            "12. `first_30_days_plan.md`",
+            "13. `proof_of_value_template.md`",
             "",
             "## What To Tell The Client",
             "",
@@ -449,6 +457,10 @@ def _render_completion_checklist(payload: dict) -> str:
         ("Revenue readiness scored", f"score={payload['revenue_score']['total']}"),
         ("Paid PoC scope prepared", "paid_poc_scope.md"),
         ("Value measurement sheet prepared", "value_measurement_sheet.csv"),
+        ("Pre-contract checklist prepared", "pre_contract_checklist.md"),
+        ("Client proposal email prepared", "client_proposal_email.md"),
+        ("First 30 days plan prepared", "first_30_days_plan.md"),
+        ("Proof of value template prepared", "proof_of_value_template.md"),
     ]
     lines = ["# Completion Checklist", ""]
     for label, detail in checks:
@@ -603,6 +615,121 @@ def _render_value_measurement_csv(payload: dict) -> str:
         ["continue_threshold", "client says output is useful and measurable", "client", "Continue only if value and safety are visible."],
     ]
     return "\n".join(",".join(str(cell) for cell in row) for row in rows) + "\n"
+
+
+def _render_pre_contract_checklist(payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Pre-Contract Checklist: {payload['flow_name']}",
+            "",
+            "## Do Not Start Paid Work Until",
+            "",
+            "- [ ] The client has named a workflow owner.",
+            "- [ ] The client has approved a sample data source or anonymized export.",
+            "- [ ] The client understands the first version is a dry-run.",
+            "- [ ] The client agrees that external sends, production writes, payments, hiring, access, and legal decisions are excluded.",
+            "- [ ] Success metrics are written in `value_measurement_sheet.csv`.",
+            "- [ ] The paid PoC boundary in `paid_poc_scope.md` is accepted.",
+            "- [ ] A stop condition is agreed before work starts.",
+            "",
+            "## Minimum Paid PoC Evidence",
+            "",
+            f"- Revenue score: `{payload['revenue_score']['total']}/100`",
+            f"- Demo site: `{payload['demo_site']}`",
+            f"- Client report: `{payload['client_report']}`",
+            f"- Connector review: `{payload['connector_doctor']}`",
+            "",
+        ]
+    )
+
+
+def _render_client_proposal_email(payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Client Proposal Email: {payload['flow_name']}",
+            "",
+            f"Subject: Small dry-run PoC for your {payload['niche']} workflow",
+            "",
+            "Hi {{client_name}},",
+            "",
+            f"I prepared a safe local demo for a `{payload['flow_name']}` workflow. It shows the queue, draft outputs, approval point, and report without sending external messages or updating production systems.",
+            "",
+            "The useful next step is a small paid PoC with clear limits:",
+            "",
+            "- use one approved sample data source,",
+            "- keep human approval before any external action,",
+            "- measure baseline time vs pilot time,",
+            "- decide continue, revise, or stop.",
+            "",
+            "I would suggest reviewing the demo first, then confirming whether this workflow is worth a short PoC.",
+            "",
+            "Best,",
+            "{{your_name}}",
+            "",
+        ]
+    )
+
+
+def _render_first_30_days_plan(payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# First 30 Days Plan: {payload['flow_name']}",
+            "",
+            "## Day 1",
+            "",
+            "- Confirm workflow owner, sample data, excluded actions, and success metrics.",
+            "- Review `pre_contract_checklist.md` and `paid_poc_scope.md`.",
+            "",
+            "## Days 2-5",
+            "",
+            "- Adapt sample columns to the client workflow.",
+            "- Run dry-run output and review drafts with the owner.",
+            "- Update approval point and stop condition.",
+            "",
+            "## Days 6-14",
+            "",
+            "- Compare baseline and pilot timing in `value_measurement_sheet.csv`.",
+            "- Fix obvious workflow mismatches.",
+            "- Keep all production connectors disabled unless separately approved.",
+            "",
+            "## Days 15-30",
+            "",
+            "- Produce `proof_of_value_template.md` with before/after evidence.",
+            "- Decide continue, revise, or stop.",
+            "- If continuing, write the maintenance and connector approval plan.",
+            "",
+        ]
+    )
+
+
+def _render_proof_of_value_template(payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Proof Of Value Template: {payload['flow_name']}",
+            "",
+            "## Before / After",
+            "",
+            "| Metric | Before | After Dry-Run | Evidence |",
+            "|---|---:|---:|---|",
+            "| Items processed |  |  | `automation_output/run_log.json` |",
+            "| Minutes per item |  |  | `value_measurement_sheet.csv` |",
+            "| Approval completeness |  |  | `automation_output/approved_actions.csv` |",
+            "| Draft usefulness |  |  | owner review notes |",
+            "",
+            "## Client Decision",
+            "",
+            "- [ ] Continue to a revised dry-run.",
+            "- [ ] Continue to connector approval planning.",
+            "- [ ] Stop because value or safety is not clear enough.",
+            "",
+            "## Evidence Links",
+            "",
+            f"- Client report: `{payload['client_report']}`",
+            f"- Demo site: `{payload['demo_site']}`",
+            f"- Connector doctor: `{payload['connector_doctor']}`",
+            "",
+        ]
+    )
 
 
 def _collect_demo_assets(source: Path) -> list[dict]:

@@ -148,14 +148,23 @@ def test_generate_complete_workspace_creates_done_for_you_delivery(tmp_path):
     assert (output / "sales_closing_script.md").exists()
     assert (output / "paid_poc_scope.md").exists()
     assert (output / "value_measurement_sheet.csv").exists()
+    assert (output / "pre_contract_checklist.md").exists()
+    assert (output / "client_proposal_email.md").exists()
+    assert (output / "first_30_days_plan.md").exists()
+    assert (output / "proof_of_value_template.md").exists()
     guide = (output / "FINAL_DELIVERY_GUIDE.md").read_text()
     assert "Open These Files In This Order" in guide
     assert "revenue_readiness_scorecard.md" in guide
+    assert "pre_contract_checklist.md" in guide
     assert "No next recommendation is required" in guide
     scorecard = (output / "revenue_readiness_scorecard.md").read_text()
     assert "Revenue Readiness Scorecard" in scorecard
     assert "Paid PoC" in scorecard
     assert "pilot_fee_floor" in (output / "value_measurement_sheet.csv").read_text()
+    assert "Do Not Start Paid Work Until" in (output / "pre_contract_checklist.md").read_text()
+    assert "Subject:" in (output / "client_proposal_email.md").read_text()
+    assert "Day 1" in (output / "first_30_days_plan.md").read_text()
+    assert "Before / After" in (output / "proof_of_value_template.md").read_text()
 
 
 def test_parser_accepts_operator_commands():
