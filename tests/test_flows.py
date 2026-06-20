@@ -2,6 +2,7 @@ from ai_automation_kit.core.flows import get_flow
 from ai_automation_kit.core.flows import install_flow
 from ai_automation_kit.core.flows import list_flows
 from ai_automation_kit.core.flows import validate_flow_project
+from ai_automation_kit.core.flow_runtime import run_flow_project
 
 
 def test_catalog_contains_many_industry_and_genre_flows():
@@ -80,6 +81,33 @@ def test_install_flow_creates_local_project_scaffold(tmp_path):
     assert (output / "sample_data" / "input.csv").exists()
     assert (output / "scripts" / "run_dry_run.py").exists()
     assert (output / "tests" / "test_flow_contract.py").exists()
+
+
+def test_run_flow_project_executes_generic_automation_outputs(tmp_path):
+    output = tmp_path / "invoice-project"
+    install_flow("invoice-document-followup", output)
+
+    result = run_flow_project(output)
+
+    assert result["status"] == "succeeded"
+    assert result["rows_processed"] == 1
+    assert (output / "automation_output" / "work_queue.csv").exists()
+    assert (output / "automation_output" / "draft_outputs.md").exists()
+    assert (output / "automation_output" / "approval_queue.csv").exists()
+    assert (output / "automation_output" / "status_report.md").exists()
+    assert (output / "automation_output" / "run_log.json").exists()
+    assert "Create follow-up draft" in (output / "automation_output" / "draft_outputs.md").read_text()
+    assert "human approval" in (output / "automation_output" / "approval_queue.csv").read_text()
+
+
+def test_all_catalog_flows_can_be_installed_and_run(tmp_path):
+    for flow in list_flows():
+        output = tmp_path / flow["id"]
+        install_flow(flow["id"], output)
+        result = run_flow_project(output)
+        assert result["status"] == "succeeded", flow["id"]
+        assert result["rows_processed"] == 1, flow["id"]
+        assert (output / "automation_output" / "run_log.json").exists(), flow["id"]
 
 
 def test_validate_flow_project_checks_required_files(tmp_path):

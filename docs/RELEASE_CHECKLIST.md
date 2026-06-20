@@ -43,7 +43,11 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - `.tmp/release-smoke/flow-invoice-document-followup/workflow_map.mmd`
 - `.tmp/release-smoke/flow-invoice-document-followup/human_approval_points.md`
 - `.tmp/release-smoke/flow-invoice-document-followup/scripts/run_dry_run.py`
-- `.tmp/release-smoke/flow-invoice-document-followup/dry_run_output.md`
+- `.tmp/release-smoke/flow-invoice-document-followup/automation_output/work_queue.csv`
+- `.tmp/release-smoke/flow-invoice-document-followup/automation_output/draft_outputs.md`
+- `.tmp/release-smoke/flow-invoice-document-followup/automation_output/approval_queue.csv`
+- `.tmp/release-smoke/flow-invoice-document-followup/automation_output/status_report.md`
+- `.tmp/release-smoke/flow-invoice-document-followup/automation_output/run_log.json`
 - `.tmp/release-smoke/github-operations/run_summary.md`
 - `.tmp/release-smoke/github-operations/executive_decision_brief.md`
 - `.tmp/release-smoke/github-operations/pilot_scorecard.csv`
@@ -93,8 +97,9 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - [ ] Confirm `artifact_index.md` points to the right first-read files.
 - [ ] Confirm offer-pack files do not guarantee income and clearly define scope, pricing model, client approval, and safety boundaries.
 - [ ] Confirm client-ready files cover intake, ROI, proposal tiers, security, tool selection, maintenance, marketplace profile, and case-study evidence.
-- [ ] Confirm `flows list`, `flows show`, `flows install`, and `flows validate` work for at least one installed flow.
+- [ ] Confirm `flows list`, `flows show`, `flows install`, `flows validate`, and `flows run` work for at least one installed flow.
 - [ ] Confirm installed flow projects include `flow.yaml`, `workflow_map.mmd`, approval points, sample data, a dry-run script, and a contract test.
+- [ ] Confirm installed flow projects produce `automation_output/` with a work queue, draft outputs, approval queue, status report, and run log.
 - [ ] Run the generated adapter starter smoke test when `adapter_starter/` is present.
 - [ ] Confirm README quickstart works from a fresh virtual environment.
 

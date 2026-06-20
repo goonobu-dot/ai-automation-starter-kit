@@ -534,29 +534,21 @@ def _sample_value(column: str) -> str:
 def _render_dry_run_script(flow: dict) -> str:
     return f'''from __future__ import annotations
 
-import csv
 from pathlib import Path
 
+from ai_automation_kit.core.flow_runtime import run_flow_project
 
 ROOT = Path(__file__).resolve().parents[1]
-INPUT = ROOT / "sample_data" / "input.csv"
-OUTPUT = ROOT / "dry_run_output.md"
 
 
 def main() -> int:
-    rows = list(csv.DictReader(INPUT.open(newline="", encoding="utf-8")))
-    lines = [
-        "# Dry Run Output",
-        "",
-        "Flow: {flow['name']}",
-        "Mode: dry-run only",
-        "",
-        f"Rows processed: {{len(rows)}}",
-        "",
-        "No external messages were sent. No production systems were updated.",
-    ]
-    OUTPUT.write_text("\\n".join(lines) + "\\n", encoding="utf-8")
-    print(f"dry_run_output={{OUTPUT}}")
+    result = run_flow_project(ROOT, mode="dry-run")
+    output_dir = ROOT / "automation_output"
+    print(f"automation_status={{result['status']}}")
+    print(f"rows_processed={{result['rows_processed']}}")
+    print(f"draft_outputs={{output_dir / 'draft_outputs.md'}}")
+    print(f"approval_queue={{output_dir / 'approval_queue.csv'}}")
+    print(f"status_report={{output_dir / 'status_report.md'}}")
     return 0
 
 

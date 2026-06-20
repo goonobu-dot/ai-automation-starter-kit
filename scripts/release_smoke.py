@@ -59,12 +59,17 @@ def _run_flow_smoke(output: Path, env: dict[str, str]) -> None:
         env=env,
     )
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "validate", str(flow_output)], env=env)
+    _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "run", str(flow_output)], env=env)
     _run([sys.executable, "scripts/run_dry_run.py"], cwd=flow_output, env=env)
     _run([sys.executable, "-m", "pytest", "tests/test_flow_contract.py", "-q"], cwd=flow_output, env=env)
     _require_file(flow_output / "flow.yaml")
     _require_file(flow_output / "workflow_map.mmd")
     _require_file(flow_output / "scripts" / "run_dry_run.py")
-    _require_file(flow_output / "dry_run_output.md")
+    _require_file(flow_output / "automation_output" / "work_queue.csv")
+    _require_file(flow_output / "automation_output" / "draft_outputs.md")
+    _require_file(flow_output / "automation_output" / "approval_queue.csv")
+    _require_file(flow_output / "automation_output" / "status_report.md")
+    _require_file(flow_output / "automation_output" / "run_log.json")
 
 
 def _run_github_smokes(output: Path, env: dict[str, str]) -> None:

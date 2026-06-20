@@ -118,6 +118,7 @@ REQUIRED_GENERATED_ARTIFACT_SNIPPETS = [
     "flow.yaml",
     "workflow_map.mmd",
     "scripts/run_dry_run.py",
+    "automation_output",
 ]
 
 REQUIRED_PYPROJECT_SNIPPETS = [
@@ -234,8 +235,10 @@ REQUIRED_RELEASE_SMOKE_SNIPPETS = [
     ("maintenance_plan.md", "maintenance_plan.md"),
     ("marketplace_profile.md", "marketplace_profile.md"),
     ("flows install", "flows"),
+    ("flows run", '"run"'),
     ("flow.yaml", "flow.yaml"),
     ("workflow_map.mmd", "workflow_map.mmd"),
+    ("automation_output", "automation_output"),
     ("github-discover", "github-discover"),
     ("adapter_starter/smoke_test.py", "adapter_starter/smoke_test.py"),
     ("manual_review_pack.md", "manual_review_pack.md"),
