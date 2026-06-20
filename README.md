@@ -22,7 +22,7 @@ The project also includes five reusable workflow templates for research, documen
 
 For monetization work, `offer-pack` creates proposal assets and `client-ready` creates the deeper sales-to-delivery pack: intake, ROI, pricing, security, tool choice, maintenance, outreach, and case-study templates.
 
-For hands-on automation work, `flows` gives users a catalog of ready-made business automation flows. A user can choose a flow by industry or genre, install it into a local project folder, inspect `flow.yaml`, view `workflow_map.mmd`, and run a dry-run scaffold before connecting real tools.
+For hands-on automation work, `flows` gives users a research-backed catalog of 60+ ready-made business automation flows. A user can choose a flow by industry or genre, install it into a local project folder, inspect `flow.yaml`, view `workflow_map.mmd`, and run a dry-run scaffold before connecting real tools. See [Automation Demand Research](docs/AUTOMATION_DEMAND_RESEARCH.md) for the industry and workflow demand map behind the catalog.
 
 ## Beginner-Friendly Guides
 
@@ -164,7 +164,7 @@ Example generated files:
 - Marketing: turn content and campaign automation repositories into measurable pilot plans.
 - Freelance/consulting: turn discovery results into a bounded automation audit, dry-run prototype, proposal, statement of work, and maintenance offer. The kit does not guarantee income; it helps package the work responsibly.
 - Client-ready delivery: turn an automation idea into intake, ROI, pricing, security, tool selection, outreach, handoff, case-study, and monthly maintenance assets.
-- Flow installer: choose a concrete workflow such as invoice follow-up, support reply drafts, weekly KPI reports, purchase approvals, CRM cleanup, HR onboarding, campaign review, or IT access requests, then install a local dry-run project scaffold.
+- Flow installer: choose a concrete workflow from 60+ researched patterns across finance, support, sales, HR, operations, healthcare, real estate, legal, ecommerce, education, manufacturing, hospitality, field service, IT, and marketing, then install a local dry-run project scaffold.
 
 ## How This Differs From Chat AI
 
@@ -250,7 +250,7 @@ This is the strongest monetization-oriented command. It still does not guarantee
 
 ### flows
 
-List automation flows by industry or genre, inspect the steps, and install a local project scaffold:
+List 60+ automation flows by industry or genre, inspect the steps, and install a local project scaffold:
 
 ```bash
 ai-automation-kit flows list

@@ -7,9 +7,54 @@ from ai_automation_kit.core.flows import validate_flow_project
 def test_catalog_contains_many_industry_and_genre_flows():
     flows = list_flows()
 
-    assert len(flows) >= 12
-    assert {"finance", "support", "sales", "hr", "operations"} <= {flow["industry"] for flow in flows}
-    assert {"document", "communication", "reporting", "approval", "research"} <= {flow["genre"] for flow in flows}
+    assert len(flows) >= 60
+    assert {
+        "finance",
+        "support",
+        "sales",
+        "hr",
+        "operations",
+        "marketing",
+        "it",
+        "healthcare",
+        "real-estate",
+        "legal",
+        "ecommerce",
+        "education",
+        "manufacturing",
+        "hospitality",
+        "field-service",
+    } <= {flow["industry"] for flow in flows}
+    assert {
+        "document",
+        "communication",
+        "reporting",
+        "approval",
+        "research",
+        "data-entry",
+        "scheduling",
+        "inventory",
+        "compliance",
+        "customer-success",
+    } <= {flow["genre"] for flow in flows}
+
+
+def test_catalog_covers_high_demand_workflow_patterns_from_research():
+    flow_ids = {flow["id"] for flow in list_flows()}
+
+    expected = {
+        "accounts-payable-invoice-capture",
+        "lead-routing-followup",
+        "appointment-reminder",
+        "order-shipping-status",
+        "contract-intake-review",
+        "patient-intake-reminder",
+        "property-maintenance-triage",
+        "inventory-reorder-alert",
+        "field-service-dispatch",
+        "course-inquiry-followup",
+    }
+    assert expected <= flow_ids
 
 
 def test_get_flow_returns_structured_steps():

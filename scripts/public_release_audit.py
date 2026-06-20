@@ -23,6 +23,7 @@ REQUIRED_FILES = [
     "docs/GITHUB_DATA.md",
     "docs/SHOWCASE.md",
     "docs/OSS_INTEGRATIONS.md",
+    "docs/AUTOMATION_DEMAND_RESEARCH.md",
     "scripts/release_smoke.py",
     "scripts/run_all_demos.py",
 ]
