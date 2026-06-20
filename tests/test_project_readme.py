@@ -22,9 +22,14 @@ def test_project_readme_has_public_quickstart_and_all_templates():
     assert "pip install -e ." in text
     assert "ai-automation-kit onboard --business-area operations" in text
     assert "ai-automation-kit offer-pack --business-area operations" in text
+    assert "ai-automation-kit client-ready --business-area operations" in text
     assert "offer_pack/" in text
+    assert "client-ready/" in text
     assert "statement_of_work.md" in text
     assert "pricing_model.md" in text
+    assert "roi_calculator.csv" in text
+    assert "implementation_readiness_score.json" in text
+    assert "maintenance_plan.md" in text
     assert "ai-automation-kit research-agent" in text
     assert "ai-automation-kit github-discover --business-area sales" in text
     assert "business_automation_plan.md" in text

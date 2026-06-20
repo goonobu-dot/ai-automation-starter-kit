@@ -2,7 +2,7 @@
 
 GitHub-data-driven AI automation starter kit for developers, AI agent builders, and automation consultants.
 
-It finds promising public OSS projects for a business area, ranks them, and turns the result into practical adoption artifacts: executive decisions, value scorecards, rollout maps, risk registers, audit plans, dry-run adapter starters, and client-ready offer packs.
+It finds promising public OSS projects for a business area, ranks them, and turns the result into practical adoption artifacts: executive decisions, value scorecards, rollout maps, risk registers, audit plans, dry-run adapter starters, client-ready offer packs, and full sales-to-delivery automation packs.
 
 ## What Is This?
 
@@ -19,6 +19,8 @@ Instead of stopping at "this repository looks interesting", it creates the files
 - how to turn a safe pilot into a responsible consulting or freelance offer
 
 The project also includes five reusable workflow templates for research, document Q&A, approved replies, spreadsheet-to-app migration, and delivery packaging.
+
+For monetization work, `offer-pack` creates proposal assets and `client-ready` creates the deeper sales-to-delivery pack: intake, ROI, pricing, security, tool choice, maintenance, outreach, and case-study templates.
 
 ## Beginner-Friendly Guides
 
@@ -58,6 +60,7 @@ The main `github-discover` workflow generates a practical output folder. The fir
 | `operational_audit_plan.md` | Audit scope and required evidence before promotion. |
 | `adapter_starter/` | Runnable dry-run adapter skeleton when a safe candidate exists. |
 | `offer_pack/` | Client-facing proposal, service catalog, SOW, pricing model, demo script, outreach copy, and risk boundaries. |
+| `client-ready/` | Intake, ROI calculator, proposal tiers, readiness score, tool selection, security review, maintenance plan, marketplace profile, and case-study templates. |
 
 ## 1-Minute Demo
 
@@ -89,6 +92,12 @@ Open the client-ready offer pack when you want to turn the research into a small
 
 ```bash
 sed -n '1,180p' .tmp/onboarding/offer_pack/README.md
+```
+
+Generate the deeper sales-to-delivery pack when you want to package the work for a specific niche:
+
+```bash
+ai-automation-kit client-ready --business-area operations --client-type local-business --niche accounting --source-output .tmp/onboarding --output .tmp/client-ready
 ```
 
 ## 3-Minute Walkthrough
@@ -126,6 +135,9 @@ Example generated files:
 - `.tmp/operations-discovery/business_automation_summary.json`
 - `.tmp/onboarding/offer_pack/proposal.md`
 - `.tmp/onboarding/offer_pack/statement_of_work.md`
+- `.tmp/client-ready/roi_calculator.csv`
+- `.tmp/client-ready/implementation_readiness_score.json`
+- `.tmp/client-ready/maintenance_plan.md`
 
 ## Example Use Cases
 
@@ -136,6 +148,7 @@ Example generated files:
 - HR: explore onboarding or recruiting workflow ideas with approval and audit requirements.
 - Marketing: turn content and campaign automation repositories into measurable pilot plans.
 - Freelance/consulting: turn discovery results into a bounded automation audit, dry-run prototype, proposal, statement of work, and maintenance offer. The kit does not guarantee income; it helps package the work responsibly.
+- Client-ready delivery: turn an automation idea into intake, ROI, pricing, security, tool selection, outreach, handoff, case-study, and monthly maintenance assets.
 
 ## How This Differs From Chat AI
 
@@ -206,6 +219,18 @@ ai-automation-kit offer-pack --business-area operations --client-type small-busi
 ```
 
 Creates `README.md`, `service_catalog.md`, `client_discovery_questions.md`, `proposal.md`, `statement_of_work.md`, `pricing_model.md`, `demo_script.md`, `outreach_messages.md`, `delivery_checklist.md`, `risk_boundaries.md`, and `offer_pack.json`. These files are designed for scoped automation consulting or freelance pilots. They include risk boundaries and avoid income guarantees.
+
+### client-ready
+
+Generate the full sales-to-delivery pack for a specific niche:
+
+```bash
+ai-automation-kit client-ready --business-area operations --client-type local-business --niche accounting --source-output .tmp/onboarding --output .tmp/client-ready
+```
+
+Creates `client_intake.md`, `client_intake.json`, `roi_calculator.csv`, `pricing_recommendation.md`, `proposal_tiers.md`, `implementation_readiness_score.json`, `security_review.md`, `prompt_injection_checklist.md`, `approval_map.md`, `data_classification.md`, `tool_stack_recommendation.md`, `maintenance_plan.md`, `retainer_offer.md`, `monthly_review.md`, `case_study_template.md`, `before_after_report.md`, `marketplace_profile.md`, `outreach_sequence.md`, `handoff_training.md`, `tool_comparison.md`, `template_adaptation_guide.md`, `compliance_boundaries.md`, `niche_playbook.md`, `connector_blueprints.md`, `demo_inputs.csv`, and `client_ready.json`.
+
+This is the strongest monetization-oriented command. It still does not guarantee income; it gives a user the practical assets needed to sell, scope, deliver, and maintain a small automation pilot responsibly.
 
 ### doctor
 

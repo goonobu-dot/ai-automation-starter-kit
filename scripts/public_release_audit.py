@@ -75,6 +75,7 @@ FORBIDDEN_TRACKED_PATHS = [
 REQUIRED_README_SNIPPETS = [
     "ai-automation-kit onboard",
     "ai-automation-kit offer-pack",
+    "ai-automation-kit client-ready",
     "ai-automation-kit github-discover",
     "python3 scripts/release_smoke.py",
     "Public Release Readiness",
@@ -89,6 +90,7 @@ REQUIRED_CLI_DOC_SNIPPETS = [
     "ai-automation-kit doctor",
     "ai-automation-kit onboard --business-area operations",
     "ai-automation-kit offer-pack --business-area operations",
+    "ai-automation-kit client-ready --business-area operations",
     "ai-automation-kit github-discover --business-area operations",
     "docs/SHOWCASE.md",
     "docs/demo.html",
@@ -102,8 +104,12 @@ REQUIRED_GENERATED_ARTIFACT_SNIPPETS = [
     "risk_exception_register.md",
     "stakeholder_rollout_map.md",
     "offer_pack/",
+    "client-ready/",
     "statement_of_work.md",
     "pricing_model.md",
+    "roi_calculator.csv",
+    "implementation_readiness_score.json",
+    "maintenance_plan.md",
 ]
 
 REQUIRED_PYPROJECT_SNIPPETS = [
@@ -214,6 +220,11 @@ REQUIRED_RELEASE_SMOKE_SNIPPETS = [
     ("offer_pack/README.md", '"offer_pack" / "README.md"'),
     ("proposal.md", "proposal.md"),
     ("pricing_model.md", "pricing_model.md"),
+    ("client-ready", "client-ready"),
+    ("roi_calculator.csv", "roi_calculator.csv"),
+    ("implementation_readiness_score.json", "implementation_readiness_score.json"),
+    ("maintenance_plan.md", "maintenance_plan.md"),
+    ("marketplace_profile.md", "marketplace_profile.md"),
     ("github-discover", "github-discover"),
     ("adapter_starter/smoke_test.py", "adapter_starter/smoke_test.py"),
     ("manual_review_pack.md", "manual_review_pack.md"),

@@ -93,6 +93,37 @@ def _run_github_smokes(output: Path, env: dict[str, str]) -> None:
     _require_file(offer_output / "pricing_model.md")
     _require_file(offer_output / "risk_boundaries.md")
 
+    client_ready_output = output / "client-ready-accounting"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "client-ready",
+            "--business-area",
+            "operations",
+            "--client-type",
+            "local-business",
+            "--niche",
+            "accounting",
+            "--source-output",
+            str(onboard_output),
+            "--output",
+            str(client_ready_output),
+        ],
+        env=env,
+    )
+    _require_file(client_ready_output / "README.md")
+    _require_file(client_ready_output / "client_intake.md")
+    _require_file(client_ready_output / "roi_calculator.csv")
+    _require_file(client_ready_output / "proposal_tiers.md")
+    _require_file(client_ready_output / "implementation_readiness_score.json")
+    _require_file(client_ready_output / "security_review.md")
+    _require_file(client_ready_output / "tool_stack_recommendation.md")
+    _require_file(client_ready_output / "maintenance_plan.md")
+    _require_file(client_ready_output / "marketplace_profile.md")
+    _require_file(client_ready_output / "case_study_template.md")
+
     adapter_output = output / "github-operations"
     _run(
         [

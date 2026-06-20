@@ -92,6 +92,31 @@ def test_parser_accepts_offer_pack_command():
     assert args.output == "offer"
 
 
+def test_parser_accepts_client_ready_command():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "client-ready",
+            "--business-area",
+            "operations",
+            "--client-type",
+            "local-business",
+            "--niche",
+            "accounting",
+            "--source-output",
+            "onboarding",
+            "--output",
+            "client-ready",
+        ]
+    )
+    assert args.command == "client-ready"
+    assert args.business_area == "operations"
+    assert args.client_type == "local-business"
+    assert args.niche == "accounting"
+    assert args.source_output == "onboarding"
+    assert args.output == "client-ready"
+
+
 def test_parser_accepts_doctor_command():
     parser = build_parser()
     args = parser.parse_args(["doctor", "--output", "out", "--check-github"])
@@ -399,6 +424,46 @@ def test_main_runs_offer_pack_and_prints_key_files(tmp_path, capsys):
     assert (output / "proposal.md").exists()
     assert (output / "pricing_model.md").exists()
     assert "small-business" in (output / "offer_pack.json").read_text()
+
+
+def test_main_runs_client_ready_and_prints_key_files(tmp_path, capsys):
+    source = tmp_path / "onboarding"
+    source.mkdir()
+    (source / "business_automation_summary.json").write_text(
+        json.dumps(
+            {
+                "business_area": "operations",
+                "executive_recommendation": "Start with an accounting workflow pilot.",
+                "recommended_projects": [{"full_name": "n8n-io/n8n", "url": "https://github.com/n8n-io/n8n"}],
+            }
+        )
+    )
+    output = tmp_path / "client-ready"
+
+    exit_code = main(
+        [
+            "client-ready",
+            "--business-area",
+            "operations",
+            "--client-type",
+            "local-business",
+            "--niche",
+            "accounting",
+            "--source-output",
+            str(source),
+            "--output",
+            str(output),
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "client_ready=" in captured.out
+    assert "roi_calculator=" in captured.out
+    assert "maintenance_plan=" in captured.out
+    assert (output / "README.md").exists()
+    assert (output / "implementation_readiness_score.json").exists()
+    assert (output / "marketplace_profile.md").exists()
 
 
 def test_onboard_can_create_offer_pack(tmp_path, monkeypatch, capsys):

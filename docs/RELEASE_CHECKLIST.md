@@ -29,6 +29,15 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - `.tmp/release-smoke/offer-pack-operations/statement_of_work.md`
 - `.tmp/release-smoke/offer-pack-operations/pricing_model.md`
 - `.tmp/release-smoke/offer-pack-operations/risk_boundaries.md`
+- `.tmp/release-smoke/client-ready-accounting/README.md`
+- `.tmp/release-smoke/client-ready-accounting/client_intake.md`
+- `.tmp/release-smoke/client-ready-accounting/roi_calculator.csv`
+- `.tmp/release-smoke/client-ready-accounting/implementation_readiness_score.json`
+- `.tmp/release-smoke/client-ready-accounting/security_review.md`
+- `.tmp/release-smoke/client-ready-accounting/tool_stack_recommendation.md`
+- `.tmp/release-smoke/client-ready-accounting/maintenance_plan.md`
+- `.tmp/release-smoke/client-ready-accounting/marketplace_profile.md`
+- `.tmp/release-smoke/client-ready-accounting/case_study_template.md`
 - `.tmp/release-smoke/github-operations/run_summary.md`
 - `.tmp/release-smoke/github-operations/executive_decision_brief.md`
 - `.tmp/release-smoke/github-operations/pilot_scorecard.csv`
@@ -77,6 +86,7 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - [ ] Confirm dry-run, approval, rollback, and audit guidance is visible in generated outputs.
 - [ ] Confirm `artifact_index.md` points to the right first-read files.
 - [ ] Confirm offer-pack files do not guarantee income and clearly define scope, pricing model, client approval, and safety boundaries.
+- [ ] Confirm client-ready files cover intake, ROI, proposal tiers, security, tool selection, maintenance, marketplace profile, and case-study evidence.
 - [ ] Run the generated adapter starter smoke test when `adapter_starter/` is present.
 - [ ] Confirm README quickstart works from a fresh virtual environment.
 

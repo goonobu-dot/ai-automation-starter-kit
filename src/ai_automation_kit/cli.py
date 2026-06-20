@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 from ai_automation_kit import __version__
+from ai_automation_kit.core.client_ready import generate_client_ready_pack
 from ai_automation_kit.core.offer_pack import generate_offer_pack
 from ai_automation_kit.templates.docs_rag import run_docs_rag
 from ai_automation_kit.templates.delivery_pipeline import run_delivery_pipeline
@@ -46,6 +47,13 @@ def build_parser() -> argparse.ArgumentParser:
     offer_pack.add_argument("--client-type", default="small-business")
     offer_pack.add_argument("--source-output", required=True)
     offer_pack.add_argument("--output", required=True)
+
+    client_ready = subparsers.add_parser("client-ready")
+    client_ready.add_argument("--business-area", default="operations")
+    client_ready.add_argument("--client-type", default="small-business")
+    client_ready.add_argument("--niche", default="local-business")
+    client_ready.add_argument("--source-output", required=True)
+    client_ready.add_argument("--output", required=True)
 
     docs_rag = subparsers.add_parser("docs-rag")
     docs_rag.add_argument("--config", required=True)
@@ -137,6 +145,19 @@ def main(argv: list[str] | None = None) -> int:
         print(f"proposal={args.output}/proposal.md")
         print(f"statement_of_work={args.output}/statement_of_work.md")
         print(f"status={payload['source_status']}")
+        return 0
+    if args.command == "client-ready":
+        payload = generate_client_ready_pack(
+            source_output=Path(args.source_output),
+            output=Path(args.output),
+            business_area=args.business_area,
+            client_type=args.client_type,
+            niche=args.niche,
+        )
+        print(f"client_ready={args.output}/README.md")
+        print(f"roi_calculator={args.output}/roi_calculator.csv")
+        print(f"maintenance_plan={args.output}/maintenance_plan.md")
+        print(f"score={payload['score']['total']}")
         return 0
     if args.command == "docs-rag":
         run = run_docs_rag(config_path=args.config, output_dir=args.output)
