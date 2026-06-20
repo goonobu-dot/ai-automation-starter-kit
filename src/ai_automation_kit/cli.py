@@ -18,6 +18,7 @@ from ai_automation_kit.core.flow_runtime import approve_all_pending
 from ai_automation_kit.core.flow_runtime import run_flow_project
 from ai_automation_kit.core.offer_pack import generate_offer_pack
 from ai_automation_kit.core.operator_console import generate_client_report
+from ai_automation_kit.core.operator_console import generate_complete_workspace
 from ai_automation_kit.core.operator_console import generate_connector_doctor
 from ai_automation_kit.core.operator_console import generate_demo_site
 from ai_automation_kit.core.operator_console import generate_flow_guide
@@ -111,6 +112,14 @@ def build_parser() -> argparse.ArgumentParser:
     package_demo = subparsers.add_parser("package-client-demo")
     package_demo.add_argument("--source", required=True)
     package_demo.add_argument("--output", required=True)
+
+    complete_workspace = subparsers.add_parser("complete-workspace")
+    complete_workspace.add_argument("--flow-id")
+    complete_workspace.add_argument("--industry", default="finance")
+    complete_workspace.add_argument("--client-type", default="local-business")
+    complete_workspace.add_argument("--niche", default="accounting")
+    complete_workspace.add_argument("--approver", default="local-operator")
+    complete_workspace.add_argument("--output", required=True)
 
     flows = subparsers.add_parser("flows")
     flow_subparsers = flows.add_subparsers(dest="flow_command", required=True)
@@ -303,6 +312,20 @@ def main(argv: list[str] | None = None) -> int:
         print(f"client_demo_package={args.output}/client_demo_package.zip")
         print(f"file_count={payload['file_count']}")
         return 0
+    if args.command == "complete-workspace":
+        payload = generate_complete_workspace(
+            flow_id=args.flow_id,
+            industry=args.industry,
+            client_type=args.client_type,
+            niche=args.niche,
+            approver=args.approver,
+            output=Path(args.output),
+        )
+        print(f"final_delivery_guide={args.output}/FINAL_DELIVERY_GUIDE.md")
+        print(f"completion_checklist={args.output}/completion_checklist.md")
+        print(f"client_demo_package={payload['client_demo_package']}")
+        print(f"status={payload['status']}")
+        return 0 if payload["status"] == "ready_to_share" else 1
     if args.command == "flows":
         if args.flow_command == "list":
             flows = list_flows(industry=args.industry, genre=args.genre)

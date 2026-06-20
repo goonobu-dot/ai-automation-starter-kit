@@ -22,7 +22,7 @@ The project also includes five reusable workflow templates for research, documen
 
 For monetization work, `offer-pack` creates proposal assets, `client-ready` creates the deeper sales-to-delivery pack, and `beginner-sales` creates the first side-business operating pack: visual flow gallery, selected-flow demo, proposal one-pager, pitch script, client questions, ROI calculator, price menu, outreach copy, objection handling, 3-day PoC plan, and delivery checklist.
 
-For the easiest hands-on path, `quickstart` creates one complete local workspace with a runnable flow project, beginner sales materials, and a browser-friendly demo site. `install-bundle`, `client-report`, `connector-doctor`, and `package-client-demo` help turn that workspace into a safer client-facing delivery package.
+For the easiest hands-on path, `complete-workspace` creates the full local delivery folder in one command: quickstart workspace, dry-run execution, approval export, connector check, client report, demo site, shareable demo zip, and final checklist. `quickstart` remains useful when you want only the workspace, while `install-bundle`, `client-report`, `connector-doctor`, and `package-client-demo` are available as separate steps.
 
 For hands-on automation work, `flows` gives users a research-backed catalog of 60+ ready-made business automation flows. A user can choose a flow by industry or genre, install it into a local project folder, inspect `flow.yaml`, view `workflow_map.mmd`, and run the local automation runtime to generate a work queue, draft outputs, an approval queue, connector tasks, a status report, and a run log. The installed project also includes `.env.example`, `config/connectors.json`, a system runbook, approval scripts, and local outbox files so the flow can become a real integration project without sending anything by accident. See [Automation Demand Research](docs/AUTOMATION_DEMAND_RESEARCH.md) for the industry and workflow demand map behind the catalog.
 
@@ -75,6 +75,8 @@ The main `github-discover` workflow generates a practical output folder. The fir
 | `quickstart/` | One complete local workspace with flow project, sales pack, and demo site. |
 | `client-report/` | Client-readable report generated from dry-run output files. |
 | `client-demo-package.zip` | Shareable demo package manifest and zip for review, after checking secrets. |
+| `FINAL_DELIVERY_GUIDE.md` | One-page final handoff guide for reviewing the generated workspace with a client. |
+| `completion_checklist.md` | Confirmed evidence list for dry-run execution, approvals, connector review, report, demo, and package. |
 
 ## 1-Minute Demo
 
@@ -87,19 +89,19 @@ python3 -m ensurepip --upgrade
 python3 -m pip install --upgrade pip setuptools
 python3 -m pip install -e .
 ai-automation-kit doctor --output .tmp/doctor
-ai-automation-kit quickstart --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/quickstart-accounting
+ai-automation-kit complete-workspace --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/complete-accounting
 ```
 
-Open the generated quickstart guide:
+Open the final delivery guide:
 
 ```bash
-sed -n '1,180p' .tmp/quickstart-accounting/START_HERE.md
+sed -n '1,180p' .tmp/complete-accounting/FINAL_DELIVERY_GUIDE.md
 ```
 
 Open the browser-friendly demo site:
 
 ```bash
-open .tmp/quickstart-accounting/demo_site/index.html
+open .tmp/complete-accounting/demo_site/index.html
 ```
 
 Open the client-ready offer pack when you want to turn the research into a small paid automation pilot:
@@ -175,6 +177,9 @@ Example generated files:
 - `.tmp/beginner-sales/selected_flow_demo.html`
 - `.tmp/beginner-sales/proposal_one_pager.md`
 - `.tmp/beginner-sales/three_day_poc_plan.md`
+- `.tmp/complete-accounting/FINAL_DELIVERY_GUIDE.md`
+- `.tmp/complete-accounting/completion_checklist.md`
+- `.tmp/complete-accounting/client_demo_package/client_demo_package.zip`
 - `.tmp/quickstart-accounting/START_HERE.md`
 - `.tmp/quickstart-accounting/demo_site/index.html`
 - `.tmp/client-report/client_report.md`
@@ -303,6 +308,16 @@ ai-automation-kit quickstart --flow-id invoice-document-followup --client-type l
 ```
 
 Creates `START_HERE.md`, `quickstart.json`, `flow_project/`, `beginner_sales/`, and `demo_site/index.html`.
+
+### complete-workspace
+
+Create the full ready-to-review local delivery workspace in one command:
+
+```bash
+ai-automation-kit complete-workspace --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/complete-accounting
+```
+
+Creates `FINAL_DELIVERY_GUIDE.md`, `completion_checklist.md`, `delivery_manifest.json`, `quickstart/`, `connector_doctor/`, `client_report/`, `demo_site/index.html`, and `client_demo_package/client_demo_package.zip`. The command also runs the local dry-run flow and exports approval records. Real external sends and production changes remain disabled until the client approves credentials, data handling, rollback, and human approval rules.
 
 ### flow-guide
 

@@ -15,8 +15,10 @@ AIチャットは会話で終わりやすいです。このプロジェクトは
 ## 最初に何を実行すればいいですか？
 
 ```bash
-ai-automation-kit quickstart --flow-id invoice-document-followup --output .tmp/quickstart
+ai-automation-kit complete-workspace --flow-id invoice-document-followup --output .tmp/complete
 ```
+
+`FINAL_DELIVERY_GUIDE.md`、`completion_checklist.md`、顧客レポート、デモサイト、共有用 zip まで作られます。
 
 ## 企業に何を見せればいいですか？
 
@@ -25,4 +27,3 @@ ai-automation-kit quickstart --flow-id invoice-document-followup --output .tmp/q
 ## 本番接続はできますか？
 
 設計上は進められますが、初期状態では無効です。`connector-doctor` で不足設定を確認し、顧客の承認、認証情報、データ分類、停止手順を決めてから進めます。
-

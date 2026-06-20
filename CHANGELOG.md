@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added `complete-workspace` to generate a ready-to-review local delivery folder in one command.
+- Added final delivery guide, completion checklist, connector report, client report, demo site, and demo zip packaging to the operator workflow.
 - Updated CI to use minimal read permissions and Node 24-compatible GitHub Actions.
 - Added Dependabot coverage for non-major GitHub Actions and Python packaging updates.
 - Removed local absolute paths from checked-in research examples.

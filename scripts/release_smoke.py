@@ -256,6 +256,35 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(package_output / "client_demo_manifest.json")
     _require_file(package_output / "client_demo_package.zip")
 
+    complete_output = output / "complete-accounting"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "complete-workspace",
+            "--flow-id",
+            "invoice-document-followup",
+            "--client-type",
+            "local-business",
+            "--niche",
+            "accounting",
+            "--approver",
+            "release@example.com",
+            "--output",
+            str(complete_output),
+        ],
+        env=env,
+    )
+    _require_file(complete_output / "FINAL_DELIVERY_GUIDE.md")
+    _require_file(complete_output / "completion_checklist.md")
+    _require_file(complete_output / "delivery_manifest.json")
+    _require_file(complete_output / "quickstart" / "flow_project" / "automation_output" / "run_log.json")
+    _require_file(complete_output / "quickstart" / "flow_project" / "local_outbox" / "email_drafts.md")
+    _require_file(complete_output / "connector_doctor" / "connector_doctor.md")
+    _require_file(complete_output / "client_report" / "client_report.html")
+    _require_file(complete_output / "client_demo_package" / "client_demo_package.zip")
+
 
 def _run_github_smokes(output: Path, env: dict[str, str]) -> None:
     onboard_output = output / "onboard-operations"

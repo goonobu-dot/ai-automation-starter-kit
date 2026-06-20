@@ -8,6 +8,7 @@ from ai_automation_kit.core.operator_console import generate_connector_doctor
 from ai_automation_kit.core.operator_console import generate_demo_site
 from ai_automation_kit.core.operator_console import generate_flow_guide
 from ai_automation_kit.core.operator_console import generate_install_bundle
+from ai_automation_kit.core.operator_console import generate_complete_workspace
 from ai_automation_kit.core.operator_console import generate_quickstart_workspace
 from ai_automation_kit.core.operator_console import package_client_demo
 from ai_automation_kit.core.flows import install_flow
@@ -121,6 +122,33 @@ def test_package_client_demo_writes_manifest_and_zip(tmp_path):
         assert "proposal_one_pager.md" in archive.namelist()
 
 
+def test_generate_complete_workspace_creates_done_for_you_delivery(tmp_path):
+    output = tmp_path / "complete"
+
+    payload = generate_complete_workspace(
+        flow_id="invoice-document-followup",
+        industry="finance",
+        client_type="local-business",
+        niche="accounting",
+        approver="owner@example.com",
+        output=output,
+    )
+
+    assert payload["status"] == "ready_to_share"
+    assert payload["flow_id"] == "invoice-document-followup"
+    assert (output / "FINAL_DELIVERY_GUIDE.md").exists()
+    assert (output / "completion_checklist.md").exists()
+    assert (output / "delivery_manifest.json").exists()
+    assert (output / "quickstart" / "flow_project" / "automation_output" / "run_log.json").exists()
+    assert (output / "quickstart" / "flow_project" / "local_outbox" / "email_drafts.md").exists()
+    assert (output / "connector_doctor" / "connector_doctor.md").exists()
+    assert (output / "client_report" / "client_report.html").exists()
+    assert (output / "client_demo_package" / "client_demo_package.zip").exists()
+    guide = (output / "FINAL_DELIVERY_GUIDE.md").read_text()
+    assert "Open These Files In This Order" in guide
+    assert "No next recommendation is required" in guide
+
+
 def test_parser_accepts_operator_commands():
     parser = build_parser()
 
@@ -131,6 +159,7 @@ def test_parser_accepts_operator_commands():
     assert parser.parse_args(["connector-doctor", "--project", "flow", "--output", "out"]).command == "connector-doctor"
     assert parser.parse_args(["client-report", "--flow-project", "flow", "--output", "out"]).command == "client-report"
     assert parser.parse_args(["package-client-demo", "--source", "src", "--output", "out"]).command == "package-client-demo"
+    assert parser.parse_args(["complete-workspace", "--output", "out"]).command == "complete-workspace"
 
 
 def test_main_runs_operator_commands(tmp_path, capsys):
@@ -155,7 +184,11 @@ def test_main_runs_operator_commands(tmp_path, capsys):
     package = tmp_path / "package"
     assert main(["package-client-demo", "--source", str(quickstart), "--output", str(package)]) == 0
 
+    complete = tmp_path / "complete"
+    assert main(["complete-workspace", "--flow-id", "invoice-document-followup", "--output", str(complete)]) == 0
+
     captured = capsys.readouterr()
     assert "quickstart=" in captured.out
     assert "client_demo_package=" in captured.out
+    assert "final_delivery_guide=" in captured.out
     assert json.loads((package / "client_demo_manifest.json").read_text())["file_count"] >= 1

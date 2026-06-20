@@ -8,6 +8,8 @@ from pathlib import Path
 
 from ai_automation_kit.core.beginner_sales import generate_beginner_sales_pack
 from ai_automation_kit.core.client_ready import generate_client_ready_pack
+from ai_automation_kit.core.flow_runtime import approve_all_pending
+from ai_automation_kit.core.flow_runtime import run_flow_project
 from ai_automation_kit.core.flows import get_flow
 from ai_automation_kit.core.flows import install_flow
 from ai_automation_kit.core.flows import list_flows
@@ -192,6 +194,54 @@ def package_client_demo(source: Path, output: Path) -> dict:
     return payload
 
 
+def generate_complete_workspace(
+    flow_id: str | None,
+    industry: str,
+    client_type: str,
+    niche: str,
+    approver: str,
+    output: Path,
+) -> dict:
+    output.mkdir(parents=True, exist_ok=True)
+    quickstart_dir = output / "quickstart"
+    quickstart = generate_quickstart_workspace(
+        flow_id=flow_id,
+        industry=industry,
+        client_type=client_type,
+        niche=niche,
+        output=quickstart_dir,
+    )
+    flow_project = quickstart_dir / "flow_project"
+    run_payload = run_flow_project(flow_project)
+    approval_payload = approve_all_pending(flow_project, approver=approver)
+    connector = generate_connector_doctor(project=flow_project, output=output / "connector_doctor")
+    report = generate_client_report(flow_project=flow_project, output=output / "client_report")
+    demo = generate_demo_site(source=quickstart_dir, output=output / "demo_site", title="Ready-To-Share Automation Demo")
+    package = package_client_demo(source=quickstart_dir, output=output / "client_demo_package")
+    flow = get_flow(quickstart["flow_id"])
+    payload = {
+        "status": "ready_to_share" if run_payload["status"] == "succeeded" and approval_payload["status"] == "approved" else "needs_attention",
+        "flow_id": quickstart["flow_id"],
+        "flow_name": flow["name"],
+        "quickstart": str(quickstart_dir),
+        "flow_project": str(flow_project),
+        "connector_doctor": str(output / "connector_doctor" / "connector_doctor.md"),
+        "client_report": str(output / "client_report" / "client_report.md"),
+        "demo_site": str(output / "demo_site" / "index.html"),
+        "client_demo_package": str(output / "client_demo_package" / "client_demo_package.zip"),
+        "rows_processed": run_payload["rows_processed"],
+        "approved_items": approval_payload["approved_items"],
+        "connector_status": connector["status"],
+        "report_status": report["status"],
+        "demo_asset_count": demo["asset_count"],
+        "package_file_count": package["file_count"],
+    }
+    (output / "delivery_manifest.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output / "FINAL_DELIVERY_GUIDE.md").write_text(_render_complete_delivery_guide(payload), encoding="utf-8")
+    (output / "completion_checklist.md").write_text(_render_completion_checklist(payload), encoding="utf-8")
+    return payload
+
+
 def _ranked_flow(flow: dict, niche: str, index: int) -> dict:
     score = max(60, 101 - index * 3)
     if niche.lower() in {flow["industry"].lower(), flow["genre"].lower()}:
@@ -339,6 +389,66 @@ def _render_package_readme(payload: dict) -> str:
             "",
         ]
     )
+
+
+def _render_complete_delivery_guide(payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Final Delivery Guide: {payload['flow_name']}",
+            "",
+            f"- Status: `{payload['status']}`",
+            f"- Flow ID: `{payload['flow_id']}`",
+            f"- Rows processed in dry-run: `{payload['rows_processed']}`",
+            f"- Approved draft items: `{payload['approved_items']}`",
+            f"- Connector status: `{payload['connector_status']}`",
+            "",
+            "## Open These Files In This Order",
+            "",
+            f"1. `{payload['quickstart']}/START_HERE.md`",
+            f"2. `{payload['quickstart']}/beginner_sales/selected_flow_demo.html`",
+            f"3. `{payload['client_report']}`",
+            f"4. `{payload['demo_site']}`",
+            f"5. `{payload['client_demo_package']}`",
+            "",
+            "## What To Tell The Client",
+            "",
+            "- The first version runs locally and writes files only.",
+            "- The workflow already produced a queue, drafts, approval records, and a readable report.",
+            "- Real external sends, production updates, payments, access grants, and sensitive-data actions stay blocked until the client approves connectors and rollback rules.",
+            "",
+            "## Handoff Decision",
+            "",
+            "No next recommendation is required before review. The client can now choose one of three decisions: continue the pilot, revise the flow, or stop.",
+            "",
+        ]
+    )
+
+
+def _render_completion_checklist(payload: dict) -> str:
+    checks = [
+        ("Quickstart workspace created", payload["quickstart"]),
+        ("Dry-run executed", f"rows_processed={payload['rows_processed']}"),
+        ("Draft approvals exported", f"approved_items={payload['approved_items']}"),
+        ("Connector setup checked", payload["connector_doctor"]),
+        ("Client report generated", payload["client_report"]),
+        ("Demo site generated", payload["demo_site"]),
+        ("Client demo zip packaged", payload["client_demo_package"]),
+    ]
+    lines = ["# Completion Checklist", ""]
+    for label, detail in checks:
+        lines.append(f"- [x] {label}: `{detail}`")
+    lines.extend(
+        [
+            "",
+            "## Before Sharing Outside Your Machine",
+            "",
+            "- [ ] Confirm the zip contains no secrets or client private data.",
+            "- [ ] Confirm the client understands this is a dry-run until real connectors are approved.",
+            "- [ ] Confirm the client has one named approval owner.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
 
 
 def _collect_demo_assets(source: Path) -> list[dict]:

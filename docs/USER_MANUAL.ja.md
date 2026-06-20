@@ -16,6 +16,26 @@ ai-automation-kit doctor --output .tmp/doctor
 
 ## 2. まず1つの案件フォルダを作る
 
+迷った場合は、まずこの1コマンドを使います。案件フォルダ、dry-run 実行結果、承認記録、コネクタ診断、顧客レポート、デモサイト、共有用 zip、最終チェックリストまでまとめて作ります。
+
+```bash
+ai-automation-kit complete-workspace \
+  --flow-id invoice-document-followup \
+  --client-type local-business \
+  --niche accounting \
+  --output .tmp/complete-accounting
+```
+
+最初に見るファイル:
+
+- `.tmp/complete-accounting/FINAL_DELIVERY_GUIDE.md`
+- `.tmp/complete-accounting/completion_checklist.md`
+- `.tmp/complete-accounting/client_report/client_report.html`
+- `.tmp/complete-accounting/demo_site/index.html`
+- `.tmp/complete-accounting/client_demo_package/client_demo_package.zip`
+
+個別に作業したい場合は、次の `quickstart` から順番に進めます。
+
 ```bash
 ai-automation-kit quickstart \
   --flow-id invoice-document-followup \
@@ -97,4 +117,3 @@ ai-automation-kit connector-doctor --project .tmp/flow-project --output .tmp/con
 ```
 
 Gmail送信、Slack投稿、Google Sheets書き込みなどは、初期状態では無効です。本番接続は、顧客の承認、認証情報、データ分類、停止手順、承認者を決めてから進めます。
-

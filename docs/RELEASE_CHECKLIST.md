@@ -38,6 +38,13 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - `.tmp/release-smoke/client-ready-accounting/maintenance_plan.md`
 - `.tmp/release-smoke/client-ready-accounting/marketplace_profile.md`
 - `.tmp/release-smoke/client-ready-accounting/case_study_template.md`
+- `.tmp/release-smoke/complete-accounting/FINAL_DELIVERY_GUIDE.md`
+- `.tmp/release-smoke/complete-accounting/completion_checklist.md`
+- `.tmp/release-smoke/complete-accounting/delivery_manifest.json`
+- `.tmp/release-smoke/complete-accounting/quickstart/flow_project/automation_output/run_log.json`
+- `.tmp/release-smoke/complete-accounting/connector_doctor/connector_doctor.md`
+- `.tmp/release-smoke/complete-accounting/client_report/client_report.html`
+- `.tmp/release-smoke/complete-accounting/client_demo_package/client_demo_package.zip`
 - `.tmp/release-smoke/flow-invoice-document-followup/README.md`
 - `.tmp/release-smoke/flow-invoice-document-followup/.env.example`
 - `.tmp/release-smoke/flow-invoice-document-followup/config/connectors.json`

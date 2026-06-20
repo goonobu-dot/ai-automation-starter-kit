@@ -93,6 +93,7 @@ def test_public_release_audit_script_checks_publish_prerequisites():
     assert "README.md::ai-automation-kit onboard --business-area operations" in result.stdout
     assert "README.md::ai-automation-kit offer-pack --business-area operations" in result.stdout
     assert "README.md::ai-automation-kit client-ready --business-area operations" in result.stdout
+    assert "README.md::ai-automation-kit complete-workspace" in result.stdout
     assert "README.md::ai-automation-kit flows list" in result.stdout
     assert "README.md::ai-automation-kit flows install" in result.stdout
     assert "README.md::ai-automation-kit github-discover --business-area operations" in result.stdout
@@ -201,6 +202,9 @@ def test_public_release_audit_script_checks_final_release_evidence():
     assert "scripts/release_smoke.py::proposal.md" in result.stdout
     assert "scripts/release_smoke.py::pricing_model.md" in result.stdout
     assert "scripts/release_smoke.py::client-ready" in result.stdout
+    assert "scripts/release_smoke.py::complete-workspace" in result.stdout
+    assert "scripts/release_smoke.py::FINAL_DELIVERY_GUIDE.md" in result.stdout
+    assert "scripts/release_smoke.py::completion_checklist.md" in result.stdout
     assert "scripts/release_smoke.py::roi_calculator.csv" in result.stdout
     assert "scripts/release_smoke.py::implementation_readiness_score.json" in result.stdout
     assert "scripts/release_smoke.py::maintenance_plan.md" in result.stdout
