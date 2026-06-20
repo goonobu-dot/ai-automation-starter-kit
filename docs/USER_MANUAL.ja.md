@@ -16,7 +16,7 @@ ai-automation-kit doctor --output .tmp/doctor
 
 ## 2. まず1つの案件フォルダを作る
 
-迷った場合は、まずこの1コマンドを使います。案件フォルダ、dry-run 実行結果、承認記録、コネクタ診断、顧客レポート、デモサイト、共有用 zip、最終チェックリスト、収益化評価、営業クロージング台本、有償PoC範囲、価値測定シート、契約前チェック、提案メール、30日運用計画、成果証明テンプレート、公開OSSパターン比較、統合バックログ、導入方式、運用監視計画、案件化スコア、顧客オンボーディング、本番移行判断、ブラウザで見られるコマンドセンターまでまとめて作ります。
+迷った場合は、まずこの1コマンドを使います。案件フォルダ、dry-run 実行結果、承認記録、コネクタ診断、顧客レポート、デモサイト、共有用 zip、最終チェックリスト、収益化評価、営業クロージング台本、有償PoC範囲、価値測定シート、契約前チェック、提案メール、30日運用計画、成果証明テンプレート、公開OSSパターン比較、統合バックログ、導入方式、運用監視計画、案件化スコア、顧客オンボーディング、本番移行判断、ブラウザで見られるコマンドセンター、AI初心者向けの事業化提案パックまでまとめて作ります。
 
 ```bash
 ai-automation-kit complete-workspace \
@@ -51,8 +51,36 @@ ai-automation-kit complete-workspace \
 - `.tmp/complete-accounting/client_command_center.html`
 - `.tmp/complete-accounting/side_business_starter_10.md`
 - `.tmp/complete-accounting/before_after_demo.html`
+- `.tmp/complete-accounting/business_launch/START_HERE_BUSINESS_LAUNCH.md`
+- `.tmp/complete-accounting/business_launch/first_client_offer.md`
 
 個別に作業したい場合は、次の `quickstart` から順番に進めます。
+
+## 2.1. AIに慣れていない人が企業へ事業化提案する
+
+「どの会社に、何を、いくらで、どう説明すればいいか」が分からない場合は、事業化提案パックを作ります。
+
+```bash
+ai-automation-kit business-launch \
+  --industry finance \
+  --client-type local-business \
+  --niche accounting \
+  --output .tmp/business-launch
+```
+
+生成される主なファイル:
+
+- `.tmp/business-launch/START_HERE_BUSINESS_LAUNCH.md`
+- `.tmp/business-launch/target_industry_playbook.md`
+- `.tmp/business-launch/first_client_offer.md`
+- `.tmp/business-launch/discovery_call_script.md`
+- `.tmp/business-launch/proposal_builder.md`
+- `.tmp/business-launch/pricing_and_scope_menu.md`
+- `.tmp/business-launch/risk_boundary_sheet.md`
+- `.tmp/business-launch/30_day_business_launch_plan.md`
+- `.tmp/business-launch/client_pitch_email.md`
+
+このパックは、いきなり本番自動化を売るためのものではありません。最初は、企業の繰り返し業務を見える化し、サンプルデータで dry-run し、Paid PoC として安全に提案するためのものです。
 
 ## 2.5. 何を売り込むか迷った場合
 

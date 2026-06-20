@@ -97,6 +97,42 @@ def generate_share_check(source: Path, output: Path) -> dict:
     return payload
 
 
+def generate_business_launch_pack(
+    industry: str | None,
+    client_type: str,
+    niche: str,
+    operator_level: str,
+    output: Path,
+) -> dict:
+    output.mkdir(parents=True, exist_ok=True)
+    flows = list_flows(industry=industry) if industry else _starter_flows()
+    if not flows:
+        flows = _starter_flows()
+    recommended_flow = _business_launch_flow_choice(flows, niche)
+    starter_offers = [_business_launch_offer_row(flow, index) for index, flow in enumerate(flows[:10], start=1)]
+    payload = {
+        "status": "ready",
+        "industry": industry or "starter",
+        "client_type": client_type,
+        "niche": niche,
+        "operator_level": operator_level,
+        "recommended_flow": recommended_flow,
+        "starter_offers": starter_offers,
+        "positioning": "企業向け自動化導入の小さなPaid PoCを安全に提案するための事業化パック",
+    }
+    (output / "business_launch.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output / "START_HERE_BUSINESS_LAUNCH.md").write_text(_render_business_launch_start(payload), encoding="utf-8")
+    (output / "target_industry_playbook.md").write_text(_render_target_industry_playbook(payload), encoding="utf-8")
+    (output / "first_client_offer.md").write_text(_render_first_client_offer(payload), encoding="utf-8")
+    (output / "discovery_call_script.md").write_text(_render_discovery_call_script(payload), encoding="utf-8")
+    (output / "proposal_builder.md").write_text(_render_proposal_builder(payload), encoding="utf-8")
+    (output / "pricing_and_scope_menu.md").write_text(_render_pricing_and_scope_menu(payload), encoding="utf-8")
+    (output / "risk_boundary_sheet.md").write_text(_render_risk_boundary_sheet(payload), encoding="utf-8")
+    (output / "30_day_business_launch_plan.md").write_text(_render_30_day_business_launch_plan(payload), encoding="utf-8")
+    (output / "client_pitch_email.md").write_text(_render_client_pitch_email(payload), encoding="utf-8")
+    return payload
+
+
 def generate_flow_guide(industry: str | None, genre: str | None, niche: str, output: Path) -> dict:
     output.mkdir(parents=True, exist_ok=True)
     candidates = list_flows(industry=industry, genre=genre)
@@ -298,6 +334,13 @@ def generate_complete_workspace(
     demo = generate_demo_site(source=quickstart_dir, output=output / "demo_site", title="Ready-To-Share Automation Demo")
     package = package_client_demo(source=quickstart_dir, output=output / "client_demo_package")
     flow = get_flow(quickstart["flow_id"])
+    business_launch = generate_business_launch_pack(
+        industry=flow["industry"],
+        client_type=client_type,
+        niche=niche,
+        operator_level="beginner",
+        output=output / "business_launch",
+    )
     payload = {
         "status": "ready_to_share" if run_payload["status"] == "succeeded" and approval_payload["status"] == "approved" else "needs_attention",
         "flow_id": quickstart["flow_id"],
@@ -312,12 +355,14 @@ def generate_complete_workspace(
         "client_report": str(output / "client_report" / "client_report.md"),
         "demo_site": str(output / "demo_site" / "index.html"),
         "client_demo_package": str(output / "client_demo_package" / "client_demo_package.zip"),
+        "business_launch": str(output / "business_launch" / "START_HERE_BUSINESS_LAUNCH.md"),
         "rows_processed": run_payload["rows_processed"],
         "approved_items": approval_payload["approved_items"],
         "connector_status": connector["status"],
         "report_status": report["status"],
         "demo_asset_count": demo["asset_count"],
         "package_file_count": package["file_count"],
+        "business_launch_status": business_launch["status"],
     }
     payload["revenue_score"] = _revenue_readiness_score(payload)
     (output / "delivery_manifest.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
@@ -574,6 +619,340 @@ def _render_share_check(payload: dict) -> str:
     return "\n".join(lines)
 
 
+def _business_launch_flow_choice(flows: list[dict], niche: str) -> dict:
+    niche_terms = {term for term in niche.lower().replace("-", " ").split() if len(term) >= 4}
+    best = None
+    best_score = -1
+    for index, flow in enumerate(flows):
+        text = " ".join([flow["id"], flow["name"], flow["summary"], flow["industry"], flow["genre"]]).lower()
+        score = 100 - index * 2
+        score += sum(6 for term in niche_terms if term in text)
+        if flow["id"] in STARTER_FLOW_IDS:
+            score += 8
+        if flow["genre"] in {"document", "communication", "reporting", "approval"}:
+            score += 5
+        if score > best_score:
+            best = flow
+            best_score = score
+    selected = dict(best or flows[0])
+    selected["business_launch_score"] = max(0, min(100, best_score))
+    selected["why_beginner_friendly"] = "入力、承認者、成果物、測定指標を説明しやすく、最初は本番送信なしのdry-runで提案できます。"
+    return selected
+
+
+def _business_launch_offer_row(flow: dict, index: int) -> dict:
+    entry_price = 30000 + index * 5000
+    return {
+        "rank": index,
+        "flow_id": flow["id"],
+        "name": flow["name"],
+        "industry": flow["industry"],
+        "client_pain": flow["summary"],
+        "first_offer": "3日間の業務自動化dry-run診断",
+        "price_jpy": f"{entry_price:,}円-{entry_price + 70000:,}円",
+        "proof": flow.get("success_metrics", ["hours_saved"])[0],
+    }
+
+
+def _render_business_launch_start(payload: dict) -> str:
+    flow = payload["recommended_flow"]
+    return "\n".join(
+        [
+            "# Business Launch Start Guide",
+            "",
+            "このフォルダは、AIに慣れていない人が企業向け自動化導入を小さく事業化提案するための実行パックです。",
+            "",
+            "## 最初に読む順番",
+            "",
+            "1. `target_industry_playbook.md` で狙う企業と困りごとを決める。",
+            "2. `first_client_offer.md` で最初の商品を確認する。",
+            "3. `discovery_call_script.md` を見ながらヒアリングする。",
+            "4. `proposal_builder.md` で提案書を作る。",
+            "5. `pricing_and_scope_menu.md` で価格と範囲を選ぶ。",
+            "6. `risk_boundary_sheet.md` で保証しないことと禁止事項を説明する。",
+            "7. `client_pitch_email.md` を送る。",
+            "",
+            "## 推奨する最初の提案",
+            "",
+            f"- Flow: `{flow['id']}`",
+            f"- Name: {flow['name']}",
+            f"- Industry: {flow['industry']}",
+            f"- Why: {flow['why_beginner_friendly']}",
+            "",
+            "## 守ること",
+            "",
+            "- 最初はPaid PoCとして売る。",
+            "- 本番送信、顧客データの自動更新、支払い、採用、法務判断は含めない。",
+            "- 成果保証ではなく、業務の見える化、dry-run、時間削減の測定を提供する。",
+            "",
+        ]
+    )
+
+
+def _render_target_industry_playbook(payload: dict) -> str:
+    lines = [
+        "# Target Industry Playbook",
+        "",
+        f"- Target industry: `{payload['industry']}`",
+        f"- Niche: `{payload['niche']}`",
+        f"- Client type: `{payload['client_type']}`",
+        "",
+        "## 狙いやすい企業",
+        "",
+        "- 毎週同じ確認、転記、返信、集計、督促が発生している。",
+        "- 担当者がスプレッドシート、メール、チャット、CSVで業務を回している。",
+        "- いきなり本番自動化は怖いが、業務の見える化と試作には興味がある。",
+        "- 社内にAI担当者がいない、またはAIを使い始めたばかり。",
+        "",
+        "## 売り込みやすい切り口",
+        "",
+        "| Rank | Flow | 初回提案 | 価格目安 | 測定指標 |",
+        "|---:|---|---|---|---|",
+    ]
+    for offer in payload["starter_offers"]:
+        lines.append(
+            f"| {offer['rank']} | `{offer['flow_id']}` {offer['name']} | {offer['first_offer']} | {offer['price_jpy']} | {offer['proof']} |"
+        )
+    lines.extend(
+        [
+            "",
+            "## 最初の判断基準",
+            "",
+            "- 月30件以上ある業務を優先する。",
+            "- 1件あたり5分以上かかる業務を優先する。",
+            "- 承認者が1人に決まる業務を優先する。",
+            "- 個人情報、決済、法務、採用判断は初回PoCから外す。",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _render_first_client_offer(payload: dict) -> str:
+    flow = payload["recommended_flow"]
+    return "\n".join(
+        [
+            f"# First Client Offer: {flow['name']}",
+            "",
+            "## 商品名",
+            "",
+            "企業向け自動化導入 dry-run 診断 + Paid PoC 設計",
+            "",
+            "## 何を提供するか",
+            "",
+            f"`{flow['id']}` の業務を対象に、現在の手作業を整理し、AIとローカル自動化でどこまで短縮できるかを本番送信なしで確認します。",
+            "",
+            "## 納品物",
+            "",
+            "- 業務フロー図",
+            "- before/after説明",
+            "- サンプルデータでのdry-run出力",
+            "- 承認ポイント一覧",
+            "- 時間削減の測定シート",
+            "- 次に本番化する場合の安全条件",
+            "",
+            "## 提案価格",
+            "",
+            "- 初回診断: 30,000円-50,000円",
+            "- Paid PoC: 80,000円-200,000円",
+            "- 月次改善支援: 30,000円-100,000円/月",
+            "",
+            "## 売り文句",
+            "",
+            "いきなり社内システムを変えるのではなく、まず手作業を見える化し、サンプルデータで自動化の効果を確認します。安全に試して、続けるか止めるかを判断できます。",
+            "",
+        ]
+    )
+
+
+def _render_discovery_call_script(payload: dict) -> str:
+    flow = payload["recommended_flow"]
+    return "\n".join(
+        [
+            f"# Discovery Call Script: {flow['name']}",
+            "",
+            "## 1. 最初の説明",
+            "",
+            "今日は自動化を売り込む前に、今どこで時間がかかっているか、どこなら安全に試せるかを確認します。最初から本番システムには触りません。",
+            "",
+            "## 2. 質問",
+            "",
+            "- 毎週または毎月、繰り返している作業は何ですか。",
+            "- その作業は月に何件ありますか。",
+            "- 1件あたり何分かかりますか。",
+            "- どのツールを使っていますか。例: Excel, Google Sheets, Gmail, Slack, LINE, Notion",
+            "- ミスや遅れが起きると、何が困りますか。",
+            "- 最終確認する人は誰ですか。",
+            "- 自動送信してはいけないものは何ですか。",
+            "- サンプルデータや匿名化したCSVは出せますか。",
+            "",
+            "## 3. 締め方",
+            "",
+            "この内容なら、まず3日程度のdry-runで、手作業の流れ、AIが作る下書き、承認ポイント、時間削減の見込みを確認できます。結果を見て、本番化するか止めるかを決めましょう。",
+            "",
+        ]
+    )
+
+
+def _render_proposal_builder(payload: dict) -> str:
+    flow = payload["recommended_flow"]
+    return "\n".join(
+        [
+            f"# Proposal Builder: {flow['name']}",
+            "",
+            "## 提案書テンプレート",
+            "",
+            "### 目的",
+            "",
+            f"{payload['niche']} の繰り返し業務を対象に、AIとローカル自動化で作業時間、確認漏れ、返信遅れを減らせるか検証します。",
+            "",
+            "### 対象業務",
+            "",
+            f"- 推奨フロー: `{flow['id']}` {flow['name']}",
+            f"- 業務内容: {flow['summary']}",
+            "",
+            "### 実施内容",
+            "",
+            "- 現在の作業手順を整理",
+            "- サンプルデータでdry-run",
+            "- AI下書き、確認リスト、承認キューを作成",
+            "- before/afterをレポート化",
+            "- 本番化する場合の条件を整理",
+            "",
+            "### 成功条件",
+            "",
+            "- 担当者が出力を理解できる",
+            "- 手作業より短い、または確認漏れが減る見込みがある",
+            "- 承認者と禁止事項が明確",
+            "- 継続、修正、停止の判断ができる",
+            "",
+        ]
+    )
+
+
+def _render_pricing_and_scope_menu(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Pricing And Scope Menu",
+            "",
+            "| Plan | Price | Best For | Includes | Not Included |",
+            "|---|---:|---|---|---|",
+            "| 初回診断 | 30,000円-50,000円 | 初めてAI自動化を試す企業 | ヒアリング、業務整理、改善候補1件、簡易提案 | 実装、本番接続 |",
+            "| Paid PoC | 80,000円-200,000円 | 効果を見て判断したい企業 | サンプルデータdry-run、下書き、承認キュー、測定シート、報告 | 本番送信、常時運用 |",
+            "| 月次改善 | 30,000円-100,000円/月 | 小さく継続改善したい企業 | 月1-2回の改善、レポート、追加フロー相談 | 24時間監視、重い開発 |",
+            "| 本番化支援 | 個別見積 | PoCで価値が確認できた企業 | connector設定、承認ルール、運用設計、監視計画 | 法務/セキュリティ責任の代行 |",
+            "",
+            "## 初心者向けの価格ルール",
+            "",
+            "- 最初から大きく売らない。",
+            "- 成果保証ではなく、検証、見える化、改善提案として売る。",
+            "- 安すぎると責任範囲が曖昧になるので、無料相談の次は小さな有料診断にする。",
+            "- 本番化はPoC後に別契約にする。",
+            "",
+        ]
+    )
+
+
+def _render_risk_boundary_sheet(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Risk Boundary Sheet",
+            "",
+            "## 保証しないこと",
+            "",
+            "- 売上増加や利益増加を保証しない。",
+            "- 完全自動化を保証しない。",
+            "- 人間の確認なしで正しい判断ができることを保証しない。",
+            "- 既存システムに必ず接続できることを保証しない。",
+            "",
+            "## 初回PoCでやらないこと",
+            "",
+            "- 本番送信",
+            "- 本番データの更新",
+            "- 支払い、返金、採用、契約、法務判断",
+            "- パスワードやAPIキーの預かり",
+            "- 個人情報や機密情報を含むデータ処理",
+            "",
+            "## 必ず確認すること",
+            "",
+            "- 業務オーナー",
+            "- 承認者",
+            "- 使ってよいサンプルデータ",
+            "- 出力を確認する人",
+            "- stop条件",
+            "- 本番化する場合の責任範囲",
+            "",
+        ]
+    )
+
+
+def _render_30_day_business_launch_plan(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# 30 Day Business Launch Plan",
+            "",
+            "## Week 1: 提案の型を作る",
+            "",
+            "- `first_client_offer.md` を自分の言葉に直す。",
+            "- 10社の候補企業をリスト化する。",
+            "- 1つの業種、1つの業務だけに絞る。",
+            "",
+            "## Week 2: ヒアリングを取る",
+            "",
+            "- `client_pitch_email.md` を送る。",
+            "- 返信があった企業に `discovery_call_script.md` で聞く。",
+            "- 無料相談で終わらせず、小さな有料診断を提案する。",
+            "",
+            "## Week 3: Paid PoCを実施する",
+            "",
+            "- サンプルデータだけでdry-runを作る。",
+            "- before/afterと承認ポイントを見せる。",
+            "- 測定シートで時間削減の可能性を確認する。",
+            "",
+            "## Week 4: 継続提案に進む",
+            "",
+            "- 継続、修正、停止をクライアントに選んでもらう。",
+            "- 本番化する場合は別契約にする。",
+            "- 月次改善支援を小さく提案する。",
+            "",
+        ]
+    )
+
+
+def _render_client_pitch_email(payload: dict) -> str:
+    flow = payload["recommended_flow"]
+    return "\n".join(
+        [
+            f"# Client Pitch Email: {flow['name']}",
+            "",
+            f"Subject: {payload['niche']}業務の手作業を小さく自動化検証しませんか",
+            "",
+            "{{会社名}}",
+            "{{担当者名}} 様",
+            "",
+            "突然のご連絡失礼します。",
+            "",
+            f"{payload['niche']}まわりの繰り返し業務について、いきなり本番システムを変えるのではなく、サンプルデータでAI自動化の効果を確認する小さな診断を行っています。",
+            "",
+            f"最初の対象としては `{flow['name']}` のような業務が向いています。",
+            "",
+            "初回は以下だけを確認します。",
+            "",
+            "- どの作業に時間がかかっているか",
+            "- 月に何件あるか",
+            "- どこで確認漏れや遅れが起きるか",
+            "- 本番送信せずに試せるサンプルデータがあるか",
+            "",
+            "もし合いそうであれば、3日程度のPaid PoCとして、業務フロー、AI下書き、承認ポイント、before/afterレポートまで作れます。",
+            "",
+            "一度15分ほど、対象になりそうな業務があるかだけ確認できればと思います。",
+            "",
+            "{{あなたの名前}}",
+            "",
+        ]
+    )
+
+
 def _render_quickstart_start(flow: dict, payload: dict) -> str:
     return "\n".join(
         [
@@ -723,6 +1102,7 @@ def _render_complete_delivery_guide(payload: dict) -> str:
             "21. `client_command_center.html`",
             "22. `side_business_starter_10.md`",
             "23. `before_after_demo.html`",
+            "24. `business_launch/START_HERE_BUSINESS_LAUNCH.md`",
             "",
             "## What To Tell The Client",
             "",
@@ -764,6 +1144,7 @@ def _render_completion_checklist(payload: dict) -> str:
         ("Client command center prepared", "client_command_center.html"),
         ("Side business starter 10 prepared", "side_business_starter_10.md"),
         ("Before/after demo prepared", "before_after_demo.html"),
+        ("Business launch proposal pack prepared", payload["business_launch"]),
     ]
     lines = ["# Completion Checklist", ""]
     for label, detail in checks:

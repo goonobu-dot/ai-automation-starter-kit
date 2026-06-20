@@ -195,6 +195,28 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(recommend_output / "recommended_flow.md")
     _require_file(recommend_output / "recommended_poc_scope.md")
 
+    business_launch_output = output / "business-launch"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "business-launch",
+            "--industry",
+            "finance",
+            "--client-type",
+            "local-business",
+            "--niche",
+            "accounting",
+            "--output",
+            str(business_launch_output),
+        ],
+        env=env,
+    )
+    _require_file(business_launch_output / "START_HERE_BUSINESS_LAUNCH.md")
+    _require_file(business_launch_output / "first_client_offer.md")
+    _require_file(business_launch_output / "risk_boundary_sheet.md")
+
     connector_output = output / "connector-doctor"
     _run(
         [
@@ -354,6 +376,8 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(complete_output / "client_command_center.html")
     _require_file(complete_output / "side_business_starter_10.md")
     _require_file(complete_output / "before_after_demo.html")
+    _require_file(complete_output / "business_launch" / "START_HERE_BUSINESS_LAUNCH.md")
+    _require_file(complete_output / "business_launch" / "first_client_offer.md")
     _require_file(complete_output / "quickstart" / "flow_project" / "automation_output" / "run_log.json")
     _require_file(complete_output / "quickstart" / "flow_project" / "local_outbox" / "email_drafts.md")
     _require_file(complete_output / "connector_doctor" / "connector_doctor.md")

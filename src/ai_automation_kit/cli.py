@@ -23,6 +23,7 @@ from ai_automation_kit.core.operator_console import generate_connector_doctor
 from ai_automation_kit.core.operator_console import generate_demo_site
 from ai_automation_kit.core.operator_console import generate_flow_guide
 from ai_automation_kit.core.operator_console import generate_install_bundle
+from ai_automation_kit.core.operator_console import generate_business_launch_pack
 from ai_automation_kit.core.operator_console import generate_opportunity_catalog
 from ai_automation_kit.core.operator_console import generate_quickstart_workspace
 from ai_automation_kit.core.operator_console import generate_recommended_flow_from_intake
@@ -138,6 +139,13 @@ def build_parser() -> argparse.ArgumentParser:
     share_check = subparsers.add_parser("share-check")
     share_check.add_argument("--source", required=True)
     share_check.add_argument("--output", required=True)
+
+    business_launch = subparsers.add_parser("business-launch")
+    business_launch.add_argument("--industry", default="finance")
+    business_launch.add_argument("--client-type", default="local-business")
+    business_launch.add_argument("--niche", default="accounting")
+    business_launch.add_argument("--operator-level", default="beginner")
+    business_launch.add_argument("--output", required=True)
 
     flows = subparsers.add_parser("flows")
     flow_subparsers = flows.add_subparsers(dest="flow_command", required=True)
@@ -365,6 +373,19 @@ def main(argv: list[str] | None = None) -> int:
         print(f"share_check={args.output}/share_check.md")
         print(f"status={payload['status']}")
         return 0 if payload["status"] in {"ready", "warning"} else 1
+    if args.command == "business-launch":
+        payload = generate_business_launch_pack(
+            industry=args.industry,
+            client_type=args.client_type,
+            niche=args.niche,
+            operator_level=args.operator_level,
+            output=Path(args.output),
+        )
+        print(f"business_launch={args.output}/START_HERE_BUSINESS_LAUNCH.md")
+        print(f"first_client_offer={args.output}/first_client_offer.md")
+        print(f"recommended_flow={payload['recommended_flow']['id']}")
+        print(f"status={payload['status']}")
+        return 0
     if args.command == "flows":
         if args.flow_command == "list":
             flows = list_flows(industry=args.industry, genre=args.genre)

@@ -12,13 +12,23 @@ AIチャットは会話で終わりやすいです。このプロジェクトは
 
 使える形を目指しています。ただし収益保証ではありません。企業の繰り返し業務を見つけ、小さな dry-run PoC として提案するための道具です。
 
+## AIに慣れていない人でも企業へ提案できますか？
+
+提案しやすくするために `business-launch` を用意しています。狙う業種、最初の商品、ヒアリング台本、提案書、価格表、リスク境界、30日行動計画、営業メールをまとめて作ります。
+
+```bash
+ai-automation-kit business-launch --industry finance --client-type local-business --niche accounting --output .tmp/business-launch
+```
+
+最初は本番自動化ではなく、サンプルデータを使った有料の dry-run PoC として提案します。
+
 ## 最初に何を実行すればいいですか？
 
 ```bash
 ai-automation-kit complete-workspace --flow-id invoice-document-followup --output .tmp/complete
 ```
 
-`FINAL_DELIVERY_GUIDE.md`、`completion_checklist.md`、顧客レポート、デモサイト、共有用 zip、収益化評価、営業クロージング台本、有償PoC範囲、価値測定シート、契約前チェック、提案メール、30日運用計画、成果証明テンプレート、公開OSSパターン比較、統合バックログ、導入方式、運用監視計画、案件化スコア、顧客オンボーディング、本番移行判断、ブラウザ用コマンドセンターまで作られます。
+`FINAL_DELIVERY_GUIDE.md`、`completion_checklist.md`、顧客レポート、デモサイト、共有用 zip、収益化評価、営業クロージング台本、有償PoC範囲、価値測定シート、契約前チェック、提案メール、30日運用計画、成果証明テンプレート、公開OSSパターン比較、統合バックログ、導入方式、運用監視計画、案件化スコア、顧客オンボーディング、本番移行判断、ブラウザ用コマンドセンター、`business_launch/` の事業化提案パックまで作られます。
 
 ## 企業に何を見せればいいですか？
 

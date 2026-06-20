@@ -59,6 +59,12 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - `.tmp/release-smoke/complete-accounting/client_command_center.html`
 - `.tmp/release-smoke/complete-accounting/side_business_starter_10.md`
 - `.tmp/release-smoke/complete-accounting/before_after_demo.html`
+- `.tmp/release-smoke/complete-accounting/business_launch/START_HERE_BUSINESS_LAUNCH.md`
+- `.tmp/release-smoke/complete-accounting/business_launch/first_client_offer.md`
+- `.tmp/release-smoke/business-launch/START_HERE_BUSINESS_LAUNCH.md`
+- `.tmp/release-smoke/business-launch/target_industry_playbook.md`
+- `.tmp/release-smoke/business-launch/first_client_offer.md`
+- `.tmp/release-smoke/business-launch/risk_boundary_sheet.md`
 - `.tmp/release-smoke/opportunity-catalog/opportunity_catalog.html`
 - `.tmp/release-smoke/recommend-flow/recommended_flow.md`
 - `.tmp/release-smoke/share-check/share_check.md`
@@ -130,6 +136,7 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - [ ] Confirm dry-run, approval, rollback, and audit guidance is visible in generated outputs.
 - [ ] Confirm `artifact_index.md` points to the right first-read files.
 - [ ] Confirm offer-pack files do not guarantee income and clearly define scope, pricing model, client approval, and safety boundaries.
+- [ ] Confirm `business-launch` outputs explain the first offer, discovery call, pricing, risk boundaries, and 30-day launch path without promising income or fully autonomous production work.
 - [ ] Confirm client-ready files cover intake, ROI, proposal tiers, security, tool selection, maintenance, marketplace profile, and case-study evidence.
 - [ ] Confirm `flows list`, `flows show`, `flows install`, `flows validate`, `flows run`, and `flows approve` work for at least one installed flow.
 - [ ] Confirm installed flow projects include `flow.yaml`, `workflow_map.mmd`, approval points, sample data, a dry-run script, and a contract test.

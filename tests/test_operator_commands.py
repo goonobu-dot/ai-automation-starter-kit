@@ -8,6 +8,7 @@ from ai_automation_kit.core.operator_console import generate_connector_doctor
 from ai_automation_kit.core.operator_console import generate_demo_site
 from ai_automation_kit.core.operator_console import generate_flow_guide
 from ai_automation_kit.core.operator_console import generate_install_bundle
+from ai_automation_kit.core.operator_console import generate_business_launch_pack
 from ai_automation_kit.core.operator_console import generate_complete_workspace
 from ai_automation_kit.core.operator_console import generate_opportunity_catalog
 from ai_automation_kit.core.operator_console import generate_quickstart_workspace
@@ -165,6 +166,8 @@ def test_generate_complete_workspace_creates_done_for_you_delivery(tmp_path):
     assert (output / "client_command_center.html").exists()
     assert (output / "side_business_starter_10.md").exists()
     assert (output / "before_after_demo.html").exists()
+    assert (output / "business_launch" / "START_HERE_BUSINESS_LAUNCH.md").exists()
+    assert (output / "business_launch" / "first_client_offer.md").exists()
     guide = (output / "FINAL_DELIVERY_GUIDE.md").read_text()
     assert "Open These Files In This Order" in guide
     assert "revenue_readiness_scorecard.md" in guide
@@ -176,6 +179,7 @@ def test_generate_complete_workspace_creates_done_for_you_delivery(tmp_path):
     assert "client_command_center.html" in guide
     assert "side_business_starter_10.md" in guide
     assert "before_after_demo.html" in guide
+    assert "business_launch/START_HERE_BUSINESS_LAUNCH.md" in guide
     assert "No next recommendation is required" in guide
     scorecard = (output / "revenue_readiness_scorecard.md").read_text()
     assert "Revenue Readiness Scorecard" in scorecard
@@ -216,6 +220,7 @@ def test_generate_complete_workspace_creates_done_for_you_delivery(tmp_path):
     assert "FINAL_DELIVERY_GUIDE.md" in command_center
     assert "Before / After Demo" in (output / "before_after_demo.html").read_text()
     assert "Starter 10" in (output / "side_business_starter_10.md").read_text()
+    assert "企業向け自動化導入" in (output / "business_launch" / "first_client_offer.md").read_text()
 
 
 def test_generate_opportunity_catalog_creates_sales_catalog(tmp_path):
@@ -263,6 +268,45 @@ def test_generate_share_check_blocks_secret_like_content(tmp_path):
     assert "sk-" in (output / "share_check.md").read_text()
 
 
+def test_generate_business_launch_pack_creates_beginner_business_proposal_system(tmp_path):
+    output = tmp_path / "business-launch"
+
+    payload = generate_business_launch_pack(
+        industry="finance",
+        client_type="local-business",
+        niche="accounting",
+        operator_level="beginner",
+        output=output,
+    )
+
+    assert payload["status"] == "ready"
+    assert payload["recommended_flow"]["id"] == "invoice-document-followup"
+    assert payload["operator_level"] == "beginner"
+    expected_files = [
+        "START_HERE_BUSINESS_LAUNCH.md",
+        "target_industry_playbook.md",
+        "first_client_offer.md",
+        "discovery_call_script.md",
+        "proposal_builder.md",
+        "pricing_and_scope_menu.md",
+        "risk_boundary_sheet.md",
+        "30_day_business_launch_plan.md",
+        "client_pitch_email.md",
+        "business_launch.json",
+    ]
+    for name in expected_files:
+        assert (output / name).exists()
+    start = (output / "START_HERE_BUSINESS_LAUNCH.md").read_text()
+    assert "AIに慣れていない人" in start
+    assert "first_client_offer.md" in start
+    offer = (output / "first_client_offer.md").read_text()
+    assert "企業向け自動化導入" in offer
+    assert "Paid PoC" in offer
+    risk = (output / "risk_boundary_sheet.md").read_text()
+    assert "保証しないこと" in risk
+    assert "本番送信" in risk
+
+
 def test_parser_accepts_operator_commands():
     parser = build_parser()
 
@@ -277,6 +321,7 @@ def test_parser_accepts_operator_commands():
     assert parser.parse_args(["opportunity-catalog", "--output", "out"]).command == "opportunity-catalog"
     assert parser.parse_args(["recommend-flow", "--pain", "late invoices", "--output", "out"]).command == "recommend-flow"
     assert parser.parse_args(["share-check", "--source", "src", "--output", "out"]).command == "share-check"
+    assert parser.parse_args(["business-launch", "--output", "out"]).command == "business-launch"
 
 
 def test_main_runs_operator_commands(tmp_path, capsys):
@@ -313,6 +358,9 @@ def test_main_runs_operator_commands(tmp_path, capsys):
     share_check = tmp_path / "share-check"
     assert main(["share-check", "--source", str(quickstart), "--output", str(share_check)]) == 0
 
+    business_launch = tmp_path / "business-launch"
+    assert main(["business-launch", "--industry", "finance", "--niche", "accounting", "--output", str(business_launch)]) == 0
+
     captured = capsys.readouterr()
     assert "quickstart=" in captured.out
     assert "client_demo_package=" in captured.out
@@ -320,4 +368,5 @@ def test_main_runs_operator_commands(tmp_path, capsys):
     assert "opportunity_catalog=" in captured.out
     assert "recommended_flow=" in captured.out
     assert "share_check=" in captured.out
+    assert "business_launch=" in captured.out
     assert json.loads((package / "client_demo_manifest.json").read_text())["file_count"] >= 1
