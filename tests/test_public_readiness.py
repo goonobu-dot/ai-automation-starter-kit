@@ -34,6 +34,12 @@ def test_readme_links_start_here_and_use_cases_docs():
     assert "docs/START_HERE.ja.md" in readme
     assert "docs/USE_CASES.md" in readme
     assert "docs/USE_CASES.ja.md" in readme
+    assert "docs/USER_MANUAL.md" in readme
+    assert "docs/SELLING_AUTOMATION_GUIDE.md" in readme
+    assert "docs/FLOW_SELECTION_GUIDE.md" in readme
+    assert "docs/CLIENT_DEMO_SCRIPT.md" in readme
+    assert "docs/REAL_WORLD_SETUP_GUIDE.md" in readme
+    assert "docs/FAQ.md" in readme
 
 
 def test_start_here_and_use_cases_docs_help_first_time_users():
@@ -49,6 +55,22 @@ def test_start_here_and_use_cases_docs_help_first_time_users():
     assert "business automation" in english_cases
     assert "ユースケース" in japanese_cases
     assert "業務自動化" in japanese_cases
+
+
+def test_english_manuals_match_japanese_business_proposal_coverage():
+    expected_docs = {
+        "docs/USER_MANUAL.md": ["business-launch", "complete-workspace", "Paid PoC", "share-check"],
+        "docs/SELLING_AUTOMATION_GUIDE.md": ["dry-run PoC", "proposal", "human approval", "Do not promise income"],
+        "docs/FLOW_SELECTION_GUIDE.md": ["invoice", "support reply", "avoid", "human approver"],
+        "docs/CLIENT_DEMO_SCRIPT.md": ["Client Demo Script", "work queue", "approval queue", "continue, revise, or stop"],
+        "docs/REAL_WORLD_SETUP_GUIDE.md": ["connector-doctor", "Gmail / Outlook", "Go Live", "rollback"],
+        "docs/FAQ.md": ["business-launch", "side business", "dry-run", "production"],
+    }
+    for path, snippets in expected_docs.items():
+        text = Path(path).read_text()
+        assert len(text) > 800, path
+        for snippet in snippets:
+            assert snippet in text, f"{path} missing {snippet}"
 
 
 def test_ci_runs_tests_from_project_root():

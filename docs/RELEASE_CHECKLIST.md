@@ -68,6 +68,12 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - `.tmp/release-smoke/opportunity-catalog/opportunity_catalog.html`
 - `.tmp/release-smoke/recommend-flow/recommended_flow.md`
 - `.tmp/release-smoke/share-check/share_check.md`
+- `docs/USER_MANUAL.md`
+- `docs/SELLING_AUTOMATION_GUIDE.md`
+- `docs/FLOW_SELECTION_GUIDE.md`
+- `docs/CLIENT_DEMO_SCRIPT.md`
+- `docs/REAL_WORLD_SETUP_GUIDE.md`
+- `docs/FAQ.md`
 - `.tmp/release-smoke/complete-accounting/quickstart/flow_project/automation_output/run_log.json`
 - `.tmp/release-smoke/complete-accounting/connector_doctor/connector_doctor.md`
 - `.tmp/release-smoke/complete-accounting/client_report/client_report.html`
@@ -137,6 +143,7 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - [ ] Confirm `artifact_index.md` points to the right first-read files.
 - [ ] Confirm offer-pack files do not guarantee income and clearly define scope, pricing model, client approval, and safety boundaries.
 - [ ] Confirm `business-launch` outputs explain the first offer, discovery call, pricing, risk boundaries, and 30-day launch path without promising income or fully autonomous production work.
+- [ ] Confirm English manuals explain the same business proposal path as the Japanese manuals.
 - [ ] Confirm client-ready files cover intake, ROI, proposal tiers, security, tool selection, maintenance, marketplace profile, and case-study evidence.
 - [ ] Confirm `flows list`, `flows show`, `flows install`, `flows validate`, `flows run`, and `flows approve` work for at least one installed flow.
 - [ ] Confirm installed flow projects include `flow.yaml`, `workflow_map.mmd`, approval points, sample data, a dry-run script, and a contract test.
