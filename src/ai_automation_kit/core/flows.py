@@ -8,11 +8,16 @@ REQUIRED_PROJECT_FILES = [
     "README.md",
     "flow.yaml",
     "flow.json",
+    ".env.example",
+    "config/connectors.json",
+    "docs/SYSTEM_RUNBOOK.md",
     "workflow_map.mmd",
     "before_after_workflow.md",
     "human_approval_points.md",
     "sample_data/input.csv",
     "scripts/run_dry_run.py",
+    "scripts/run_automation.py",
+    "scripts/approve_all.py",
     "tests/test_flow_contract.py",
 ]
 
@@ -335,6 +340,8 @@ def get_flow(flow_id: str) -> dict:
 def install_flow(flow_id: str, output: Path) -> dict:
     flow = get_flow(flow_id)
     output.mkdir(parents=True, exist_ok=True)
+    (output / "config").mkdir(exist_ok=True)
+    (output / "docs").mkdir(exist_ok=True)
     (output / "sample_data").mkdir(exist_ok=True)
     (output / "scripts").mkdir(exist_ok=True)
     (output / "tests").mkdir(exist_ok=True)
@@ -350,11 +357,16 @@ def install_flow(flow_id: str, output: Path) -> dict:
     (output / "README.md").write_text(_render_project_readme(flow), encoding="utf-8")
     (output / "flow.yaml").write_text(_render_flow_yaml(flow), encoding="utf-8")
     (output / "flow.json").write_text(json.dumps(flow, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output / ".env.example").write_text(_render_env_example(flow), encoding="utf-8")
+    (output / "config" / "connectors.json").write_text(json.dumps(_connector_config(flow), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output / "docs" / "SYSTEM_RUNBOOK.md").write_text(_render_system_runbook(flow), encoding="utf-8")
     (output / "workflow_map.mmd").write_text(_render_mermaid(flow), encoding="utf-8")
     (output / "before_after_workflow.md").write_text(_render_before_after(flow), encoding="utf-8")
     (output / "human_approval_points.md").write_text(_render_approval_points(flow), encoding="utf-8")
     (output / "sample_data" / "input.csv").write_text(_render_sample_csv(flow), encoding="utf-8")
     (output / "scripts" / "run_dry_run.py").write_text(_render_dry_run_script(flow), encoding="utf-8")
+    (output / "scripts" / "run_automation.py").write_text(_render_run_automation_script(flow), encoding="utf-8")
+    (output / "scripts" / "approve_all.py").write_text(_render_approve_all_script(flow), encoding="utf-8")
     (output / "tests" / "test_flow_contract.py").write_text(_render_contract_test(flow), encoding="utf-8")
     return payload
 
@@ -400,20 +412,25 @@ def _render_project_readme(flow: dict) -> str:
             "## Files",
             "",
             "- `flow.yaml` - editable flow definition.",
+            "- `config/connectors.json` - local connector routing configuration.",
             "- `workflow_map.mmd` - Mermaid workflow diagram.",
             "- `before_after_workflow.md` - before/after business explanation.",
             "- `human_approval_points.md` - steps that require human review.",
             "- `sample_data/input.csv` - safe sample input data.",
-            "- `scripts/run_dry_run.py` - local dry-run script.",
+            "- `scripts/run_automation.py` - local runtime script.",
+            "- `scripts/approve_all.py` - local approval-to-outbox script.",
+            "- `scripts/run_dry_run.py` - compatibility wrapper for dry-run execution.",
             "",
             "## Run The Dry Run",
             "",
             "```bash",
             "python3 scripts/run_dry_run.py",
+            "python3 scripts/run_automation.py",
+            "python3 scripts/approve_all.py --approver you@example.com",
             "python3 -m pytest tests/test_flow_contract.py -q",
             "```",
             "",
-            "This scaffold is safe-by-default. It does not send external messages or update production systems.",
+            "This scaffold is safe-by-default. It creates local queues, drafts, approval records, reports, and local outbox files. It does not send external messages or update production systems.",
             "",
         ]
     )
@@ -448,6 +465,86 @@ def _render_flow_yaml(flow: dict) -> str:
     lines.append(f"  production_guardrail: {_risk_policy(flow)['production_guardrail']}")
     lines.append("  dry_run_first: true")
     return "\n".join(lines) + "\n"
+
+
+def _connector_config(flow: dict) -> dict:
+    return {
+        "mode": "dry-run",
+        "flow_id": flow["id"],
+        "input": {"type": "csv", "path": "sample_data/input.csv"},
+        "outputs": {
+            "work_queue": "automation_output/work_queue.csv",
+            "draft_outputs": "automation_output/draft_outputs.md",
+            "approval_queue": "automation_output/approval_queue.csv",
+            "connector_tasks": "automation_output/connector_tasks.jsonl",
+            "status_report": "automation_output/status_report.md",
+            "run_log": "automation_output/run_log.json",
+            "local_outbox": "local_outbox/",
+        },
+        "connectors": [
+            {"id": "csv_input", "type": "local_csv", "enabled": True, "production_safe": True},
+            {"id": "email_draft", "type": "local_email_draft", "enabled": True, "production_safe": True},
+            {"id": "slack_draft", "type": "local_slack_draft", "enabled": True, "production_safe": True},
+            {"id": "file_report", "type": "local_file_report", "enabled": True, "production_safe": True},
+        ],
+        "disabled_external_connectors": [
+            {"id": "gmail_send", "reason": "requires OAuth and explicit human approval"},
+            {"id": "slack_post", "reason": "requires webhook and explicit human approval"},
+            {"id": "google_sheets_write", "reason": "requires service account and client data review"},
+        ],
+    }
+
+
+def _render_env_example(flow: dict) -> str:
+    return "\n".join(
+        [
+            f"# {flow['name']} local automation settings",
+            "FLOW_MODE=dry-run",
+            "APPROVER_EMAIL=owner@example.com",
+            "# Optional future connectors. Leave empty for local-only execution.",
+            "GMAIL_CLIENT_ID=",
+            "GMAIL_CLIENT_SECRET=",
+            "SLACK_WEBHOOK_URL=",
+            "GOOGLE_SHEETS_CREDENTIALS_JSON=",
+            "",
+        ]
+    )
+
+
+def _render_system_runbook(flow: dict) -> str:
+    return "\n".join(
+        [
+            f"# System Runbook: {flow['name']}",
+            "",
+            "This generated project is a local automation system scaffold. It runs safely in dry-run mode and writes all outputs to local files.",
+            "",
+            "## Run",
+            "",
+            "```bash",
+            "python3 scripts/run_automation.py",
+            "python3 scripts/approve_all.py --approver owner@example.com",
+            "python3 -m pytest tests/test_flow_contract.py -q",
+            "```",
+            "",
+            "## Outputs",
+            "",
+            "- `automation_output/work_queue.csv`",
+            "- `automation_output/draft_outputs.md`",
+            "- `automation_output/approval_queue.csv`",
+            "- `automation_output/connector_tasks.jsonl`",
+            "- `automation_output/status_report.md`",
+            "- `automation_output/run_log.json`",
+            "- `automation_output/approved_actions.csv` after approval",
+            "- `local_outbox/email_drafts.md` after approval",
+            "- `local_outbox/slack_messages.md` after approval",
+            "",
+            "## Production Boundary",
+            "",
+            "The default system never sends external messages, posts to Slack, updates Google Sheets, grants access, moves money, or makes irreversible decisions.",
+            "Enable real connectors only after credentials, data classification, approval ownership, and rollback rules are defined.",
+            "",
+        ]
+    )
 
 
 def _render_mermaid(flow: dict) -> str:
@@ -534,9 +631,21 @@ def _sample_value(column: str) -> str:
 def _render_dry_run_script(flow: dict) -> str:
     return f'''from __future__ import annotations
 
+from run_automation import main
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+'''
+
+
+def _render_run_automation_script(flow: dict) -> str:
+    return f'''from __future__ import annotations
+
 from pathlib import Path
 
 from ai_automation_kit.core.flow_runtime import run_flow_project
+
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -546,9 +655,40 @@ def main() -> int:
     output_dir = ROOT / "automation_output"
     print(f"automation_status={{result['status']}}")
     print(f"rows_processed={{result['rows_processed']}}")
+    print(f"work_queue={{output_dir / 'work_queue.csv'}}")
     print(f"draft_outputs={{output_dir / 'draft_outputs.md'}}")
     print(f"approval_queue={{output_dir / 'approval_queue.csv'}}")
+    print(f"connector_tasks={{output_dir / 'connector_tasks.jsonl'}}")
     print(f"status_report={{output_dir / 'status_report.md'}}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
+'''
+
+
+def _render_approve_all_script(flow: dict) -> str:
+    return f'''from __future__ import annotations
+
+import argparse
+from pathlib import Path
+
+from ai_automation_kit.core.flow_runtime import approve_all_pending
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Approve pending local automation drafts into local outbox files.")
+    parser.add_argument("--approver", default="local-operator")
+    args = parser.parse_args()
+    result = approve_all_pending(ROOT, approver=args.approver)
+    print(f"approval_status={{result['status']}}")
+    print(f"approved_items={{result['approved_items']}}")
+    for path in result["outbox"]:
+        print(f"outbox={{path}}")
     return 0
 
 

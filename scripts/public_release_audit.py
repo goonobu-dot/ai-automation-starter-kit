@@ -118,7 +118,13 @@ REQUIRED_GENERATED_ARTIFACT_SNIPPETS = [
     "flow.yaml",
     "workflow_map.mmd",
     "scripts/run_dry_run.py",
+    "scripts/run_automation.py",
+    "scripts/approve_all.py",
+    "connectors.json",
+    "SYSTEM_RUNBOOK.md",
+    ".env.example",
     "automation_output",
+    "local_outbox",
 ]
 
 REQUIRED_PYPROJECT_SNIPPETS = [
@@ -236,9 +242,11 @@ REQUIRED_RELEASE_SMOKE_SNIPPETS = [
     ("marketplace_profile.md", "marketplace_profile.md"),
     ("flows install", "flows"),
     ("flows run", '"run"'),
+    ("flows approve", '"approve"'),
     ("flow.yaml", "flow.yaml"),
     ("workflow_map.mmd", "workflow_map.mmd"),
     ("automation_output", "automation_output"),
+    ("local_outbox", "local_outbox"),
     ("github-discover", "github-discover"),
     ("adapter_starter/smoke_test.py", "adapter_starter/smoke_test.py"),
     ("manual_review_pack.md", "manual_review_pack.md"),

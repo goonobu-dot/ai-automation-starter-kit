@@ -22,7 +22,7 @@ The project also includes five reusable workflow templates for research, documen
 
 For monetization work, `offer-pack` creates proposal assets and `client-ready` creates the deeper sales-to-delivery pack: intake, ROI, pricing, security, tool choice, maintenance, outreach, and case-study templates.
 
-For hands-on automation work, `flows` gives users a research-backed catalog of 60+ ready-made business automation flows. A user can choose a flow by industry or genre, install it into a local project folder, inspect `flow.yaml`, view `workflow_map.mmd`, and run the local automation runtime to generate a work queue, draft outputs, an approval queue, a status report, and a run log before connecting real tools. See [Automation Demand Research](docs/AUTOMATION_DEMAND_RESEARCH.md) for the industry and workflow demand map behind the catalog.
+For hands-on automation work, `flows` gives users a research-backed catalog of 60+ ready-made business automation flows. A user can choose a flow by industry or genre, install it into a local project folder, inspect `flow.yaml`, view `workflow_map.mmd`, and run the local automation runtime to generate a work queue, draft outputs, an approval queue, connector tasks, a status report, and a run log. The installed project also includes `.env.example`, `config/connectors.json`, a system runbook, approval scripts, and local outbox files so the flow can become a real integration project without sending anything by accident. See [Automation Demand Research](docs/AUTOMATION_DEMAND_RESEARCH.md) for the industry and workflow demand map behind the catalog.
 
 ## Beginner-Friendly Guides
 
@@ -111,6 +111,7 @@ ai-automation-kit flows show invoice-document-followup
 ai-automation-kit flows install invoice-document-followup --output .tmp/flow-invoice-document-followup
 ai-automation-kit flows validate .tmp/flow-invoice-document-followup
 ai-automation-kit flows run .tmp/flow-invoice-document-followup
+ai-automation-kit flows approve .tmp/flow-invoice-document-followup --approver owner@example.com
 ```
 
 ## 3-Minute Walkthrough
@@ -154,8 +155,10 @@ Example generated files:
 - `.tmp/flow-invoice-document-followup/flow.yaml`
 - `.tmp/flow-invoice-document-followup/workflow_map.mmd`
 - `.tmp/flow-invoice-document-followup/scripts/run_dry_run.py`
+- `.tmp/flow-invoice-document-followup/config/connectors.json`
 - `.tmp/flow-invoice-document-followup/automation_output/draft_outputs.md`
 - `.tmp/flow-invoice-document-followup/automation_output/approval_queue.csv`
+- `.tmp/flow-invoice-document-followup/local_outbox/email_drafts.md`
 
 ## Example Use Cases
 
@@ -263,9 +266,10 @@ ai-automation-kit flows show invoice-document-followup
 ai-automation-kit flows install invoice-document-followup --output .tmp/flow-invoice-document-followup
 ai-automation-kit flows validate .tmp/flow-invoice-document-followup
 ai-automation-kit flows run .tmp/flow-invoice-document-followup
+ai-automation-kit flows approve .tmp/flow-invoice-document-followup --approver owner@example.com
 ```
 
-Installed flow projects include `README.md`, `flow.yaml`, `flow.json`, `workflow_map.mmd`, `before_after_workflow.md`, `human_approval_points.md`, `sample_data/input.csv`, `scripts/run_dry_run.py`, and `tests/test_flow_contract.py`. Running the flow creates `automation_output/work_queue.csv`, `automation_output/draft_outputs.md`, `automation_output/approval_queue.csv`, `automation_output/status_report.md`, and `automation_output/run_log.json`. The runtime is dry-run only, so it does not send external messages, grant access, move money, approve hiring decisions, or update production systems.
+Installed flow projects include `README.md`, `.env.example`, `config/connectors.json`, `docs/SYSTEM_RUNBOOK.md`, `flow.yaml`, `flow.json`, `workflow_map.mmd`, `before_after_workflow.md`, `human_approval_points.md`, `sample_data/input.csv`, `scripts/run_automation.py`, `scripts/approve_all.py`, `scripts/run_dry_run.py`, and `tests/test_flow_contract.py`. Running the flow creates `automation_output/work_queue.csv`, `automation_output/draft_outputs.md`, `automation_output/approval_queue.csv`, `automation_output/connector_tasks.jsonl`, `automation_output/status_report.md`, and `automation_output/run_log.json`. Approving the flow creates `automation_output/approved_actions.csv`, `local_outbox/email_drafts.md`, and `local_outbox/slack_messages.md`. The runtime is local-first and dry-run only, so it does not send external messages, grant access, move money, approve hiring decisions, or update production systems.
 
 ### doctor
 

@@ -2,6 +2,7 @@ from ai_automation_kit.core.flows import get_flow
 from ai_automation_kit.core.flows import install_flow
 from ai_automation_kit.core.flows import list_flows
 from ai_automation_kit.core.flows import validate_flow_project
+from ai_automation_kit.core.flow_runtime import approve_all_pending
 from ai_automation_kit.core.flow_runtime import run_flow_project
 
 
@@ -80,6 +81,11 @@ def test_install_flow_creates_local_project_scaffold(tmp_path):
     assert (output / "human_approval_points.md").exists()
     assert (output / "sample_data" / "input.csv").exists()
     assert (output / "scripts" / "run_dry_run.py").exists()
+    assert (output / "scripts" / "run_automation.py").exists()
+    assert (output / "scripts" / "approve_all.py").exists()
+    assert (output / ".env.example").exists()
+    assert (output / "config" / "connectors.json").exists()
+    assert (output / "docs" / "SYSTEM_RUNBOOK.md").exists()
     assert (output / "tests" / "test_flow_contract.py").exists()
 
 
@@ -96,8 +102,25 @@ def test_run_flow_project_executes_generic_automation_outputs(tmp_path):
     assert (output / "automation_output" / "approval_queue.csv").exists()
     assert (output / "automation_output" / "status_report.md").exists()
     assert (output / "automation_output" / "run_log.json").exists()
+    assert (output / "automation_output" / "connector_tasks.jsonl").exists()
     assert "Create follow-up draft" in (output / "automation_output" / "draft_outputs.md").read_text()
     assert "human approval" in (output / "automation_output" / "approval_queue.csv").read_text()
+
+
+def test_approve_all_pending_creates_local_outbox_artifacts(tmp_path):
+    output = tmp_path / "invoice-project"
+    install_flow("invoice-document-followup", output)
+    run_flow_project(output)
+
+    result = approve_all_pending(output, approver="owner@example.com")
+
+    assert result["status"] == "approved"
+    assert result["approved_items"] == 2
+    assert (output / "automation_output" / "approved_actions.csv").exists()
+    assert (output / "local_outbox" / "email_drafts.md").exists()
+    assert (output / "local_outbox" / "slack_messages.md").exists()
+    assert "owner@example.com" in (output / "automation_output" / "approved_actions.csv").read_text()
+    assert "not sent automatically" in (output / "local_outbox" / "email_drafts.md").read_text()
 
 
 def test_all_catalog_flows_can_be_installed_and_run(tmp_path):

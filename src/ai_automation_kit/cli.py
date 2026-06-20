@@ -13,6 +13,7 @@ from ai_automation_kit.core.flows import get_flow
 from ai_automation_kit.core.flows import install_flow
 from ai_automation_kit.core.flows import list_flows
 from ai_automation_kit.core.flows import validate_flow_project
+from ai_automation_kit.core.flow_runtime import approve_all_pending
 from ai_automation_kit.core.flow_runtime import run_flow_project
 from ai_automation_kit.core.offer_pack import generate_offer_pack
 from ai_automation_kit.templates.docs_rag import run_docs_rag
@@ -80,6 +81,10 @@ def build_parser() -> argparse.ArgumentParser:
     flow_run = flow_subparsers.add_parser("run")
     flow_run.add_argument("path")
     flow_run.add_argument("--mode", default="dry-run", choices=["dry-run"])
+
+    flow_approve = flow_subparsers.add_parser("approve")
+    flow_approve.add_argument("path")
+    flow_approve.add_argument("--approver", default="local-operator")
 
     docs_rag = subparsers.add_parser("docs-rag")
     docs_rag.add_argument("--config", required=True)
@@ -227,6 +232,13 @@ def main(argv: list[str] | None = None) -> int:
             print(f"approval_queue={output_dir / 'approval_queue.csv'}")
             print(f"status_report={output_dir / 'status_report.md'}")
             return 0 if payload["status"] == "succeeded" else 1
+        if args.flow_command == "approve":
+            payload = approve_all_pending(Path(args.path), approver=args.approver)
+            print(f"approval_status={payload['status']}")
+            print(f"approved_items={payload['approved_items']}")
+            for path in payload["outbox"]:
+                print(f"outbox={path}")
+            return 0 if payload["status"] == "approved" else 1
     if args.command == "docs-rag":
         run = run_docs_rag(config_path=args.config, output_dir=args.output)
         print(f"run_id={run.run_id}")

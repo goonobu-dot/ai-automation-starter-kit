@@ -39,6 +39,9 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - `.tmp/release-smoke/client-ready-accounting/marketplace_profile.md`
 - `.tmp/release-smoke/client-ready-accounting/case_study_template.md`
 - `.tmp/release-smoke/flow-invoice-document-followup/README.md`
+- `.tmp/release-smoke/flow-invoice-document-followup/.env.example`
+- `.tmp/release-smoke/flow-invoice-document-followup/config/connectors.json`
+- `.tmp/release-smoke/flow-invoice-document-followup/docs/SYSTEM_RUNBOOK.md`
 - `.tmp/release-smoke/flow-invoice-document-followup/flow.yaml`
 - `.tmp/release-smoke/flow-invoice-document-followup/workflow_map.mmd`
 - `.tmp/release-smoke/flow-invoice-document-followup/human_approval_points.md`
@@ -48,6 +51,9 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - `.tmp/release-smoke/flow-invoice-document-followup/automation_output/approval_queue.csv`
 - `.tmp/release-smoke/flow-invoice-document-followup/automation_output/status_report.md`
 - `.tmp/release-smoke/flow-invoice-document-followup/automation_output/run_log.json`
+- `.tmp/release-smoke/flow-invoice-document-followup/automation_output/approved_actions.csv`
+- `.tmp/release-smoke/flow-invoice-document-followup/local_outbox/email_drafts.md`
+- `.tmp/release-smoke/flow-invoice-document-followup/local_outbox/slack_messages.md`
 - `.tmp/release-smoke/github-operations/run_summary.md`
 - `.tmp/release-smoke/github-operations/executive_decision_brief.md`
 - `.tmp/release-smoke/github-operations/pilot_scorecard.csv`
@@ -97,9 +103,11 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - [ ] Confirm `artifact_index.md` points to the right first-read files.
 - [ ] Confirm offer-pack files do not guarantee income and clearly define scope, pricing model, client approval, and safety boundaries.
 - [ ] Confirm client-ready files cover intake, ROI, proposal tiers, security, tool selection, maintenance, marketplace profile, and case-study evidence.
-- [ ] Confirm `flows list`, `flows show`, `flows install`, `flows validate`, and `flows run` work for at least one installed flow.
+- [ ] Confirm `flows list`, `flows show`, `flows install`, `flows validate`, `flows run`, and `flows approve` work for at least one installed flow.
 - [ ] Confirm installed flow projects include `flow.yaml`, `workflow_map.mmd`, approval points, sample data, a dry-run script, and a contract test.
-- [ ] Confirm installed flow projects produce `automation_output/` with a work queue, draft outputs, approval queue, status report, and run log.
+- [ ] Confirm installed flow projects include `.env.example`, `config/connectors.json`, and `docs/SYSTEM_RUNBOOK.md`.
+- [ ] Confirm installed flow projects produce `automation_output/` with a work queue, draft outputs, approval queue, connector tasks, status report, and run log.
+- [ ] Confirm approval produces `approved_actions.csv` and `local_outbox/` drafts without sending external messages.
 - [ ] Run the generated adapter starter smoke test when `adapter_starter/` is present.
 - [ ] Confirm README quickstart works from a fresh virtual environment.
 

@@ -124,6 +124,7 @@ def test_parser_accepts_flows_commands():
     show_args = parser.parse_args(["flows", "show", "invoice-document-followup"])
     install_args = parser.parse_args(["flows", "install", "invoice-document-followup", "--output", "out"])
     run_args = parser.parse_args(["flows", "run", "out"])
+    approve_args = parser.parse_args(["flows", "approve", "out", "--approver", "owner@example.com"])
     validate_args = parser.parse_args(["flows", "validate", "out"])
 
     assert list_args.command == "flows"
@@ -135,6 +136,9 @@ def test_parser_accepts_flows_commands():
     assert install_args.output == "out"
     assert run_args.flow_command == "run"
     assert run_args.path == "out"
+    assert approve_args.flow_command == "approve"
+    assert approve_args.path == "out"
+    assert approve_args.approver == "owner@example.com"
     assert validate_args.flow_command == "validate"
     assert validate_args.path == "out"
 
@@ -520,6 +524,12 @@ def test_main_runs_flows_list_show_install_and_validate(tmp_path, capsys):
     assert "draft_outputs=" in captured.out
     assert (output / "automation_output" / "draft_outputs.md").exists()
     assert (output / "automation_output" / "approval_queue.csv").exists()
+
+    exit_code = main(["flows", "approve", str(output), "--approver", "owner@example.com"])
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "approval_status=approved" in captured.out
+    assert (output / "local_outbox" / "email_drafts.md").exists()
 
 
 def test_onboard_can_create_offer_pack(tmp_path, monkeypatch, capsys):
