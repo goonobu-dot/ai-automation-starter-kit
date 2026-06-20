@@ -38,6 +38,12 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - `.tmp/release-smoke/client-ready-accounting/maintenance_plan.md`
 - `.tmp/release-smoke/client-ready-accounting/marketplace_profile.md`
 - `.tmp/release-smoke/client-ready-accounting/case_study_template.md`
+- `.tmp/release-smoke/flow-invoice-document-followup/README.md`
+- `.tmp/release-smoke/flow-invoice-document-followup/flow.yaml`
+- `.tmp/release-smoke/flow-invoice-document-followup/workflow_map.mmd`
+- `.tmp/release-smoke/flow-invoice-document-followup/human_approval_points.md`
+- `.tmp/release-smoke/flow-invoice-document-followup/scripts/run_dry_run.py`
+- `.tmp/release-smoke/flow-invoice-document-followup/dry_run_output.md`
 - `.tmp/release-smoke/github-operations/run_summary.md`
 - `.tmp/release-smoke/github-operations/executive_decision_brief.md`
 - `.tmp/release-smoke/github-operations/pilot_scorecard.csv`
@@ -87,6 +93,8 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - [ ] Confirm `artifact_index.md` points to the right first-read files.
 - [ ] Confirm offer-pack files do not guarantee income and clearly define scope, pricing model, client approval, and safety boundaries.
 - [ ] Confirm client-ready files cover intake, ROI, proposal tiers, security, tool selection, maintenance, marketplace profile, and case-study evidence.
+- [ ] Confirm `flows list`, `flows show`, `flows install`, and `flows validate` work for at least one installed flow.
+- [ ] Confirm installed flow projects include `flow.yaml`, `workflow_map.mmd`, approval points, sample data, a dry-run script, and a contract test.
 - [ ] Run the generated adapter starter smoke test when `adapter_starter/` is present.
 - [ ] Confirm README quickstart works from a fresh virtual environment.
 

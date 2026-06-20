@@ -117,6 +117,25 @@ def test_parser_accepts_client_ready_command():
     assert args.output == "client-ready"
 
 
+def test_parser_accepts_flows_commands():
+    parser = build_parser()
+
+    list_args = parser.parse_args(["flows", "list"])
+    show_args = parser.parse_args(["flows", "show", "invoice-document-followup"])
+    install_args = parser.parse_args(["flows", "install", "invoice-document-followup", "--output", "out"])
+    validate_args = parser.parse_args(["flows", "validate", "out"])
+
+    assert list_args.command == "flows"
+    assert list_args.flow_command == "list"
+    assert show_args.flow_command == "show"
+    assert show_args.flow_id == "invoice-document-followup"
+    assert install_args.flow_command == "install"
+    assert install_args.flow_id == "invoice-document-followup"
+    assert install_args.output == "out"
+    assert validate_args.flow_command == "validate"
+    assert validate_args.path == "out"
+
+
 def test_parser_accepts_doctor_command():
     parser = build_parser()
     args = parser.parse_args(["doctor", "--output", "out", "--check-github"])
@@ -464,6 +483,32 @@ def test_main_runs_client_ready_and_prints_key_files(tmp_path, capsys):
     assert (output / "README.md").exists()
     assert (output / "implementation_readiness_score.json").exists()
     assert (output / "marketplace_profile.md").exists()
+
+
+def test_main_runs_flows_list_show_install_and_validate(tmp_path, capsys):
+    exit_code = main(["flows", "list", "--industry", "finance"])
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "invoice-document-followup" in captured.out
+
+    exit_code = main(["flows", "show", "invoice-document-followup"])
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "Invoice and Document Follow-up" in captured.out
+    assert "human_approval" in captured.out
+
+    output = tmp_path / "invoice-project"
+    exit_code = main(["flows", "install", "invoice-document-followup", "--output", str(output)])
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "flow_project=" in captured.out
+    assert (output / "flow.yaml").exists()
+    assert (output / "workflow_map.mmd").exists()
+
+    exit_code = main(["flows", "validate", str(output)])
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "status=ready" in captured.out
 
 
 def test_onboard_can_create_offer_pack(tmp_path, monkeypatch, capsys):

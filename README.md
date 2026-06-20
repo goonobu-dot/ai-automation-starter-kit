@@ -22,6 +22,8 @@ The project also includes five reusable workflow templates for research, documen
 
 For monetization work, `offer-pack` creates proposal assets and `client-ready` creates the deeper sales-to-delivery pack: intake, ROI, pricing, security, tool choice, maintenance, outreach, and case-study templates.
 
+For hands-on automation work, `flows` gives users a catalog of ready-made business automation flows. A user can choose a flow by industry or genre, install it into a local project folder, inspect `flow.yaml`, view `workflow_map.mmd`, and run a dry-run scaffold before connecting real tools.
+
 ## Beginner-Friendly Guides
 
 New to this project? Start with a plain-language explanation:
@@ -100,6 +102,16 @@ Generate the deeper sales-to-delivery pack when you want to package the work for
 ai-automation-kit client-ready --business-area operations --client-type local-business --niche accounting --source-output .tmp/onboarding --output .tmp/client-ready
 ```
 
+Choose and install a local automation-flow scaffold when you want to turn an idea into a concrete project folder:
+
+```bash
+ai-automation-kit flows list
+ai-automation-kit flows list --industry finance
+ai-automation-kit flows show invoice-document-followup
+ai-automation-kit flows install invoice-document-followup --output .tmp/flow-invoice-document-followup
+ai-automation-kit flows validate .tmp/flow-invoice-document-followup
+```
+
 ## 3-Minute Walkthrough
 
 After the first run, read these in order:
@@ -138,6 +150,9 @@ Example generated files:
 - `.tmp/client-ready/roi_calculator.csv`
 - `.tmp/client-ready/implementation_readiness_score.json`
 - `.tmp/client-ready/maintenance_plan.md`
+- `.tmp/flow-invoice-document-followup/flow.yaml`
+- `.tmp/flow-invoice-document-followup/workflow_map.mmd`
+- `.tmp/flow-invoice-document-followup/scripts/run_dry_run.py`
 
 ## Example Use Cases
 
@@ -149,6 +164,7 @@ Example generated files:
 - Marketing: turn content and campaign automation repositories into measurable pilot plans.
 - Freelance/consulting: turn discovery results into a bounded automation audit, dry-run prototype, proposal, statement of work, and maintenance offer. The kit does not guarantee income; it helps package the work responsibly.
 - Client-ready delivery: turn an automation idea into intake, ROI, pricing, security, tool selection, outreach, handoff, case-study, and monthly maintenance assets.
+- Flow installer: choose a concrete workflow such as invoice follow-up, support reply drafts, weekly KPI reports, purchase approvals, CRM cleanup, HR onboarding, campaign review, or IT access requests, then install a local dry-run project scaffold.
 
 ## How This Differs From Chat AI
 
@@ -231,6 +247,21 @@ ai-automation-kit client-ready --business-area operations --client-type local-bu
 Creates `client_intake.md`, `client_intake.json`, `roi_calculator.csv`, `pricing_recommendation.md`, `proposal_tiers.md`, `implementation_readiness_score.json`, `security_review.md`, `prompt_injection_checklist.md`, `approval_map.md`, `data_classification.md`, `tool_stack_recommendation.md`, `maintenance_plan.md`, `retainer_offer.md`, `monthly_review.md`, `case_study_template.md`, `before_after_report.md`, `marketplace_profile.md`, `outreach_sequence.md`, `handoff_training.md`, `tool_comparison.md`, `template_adaptation_guide.md`, `compliance_boundaries.md`, `niche_playbook.md`, `connector_blueprints.md`, `demo_inputs.csv`, and `client_ready.json`.
 
 This is the strongest monetization-oriented command. It still does not guarantee income; it gives a user the practical assets needed to sell, scope, deliver, and maintain a small automation pilot responsibly.
+
+### flows
+
+List automation flows by industry or genre, inspect the steps, and install a local project scaffold:
+
+```bash
+ai-automation-kit flows list
+ai-automation-kit flows list --industry finance
+ai-automation-kit flows list --genre approval
+ai-automation-kit flows show invoice-document-followup
+ai-automation-kit flows install invoice-document-followup --output .tmp/flow-invoice-document-followup
+ai-automation-kit flows validate .tmp/flow-invoice-document-followup
+```
+
+Installed flow projects include `README.md`, `flow.yaml`, `flow.json`, `workflow_map.mmd`, `before_after_workflow.md`, `human_approval_points.md`, `sample_data/input.csv`, `scripts/run_dry_run.py`, and `tests/test_flow_contract.py`. The first version is dry-run only, so it does not send external messages, grant access, move money, approve hiring decisions, or update production systems.
 
 ### doctor
 

@@ -9,6 +9,10 @@ from pathlib import Path
 
 from ai_automation_kit import __version__
 from ai_automation_kit.core.client_ready import generate_client_ready_pack
+from ai_automation_kit.core.flows import get_flow
+from ai_automation_kit.core.flows import install_flow
+from ai_automation_kit.core.flows import list_flows
+from ai_automation_kit.core.flows import validate_flow_project
 from ai_automation_kit.core.offer_pack import generate_offer_pack
 from ai_automation_kit.templates.docs_rag import run_docs_rag
 from ai_automation_kit.templates.delivery_pipeline import run_delivery_pipeline
@@ -54,6 +58,23 @@ def build_parser() -> argparse.ArgumentParser:
     client_ready.add_argument("--niche", default="local-business")
     client_ready.add_argument("--source-output", required=True)
     client_ready.add_argument("--output", required=True)
+
+    flows = subparsers.add_parser("flows")
+    flow_subparsers = flows.add_subparsers(dest="flow_command", required=True)
+
+    flow_list = flow_subparsers.add_parser("list")
+    flow_list.add_argument("--industry")
+    flow_list.add_argument("--genre")
+
+    flow_show = flow_subparsers.add_parser("show")
+    flow_show.add_argument("flow_id")
+
+    flow_install = flow_subparsers.add_parser("install")
+    flow_install.add_argument("flow_id")
+    flow_install.add_argument("--output", required=True)
+
+    flow_validate = flow_subparsers.add_parser("validate")
+    flow_validate.add_argument("path")
 
     docs_rag = subparsers.add_parser("docs-rag")
     docs_rag.add_argument("--config", required=True)
@@ -159,6 +180,38 @@ def main(argv: list[str] | None = None) -> int:
         print(f"maintenance_plan={args.output}/maintenance_plan.md")
         print(f"score={payload['score']['total']}")
         return 0
+    if args.command == "flows":
+        if args.flow_command == "list":
+            flows = list_flows(industry=args.industry, genre=args.genre)
+            for flow in flows:
+                print(f"{flow['id']}\t{flow['industry']}\t{flow['genre']}\t{flow['name']}")
+            print(f"count={len(flows)}")
+            return 0
+        if args.flow_command == "show":
+            try:
+                flow = get_flow(args.flow_id)
+            except KeyError as exc:
+                print(str(exc), file=sys.stderr)
+                return 1
+            print(json.dumps(flow, ensure_ascii=False, indent=2))
+            return 0
+        if args.flow_command == "install":
+            try:
+                payload = install_flow(args.flow_id, Path(args.output))
+            except KeyError as exc:
+                print(str(exc), file=sys.stderr)
+                return 1
+            print(f"flow_project={args.output}")
+            print(f"flow_id={payload['flow_id']}")
+            print(f"workflow_map={Path(args.output) / 'workflow_map.mmd'}")
+            print(f"flow_yaml={Path(args.output) / 'flow.yaml'}")
+            return 0
+        if args.flow_command == "validate":
+            result = validate_flow_project(Path(args.path))
+            print(f"status={result['status']}")
+            for missing in result["missing"]:
+                print(f"missing={missing}")
+            return 0 if result["status"] == "ready" else 1
     if args.command == "docs-rag":
         run = run_docs_rag(config_path=args.config, output_dir=args.output)
         print(f"run_id={run.run_id}")

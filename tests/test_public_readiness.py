@@ -93,6 +93,8 @@ def test_public_release_audit_script_checks_publish_prerequisites():
     assert "README.md::ai-automation-kit onboard --business-area operations" in result.stdout
     assert "README.md::ai-automation-kit offer-pack --business-area operations" in result.stdout
     assert "README.md::ai-automation-kit client-ready --business-area operations" in result.stdout
+    assert "README.md::ai-automation-kit flows list" in result.stdout
+    assert "README.md::ai-automation-kit flows install" in result.stdout
     assert "README.md::ai-automation-kit github-discover --business-area operations" in result.stdout
     assert "docs/PUBLISHING.md::--skip-github" in result.stdout
     assert "docs/PUBLISHING.md::Suggested First Release" in result.stdout
@@ -203,6 +205,9 @@ def test_public_release_audit_script_checks_final_release_evidence():
     assert "scripts/release_smoke.py::implementation_readiness_score.json" in result.stdout
     assert "scripts/release_smoke.py::maintenance_plan.md" in result.stdout
     assert "scripts/release_smoke.py::marketplace_profile.md" in result.stdout
+    assert "scripts/release_smoke.py::flows install" in result.stdout
+    assert "scripts/release_smoke.py::flow.yaml" in result.stdout
+    assert "scripts/release_smoke.py::workflow_map.mmd" in result.stdout
     assert "scripts/release_smoke.py::github-discover" in result.stdout
     assert "scripts/release_smoke.py::adapter_starter/smoke_test.py" in result.stdout
     assert "scripts/release_smoke.py::manual_review_pack.md" in result.stdout
@@ -230,6 +235,8 @@ def test_release_checklist_mentions_doctor_and_live_github_smoke():
     assert ".tmp/release-smoke/client-ready-accounting/roi_calculator.csv" in checklist
     assert ".tmp/release-smoke/client-ready-accounting/implementation_readiness_score.json" in checklist
     assert ".tmp/release-smoke/client-ready-accounting/maintenance_plan.md" in checklist
+    assert ".tmp/release-smoke/flow-invoice-document-followup/flow.yaml" in checklist
+    assert ".tmp/release-smoke/flow-invoice-document-followup/workflow_map.mmd" in checklist
     assert ".tmp/release-smoke/github-operations/run_summary.md" in checklist
     assert ".tmp/release-smoke/github-operations/enterprise_readiness.md" in checklist
     assert ".tmp/release-smoke/github-operations/value_realization_plan.md" in checklist

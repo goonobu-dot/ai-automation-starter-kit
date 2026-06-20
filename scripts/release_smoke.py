@@ -28,6 +28,7 @@ def main() -> int:
     _run([sys.executable, "-m", "pytest", "-q"], env=env)
     _run([sys.executable, "scripts/run_all_demos.py"], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "doctor", "--output", str(output / "doctor")], env=env)
+    _run_flow_smoke(output, env)
 
     wheelhouse = output / "wheelhouse"
     _run([sys.executable, "-m", "pip", "wheel", ".", "-w", str(wheelhouse)], env=env)
@@ -38,6 +39,32 @@ def main() -> int:
 
     print(f"release smoke passed: {output}")
     return 0
+
+
+def _run_flow_smoke(output: Path, env: dict[str, str]) -> None:
+    flow_output = output / "flow-invoice-document-followup"
+    _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "list"], env=env)
+    _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "show", "invoice-document-followup"], env=env)
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "flows",
+            "install",
+            "invoice-document-followup",
+            "--output",
+            str(flow_output),
+        ],
+        env=env,
+    )
+    _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "validate", str(flow_output)], env=env)
+    _run([sys.executable, "scripts/run_dry_run.py"], cwd=flow_output, env=env)
+    _run([sys.executable, "-m", "pytest", "tests/test_flow_contract.py", "-q"], cwd=flow_output, env=env)
+    _require_file(flow_output / "flow.yaml")
+    _require_file(flow_output / "workflow_map.mmd")
+    _require_file(flow_output / "scripts" / "run_dry_run.py")
+    _require_file(flow_output / "dry_run_output.md")
 
 
 def _run_github_smokes(output: Path, env: dict[str, str]) -> None:

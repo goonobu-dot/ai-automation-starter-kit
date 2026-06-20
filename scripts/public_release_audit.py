@@ -76,6 +76,8 @@ REQUIRED_README_SNIPPETS = [
     "ai-automation-kit onboard",
     "ai-automation-kit offer-pack",
     "ai-automation-kit client-ready",
+    "ai-automation-kit flows list",
+    "ai-automation-kit flows install",
     "ai-automation-kit github-discover",
     "python3 scripts/release_smoke.py",
     "Public Release Readiness",
@@ -91,6 +93,8 @@ REQUIRED_CLI_DOC_SNIPPETS = [
     "ai-automation-kit onboard --business-area operations",
     "ai-automation-kit offer-pack --business-area operations",
     "ai-automation-kit client-ready --business-area operations",
+    "ai-automation-kit flows list",
+    "ai-automation-kit flows install",
     "ai-automation-kit github-discover --business-area operations",
     "docs/SHOWCASE.md",
     "docs/demo.html",
@@ -110,6 +114,9 @@ REQUIRED_GENERATED_ARTIFACT_SNIPPETS = [
     "roi_calculator.csv",
     "implementation_readiness_score.json",
     "maintenance_plan.md",
+    "flow.yaml",
+    "workflow_map.mmd",
+    "scripts/run_dry_run.py",
 ]
 
 REQUIRED_PYPROJECT_SNIPPETS = [
@@ -225,6 +232,9 @@ REQUIRED_RELEASE_SMOKE_SNIPPETS = [
     ("implementation_readiness_score.json", "implementation_readiness_score.json"),
     ("maintenance_plan.md", "maintenance_plan.md"),
     ("marketplace_profile.md", "marketplace_profile.md"),
+    ("flows install", "flows"),
+    ("flow.yaml", "flow.yaml"),
+    ("workflow_map.mmd", "workflow_map.mmd"),
     ("github-discover", "github-discover"),
     ("adapter_starter/smoke_test.py", "adapter_starter/smoke_test.py"),
     ("manual_review_pack.md", "manual_review_pack.md"),
