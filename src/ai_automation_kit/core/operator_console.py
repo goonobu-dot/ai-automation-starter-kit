@@ -259,6 +259,7 @@ def generate_complete_workspace(
     (output / "automation_opportunity_scorecard.csv").write_text(_render_automation_opportunity_scorecard(payload), encoding="utf-8")
     (output / "client_onboarding_form.md").write_text(_render_client_onboarding_form(payload), encoding="utf-8")
     (output / "go_live_decision.md").write_text(_render_go_live_decision(payload), encoding="utf-8")
+    (output / "client_command_center.html").write_text(_render_client_command_center(payload), encoding="utf-8")
     return payload
 
 
@@ -444,6 +445,7 @@ def _render_complete_delivery_guide(payload: dict) -> str:
             "18. `automation_opportunity_scorecard.csv`",
             "19. `client_onboarding_form.md`",
             "20. `go_live_decision.md`",
+            "21. `client_command_center.html`",
             "",
             "## What To Tell The Client",
             "",
@@ -482,6 +484,7 @@ def _render_completion_checklist(payload: dict) -> str:
         ("Automation opportunity scorecard prepared", "automation_opportunity_scorecard.csv"),
         ("Client onboarding form prepared", "client_onboarding_form.md"),
         ("Go-live decision gate prepared", "go_live_decision.md"),
+        ("Client command center prepared", "client_command_center.html"),
     ]
     lines = ["# Completion Checklist", ""]
     for label, detail in checks:
@@ -1008,6 +1011,100 @@ def _render_go_live_decision(payload: dict) -> str:
             "",
         ]
     )
+
+
+def _render_client_command_center(payload: dict) -> str:
+    cards = [
+        (
+            "Start Here",
+            "Open the final guide, demo site, and client report before reading the deeper files.",
+            [
+                ("Final delivery guide", "FINAL_DELIVERY_GUIDE.md"),
+                ("Demo site", "demo_site/index.html"),
+                ("Client report", "client_report/client_report.html"),
+            ],
+        ),
+        (
+            "Sellable PoC",
+            "Use these files to decide whether the workflow is worth pitching as a bounded paid pilot.",
+            [
+                ("Revenue readiness", "revenue_readiness_scorecard.md"),
+                ("Opportunity scorecard", "automation_opportunity_scorecard.csv"),
+                ("Paid PoC scope", "paid_poc_scope.md"),
+                ("Proposal email", "client_proposal_email.md"),
+            ],
+        ),
+        (
+            "Client Intake",
+            "Capture the owner, approval rules, data source, exclusions, and stop condition.",
+            [
+                ("Client onboarding form", "client_onboarding_form.md"),
+                ("Pre-contract checklist", "pre_contract_checklist.md"),
+                ("Value measurement sheet", "value_measurement_sheet.csv"),
+            ],
+        ),
+        (
+            "Production Path",
+            "Keep production blocked until deployment, connectors, monitoring, and approval audit are clear.",
+            [
+                ("Deployment options", "deployment_options.md"),
+                ("Integration backlog", "integration_backlog.md"),
+                ("Observability plan", "production_observability_plan.md"),
+                ("Go-Live Gate", "go_live_decision.md"),
+            ],
+        ),
+    ]
+    card_html = "\n".join(_command_center_card(title, body, links) for title, body, links in cards)
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Client Command Center - {html.escape(payload['flow_name'])}</title>
+  <style>
+    body {{ margin: 0; font-family: Arial, sans-serif; color: #182235; background: #f6f7f9; }}
+    header {{ padding: 28px; background: #ffffff; border-bottom: 1px solid #d9dee7; }}
+    main {{ max-width: 1120px; margin: 0 auto; padding: 24px; }}
+    .summary {{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 20px 0; }}
+    .stat, .card {{ background: #ffffff; border: 1px solid #d9dee7; border-radius: 8px; padding: 16px; }}
+    .stat strong {{ display: block; font-size: 22px; margin-bottom: 4px; }}
+    .grid {{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }}
+    h1, h2 {{ margin-top: 0; }}
+    a {{ color: #1659b7; text-decoration: none; }}
+    a:hover {{ text-decoration: underline; }}
+    ul {{ padding-left: 20px; }}
+    code {{ background: #eef2f7; padding: 2px 5px; border-radius: 4px; }}
+    @media (max-width: 820px) {{ .summary, .grid {{ grid-template-columns: 1fr; }} }}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Client Command Center</h1>
+    <p>{html.escape(payload['flow_name'])} for {html.escape(payload['client_type'])} / {html.escape(payload['niche'])}</p>
+  </header>
+  <main>
+    <section class="summary" aria-label="Workspace summary">
+      <div class="stat"><strong>{html.escape(str(payload['rows_processed']))}</strong>rows processed</div>
+      <div class="stat"><strong>{html.escape(str(payload['approved_items']))}</strong>approved drafts</div>
+      <div class="stat"><strong>{html.escape(str(payload['revenue_score']['total']))}/100</strong>revenue readiness</div>
+      <div class="stat"><strong>{html.escape(payload['connector_status'])}</strong>connector status</div>
+    </section>
+    <section class="grid">
+      {card_html}
+    </section>
+  </main>
+</body>
+</html>
+"""
+
+
+def _command_center_card(title: str, body: str, links: list[tuple[str, str]]) -> str:
+    items = "\n".join(f"<li><a href='{html.escape(path)}'>{html.escape(label)}</a> <code>{html.escape(path)}</code></li>" for label, path in links)
+    return f"""<article class="card">
+  <h2>{html.escape(title)}</h2>
+  <p>{html.escape(body)}</p>
+  <ul>{items}</ul>
+</article>"""
 
 
 def _collect_demo_assets(source: Path) -> list[dict]:

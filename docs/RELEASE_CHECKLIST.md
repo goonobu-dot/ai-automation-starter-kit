@@ -56,6 +56,7 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - `.tmp/release-smoke/complete-accounting/automation_opportunity_scorecard.csv`
 - `.tmp/release-smoke/complete-accounting/client_onboarding_form.md`
 - `.tmp/release-smoke/complete-accounting/go_live_decision.md`
+- `.tmp/release-smoke/complete-accounting/client_command_center.html`
 - `.tmp/release-smoke/complete-accounting/quickstart/flow_project/automation_output/run_log.json`
 - `.tmp/release-smoke/complete-accounting/connector_doctor/connector_doctor.md`
 - `.tmp/release-smoke/complete-accounting/client_report/client_report.html`

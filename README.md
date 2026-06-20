@@ -22,7 +22,7 @@ The project also includes five reusable workflow templates for research, documen
 
 For monetization work, `offer-pack` creates proposal assets, `client-ready` creates the deeper sales-to-delivery pack, and `beginner-sales` creates the first side-business operating pack: visual flow gallery, selected-flow demo, proposal one-pager, pitch script, client questions, ROI calculator, price menu, outreach copy, objection handling, 3-day PoC plan, and delivery checklist.
 
-For the easiest hands-on path, `complete-workspace` creates the full local delivery folder in one command: quickstart workspace, dry-run execution, approval export, connector check, client report, demo site, shareable demo zip, final checklist, revenue readiness scorecard, sales closing script, paid PoC scope, value measurement sheet, pre-contract checklist, client proposal email, first 30 days plan, proof-of-value template, OSS pattern benchmark, integration backlog, deployment options, production observability plan, opportunity scorecard, client onboarding form, and go-live decision gate. `quickstart` remains useful when you want only the workspace, while `install-bundle`, `client-report`, `connector-doctor`, and `package-client-demo` are available as separate steps.
+For the easiest hands-on path, `complete-workspace` creates the full local delivery folder in one command: quickstart workspace, dry-run execution, approval export, connector check, client report, demo site, shareable demo zip, final checklist, revenue readiness scorecard, sales closing script, paid PoC scope, value measurement sheet, pre-contract checklist, client proposal email, first 30 days plan, proof-of-value template, OSS pattern benchmark, integration backlog, deployment options, production observability plan, opportunity scorecard, client onboarding form, go-live decision gate, and a browser-friendly client command center. `quickstart` remains useful when you want only the workspace, while `install-bundle`, `client-report`, `connector-doctor`, and `package-client-demo` are available as separate steps.
 
 For hands-on automation work, `flows` gives users a research-backed catalog of 60+ ready-made business automation flows. A user can choose a flow by industry or genre, install it into a local project folder, inspect `flow.yaml`, view `workflow_map.mmd`, and run the local automation runtime to generate a work queue, draft outputs, an approval queue, connector tasks, a status report, and a run log. The installed project also includes `.env.example`, `config/connectors.json`, a system runbook, approval scripts, and local outbox files so the flow can become a real integration project without sending anything by accident. See [Automation Demand Research](docs/AUTOMATION_DEMAND_RESEARCH.md) for the industry and workflow demand map behind the catalog.
 
@@ -92,6 +92,7 @@ The main `github-discover` workflow generates a practical output folder. The fir
 | `automation_opportunity_scorecard.csv` | Spreadsheet scorecard for deciding whether a workflow is sellable as a paid PoC now. |
 | `client_onboarding_form.md` | Client intake form for workflow owner, approval owner, data access, risk boundaries, and paid PoC criteria. |
 | `go_live_decision.md` | Final production gate for deciding dry-run, limited go-live, or stop. |
+| `client_command_center.html` | Browser-friendly command center that groups the generated files by first review, sellable PoC, client intake, and production path. |
 
 ## 1-Minute Demo
 
@@ -210,6 +211,7 @@ Example generated files:
 - `.tmp/complete-accounting/automation_opportunity_scorecard.csv`
 - `.tmp/complete-accounting/client_onboarding_form.md`
 - `.tmp/complete-accounting/go_live_decision.md`
+- `.tmp/complete-accounting/client_command_center.html`
 - `.tmp/quickstart-accounting/START_HERE.md`
 - `.tmp/quickstart-accounting/demo_site/index.html`
 - `.tmp/client-report/client_report.md`
@@ -347,7 +349,7 @@ Create the full ready-to-review local delivery workspace in one command:
 ai-automation-kit complete-workspace --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/complete-accounting
 ```
 
-Creates `FINAL_DELIVERY_GUIDE.md`, `completion_checklist.md`, `delivery_manifest.json`, `revenue_readiness_scorecard.md`, `sales_closing_script.md`, `paid_poc_scope.md`, `value_measurement_sheet.csv`, `pre_contract_checklist.md`, `client_proposal_email.md`, `first_30_days_plan.md`, `proof_of_value_template.md`, `oss_pattern_benchmark.md`, `integration_backlog.md`, `deployment_options.md`, `production_observability_plan.md`, `automation_opportunity_scorecard.csv`, `client_onboarding_form.md`, `go_live_decision.md`, `quickstart/`, `connector_doctor/`, `client_report/`, `demo_site/index.html`, and `client_demo_package/client_demo_package.zip`. The command also runs the local dry-run flow and exports approval records. Real external sends and production changes remain disabled until the client approves credentials, data handling, rollback, and human approval rules.
+Creates `FINAL_DELIVERY_GUIDE.md`, `completion_checklist.md`, `delivery_manifest.json`, `revenue_readiness_scorecard.md`, `sales_closing_script.md`, `paid_poc_scope.md`, `value_measurement_sheet.csv`, `pre_contract_checklist.md`, `client_proposal_email.md`, `first_30_days_plan.md`, `proof_of_value_template.md`, `oss_pattern_benchmark.md`, `integration_backlog.md`, `deployment_options.md`, `production_observability_plan.md`, `automation_opportunity_scorecard.csv`, `client_onboarding_form.md`, `go_live_decision.md`, `client_command_center.html`, `quickstart/`, `connector_doctor/`, `client_report/`, `demo_site/index.html`, and `client_demo_package/client_demo_package.zip`. The command also runs the local dry-run flow and exports approval records. Real external sends and production changes remain disabled until the client approves credentials, data handling, rollback, and human approval rules.
 
 ### flow-guide
 

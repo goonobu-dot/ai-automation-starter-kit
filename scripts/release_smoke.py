@@ -294,6 +294,7 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(complete_output / "automation_opportunity_scorecard.csv")
     _require_file(complete_output / "client_onboarding_form.md")
     _require_file(complete_output / "go_live_decision.md")
+    _require_file(complete_output / "client_command_center.html")
     _require_file(complete_output / "quickstart" / "flow_project" / "automation_output" / "run_log.json")
     _require_file(complete_output / "quickstart" / "flow_project" / "local_outbox" / "email_drafts.md")
     _require_file(complete_output / "connector_doctor" / "connector_doctor.md")

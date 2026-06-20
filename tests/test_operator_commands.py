@@ -159,6 +159,7 @@ def test_generate_complete_workspace_creates_done_for_you_delivery(tmp_path):
     assert (output / "automation_opportunity_scorecard.csv").exists()
     assert (output / "client_onboarding_form.md").exists()
     assert (output / "go_live_decision.md").exists()
+    assert (output / "client_command_center.html").exists()
     guide = (output / "FINAL_DELIVERY_GUIDE.md").read_text()
     assert "Open These Files In This Order" in guide
     assert "revenue_readiness_scorecard.md" in guide
@@ -167,6 +168,7 @@ def test_generate_complete_workspace_creates_done_for_you_delivery(tmp_path):
     assert "production_observability_plan.md" in guide
     assert "automation_opportunity_scorecard.csv" in guide
     assert "go_live_decision.md" in guide
+    assert "client_command_center.html" in guide
     assert "No next recommendation is required" in guide
     scorecard = (output / "revenue_readiness_scorecard.md").read_text()
     assert "Revenue Readiness Scorecard" in scorecard
@@ -200,6 +202,11 @@ def test_generate_complete_workspace_creates_done_for_you_delivery(tmp_path):
     go_live = (output / "go_live_decision.md").read_text()
     assert "Go-Live Decision" in go_live
     assert "Do Not Go Live" in go_live
+    command_center = (output / "client_command_center.html").read_text()
+    assert "Start Here" in command_center
+    assert "Sellable PoC" in command_center
+    assert "Go-Live Gate" in command_center
+    assert "FINAL_DELIVERY_GUIDE.md" in command_center
 
 
 def test_parser_accepts_operator_commands():
