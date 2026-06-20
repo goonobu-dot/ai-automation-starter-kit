@@ -256,6 +256,9 @@ def generate_complete_workspace(
     (output / "integration_backlog.md").write_text(_render_integration_backlog(payload), encoding="utf-8")
     (output / "deployment_options.md").write_text(_render_deployment_options(payload), encoding="utf-8")
     (output / "production_observability_plan.md").write_text(_render_production_observability_plan(payload), encoding="utf-8")
+    (output / "automation_opportunity_scorecard.csv").write_text(_render_automation_opportunity_scorecard(payload), encoding="utf-8")
+    (output / "client_onboarding_form.md").write_text(_render_client_onboarding_form(payload), encoding="utf-8")
+    (output / "go_live_decision.md").write_text(_render_go_live_decision(payload), encoding="utf-8")
     return payload
 
 
@@ -438,6 +441,9 @@ def _render_complete_delivery_guide(payload: dict) -> str:
             "15. `integration_backlog.md`",
             "16. `deployment_options.md`",
             "17. `production_observability_plan.md`",
+            "18. `automation_opportunity_scorecard.csv`",
+            "19. `client_onboarding_form.md`",
+            "20. `go_live_decision.md`",
             "",
             "## What To Tell The Client",
             "",
@@ -473,6 +479,9 @@ def _render_completion_checklist(payload: dict) -> str:
         ("Integration backlog prepared", "integration_backlog.md"),
         ("Deployment options prepared", "deployment_options.md"),
         ("Production observability plan prepared", "production_observability_plan.md"),
+        ("Automation opportunity scorecard prepared", "automation_opportunity_scorecard.csv"),
+        ("Client onboarding form prepared", "client_onboarding_form.md"),
+        ("Go-live decision gate prepared", "go_live_decision.md"),
     ]
     lines = ["# Completion Checklist", ""]
     for label, detail in checks:
@@ -886,6 +895,116 @@ def _render_production_observability_plan(payload: dict) -> str:
             "- Confirm credentials, scopes, and approval owners are still current.",
             "- Compare measured value against the paid PoC assumptions.",
             "- Decide continue, revise, reduce scope, or retire the automation.",
+            "",
+        ]
+    )
+
+
+def _render_automation_opportunity_scorecard(payload: dict) -> str:
+    rows = [
+        ["metric", "score_0_to_5", "evidence_needed", "sellable_now"],
+        ["pain_frequency", "4", "How often this workflow happens each month.", "yes if weekly or higher"],
+        ["manual_time_cost", "4", "Minutes per item and loaded hourly cost.", "yes if savings can fund a small PoC"],
+        ["data_access_clarity", "3", "Sample CSV, spreadsheet, or export approved by the client.", "yes if sample data is approved"],
+        ["approval_owner_clarity", "5", "Named person who approves drafts or production actions.", "yes if one owner is named"],
+        ["risk_boundary_clarity", "4", "Excluded actions, sensitive data, and stop condition.", "yes if excluded actions are written"],
+        ["dry_run_evidence", "5", "Queue, drafts, approval records, report, and demo assets.", "yes if generated files are reviewable"],
+        ["workflow_fit_score", "=SUM(B2:B7)", "Score 22+ is a good paid PoC candidate.", "sellable_now"],
+    ]
+    return "\n".join(",".join(str(cell) for cell in row) for row in rows) + "\n"
+
+
+def _render_client_onboarding_form(payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Client Onboarding Form: {payload['flow_name']}",
+            "",
+            "Use this before touching real accounts, client data, or production connectors.",
+            "",
+            "## Client Basics",
+            "",
+            "- Company:",
+            "- Department:",
+            "- Main contact:",
+            "- Billing contact:",
+            "- Workflow owner:",
+            "- Approval Owner:",
+            "",
+            "## Workflow Facts",
+            "",
+            f"- Proposed workflow: `{payload['flow_name']}`",
+            f"- Niche: `{payload['niche']}`",
+            "- Current manual process:",
+            "- Monthly item volume:",
+            "- Minutes per item:",
+            "- Current tools used:",
+            "- Most expensive delay or mistake:",
+            "",
+            "## Data And Access",
+            "",
+            "- Approved sample data source:",
+            "- Data fields included:",
+            "- Sensitive data excluded:",
+            "- Credentials owner:",
+            "- Systems that must never be changed without approval:",
+            "",
+            "## Approval And Stop Rules",
+            "",
+            "- Who reviews drafts:",
+            "- Who approves external sends or production writes:",
+            "- Stop condition:",
+            "- Rollback contact:",
+            "- Review cadence:",
+            "",
+            "## Paid PoC Decision",
+            "",
+            "- Budget range:",
+            "- Expected decision date:",
+            "- Continue criteria:",
+            "- Revise criteria:",
+            "- Stop criteria:",
+            "",
+        ]
+    )
+
+
+def _render_go_live_decision(payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Go-Live Decision: {payload['flow_name']}",
+            "",
+            "This gate decides whether the dry-run can become a production automation.",
+            "",
+            "## Current Recommendation",
+            "",
+            "Do Not Go Live until every required checkbox below is complete. Keep using local dry-run output for client review.",
+            "",
+            "## Required Before Go-Live",
+            "",
+            "- [ ] `client_onboarding_form.md` is complete.",
+            "- [ ] `automation_opportunity_scorecard.csv` shows a strong paid PoC fit.",
+            "- [ ] Client has approved data source, fields, credentials owner, and excluded data.",
+            "- [ ] Approval Owner is named for drafts and production actions.",
+            "- [ ] Connector scopes and rollback steps are documented.",
+            "- [ ] `production_observability_plan.md` has run history, retries, queues, approval audit, alerts, and monthly review owner.",
+            "- [ ] A final dry-run report was reviewed by the client.",
+            "- [ ] First production run has a human operator watching it.",
+            "",
+            "## Go-Live Choices",
+            "",
+            "- Continue dry-run: value is promising but production safety is incomplete.",
+            "- Limited go-live: one connector, one workflow owner, one rollback path, and human approval.",
+            "- Stop: value, safety, or ownership is not clear enough.",
+            "",
+            "## First Production Run Notes",
+            "",
+            "- Date:",
+            "- Operator:",
+            "- Approval Owner:",
+            "- Connector enabled:",
+            "- Items processed:",
+            "- Errors:",
+            "- Decision after first run:",
             "",
         ]
     )

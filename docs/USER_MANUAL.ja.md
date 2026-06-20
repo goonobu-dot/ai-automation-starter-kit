@@ -16,7 +16,7 @@ ai-automation-kit doctor --output .tmp/doctor
 
 ## 2. まず1つの案件フォルダを作る
 
-迷った場合は、まずこの1コマンドを使います。案件フォルダ、dry-run 実行結果、承認記録、コネクタ診断、顧客レポート、デモサイト、共有用 zip、最終チェックリスト、収益化評価、営業クロージング台本、有償PoC範囲、価値測定シート、契約前チェック、提案メール、30日運用計画、成果証明テンプレート、公開OSSパターン比較、統合バックログ、導入方式、運用監視計画までまとめて作ります。
+迷った場合は、まずこの1コマンドを使います。案件フォルダ、dry-run 実行結果、承認記録、コネクタ診断、顧客レポート、デモサイト、共有用 zip、最終チェックリスト、収益化評価、営業クロージング台本、有償PoC範囲、価値測定シート、契約前チェック、提案メール、30日運用計画、成果証明テンプレート、公開OSSパターン比較、統合バックログ、導入方式、運用監視計画、案件化スコア、顧客オンボーディング、本番移行判断までまとめて作ります。
 
 ```bash
 ai-automation-kit complete-workspace \
@@ -45,6 +45,9 @@ ai-automation-kit complete-workspace \
 - `.tmp/complete-accounting/integration_backlog.md`
 - `.tmp/complete-accounting/deployment_options.md`
 - `.tmp/complete-accounting/production_observability_plan.md`
+- `.tmp/complete-accounting/automation_opportunity_scorecard.csv`
+- `.tmp/complete-accounting/client_onboarding_form.md`
+- `.tmp/complete-accounting/go_live_decision.md`
 
 個別に作業したい場合は、次の `quickstart` から順番に進めます。
 
@@ -130,4 +133,4 @@ ai-automation-kit connector-doctor --project .tmp/flow-project --output .tmp/con
 
 Gmail送信、Slack投稿、Google Sheets書き込みなどは、初期状態では無効です。本番接続は、顧客の承認、認証情報、データ分類、停止手順、承認者を決めてから進めます。
 
-`oss_pattern_benchmark.md`、`integration_backlog.md`、`deployment_options.md`、`production_observability_plan.md` も確認します。n8n、Activepieces、Windmill、Trigger.dev のような公開OSS/公開サービスで一般的な考え方を参考に、テンプレート化、MCP化できる統合、Webhook/UI化、リトライ、キュー、承認監査、ログ確認まで準備してから実運用へ進めます。
+`oss_pattern_benchmark.md`、`integration_backlog.md`、`deployment_options.md`、`production_observability_plan.md`、`automation_opportunity_scorecard.csv`、`client_onboarding_form.md`、`go_live_decision.md` も確認します。n8n、Activepieces、Windmill、Trigger.dev のような公開OSS/公開サービスで一般的な考え方を参考に、テンプレート化、MCP化できる統合、Webhook/UI化、リトライ、キュー、承認監査、ログ確認、顧客の承認者、本番移行の可否まで準備してから実運用へ進めます。

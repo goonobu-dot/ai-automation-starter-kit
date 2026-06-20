@@ -156,12 +156,17 @@ def test_generate_complete_workspace_creates_done_for_you_delivery(tmp_path):
     assert (output / "integration_backlog.md").exists()
     assert (output / "deployment_options.md").exists()
     assert (output / "production_observability_plan.md").exists()
+    assert (output / "automation_opportunity_scorecard.csv").exists()
+    assert (output / "client_onboarding_form.md").exists()
+    assert (output / "go_live_decision.md").exists()
     guide = (output / "FINAL_DELIVERY_GUIDE.md").read_text()
     assert "Open These Files In This Order" in guide
     assert "revenue_readiness_scorecard.md" in guide
     assert "pre_contract_checklist.md" in guide
     assert "oss_pattern_benchmark.md" in guide
     assert "production_observability_plan.md" in guide
+    assert "automation_opportunity_scorecard.csv" in guide
+    assert "go_live_decision.md" in guide
     assert "No next recommendation is required" in guide
     scorecard = (output / "revenue_readiness_scorecard.md").read_text()
     assert "Revenue Readiness Scorecard" in scorecard
@@ -186,6 +191,15 @@ def test_generate_complete_workspace_creates_done_for_you_delivery(tmp_path):
     assert "retries" in observability
     assert "queues" in observability
     assert "approval audit" in observability
+    opportunity = (output / "automation_opportunity_scorecard.csv").read_text()
+    assert "workflow_fit_score" in opportunity
+    assert "sellable_now" in opportunity
+    onboarding = (output / "client_onboarding_form.md").read_text()
+    assert "Client Onboarding Form" in onboarding
+    assert "Approval Owner" in onboarding
+    go_live = (output / "go_live_decision.md").read_text()
+    assert "Go-Live Decision" in go_live
+    assert "Do Not Go Live" in go_live
 
 
 def test_parser_accepts_operator_commands():
