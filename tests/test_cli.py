@@ -188,17 +188,23 @@ def test_parser_accepts_cloud_plan_command():
         [
             "cloud-plan",
             "--flow-id",
-            "ai-reception-line-inquiry",
+            "invoice-document-followup",
             "--provider",
             "aws",
+            "--workload",
+            "scheduled-job",
+            "--connectors",
+            "gmail,google-sheets",
             "--output",
             "cloud-plan",
         ]
     )
 
     assert args.command == "cloud-plan"
-    assert args.flow_id == "ai-reception-line-inquiry"
+    assert args.flow_id == "invoice-document-followup"
     assert args.provider == "aws"
+    assert args.workload == "scheduled-job"
+    assert args.connectors == "gmail,google-sheets"
     assert args.output == "cloud-plan"
 
 
@@ -409,16 +415,20 @@ def test_main_runs_guided_review_from_answer_file(tmp_path):
     assert "ai-automation-kit flows install ai-reception-line-inquiry" in commands
 
 
-def test_main_runs_cloud_plan_for_aws_line_bot(tmp_path):
+def test_main_runs_cloud_plan_for_general_cloud_workload(tmp_path):
     output = tmp_path / "cloud-plan-aws"
 
     exit_code = main(
         [
             "cloud-plan",
             "--flow-id",
-            "ai-reception-line-inquiry",
+            "invoice-document-followup",
             "--provider",
             "aws",
+            "--workload",
+            "scheduled-job",
+            "--connectors",
+            "gmail,google-sheets,storage-folder",
             "--output",
             str(output),
         ]
@@ -426,28 +436,33 @@ def test_main_runs_cloud_plan_for_aws_line_bot(tmp_path):
 
     assert exit_code == 0
     assert (output / "START_HERE_CLOUD_PLAN.md").exists()
-    assert (output / "cloud_architecture.md").exists()
-    assert (output / "cloud_cost_note.md").exists()
-    assert (output / "secret_setup.md").exists()
-    assert (output / "iam_setup.md").exists()
-    assert (output / "deploy_commands.md").exists()
-    assert (output / "webhook_setup.md").exists()
-    assert (output / "post_deploy_test.md").exists()
-    assert (output / "rollback_plan.md").exists()
+    assert (output / "cloud_provider_matrix.md").exists()
+    assert (output / "workload_architecture.md").exists()
+    assert (output / "runtime_choice.md").exists()
+    assert (output / "secrets_and_env.md").exists()
+    assert (output / "network_and_domain.md").exists()
+    assert (output / "deploy_runbook.md").exists()
+    assert (output / "operations_runbook.md").exists()
+    assert (output / "cost_guardrails.md").exists()
+    assert (output / "compliance_data_boundary.md").exists()
+    assert (output / "incident_rollback.md").exists()
     assert (output / "human_approval_required.md").exists()
     assert (output / "cloud_plan.json").exists()
 
-    architecture = (output / "cloud_architecture.md").read_text()
-    commands = (output / "deploy_commands.md").read_text()
-    secrets = (output / "secret_setup.md").read_text()
+    architecture = (output / "workload_architecture.md").read_text()
+    commands = (output / "deploy_runbook.md").read_text()
+    secrets = (output / "secrets_and_env.md").read_text()
     plan = json.loads((output / "cloud_plan.json").read_text())
 
     assert plan["provider"] == "aws"
-    assert "API Gateway" in architecture
-    assert "Lambda" in architecture
+    assert plan["workload"] == "scheduled-job"
+    assert plan["connectors"] == ["gmail", "google-sheets", "storage-folder"]
+    assert "EventBridge" in architecture
     assert "Secrets Manager" in architecture
-    assert "aws lambda" in commands
-    assert "LINE_CHANNEL_SECRET" in secrets
+    assert "aws events" in commands
+    assert "GMAIL_CLIENT_ID" in secrets
+    assert "GOOGLE_SHEETS_SPREADSHEET_ID" in secrets
+    assert "LINE Developers" not in (output / "human_approval_required.md").read_text()
     assert plan["human_steps_required"]
 
 

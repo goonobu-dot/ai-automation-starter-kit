@@ -225,27 +225,45 @@ def generate_guided_review(answers: Path, output: Path) -> dict:
     return payload
 
 
-def generate_cloud_plan(flow_id: str, provider: str, output: Path) -> dict:
+def generate_cloud_plan(flow_id: str, provider: str, output: Path, workload: str = "webhook-api", connectors: str = "local-folder") -> dict:
     output.mkdir(parents=True, exist_ok=True)
     flow = get_flow(flow_id)
     profile = _cloud_provider_profile(provider)
-    env_values = _cloud_required_env_values(flow)
+    workload_profile = _cloud_workload_profile(provider, workload)
+    connector_list = _parse_connector_list(connectors)
+    env_values = _cloud_required_env_values(flow, connector_list, workload)
     payload = {
         "status": "plan_ready",
         "flow_id": flow["id"],
         "flow_name": flow["name"],
         "provider": provider,
         "provider_name": profile["name"],
-        "architecture": profile["architecture"],
+        "workload": workload,
+        "workload_name": workload_profile["name"],
+        "connectors": connector_list,
+        "architecture": workload_profile["architecture"],
+        "runtime": workload_profile["runtime"],
+        "network": workload_profile["network"],
         "best_for": profile["best_for"],
         "beginner_fit": profile["beginner_fit"],
-        "recommended_for_line_bot": profile["recommended_for_line_bot"],
-        "human_steps_required": profile["human_steps_required"],
+        "provider_services": profile["services"],
+        "human_steps_required": _cloud_human_steps(profile, workload_profile, connector_list),
         "env_values": env_values,
         "does_not_auto_create_accounts": True,
     }
     (output / "cloud_plan.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (output / "START_HERE_CLOUD_PLAN.md").write_text(_render_cloud_plan_start(flow, payload), encoding="utf-8")
+    (output / "cloud_provider_matrix.md").write_text(_render_cloud_provider_matrix(payload), encoding="utf-8")
+    (output / "workload_architecture.md").write_text(_render_cloud_architecture(flow, payload), encoding="utf-8")
+    (output / "runtime_choice.md").write_text(_render_cloud_runtime_choice(payload), encoding="utf-8")
+    (output / "secrets_and_env.md").write_text(_render_cloud_secret_setup(payload), encoding="utf-8")
+    (output / "network_and_domain.md").write_text(_render_cloud_network_and_domain(payload), encoding="utf-8")
+    (output / "deploy_runbook.md").write_text(_render_cloud_deploy_commands(flow, payload), encoding="utf-8")
+    (output / "operations_runbook.md").write_text(_render_cloud_post_deploy_test(payload), encoding="utf-8")
+    (output / "cost_guardrails.md").write_text(_render_cloud_cost_note(payload), encoding="utf-8")
+    (output / "compliance_data_boundary.md").write_text(_render_cloud_compliance_data_boundary(flow, payload), encoding="utf-8")
+    (output / "incident_rollback.md").write_text(_render_cloud_rollback_plan(payload), encoding="utf-8")
+    (output / "human_approval_required.md").write_text(_render_cloud_human_approval(payload), encoding="utf-8")
     (output / "cloud_architecture.md").write_text(_render_cloud_architecture(flow, payload), encoding="utf-8")
     (output / "cloud_cost_note.md").write_text(_render_cloud_cost_note(payload), encoding="utf-8")
     (output / "secret_setup.md").write_text(_render_cloud_secret_setup(payload), encoding="utf-8")
@@ -254,7 +272,6 @@ def generate_cloud_plan(flow_id: str, provider: str, output: Path) -> dict:
     (output / "webhook_setup.md").write_text(_render_cloud_webhook_setup(flow, payload), encoding="utf-8")
     (output / "post_deploy_test.md").write_text(_render_cloud_post_deploy_test(payload), encoding="utf-8")
     (output / "rollback_plan.md").write_text(_render_cloud_rollback_plan(payload), encoding="utf-8")
-    (output / "human_approval_required.md").write_text(_render_cloud_human_approval(payload), encoding="utf-8")
     return payload
 
 
@@ -2404,78 +2421,187 @@ def _guided_review_next_step(status: str, local_ready: bool, deployment: str) ->
 def _cloud_provider_profile(provider: str) -> dict:
     profiles = {
         "google-cloud": {
-            "name": "Google Cloud Run",
-            "architecture": "LINE -> Cloud Run -> Secret Manager -> Cloud Logging",
+            "name": "Google Cloud",
+            "services": ["Cloud Run", "Cloud Scheduler", "Cloud Tasks", "Secret Manager", "Cloud Logging"],
             "best_for": "Containerized webhook APIs, Google Sheets/Gmail-heavy workflows, and teams already using Google Cloud.",
             "beginner_fit": "medium",
-            "recommended_for_line_bot": True,
-            "human_steps_required": ["Google account login", "billing setup", "project selection", "LINE Developers webhook paste"],
+            "human_steps_required": ["Google account login", "billing setup", "project selection", "service account approval"],
         },
         "aws": {
-            "name": "AWS Lambda + API Gateway",
-            "architecture": "LINE -> API Gateway -> Lambda -> Secrets Manager -> CloudWatch Logs",
+            "name": "AWS",
+            "services": ["Lambda", "API Gateway", "EventBridge", "SQS", "Secrets Manager", "CloudWatch Logs"],
             "best_for": "Serverless webhook APIs, enterprise AWS accounts, and low-idle-cost event processing.",
             "beginner_fit": "medium",
-            "recommended_for_line_bot": True,
-            "human_steps_required": ["AWS account login", "region selection", "IAM approval", "LINE Developers webhook paste"],
+            "human_steps_required": ["AWS account login", "region selection", "IAM approval", "budget alert approval"],
         },
         "azure": {
-            "name": "Azure Container Apps",
-            "architecture": "LINE -> Azure Container Apps -> Key Vault -> Azure Monitor",
+            "name": "Azure",
+            "services": ["Container Apps", "Functions", "Storage Queue", "Key Vault", "Azure Monitor"],
             "best_for": "Microsoft 365, Teams, SharePoint, Entra ID, and enterprise Azure environments.",
             "beginner_fit": "medium",
-            "recommended_for_line_bot": True,
-            "human_steps_required": ["Azure login", "subscription selection", "resource group approval", "LINE Developers webhook paste"],
+            "human_steps_required": ["Azure login", "subscription selection", "resource group approval", "managed identity approval"],
         },
         "render": {
             "name": "Render Web Service",
-            "architecture": "LINE -> Render HTTPS Web Service -> Render Environment Variables -> Render Logs",
+            "services": ["Web Service", "Cron Job", "Background Worker", "Environment Variables", "Logs"],
             "best_for": "Fast beginner PoC, demo webhook, and small paid pilot before enterprise cloud migration.",
             "beginner_fit": "high",
-            "recommended_for_line_bot": True,
-            "human_steps_required": ["Render login", "repo connection", "environment variable entry", "LINE Developers webhook paste"],
+            "human_steps_required": ["Render login", "repo connection", "environment variable entry", "paid plan review"],
         },
         "railway": {
             "name": "Railway Service",
-            "architecture": "LINE -> Railway HTTPS Service -> Railway Variables -> Railway Logs",
+            "services": ["Service", "Cron", "Variables", "Logs"],
             "best_for": "Fast prototype deployment with simple variable management and low setup friction.",
             "beginner_fit": "high",
-            "recommended_for_line_bot": True,
-            "human_steps_required": ["Railway login", "project creation", "environment variable entry", "LINE Developers webhook paste"],
+            "human_steps_required": ["Railway login", "project creation", "environment variable entry", "usage limit review"],
         },
         "vercel": {
             "name": "Vercel Functions",
-            "architecture": "LINE -> Vercel Function / API Route -> Vercel Environment Variables -> Vercel Logs",
+            "services": ["Functions", "Cron Jobs", "Environment Variables", "Logs"],
             "best_for": "Web UI, intake forms, and lightweight API routes attached to a customer-facing app.",
             "beginner_fit": "high",
-            "recommended_for_line_bot": False,
-            "human_steps_required": ["Vercel login", "project import", "environment variable entry", "LINE Developers webhook paste"],
+            "human_steps_required": ["Vercel login", "project import", "environment variable entry", "function limit review"],
         },
         "digitalocean": {
             "name": "DigitalOcean App Platform",
-            "architecture": "LINE -> DigitalOcean App Platform -> App Environment Variables -> App Logs",
+            "services": ["App Platform", "Functions", "Jobs", "Environment Variables", "Logs"],
             "best_for": "Small business apps, predictable PaaS deployment, and GitHub-connected low-friction hosting.",
             "beginner_fit": "medium",
-            "recommended_for_line_bot": True,
-            "human_steps_required": ["DigitalOcean login", "app creation", "environment variable entry", "LINE Developers webhook paste"],
+            "human_steps_required": ["DigitalOcean login", "app creation", "environment variable entry", "billing alert review"],
         },
         "fly": {
             "name": "Fly.io Machines",
-            "architecture": "LINE -> Fly Machine -> Fly Secrets -> fly logs",
+            "services": ["Machines", "Fly Secrets", "fly logs"],
             "best_for": "Docker-first developers who want edge placement and a simple `fly deploy` workflow.",
             "beginner_fit": "medium",
-            "recommended_for_line_bot": True,
-            "human_steps_required": ["Fly.io login", "app launch", "secret entry", "LINE Developers webhook paste"],
+            "human_steps_required": ["Fly.io login", "app launch", "secret entry", "region and billing review"],
         },
     }
     return profiles[provider]
 
 
-def _cloud_required_env_values(flow: dict) -> list[str]:
-    values = ["APPROVER_EMAIL", "FLOW_MODE", "PUBLIC_BASE_URL"]
-    if "line" in flow["id"] or "reception" in flow["industry"]:
-        values.extend(["LINE_CHANNEL_SECRET", "LINE_CHANNEL_ACCESS_TOKEN"])
-    return values
+def _cloud_workload_profile(provider: str, workload: str) -> dict:
+    provider_runtime = {
+        "google-cloud": {
+            "webhook-api": "Cloud Run HTTPS service",
+            "scheduled-job": "Cloud Scheduler -> Cloud Run Job",
+            "worker-queue": "Cloud Tasks or Pub/Sub -> Cloud Run worker",
+            "web-app": "Cloud Run web app",
+            "static-functions": "Cloud Run or Firebase Hosting + Functions",
+            "container-service": "Cloud Run container service",
+        },
+        "aws": {
+            "webhook-api": "API Gateway -> Lambda",
+            "scheduled-job": "EventBridge Scheduler -> Lambda",
+            "worker-queue": "SQS -> Lambda worker",
+            "web-app": "App Runner or ECS Fargate",
+            "static-functions": "CloudFront/S3 -> Lambda",
+            "container-service": "ECS Fargate",
+        },
+        "azure": {
+            "webhook-api": "Azure Functions HTTP trigger or Container Apps",
+            "scheduled-job": "Timer Trigger Function or Container Apps Job",
+            "worker-queue": "Storage Queue -> Function or Container Apps worker",
+            "web-app": "Azure Container Apps",
+            "static-functions": "Static Web Apps + Functions",
+            "container-service": "Azure Container Apps",
+        },
+        "render": {
+            "webhook-api": "Render Web Service",
+            "scheduled-job": "Render Cron Job",
+            "worker-queue": "Render Background Worker",
+            "web-app": "Render Web Service",
+            "static-functions": "Render Static Site plus API service",
+            "container-service": "Render Web Service from Docker",
+        },
+        "railway": {
+            "webhook-api": "Railway Service",
+            "scheduled-job": "Railway Cron",
+            "worker-queue": "Railway Worker Service",
+            "web-app": "Railway Service",
+            "static-functions": "Railway web app plus API service",
+            "container-service": "Railway Docker Service",
+        },
+        "vercel": {
+            "webhook-api": "Vercel Function / API Route",
+            "scheduled-job": "Vercel Cron Job",
+            "worker-queue": "Vercel Cron + external queue",
+            "web-app": "Vercel web app",
+            "static-functions": "Vercel static site + Functions",
+            "container-service": "Use another provider for long-running containers",
+        },
+        "digitalocean": {
+            "webhook-api": "App Platform service",
+            "scheduled-job": "App Platform job or scheduled function",
+            "worker-queue": "Worker component",
+            "web-app": "App Platform web app",
+            "static-functions": "Static site + Functions",
+            "container-service": "App Platform container",
+        },
+        "fly": {
+            "webhook-api": "Fly Machine HTTPS app",
+            "scheduled-job": "Fly Machine scheduled process",
+            "worker-queue": "Fly worker process",
+            "web-app": "Fly Machine web app",
+            "static-functions": "Static assets served by app plus handlers",
+            "container-service": "Fly Machine container",
+        },
+    }[provider][workload]
+    names = {
+        "webhook-api": "Webhook/API endpoint",
+        "scheduled-job": "Scheduled job",
+        "worker-queue": "Worker/queue processor",
+        "web-app": "Web app with operator UI",
+        "static-functions": "Static site plus functions",
+        "container-service": "Container service",
+    }
+    network = "Public HTTPS endpoint" if workload in {"webhook-api", "web-app", "static-functions", "container-service"} else "Private or scheduler-triggered runtime"
+    return {
+        "name": names[workload],
+        "runtime": provider_runtime,
+        "network": network,
+        "architecture": f"Input source -> {provider_runtime} -> Secrets manager/env vars -> Logs/metrics -> Human approval queue",
+    }
+
+
+def _cloud_required_env_values(flow: dict, connectors: list[str], workload: str) -> list[str]:
+    values = ["APPROVER_EMAIL", "FLOW_MODE"]
+    if workload in {"webhook-api", "web-app", "static-functions", "container-service"}:
+        values.append("PUBLIC_BASE_URL")
+    connector_values = {
+        "line": ["LINE_CHANNEL_SECRET", "LINE_CHANNEL_ACCESS_TOKEN"],
+        "gmail": ["GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REFRESH_TOKEN"],
+        "google-sheets": ["GOOGLE_SHEETS_SPREADSHEET_ID", "GOOGLE_SERVICE_ACCOUNT_JSON"],
+        "slack": ["SLACK_BOT_TOKEN", "SLACK_SIGNING_SECRET"],
+        "teams": ["TEAMS_WEBHOOK_URL"],
+        "webhook": ["INBOUND_WEBHOOK_SECRET"],
+        "crm": ["CRM_BASE_URL", "CRM_API_TOKEN"],
+        "storage-folder": ["INPUT_FOLDER_PATH", "OUTPUT_FOLDER_PATH"],
+        "local-folder": ["INPUT_FOLDER_PATH", "OUTPUT_FOLDER_PATH"],
+        "email": ["SMTP_HOST", "SMTP_USERNAME", "SMTP_PASSWORD"],
+    }
+    for connector in connectors:
+        values.extend(connector_values.get(connector, [f"{connector.upper().replace('-', '_')}_CONFIG"]))
+    return list(dict.fromkeys(values))
+
+
+def _cloud_human_steps(profile: dict, workload_profile: dict, connectors: list[str]) -> list[str]:
+    steps = list(profile["human_steps_required"])
+    steps.extend(
+        [
+            f"Approve workload shape: {workload_profile['name']}",
+            "Approve environment variables before deployment",
+            "Approve logging and retention policy",
+            "Approve rollback owner before production traffic",
+        ]
+    )
+    if "line" in connectors:
+        steps.append("Paste deployed webhook URL into LINE Developers after review")
+    if "gmail" in connectors or "google-sheets" in connectors:
+        steps.append("Approve Google OAuth or service account access outside chat")
+    if "slack" in connectors or "teams" in connectors:
+        steps.append("Approve chat workspace app or webhook installation")
+    return list(dict.fromkeys(steps))
 
 
 def _render_cloud_plan_start(flow: dict, payload: dict) -> str:
@@ -2485,19 +2611,44 @@ def _render_cloud_plan_start(flow: dict, payload: dict) -> str:
             "",
             f"Flow: `{flow['id']}` - {flow['name']}",
             f"Provider: `{payload['provider']}` - {payload['provider_name']}",
+            f"Workload: `{payload['workload']}` - {payload['workload_name']}",
+            f"Connectors: `{', '.join(payload['connectors'])}`",
             "",
-            "This folder does not create real cloud resources by itself. It creates the architecture, commands, secret plan, IAM notes, webhook setup, test plan, and rollback plan needed before a human approves deployment.",
+            "This folder does not create real cloud resources by itself. It creates the architecture, runtime choice, commands, secret plan, network notes, operations runbook, cost guardrails, compliance boundary, and rollback plan needed before a human approves deployment.",
             "",
             "## Read In This Order",
             "",
-            "1. `cloud_architecture.md`",
-            "2. `secret_setup.md`",
-            "3. `iam_setup.md`",
-            "4. `deploy_commands.md`",
-            "5. `webhook_setup.md`",
-            "6. `post_deploy_test.md`",
-            "7. `rollback_plan.md`",
-            "8. `human_approval_required.md`",
+            "1. `cloud_provider_matrix.md`",
+            "2. `workload_architecture.md`",
+            "3. `runtime_choice.md`",
+            "4. `secrets_and_env.md`",
+            "5. `network_and_domain.md`",
+            "6. `deploy_runbook.md`",
+            "7. `operations_runbook.md`",
+            "8. `cost_guardrails.md`",
+            "9. `compliance_data_boundary.md`",
+            "10. `incident_rollback.md`",
+            "11. `human_approval_required.md`",
+            "",
+        ]
+    )
+
+
+def _render_cloud_provider_matrix(payload: dict) -> str:
+    services = ", ".join(payload["provider_services"])
+    return "\n".join(
+        [
+            f"# Cloud Provider Matrix: {payload['provider_name']}",
+            "",
+            f"| Item | Choice |",
+            "|---|---|",
+            f"| Provider | `{payload['provider']}` |",
+            f"| Workload | `{payload['workload']}` - {payload['workload_name']} |",
+            f"| Runtime | {payload['runtime']} |",
+            f"| Services to review | {services} |",
+            f"| Beginner fit | `{payload['beginner_fit']}` |",
+            "",
+            "Use this file to explain why this provider/runtime was selected before anyone touches the cloud console.",
             "",
         ]
     )
@@ -2506,19 +2657,49 @@ def _render_cloud_plan_start(flow: dict, payload: dict) -> str:
 def _render_cloud_architecture(flow: dict, payload: dict) -> str:
     return "\n".join(
         [
-            f"# Cloud Architecture: {payload['provider_name']}",
+            f"# Workload Architecture: {payload['provider_name']}",
             "",
             f"Flow: `{flow['id']}`",
+            f"Workload: `{payload['workload']}` - {payload['workload_name']}",
             "",
             f"Architecture: {payload['architecture']}",
             "",
+            f"Runtime: {payload['runtime']}",
+            f"Network: {payload['network']}",
+            f"Provider services: {', '.join(payload['provider_services'])}",
             f"Best for: {payload['best_for']}",
             f"Beginner fit: `{payload['beginner_fit']}`",
-            f"Recommended for LINE Bot: `{str(payload['recommended_for_line_bot']).lower()}`",
             "",
             "## Boundary",
             "",
-            "AI can generate files, commands, and checks. A human still needs to log in, approve billing, create or select accounts, enter secrets into the provider UI or CLI, and paste the final webhook URL into LINE Developers.",
+            "AI can generate files, commands, and checks. A human still needs to log in, approve billing, create or select accounts, enter secrets into the provider UI or CLI, approve domains and DNS, and enable real production traffic.",
+            "",
+        ]
+    )
+
+
+def _render_cloud_runtime_choice(payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Runtime Choice: {payload['workload_name']}",
+            "",
+            f"Selected runtime: {payload['runtime']}",
+            "",
+            "## Why This Shape",
+            "",
+            f"- Matches workload type `{payload['workload']}`.",
+            f"- Keeps secrets in {payload['provider_name']} secret/env systems.",
+            "- Keeps logs visible before any production traffic is enabled.",
+            "- Allows a human approval queue before irreversible actions.",
+            "",
+            "## When To Change It",
+            "",
+            "- Use `webhook-api` for inbound HTTP events such as LINE, Slack, forms, or external systems.",
+            "- Use `scheduled-job` for daily reports, invoice follow-ups, reminders, and batch checks.",
+            "- Use `worker-queue` when retries and backlog processing matter.",
+            "- Use `web-app` when the operator needs a browser UI.",
+            "- Use `static-functions` for lightweight pages with small API handlers.",
+            "- Use `container-service` when the automation needs a long-running service or custom runtime.",
             "",
         ]
     )
@@ -2536,6 +2717,8 @@ def _render_cloud_cost_note(payload: dict) -> str:
             "- Start with local dry-run.",
             "- Deploy a small cloud PoC only after the client approves the sample workflow.",
             "- Set a billing owner before any production webhook is enabled.",
+            "- Add a low budget alert or usage cap when the provider supports it.",
+            "- Prefer scheduled or serverless shapes for low-volume automation.",
             "- Review logs and billing after the first test day.",
             "",
         ]
@@ -2544,7 +2727,7 @@ def _render_cloud_cost_note(payload: dict) -> str:
 
 def _render_cloud_secret_setup(payload: dict) -> str:
     lines = [
-        f"# Secret Setup: {payload['provider_name']}",
+        f"# Secrets And Environment: {payload['provider_name']}",
         "",
         "Do not paste real secrets into chat and do not commit them to GitHub.",
         "",
@@ -2556,14 +2739,14 @@ def _render_cloud_secret_setup(payload: dict) -> str:
     if payload["provider"] == "google-cloud":
         lines.extend(
             [
-                "Use Google Secret Manager for `LINE_CHANNEL_SECRET` and `LINE_CHANNEL_ACCESS_TOKEN`.",
+                "Use Google Secret Manager for production secrets.",
                 "Use `gcloud secrets create` and `gcloud secrets versions add` after human login.",
             ]
         )
     elif payload["provider"] == "aws":
         lines.extend(
             [
-                "Use AWS Secrets Manager for `LINE_CHANNEL_SECRET` and `LINE_CHANNEL_ACCESS_TOKEN`.",
+                "Use AWS Secrets Manager for production secrets.",
                 "Use `aws secretsmanager create-secret` after human login and region selection.",
             ]
         )
@@ -2599,10 +2782,49 @@ def _render_cloud_iam_setup(payload: dict) -> str:
     )
 
 
+def _render_cloud_network_and_domain(payload: dict) -> str:
+    webhook_notes = []
+    if payload["workload"] in {"webhook-api", "web-app", "static-functions", "container-service"}:
+        webhook_notes.extend(
+            [
+                "- Confirm the generated HTTPS URL.",
+                "- Decide whether a custom domain is needed for client trust.",
+                "- Configure DNS only after the owner approves the domain.",
+                "- For connector webhooks, paste the final URL in the external service only after smoke tests pass.",
+            ]
+        )
+    else:
+        webhook_notes.extend(
+            [
+                "- No public inbound endpoint is required for this workload by default.",
+                "- Keep scheduler and queue access private where the provider supports it.",
+                "- Use a public URL only for health checks or operator dashboards that need it.",
+            ]
+        )
+    return "\n".join([f"# Network And Domain: {payload['provider_name']}", "", *webhook_notes, ""])
+
+
 def _render_cloud_deploy_commands(flow: dict, payload: dict) -> str:
     app = flow["id"].replace("_", "-")
     provider = payload["provider"]
-    commands = {
+    workload = payload["workload"]
+    if provider == "aws" and workload == "scheduled-job":
+        commands = [
+            "aws configure sso",
+            f"aws lambda create-function --function-name {app} --runtime python3.11 --handler main.handler --role YOUR_LAMBDA_ROLE_ARN --zip-file fileb://function.zip",
+            f"aws events put-rule --name {app}-schedule --schedule-expression 'rate(1 day)'",
+            f"aws events put-targets --rule {app}-schedule --targets Id=1,Arn=YOUR_LAMBDA_ARN",
+        ]
+    else:
+        commands = _cloud_default_deploy_commands(provider, app, payload)
+    lines = [f"# Deploy Runbook: {payload['provider_name']}", "", "Review before running. Replace placeholders first.", "", "```bash"]
+    lines.extend(commands)
+    lines.extend(["```", ""])
+    return "\n".join(lines)
+
+
+def _cloud_default_deploy_commands(provider: str, app: str, payload: dict) -> list[str]:
+    return {
         "google-cloud": [
             "gcloud auth login",
             "gcloud config set project YOUR_PROJECT_ID",
@@ -2620,8 +2842,8 @@ def _render_cloud_deploy_commands(flow: dict, payload: dict) -> str:
         ],
         "render": [
             "Connect this repository in the Render dashboard.",
-            "Create a Web Service and set the environment variables from `secret_setup.md`.",
-            "Deploy, then copy the HTTPS service URL.",
+            "Create the service type shown in `runtime_choice.md` and set the environment variables from `secrets_and_env.md`.",
+            "Deploy, then copy the service URL if the workload requires public HTTPS.",
         ],
         "railway": [
             "railway login",
@@ -2630,47 +2852,66 @@ def _render_cloud_deploy_commands(flow: dict, payload: dict) -> str:
         ],
         "vercel": [
             "vercel login",
-            "vercel env add LINE_CHANNEL_SECRET",
+            "vercel env add APPROVER_EMAIL",
             "vercel deploy",
         ],
         "digitalocean": [
             "doctl auth init",
             "Create an App Platform app from the repository or container image.",
-            "Set environment variables in App Platform before enabling webhook traffic.",
+            "Set environment variables in App Platform before enabling traffic.",
         ],
         "fly": [
             "fly auth login",
             f"fly launch --name {app} --no-deploy",
-            "fly secrets set LINE_CHANNEL_SECRET=replace_me LINE_CHANNEL_ACCESS_TOKEN=replace_me",
+            "fly secrets set APPROVER_EMAIL=replace_me FLOW_MODE=dry-run",
             "fly deploy",
         ],
     }[provider]
-    lines = [f"# Deploy Commands: {payload['provider_name']}", "", "Review before running. Replace placeholders first.", "", "```bash"]
-    lines.extend(commands)
-    lines.extend(["```", ""])
-    return "\n".join(lines)
 
 
 def _render_cloud_webhook_setup(flow: dict, payload: dict) -> str:
+    lines = [
+        f"# Webhook Setup: {flow['name']}",
+        "",
+        "Use this only when the workload or connector needs inbound HTTPS.",
+        "",
+        "Example:",
+        "",
+        "```text",
+        "https://YOUR_PUBLIC_HOST/webhook",
+        "```",
+        "",
+        "Human steps:",
+        "",
+        "1. Confirm the deployed HTTPS URL.",
+        "2. Confirm the connector owner has approved webhook activation.",
+        "3. Paste the URL into the external service dashboard.",
+        "4. Send one test event only after `operations_runbook.md` is reviewed.",
+    ]
+    if "line" in payload["connectors"]:
+        lines.append("5. For LINE, paste the URL in LINE Developers after the client approves the channel.")
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _render_cloud_compliance_data_boundary(flow: dict, payload: dict) -> str:
     return "\n".join(
         [
-            f"# Webhook Setup: {flow['name']}",
+            f"# Compliance Data Boundary: {flow['name']}",
             "",
-            "After deployment, copy the public HTTPS URL and set the LINE Developers webhook URL.",
+            "Before cloud deployment, decide what data is allowed to leave the local machine or client system.",
             "",
-            "Example:",
+            "## Required Decisions",
             "",
-            "```text",
-            "https://YOUR_PUBLIC_HOST/line/webhook",
-            "```",
+            "- Which sample data can be used in dry-run.",
+            "- Which production data categories are excluded.",
+            "- Who can view cloud logs.",
+            "- How long logs are retained.",
+            "- Whether personal, financial, medical, legal, or client-confidential data appears in prompts, logs, queues, or exports.",
             "",
-            "Human steps:",
+            "## Connector Boundary",
             "",
-            "1. Open LINE Developers.",
-            "2. Select the correct provider and channel.",
-            "3. Paste the webhook URL.",
-            "4. Enable webhook use.",
-            "5. Send a test message only after `post_deploy_test.md` is reviewed.",
+            "\n".join(f"- `{connector}`: confirm owner, access scope, and revocation path." for connector in payload["connectors"]),
             "",
         ]
     )
@@ -2679,12 +2920,12 @@ def _render_cloud_webhook_setup(flow: dict, payload: dict) -> str:
 def _render_cloud_post_deploy_test(payload: dict) -> str:
     return "\n".join(
         [
-            f"# Post Deploy Test: {payload['provider_name']}",
+            f"# Operations Runbook: {payload['provider_name']}",
             "",
             "- Confirm the service has a public HTTPS URL.",
             "- Confirm secrets are set in the provider, not in GitHub.",
             "- Confirm logs are visible.",
-            "- Send one test webhook or LINE message.",
+            "- Send one test event, webhook, scheduled run, or queue item based on the selected workload.",
             "- Confirm the response is dry-run or approval-gated.",
             "- Stop if errors, unexpected sends, or missing logs appear.",
             "",
@@ -2695,9 +2936,9 @@ def _render_cloud_post_deploy_test(payload: dict) -> str:
 def _render_cloud_rollback_plan(payload: dict) -> str:
     return "\n".join(
         [
-            f"# Rollback Plan: {payload['provider_name']}",
+            f"# Incident Rollback: {payload['provider_name']}",
             "",
-            "1. Disable or clear the LINE webhook URL first.",
+            "1. Disable public traffic, scheduled trigger, or queue consumer first.",
             "2. Roll back to the previous cloud revision or stop the service.",
             "3. Rotate any exposed secrets.",
             "4. Export logs for review.",
@@ -2719,7 +2960,7 @@ def _render_cloud_human_approval(payload: dict) -> str:
         [
             "- Enter real secrets only in the approved cloud secrets manager or provider dashboard.",
             "- Approve billing before public deployment.",
-            "- Approve webhook activation before real LINE traffic.",
+            "- Approve webhook, scheduler, queue, domain, or public traffic activation before real production use.",
             "- Confirm rollback owner before production use.",
             "",
         ]

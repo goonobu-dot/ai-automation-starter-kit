@@ -172,6 +172,12 @@ def build_parser() -> argparse.ArgumentParser:
         required=True,
         choices=["google-cloud", "aws", "azure", "render", "railway", "vercel", "digitalocean", "fly"],
     )
+    cloud_plan.add_argument(
+        "--workload",
+        default="webhook-api",
+        choices=["webhook-api", "scheduled-job", "worker-queue", "web-app", "static-functions", "container-service"],
+    )
+    cloud_plan.add_argument("--connectors", default="local-folder")
     cloud_plan.add_argument("--output", required=True)
 
     flows = subparsers.add_parser("flows")
@@ -434,11 +440,18 @@ def main(argv: list[str] | None = None) -> int:
         print(f"status={payload['status']}")
         return 0
     if args.command == "cloud-plan":
-        payload = generate_cloud_plan(flow_id=args.flow_id, provider=args.provider, output=Path(args.output))
+        payload = generate_cloud_plan(
+            flow_id=args.flow_id,
+            provider=args.provider,
+            workload=args.workload,
+            connectors=args.connectors,
+            output=Path(args.output),
+        )
         print(f"cloud_plan={args.output}/START_HERE_CLOUD_PLAN.md")
-        print(f"architecture={args.output}/cloud_architecture.md")
-        print(f"deploy_commands={args.output}/deploy_commands.md")
+        print(f"architecture={args.output}/workload_architecture.md")
+        print(f"deploy_runbook={args.output}/deploy_runbook.md")
         print(f"provider={payload['provider']}")
+        print(f"workload={payload['workload']}")
         print(f"status={payload['status']}")
         return 0
     if args.command == "flows":

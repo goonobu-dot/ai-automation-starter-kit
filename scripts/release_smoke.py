@@ -342,7 +342,7 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(guided_review_output / "next_commands.md")
     _require_file(guided_review_output / "guided_review.json")
 
-    cloud_plan_output = output / "cloud-plan-aws-ai-reception"
+    cloud_plan_output = output / "cloud-plan-aws-scheduled-job"
     _run(
         [
             sys.executable,
@@ -350,23 +350,29 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
             "ai_automation_kit.cli",
             "cloud-plan",
             "--flow-id",
-            "ai-reception-line-inquiry",
+            "invoice-document-followup",
             "--provider",
             "aws",
+            "--workload",
+            "scheduled-job",
+            "--connectors",
+            "gmail,google-sheets,storage-folder",
             "--output",
             str(cloud_plan_output),
         ],
         env=env,
     )
     _require_file(cloud_plan_output / "START_HERE_CLOUD_PLAN.md")
-    _require_file(cloud_plan_output / "cloud_architecture.md")
-    _require_file(cloud_plan_output / "cloud_cost_note.md")
-    _require_file(cloud_plan_output / "secret_setup.md")
-    _require_file(cloud_plan_output / "iam_setup.md")
-    _require_file(cloud_plan_output / "deploy_commands.md")
-    _require_file(cloud_plan_output / "webhook_setup.md")
-    _require_file(cloud_plan_output / "post_deploy_test.md")
-    _require_file(cloud_plan_output / "rollback_plan.md")
+    _require_file(cloud_plan_output / "cloud_provider_matrix.md")
+    _require_file(cloud_plan_output / "workload_architecture.md")
+    _require_file(cloud_plan_output / "runtime_choice.md")
+    _require_file(cloud_plan_output / "secrets_and_env.md")
+    _require_file(cloud_plan_output / "network_and_domain.md")
+    _require_file(cloud_plan_output / "deploy_runbook.md")
+    _require_file(cloud_plan_output / "operations_runbook.md")
+    _require_file(cloud_plan_output / "cost_guardrails.md")
+    _require_file(cloud_plan_output / "compliance_data_boundary.md")
+    _require_file(cloud_plan_output / "incident_rollback.md")
     _require_file(cloud_plan_output / "human_approval_required.md")
     _require_file(cloud_plan_output / "cloud_plan.json")
 

@@ -290,8 +290,8 @@ def test_public_release_audit_script_checks_final_release_evidence():
     assert "scripts/release_smoke.py::next_commands.md" in result.stdout
     assert "scripts/release_smoke.py::cloud-plan" in result.stdout
     assert "scripts/release_smoke.py::START_HERE_CLOUD_PLAN.md" in result.stdout
-    assert "scripts/release_smoke.py::cloud_architecture.md" in result.stdout
-    assert "scripts/release_smoke.py::deploy_commands.md" in result.stdout
+    assert "scripts/release_smoke.py::workload_architecture.md" in result.stdout
+    assert "scripts/release_smoke.py::deploy_runbook.md" in result.stdout
     assert "scripts/release_smoke.py::human_approval_required.md" in result.stdout
     assert "scripts/release_smoke.py::FINAL_DELIVERY_GUIDE.md" in result.stdout
     assert "scripts/release_smoke.py::completion_checklist.md" in result.stdout
@@ -339,8 +339,8 @@ def test_release_checklist_mentions_doctor_and_live_github_smoke():
     assert ".tmp/release-smoke/client-ready-accounting/maintenance_plan.md" in checklist
     assert ".tmp/release-smoke/guided-review-ai-reception/setup_readiness_report.md" in checklist
     assert ".tmp/release-smoke/guided-review-ai-reception/next_commands.md" in checklist
-    assert ".tmp/release-smoke/cloud-plan-aws-ai-reception/cloud_architecture.md" in checklist
-    assert ".tmp/release-smoke/cloud-plan-aws-ai-reception/human_approval_required.md" in checklist
+    assert ".tmp/release-smoke/cloud-plan-aws-scheduled-job/workload_architecture.md" in checklist
+    assert ".tmp/release-smoke/cloud-plan-aws-scheduled-job/human_approval_required.md" in checklist
     assert ".tmp/release-smoke/flow-invoice-document-followup/flow.yaml" in checklist
     assert ".tmp/release-smoke/flow-invoice-document-followup/workflow_map.mmd" in checklist
     assert ".tmp/release-smoke/flow-invoice-document-followup/config/connectors.json" in checklist
