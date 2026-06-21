@@ -172,6 +172,59 @@ def generate_guided_setup(
     return payload
 
 
+def generate_guided_review(answers: Path, output: Path) -> dict:
+    output.mkdir(parents=True, exist_ok=True)
+    answer_payload = json.loads(answers.read_text(encoding="utf-8"))
+    flow = get_flow(answer_payload["flow_id"])
+    mode = answer_payload.get("mode", "beginner")
+    deployment = answer_payload.get("deployment", "undecided")
+    connectors = answer_payload.get("connectors", ["local-folder"])
+    answer_values = answer_payload.get("answers", {})
+    required_ids = [
+        "business_goal",
+        "reception_source",
+        "knowledge_source",
+        "output_destination",
+        "human_approval_rules",
+        "deployment_target",
+        "client_data_boundary",
+        "success_metric",
+    ]
+    if any(connector in {"line", "gmail", "google-sheets", "slack"} for connector in connectors):
+        required_ids.append("connector_owner")
+    if deployment in {"cloud", "render", "railway", "cloud-run", "vps", "undecided"}:
+        required_ids.append("cloud_operator")
+
+    missing_inputs = [field for field in required_ids if not str(answer_values.get(field, "")).strip()]
+    local_required = [field for field in required_ids if field != "cloud_operator"]
+    local_ready = all(str(answer_values.get(field, "")).strip() for field in local_required)
+    status = "needs_client_input" if missing_inputs else "ready_for_dry_run"
+    if not missing_inputs and deployment not in {"local", "undecided"}:
+        status = "ready_for_cloud_planning"
+
+    payload = {
+        "status": status,
+        "flow_id": flow["id"],
+        "flow_name": flow["name"],
+        "mode": mode,
+        "deployment": deployment,
+        "connectors": connectors,
+        "missing_inputs": missing_inputs,
+        "local_dry_run_ready": local_ready,
+        "recommended_next_step": _guided_review_next_step(status, local_ready, deployment),
+    }
+    (output / "guided_review.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output / "START_HERE_GUIDED_REVIEW.md").write_text(_render_guided_review_start(flow, payload), encoding="utf-8")
+    (output / "setup_readiness_report.md").write_text(_render_setup_readiness_report(flow, payload, answer_values), encoding="utf-8")
+    (output / "automation_build_plan.md").write_text(_render_automation_build_plan(flow, payload), encoding="utf-8")
+    (output / "client_missing_items_email.md").write_text(_render_client_missing_items_email(flow, payload), encoding="utf-8")
+    (output / "cloud_provider_decision.md").write_text(_render_cloud_provider_decision(payload), encoding="utf-8")
+    (output / "local_vs_cloud_decision.md").write_text(_render_local_vs_cloud_decision(payload), encoding="utf-8")
+    (output / "ai_agent_handoff_prompt.md").write_text(_render_ai_agent_handoff_prompt(flow, payload), encoding="utf-8")
+    (output / "next_commands.md").write_text(_render_guided_review_next_commands(flow, payload), encoding="utf-8")
+    return payload
+
+
 def generate_flow_guide(industry: str | None, genre: str | None, niche: str, output: Path) -> dict:
     output.mkdir(parents=True, exist_ok=True)
     candidates = list_flows(industry=industry, genre=genre)
@@ -2303,3 +2356,244 @@ def _render_guided_next_action(flow: dict, mode: str, deployment: str) -> str:
             "",
         ]
     )
+
+
+def _guided_review_next_step(status: str, local_ready: bool, deployment: str) -> str:
+    if status == "needs_client_input" and local_ready:
+        return "Run a local dry-run with masked sample data, then collect the missing cloud owner or deployment inputs."
+    if status == "needs_client_input":
+        return "Collect missing client inputs before building the automation folder."
+    if status == "ready_for_cloud_planning":
+        return f"Prepare {deployment} environment variables, logs, rollback, and billing ownership after local dry-run approval."
+    return "Install the flow, run local dry-run, review approval queue, then decide whether cloud deployment is needed."
+
+
+_GUIDED_FIELD_LABELS = {
+    "business_goal": "business result this automation should improve",
+    "reception_source": "where the work arrives today",
+    "knowledge_source": "approved reference information for the AI",
+    "output_destination": "where drafts, queues, or reports should go",
+    "human_approval_rules": "cases that must stop for human approval",
+    "deployment_target": "local or cloud running location",
+    "client_data_boundary": "safe sample data boundary for dry-run",
+    "success_metric": "metric used to judge whether the PoC worked",
+    "connector_owner": "owner of each API account or connector",
+    "cloud_operator": "person responsible for cloud settings and monthly checks",
+}
+
+
+def _guided_field_label(field: str) -> str:
+    return _GUIDED_FIELD_LABELS.get(field, field.replace("_", " "))
+
+
+def _render_guided_review_start(flow: dict, payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Start Here: Guided Review",
+            "",
+            f"Flow: `{flow['id']}` - {flow['name']}",
+            f"Status: `{payload['status']}`",
+            "",
+            "This folder reviews a completed `guided_setup_answers.json` file. It tells a beginner operator what can be done now, what must be requested from the client, and which command to run next.",
+            "",
+            "## Read In This Order",
+            "",
+            "1. `setup_readiness_report.md`",
+            "2. `client_missing_items_email.md`",
+            "3. `local_vs_cloud_decision.md`",
+            "4. `cloud_provider_decision.md`",
+            "5. `automation_build_plan.md`",
+            "6. `ai_agent_handoff_prompt.md`",
+            "7. `next_commands.md`",
+            "",
+        ]
+    )
+
+
+def _render_setup_readiness_report(flow: dict, payload: dict, answers: dict) -> str:
+    local_line = "Ready now for local dry-run: yes" if payload["local_dry_run_ready"] else "Ready now for local dry-run: no"
+    missing = payload["missing_inputs"] or ["none"]
+    lines = [
+        f"# Setup Readiness Report: {flow['name']}",
+        "",
+        f"- Status: `{payload['status']}`",
+        f"- {local_line}",
+        f"- Deployment target: `{payload['deployment']}`",
+        f"- Connectors: {', '.join(payload['connectors'])}",
+        "",
+        "## Missing Inputs",
+        "",
+    ]
+    lines.extend(f"- `{item}`: {_guided_field_label(item)}" for item in missing)
+    lines.extend(
+        [
+            "",
+            "## Answer Summary",
+            "",
+            f"- Business goal: {answers.get('business_goal') or 'missing'}",
+            f"- Reception source: {answers.get('reception_source') or 'missing'}",
+            f"- Knowledge source: {answers.get('knowledge_source') or 'missing'}",
+            f"- Output destination: {answers.get('output_destination') or 'missing'}",
+            f"- Human approval rules: {answers.get('human_approval_rules') or 'missing'}",
+            f"- Success metric: {answers.get('success_metric') or 'missing'}",
+            "",
+            "## Human Decision",
+            "",
+            payload["recommended_next_step"],
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _render_automation_build_plan(flow: dict, payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Automation Build Plan: {flow['name']}",
+            "",
+            "## Phase 1: Local Proof",
+            "",
+            "1. Install the selected flow into a fresh project folder.",
+            "2. Put masked sample data into `sample_data/input.csv`.",
+            "3. Keep `FLOW_MODE=dry-run`.",
+            "4. Run the automation locally.",
+            "5. Review `automation_output/approval_queue.csv` with the client.",
+            "",
+            "## Phase 2: Client Approval",
+            "",
+            "1. Confirm the workflow owner and approval owner.",
+            "2. Confirm allowed data and forbidden actions.",
+            "3. Confirm the success metric and baseline.",
+            "4. Stop if the client cannot provide safe sample data.",
+            "",
+            "## Phase 3: Cloud Planning",
+            "",
+            "1. Choose a cloud provider only after local dry-run is approved.",
+            "2. Put secrets in the provider's environment settings, not in GitHub.",
+            "3. Configure logs, rollback, billing owner, and monthly review.",
+            "4. Keep real sends blocked until go-live approval.",
+            "",
+            f"Current recommended next step: {payload['recommended_next_step']}",
+            "",
+        ]
+    )
+
+
+def _render_client_missing_items_email(flow: dict, payload: dict) -> str:
+    missing = payload["missing_inputs"]
+    missing_lines = (
+        "\n".join(f"- {_guided_field_label(item)} (`{item}`)" for item in missing)
+        if missing
+        else "- No required setup items are missing."
+    )
+    return "\n".join(
+        [
+            f"# Client Missing Items Email: {flow['name']}",
+            "",
+            "Subject: Automation setup items needed before the next step",
+            "",
+            "Hello,",
+            "",
+            "I reviewed the automation setup answers. We can keep the first proof safe by using masked sample data and dry-run mode.",
+            "",
+            "The following setup items still need confirmation:",
+            "",
+            missing_lines,
+            "",
+            "Please do not send passwords, API secrets, payment data, or private production exports in chat. If credentials are needed later, they should be entered directly into the approved local or cloud environment.",
+            "",
+            "After these items are confirmed, we can run or continue the local dry-run and review the approval queue before any production action is enabled.",
+            "",
+        ]
+    )
+
+
+def _render_cloud_provider_decision(payload: dict) -> str:
+    connectors = set(payload["connectors"])
+    recommendation = "Start local. Use Render or Railway for the first simple cloud proof after approval."
+    if "gmail" in connectors or "google-sheets" in connectors:
+        recommendation = "Start local. Consider Google Cloud Run when Gmail or Google Sheets OAuth becomes central."
+    if payload["deployment"] in {"render", "railway", "cloud-run", "vps"}:
+        recommendation = f"Start local. Then use `{payload['deployment']}` only after cloud ownership and secret handling are confirmed."
+    return "\n".join(
+        [
+            "# Cloud Provider Decision",
+            "",
+            f"Recommendation: {recommendation}",
+            "",
+            "| Option | Best use | Beginner risk |",
+            "|---|---|---|",
+            "| Local PC | First dry-run, client demo, sample data review | Low |",
+            "| Render / Railway | Simple hosted worker or webhook proof | Medium |",
+            "| Google Cloud Run | Google OAuth, Sheets/Gmail-heavy workflows | Medium |",
+            "| VPS | Custom network or long-running worker | High |",
+            "",
+            "Cloud is useful only after the local workflow proves value. For a beginner operator, cloud setup should be treated as a separate paid implementation step with a named owner.",
+            "",
+        ]
+    )
+
+
+def _render_local_vs_cloud_decision(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Local vs Cloud Decision",
+            "",
+            "| Question | Local first | Cloud later |",
+            "|---|---|---|",
+            "| Is the workflow still being explained to the client? | Yes | No |",
+            "| Are sample inputs still being checked? | Yes | No |",
+            "| Are API keys or webhooks required? | Not required for dry-run | Required for real integration |",
+            "| Does it need to run when the PC is closed? | No | Yes |",
+            "| Is there a billing/log owner? | Optional | Required |",
+            "",
+            f"Current local dry-run readiness: `{payload['local_dry_run_ready']}`",
+            f"Current deployment target: `{payload['deployment']}`",
+            "",
+        ]
+    )
+
+
+def _render_ai_agent_handoff_prompt(flow: dict, payload: dict) -> str:
+    missing = ", ".join(payload["missing_inputs"]) if payload["missing_inputs"] else "none"
+    return "\n".join(
+        [
+            "# AI Agent Handoff Prompt",
+            "",
+            "Copy this prompt into Codex, Claude Code, Cursor, or another coding agent after sharing the project repository and the reviewed answer file.",
+            "",
+            "```text",
+            "Please inspect this GitHub project and the generated guided review folder.",
+            f"Flow ID: {flow['id']}",
+            f"Current status: {payload['status']}",
+            f"Missing inputs: {missing}",
+            "Help me proceed step by step. First confirm whether we can run a local dry-run with masked sample data. Then prepare only the files and commands needed for the next safe step. Do not ask me to paste raw API secrets in chat. Keep production sends blocked until human approval, rollback, logging, and go-live checks are complete.",
+            "```",
+            "",
+        ]
+    )
+
+
+def _render_guided_review_next_commands(flow: dict, payload: dict) -> str:
+    output_dir = f".tmp/{flow['id']}"
+    lines = [
+        "# Next Commands",
+        "",
+        "Run these after reviewing `setup_readiness_report.md`.",
+        "",
+        "```bash",
+        f"ai-automation-kit flows install {flow['id']} --output {output_dir}",
+        f"ai-automation-kit flows validate {output_dir}",
+    ]
+    if payload["local_dry_run_ready"]:
+        lines.extend(
+            [
+                f"ai-automation-kit flows run {output_dir}",
+                f"ai-automation-kit connector-doctor --project {output_dir} --output .tmp/{flow['id']}-connector-doctor",
+                f"ai-automation-kit client-report --flow-project {output_dir} --output .tmp/{flow['id']}-client-report",
+            ]
+        )
+    else:
+        lines.append("# Complete missing inputs before running the automation.")
+    lines.extend(["```", ""])
+    return "\n".join(lines)

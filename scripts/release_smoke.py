@@ -318,6 +318,30 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(guided_setup_output / "readiness_score.json")
     _require_file(guided_setup_output / "next_action.md")
 
+    guided_review_output = output / "guided-review-ai-reception"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "guided-review",
+            "--answers",
+            str(guided_setup_output / "guided_setup_answers.example.json"),
+            "--output",
+            str(guided_review_output),
+        ],
+        env=env,
+    )
+    _require_file(guided_review_output / "START_HERE_GUIDED_REVIEW.md")
+    _require_file(guided_review_output / "setup_readiness_report.md")
+    _require_file(guided_review_output / "automation_build_plan.md")
+    _require_file(guided_review_output / "client_missing_items_email.md")
+    _require_file(guided_review_output / "cloud_provider_decision.md")
+    _require_file(guided_review_output / "local_vs_cloud_decision.md")
+    _require_file(guided_review_output / "ai_agent_handoff_prompt.md")
+    _require_file(guided_review_output / "next_commands.md")
+    _require_file(guided_review_output / "guided_review.json")
+
     connector_output = output / "connector-doctor"
     _run(
         [

@@ -165,6 +165,23 @@ def test_parser_accepts_guided_setup_command():
     assert args.output == "guided"
 
 
+def test_parser_accepts_guided_review_command():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "guided-review",
+            "--answers",
+            "guided_setup_answers.json",
+            "--output",
+            "setup-review",
+        ]
+    )
+
+    assert args.command == "guided-review"
+    assert args.answers == "guided_setup_answers.json"
+    assert args.output == "setup-review"
+
+
 def test_parser_accepts_flows_commands():
     parser = build_parser()
 
@@ -318,6 +335,58 @@ def test_main_runs_guided_setup(tmp_path):
     assert "Ask the user one question at a time" in agent_instruction
     assert score["status"] == "needs_input"
     assert "missing_required_inputs" in score
+
+
+def test_main_runs_guided_review_from_answer_file(tmp_path):
+    answers = tmp_path / "guided_setup_answers.json"
+    answers.write_text(
+        json.dumps(
+            {
+                "flow_id": "ai-reception-line-inquiry",
+                "mode": "beginner",
+                "deployment": "cloud",
+                "connectors": ["line", "gmail", "google-sheets"],
+                "answers": {
+                    "business_goal": "Reduce missed LINE inquiries and reply faster.",
+                    "reception_source": "LINE official account and web form.",
+                    "knowledge_source": "FAQ, price list, and approved reply examples.",
+                    "output_destination": "Google Sheets and local approval queue.",
+                    "human_approval_rules": "Complaints, refunds, bookings, and price changes require approval.",
+                    "deployment_target": "cloud",
+                    "client_data_boundary": "Masked sample inquiries only.",
+                    "success_metric": "First response time and missed inquiries.",
+                    "connector_owner": "Client owns LINE and Google accounts.",
+                    "cloud_operator": "",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    output = tmp_path / "setup-review"
+
+    exit_code = main(["guided-review", "--answers", str(answers), "--output", str(output)])
+
+    assert exit_code == 0
+    assert (output / "START_HERE_GUIDED_REVIEW.md").exists()
+    assert (output / "setup_readiness_report.md").exists()
+    assert (output / "automation_build_plan.md").exists()
+    assert (output / "client_missing_items_email.md").exists()
+    assert (output / "cloud_provider_decision.md").exists()
+    assert (output / "local_vs_cloud_decision.md").exists()
+    assert (output / "ai_agent_handoff_prompt.md").exists()
+    assert (output / "next_commands.md").exists()
+    assert (output / "guided_review.json").exists()
+
+    report = (output / "setup_readiness_report.md").read_text()
+    email = (output / "client_missing_items_email.md").read_text()
+    commands = (output / "next_commands.md").read_text()
+    review = json.loads((output / "guided_review.json").read_text())
+
+    assert review["status"] == "needs_client_input"
+    assert "cloud_operator" in review["missing_inputs"]
+    assert "Ready now for local dry-run" in report
+    assert "cloud_operator" in email
+    assert "ai-automation-kit flows install ai-reception-line-inquiry" in commands
 
 
 def test_main_runs_github_discover_without_config(tmp_path, monkeypatch):

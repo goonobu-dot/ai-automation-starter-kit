@@ -76,6 +76,15 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - `.tmp/release-smoke/guided-setup-ai-reception/ai_agent_instruction.md`
 - `.tmp/release-smoke/guided-setup-ai-reception/readiness_score.json`
 - `.tmp/release-smoke/guided-setup-ai-reception/next_action.md`
+- `.tmp/release-smoke/guided-review-ai-reception/START_HERE_GUIDED_REVIEW.md`
+- `.tmp/release-smoke/guided-review-ai-reception/setup_readiness_report.md`
+- `.tmp/release-smoke/guided-review-ai-reception/automation_build_plan.md`
+- `.tmp/release-smoke/guided-review-ai-reception/client_missing_items_email.md`
+- `.tmp/release-smoke/guided-review-ai-reception/cloud_provider_decision.md`
+- `.tmp/release-smoke/guided-review-ai-reception/local_vs_cloud_decision.md`
+- `.tmp/release-smoke/guided-review-ai-reception/ai_agent_handoff_prompt.md`
+- `.tmp/release-smoke/guided-review-ai-reception/next_commands.md`
+- `.tmp/release-smoke/guided-review-ai-reception/guided_review.json`
 - `.tmp/release-smoke/opportunity-catalog/opportunity_catalog.html`
 - `.tmp/release-smoke/recommend-flow/recommended_flow.md`
 - `.tmp/release-smoke/share-check/share_check.md`
@@ -177,6 +186,7 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - [ ] Confirm offer-pack files do not guarantee income and clearly define scope, pricing model, client approval, and safety boundaries.
 - [ ] Confirm `business-launch` outputs explain the first offer, discovery call, pricing, risk boundaries, and 30-day launch path without promising income or fully autonomous production work.
 - [ ] Confirm `guided-setup` explains beginner, operator, and client modes; asks for reception source, knowledge source, output destination, approval rules, deployment target, and success metrics; and does not request raw secrets in chat.
+- [ ] Confirm `guided-review` separates local dry-run readiness from cloud readiness and gives a client-safe missing-items email, provider decision, AI handoff prompt, and next CLI commands.
 - [ ] Confirm English manuals explain the same business proposal path as the Japanese manuals.
 - [ ] Confirm AI reception docs explain required API keys, reception folder, sample data, operator UI, approval owner, and paid dry-run PoC boundaries without promising income.
 - [ ] Confirm AI employee roadmap prioritizes reception first, internal FAQ/admin second, sales research third, and delays outbound sales, autonomous high-risk decisions, and broad multi-department bundles.

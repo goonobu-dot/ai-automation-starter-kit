@@ -169,6 +169,7 @@ def test_public_release_audit_script_checks_publish_prerequisites():
     assert "README.md::ai-automation-kit client-ready --business-area operations" in result.stdout
     assert "README.md::ai-automation-kit complete-workspace" in result.stdout
     assert "README.md::ai-automation-kit guided-setup" in result.stdout
+    assert "README.md::ai-automation-kit guided-review" in result.stdout
     assert "README.md::ai-automation-kit flows list" in result.stdout
     assert "README.md::ai-automation-kit flows install" in result.stdout
     assert "README.md::ai-automation-kit github-discover --business-area operations" in result.stdout
@@ -282,6 +283,10 @@ def test_public_release_audit_script_checks_final_release_evidence():
     assert "scripts/release_smoke.py::START_HERE_GUIDED_SETUP.md" in result.stdout
     assert "scripts/release_smoke.py::guided_setup_questions.md" in result.stdout
     assert "scripts/release_smoke.py::ai_agent_instruction.md" in result.stdout
+    assert "scripts/release_smoke.py::guided-review" in result.stdout
+    assert "scripts/release_smoke.py::START_HERE_GUIDED_REVIEW.md" in result.stdout
+    assert "scripts/release_smoke.py::setup_readiness_report.md" in result.stdout
+    assert "scripts/release_smoke.py::next_commands.md" in result.stdout
     assert "scripts/release_smoke.py::FINAL_DELIVERY_GUIDE.md" in result.stdout
     assert "scripts/release_smoke.py::completion_checklist.md" in result.stdout
     assert "scripts/release_smoke.py::roi_calculator.csv" in result.stdout
@@ -326,6 +331,8 @@ def test_release_checklist_mentions_doctor_and_live_github_smoke():
     assert ".tmp/release-smoke/client-ready-accounting/roi_calculator.csv" in checklist
     assert ".tmp/release-smoke/client-ready-accounting/implementation_readiness_score.json" in checklist
     assert ".tmp/release-smoke/client-ready-accounting/maintenance_plan.md" in checklist
+    assert ".tmp/release-smoke/guided-review-ai-reception/setup_readiness_report.md" in checklist
+    assert ".tmp/release-smoke/guided-review-ai-reception/next_commands.md" in checklist
     assert ".tmp/release-smoke/flow-invoice-document-followup/flow.yaml" in checklist
     assert ".tmp/release-smoke/flow-invoice-document-followup/workflow_map.mmd" in checklist
     assert ".tmp/release-smoke/flow-invoice-document-followup/config/connectors.json" in checklist

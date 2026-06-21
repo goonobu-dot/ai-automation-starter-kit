@@ -12,6 +12,7 @@
 - Added `opportunity-catalog`, `recommend-flow`, and `share-check` so users can choose sellable work, turn client pain into a recommended flow, and review generated files before sharing.
 - Added `business-launch` and `business_launch/` complete-workspace outputs so AI beginners can create a target industry playbook, first client offer, discovery script, proposal builder, pricing menu, risk boundary sheet, 30-day launch plan, and pitch email for enterprise automation proposals.
 - Added `guided-setup` to generate beginner/operator/client intake questions, local and cloud setup plans, environment-value explanations, client request lists, AI-agent instructions, and readiness scoring before real automation setup.
+- Added `guided-review` to turn completed setup answers into a readiness report, build plan, client missing-items email, cloud decision guide, AI handoff prompt, and next CLI commands.
 - Added English manuals matching the Japanese business proposal docs: user manual, selling guide, flow selection guide, client demo script, real-world setup guide, and FAQ.
 - Added AI reception employee flows and setup artifacts so beginners can see required API keys, reception folders, sample data, operator UI, approval ownership, and paid dry-run PoC boundaries before client delivery.
 - Added AI employee roadmap, AI action procedures, internal FAQ/admin flows, and sales research flows based on the report's recommended expansion order.

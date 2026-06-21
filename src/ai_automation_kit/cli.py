@@ -22,6 +22,7 @@ from ai_automation_kit.core.operator_console import generate_complete_workspace
 from ai_automation_kit.core.operator_console import generate_connector_doctor
 from ai_automation_kit.core.operator_console import generate_demo_site
 from ai_automation_kit.core.operator_console import generate_flow_guide
+from ai_automation_kit.core.operator_console import generate_guided_review
 from ai_automation_kit.core.operator_console import generate_guided_setup
 from ai_automation_kit.core.operator_console import generate_install_bundle
 from ai_automation_kit.core.operator_console import generate_business_launch_pack
@@ -158,6 +159,10 @@ def build_parser() -> argparse.ArgumentParser:
     )
     guided_setup.add_argument("--connectors", default="local-folder")
     guided_setup.add_argument("--output", required=True)
+
+    guided_review = subparsers.add_parser("guided-review")
+    guided_review.add_argument("--answers", required=True)
+    guided_review.add_argument("--output", required=True)
 
     flows = subparsers.add_parser("flows")
     flow_subparsers = flows.add_subparsers(dest="flow_command", required=True)
@@ -409,6 +414,13 @@ def main(argv: list[str] | None = None) -> int:
         print(f"guided_setup={args.output}/START_HERE_GUIDED_SETUP.md")
         print(f"questions={args.output}/guided_setup_questions.md")
         print(f"ai_agent_instruction={args.output}/ai_agent_instruction.md")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "guided-review":
+        payload = generate_guided_review(answers=Path(args.answers), output=Path(args.output))
+        print(f"guided_review={args.output}/START_HERE_GUIDED_REVIEW.md")
+        print(f"setup_readiness_report={args.output}/setup_readiness_report.md")
+        print(f"next_commands={args.output}/next_commands.md")
         print(f"status={payload['status']}")
         return 0
     if args.command == "flows":
