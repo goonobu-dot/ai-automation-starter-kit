@@ -75,6 +75,8 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - `docs/REAL_WORLD_SETUP_GUIDE.md`
 - `docs/AI_RECEPTION_EMPLOYEE_PACK.md`
 - `docs/AI_RECEPTION_EMPLOYEE_PACK.ja.md`
+- `docs/AI_EMPLOYEE_ROADMAP.md`
+- `docs/AI_EMPLOYEE_ROADMAP.ja.md`
 - `docs/FAQ.md`
 - `.tmp/release-smoke/complete-accounting/quickstart/flow_project/automation_output/run_log.json`
 - `.tmp/release-smoke/complete-accounting/connector_doctor/connector_doctor.md`
@@ -87,6 +89,7 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - `.tmp/release-smoke/flow-invoice-document-followup/flow.yaml`
 - `.tmp/release-smoke/flow-invoice-document-followup/workflow_map.mmd`
 - `.tmp/release-smoke/flow-invoice-document-followup/human_approval_points.md`
+- `.tmp/release-smoke/flow-invoice-document-followup/ai_action_procedure.md`
 - `.tmp/release-smoke/flow-invoice-document-followup/setup_requirements.md`
 - `.tmp/release-smoke/flow-invoice-document-followup/client_setup_request.md`
 - `.tmp/release-smoke/flow-invoice-document-followup/connector_status.md`
@@ -102,10 +105,17 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - `.tmp/release-smoke/flow-invoice-document-followup/local_outbox/email_drafts.md`
 - `.tmp/release-smoke/flow-invoice-document-followup/local_outbox/slack_messages.md`
 - `.tmp/release-smoke/flow-ai-reception-line-inquiry/setup_requirements.md`
+- `.tmp/release-smoke/flow-ai-reception-line-inquiry/ai_action_procedure.md`
 - `.tmp/release-smoke/flow-ai-reception-line-inquiry/client_setup_request.md`
 - `.tmp/release-smoke/flow-ai-reception-line-inquiry/connector_status.md`
 - `.tmp/release-smoke/flow-ai-reception-line-inquiry/monetization_plan.md`
 - `.tmp/release-smoke/flow-ai-reception-line-inquiry/operator_ui/index.html`
+- `.tmp/release-smoke/flow-ai-admin-faq-routing/ai_action_procedure.md`
+- `.tmp/release-smoke/flow-ai-admin-faq-routing/setup_requirements.md`
+- `.tmp/release-smoke/flow-ai-admin-faq-routing/operator_ui/index.html`
+- `.tmp/release-smoke/flow-ai-sales-research-brief/ai_action_procedure.md`
+- `.tmp/release-smoke/flow-ai-sales-research-brief/setup_requirements.md`
+- `.tmp/release-smoke/flow-ai-sales-research-brief/operator_ui/index.html`
 - `.tmp/release-smoke/github-operations/run_summary.md`
 - `.tmp/release-smoke/github-operations/executive_decision_brief.md`
 - `.tmp/release-smoke/github-operations/pilot_scorecard.csv`
@@ -157,11 +167,13 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - [ ] Confirm `business-launch` outputs explain the first offer, discovery call, pricing, risk boundaries, and 30-day launch path without promising income or fully autonomous production work.
 - [ ] Confirm English manuals explain the same business proposal path as the Japanese manuals.
 - [ ] Confirm AI reception docs explain required API keys, reception folder, sample data, operator UI, approval owner, and paid dry-run PoC boundaries without promising income.
+- [ ] Confirm AI employee roadmap prioritizes reception first, internal FAQ/admin second, sales research third, and delays outbound sales, autonomous high-risk decisions, and broad multi-department bundles.
 - [ ] Confirm client-ready files cover intake, ROI, proposal tiers, security, tool selection, maintenance, marketplace profile, and case-study evidence.
 - [ ] Confirm `flows list`, `flows show`, `flows install`, `flows validate`, `flows run`, and `flows approve` work for at least one installed flow.
 - [ ] Confirm installed flow projects include `flow.yaml`, `workflow_map.mmd`, approval points, sample data, a dry-run script, and a contract test.
 - [ ] Confirm installed flow projects include `.env.example`, `config/connectors.json`, and `docs/SYSTEM_RUNBOOK.md`.
 - [ ] Confirm installed flow projects include `setup_requirements.md`, `client_setup_request.md`, `connector_status.md`, `monetization_plan.md`, and `operator_ui/index.html`.
+- [ ] Confirm installed flow projects include `ai_action_procedure.md` with allowed actions, forbidden actions, escalation rules, human approval steps, and production gate.
 - [ ] Confirm installed flow projects produce `automation_output/` with a work queue, draft outputs, approval queue, connector tasks, status report, and run log.
 - [ ] Confirm approval produces `approved_actions.csv` and `local_outbox/` drafts without sending external messages.
 - [ ] Run the generated adapter starter smoke test when `adapter_starter/` is present.

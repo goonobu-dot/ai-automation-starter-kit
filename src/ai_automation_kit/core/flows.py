@@ -14,6 +14,7 @@ REQUIRED_PROJECT_FILES = [
     "workflow_map.mmd",
     "before_after_workflow.md",
     "human_approval_points.md",
+    "ai_action_procedure.md",
     "setup_requirements.md",
     "client_setup_request.md",
     "connector_status.md",
@@ -141,6 +142,74 @@ FLOW_CATALOG = [
             _step("archive", "Archive report and metrics", "Markdown report", "Internal report draft", "Daily report archive", False),
         ],
         "success_metrics": ["unresolved_inquiries", "owner_response_time", "daily_report_time", "missed_followups"],
+    },
+    {
+        "id": "ai-admin-faq-routing",
+        "name": "AI Admin Employee: Internal FAQ Routing",
+        "industry": "admin",
+        "genre": "knowledge-routing",
+        "summary": "Route internal employee questions to approved FAQ answers, identify missing knowledge, and escalate unclear requests to an owner.",
+        "tools": ["Internal form / Slack export", "FAQ / handbook", "Google Sheets", "Slack / Teams"],
+        "sample_columns": ["request_id", "employee", "department", "question", "topic", "owner", "status"],
+        "steps": [
+            _step("intake", "Collect internal questions", "Internal form / Slack export", "Question rows", "Admin support queue", False),
+            _step("retrieve", "Find approved FAQ or handbook context", "FAQ / handbook", "Admin support queue", "Approved context packet", False),
+            _step("draft", "Draft internal answer or clarification request", "AI assistant", "Approved context packet", "Internal answer draft", True),
+            _step("gap", "Flag missing or outdated FAQ topics", "Google Sheets", "Internal answer draft", "Knowledge gap log", False),
+            _step("escalate", "Escalate unclear or sensitive questions", "Slack / Teams", "Knowledge gap log", "Owner review request", True),
+        ],
+        "success_metrics": ["admin_response_time", "repeat_questions", "knowledge_gap_count", "owner_escalation_rate"],
+    },
+    {
+        "id": "ai-admin-policy-request",
+        "name": "AI Admin Employee: Policy Request Intake",
+        "industry": "admin",
+        "genre": "approval",
+        "summary": "Collect policy, HR, IT, or general affairs requests, prepare the right owner packet, and keep decisions human-approved.",
+        "tools": ["Request form", "Policy docs", "Approval tracker", "Email draft"],
+        "sample_columns": ["request_id", "employee", "policy_area", "request_detail", "risk", "owner", "status"],
+        "steps": [
+            _step("intake", "Collect admin or policy requests", "Request form", "Request rows", "Policy request queue", False),
+            _step("classify", "Classify HR, IT, finance, facility, or legal-adjacent request", "Policy docs", "Policy request queue", "Policy owner label", False),
+            _step("packet", "Prepare owner review packet", "AI assistant", "Policy owner label", "Review packet draft", True),
+            _step("approve", "Owner approves response or next action", "Approval tracker", "Review packet draft", "Approval record", True),
+            _step("report", "Write request status report", "Markdown report", "Approval record", "Admin status report", False),
+        ],
+        "success_metrics": ["routing_time", "missing_information_rate", "approval_cycle_time", "policy_exception_count"],
+    },
+    {
+        "id": "ai-sales-research-brief",
+        "name": "AI Sales Research Employee: Account Brief",
+        "industry": "sales-research",
+        "genre": "research",
+        "summary": "Prepare account research briefs from approved public and internal sources without sending outbound messages automatically.",
+        "tools": ["CRM export", "Public website notes", "Docs", "Markdown brief"],
+        "sample_columns": ["account", "website", "industry", "recent_note", "owner", "next_meeting", "status"],
+        "steps": [
+            _step("collect", "Collect account and source notes", "CRM export", "Account rows", "Account research queue", False),
+            _step("research", "Summarize public and approved internal context", "Public website notes", "Account research queue", "Research summary", True),
+            _step("hypothesize", "Draft likely business pains and automation angles", "AI assistant", "Research summary", "Opportunity hypotheses", True),
+            _step("review", "Sales owner reviews claims before use", "Human reviewer", "Opportunity hypotheses", "Approved account brief", True),
+            _step("archive", "Save approved brief", "Markdown brief", "Approved account brief", "Sales research archive", False),
+        ],
+        "success_metrics": ["research_time_saved", "brief_acceptance_rate", "claim_correction_count", "meeting_prep_quality"],
+    },
+    {
+        "id": "ai-sales-meeting-followup-prep",
+        "name": "AI Sales Research Employee: Meeting Follow-up Prep",
+        "industry": "sales-research",
+        "genre": "document",
+        "summary": "Turn meeting notes into reviewed next steps, proposal inputs, and CRM update drafts without auto-sending outreach.",
+        "tools": ["Meeting notes", "CRM export", "Proposal checklist", "Email draft"],
+        "sample_columns": ["account", "meeting_date", "notes", "next_step", "owner", "risk", "status"],
+        "steps": [
+            _step("intake", "Collect meeting notes", "Meeting notes", "Note rows", "Follow-up queue", False),
+            _step("extract", "Extract next steps, risks, and promised items", "Local rules + AI assistant", "Follow-up queue", "Follow-up packet", True),
+            _step("draft", "Draft CRM update and follow-up email", "Email draft", "Follow-up packet", "Follow-up draft", True),
+            _step("approve", "Sales owner approves wording and commitments", "Human reviewer", "Follow-up draft", "Approved follow-up", True),
+            _step("report", "Write action tracker", "Proposal checklist", "Approved follow-up", "Sales action tracker", False),
+        ],
+        "success_metrics": ["followup_prep_time", "crm_completeness", "commitment_accuracy", "owner_review_rate"],
     },
     {
         "id": "weekly-kpi-report",
@@ -437,6 +506,7 @@ def install_flow(flow_id: str, output: Path) -> dict:
     (output / "workflow_map.mmd").write_text(_render_mermaid(flow), encoding="utf-8")
     (output / "before_after_workflow.md").write_text(_render_before_after(flow), encoding="utf-8")
     (output / "human_approval_points.md").write_text(_render_approval_points(flow), encoding="utf-8")
+    (output / "ai_action_procedure.md").write_text(_render_ai_action_procedure(flow), encoding="utf-8")
     (output / "setup_requirements.md").write_text(_render_setup_requirements(flow), encoding="utf-8")
     (output / "client_setup_request.md").write_text(_render_client_setup_request(flow), encoding="utf-8")
     (output / "connector_status.md").write_text(_render_connector_status(flow), encoding="utf-8")
@@ -685,6 +755,79 @@ def _render_approval_points(flow: dict) -> str:
                 "",
             ]
         )
+    return "\n".join(lines)
+
+
+def _render_ai_action_procedure(flow: dict) -> str:
+    approval_steps = [step for step in flow["steps"] if step["human_approval"]]
+    allowed = [
+        "Read approved sample data or exported source rows.",
+        "Classify records using the local flow definition.",
+        "Draft internal notes, customer reply drafts, owner review packets, reports, and checklists.",
+        "Write local dry-run outputs under `automation_output/` and `local_outbox/`.",
+        "Ask for missing information when required fields are incomplete.",
+    ]
+    forbidden = [
+        "Send external messages without named human approval.",
+        "Update production systems, CRM records, Google Sheets, calendars, access controls, or payment systems by default.",
+        "Approve refunds, contracts, hiring decisions, access grants, medical/legal/financial advice, or irreversible actions.",
+        "Use private credentials, secrets, or production customer exports pasted into chat.",
+        "Invent facts, prices, policies, availability, legal terms, or commitments that are not in the approved source material.",
+    ]
+    lines = [
+        f"# AI Action Procedure: {flow['name']}",
+        "",
+        "This procedure defines how the AI employee should behave for this workflow. Treat it as the operating procedure for a dry-run PoC.",
+        "",
+        "## Allowed Actions",
+        "",
+    ]
+    lines.extend(f"- {item}" for item in allowed)
+    lines.extend(
+        [
+            "",
+            "## Forbidden Actions",
+            "",
+        ]
+    )
+    lines.extend(f"- {item}" for item in forbidden)
+    lines.extend(
+        [
+            "",
+            "## Escalation Rules",
+            "",
+            "- Escalate if the request is outside the approved FAQ, policy, service menu, or source data.",
+            "- Escalate if the request involves complaints, refunds, contracts, legal, medical, financial, hiring, access, or production-impacting decisions.",
+            "- Escalate if the input is missing required fields or contains sensitive data that was not approved for the PoC.",
+            "- Escalate if the AI draft would create a new promise, deadline, discount, price, availability claim, or operational commitment.",
+            "",
+            "## Human Approval Steps",
+            "",
+        ]
+    )
+    if approval_steps:
+        for step in approval_steps:
+            lines.extend(
+                [
+                    f"### {step['name']}",
+                    "",
+                    f"- Step ID: `{step['id']}`",
+                    f"- Review input: {step['input']}",
+                    f"- Review output: {step['output']}",
+                    "- Approval rule: the named owner must review before any real-world action.",
+                    "",
+                ]
+            )
+    else:
+        lines.extend(["- This flow has no human approval steps in the definition. Add one before production use.", ""])
+    lines.extend(
+        [
+            "## Production Gate",
+            "",
+            "Production remains blocked until credentials, data handling, approval ownership, rollback, and audit logging are reviewed with the client.",
+            "",
+        ]
+    )
     return "\n".join(lines)
 
 

@@ -42,6 +42,8 @@ def test_readme_links_start_here_and_use_cases_docs():
     assert "docs/FAQ.md" in readme
     assert "docs/AI_RECEPTION_EMPLOYEE_PACK.md" in readme
     assert "docs/AI_RECEPTION_EMPLOYEE_PACK.ja.md" in readme
+    assert "docs/AI_EMPLOYEE_ROADMAP.md" in readme
+    assert "docs/AI_EMPLOYEE_ROADMAP.ja.md" in readme
 
 
 def test_start_here_and_use_cases_docs_help_first_time_users():
@@ -90,6 +92,30 @@ def test_ai_reception_employee_docs_explain_setup_and_monetization_path():
             "APIキー",
             "operator_ui/index.html",
             "有料dry-run PoC",
+        ],
+    }
+    for path, snippets in expected_docs.items():
+        text = Path(path).read_text()
+        assert len(text) > 800, path
+        for snippet in snippets:
+            assert snippet in text, f"{path} missing {snippet}"
+
+
+def test_ai_employee_roadmap_docs_explain_priority_and_exclusions():
+    expected_docs = {
+        "docs/AI_EMPLOYEE_ROADMAP.md": [
+            "AI Reception Employee",
+            "Internal FAQ",
+            "Sales Research",
+            "Do not start with outbound sales",
+            "multi-department",
+        ],
+        "docs/AI_EMPLOYEE_ROADMAP.ja.md": [
+            "AI受付社員",
+            "社内FAQ",
+            "営業リサーチ",
+            "アウトバウンド営業から始めない",
+            "多部門",
         ],
     }
     for path, snippets in expected_docs.items():
@@ -264,6 +290,7 @@ def test_public_release_audit_script_checks_final_release_evidence():
     assert "scripts/release_smoke.py::workflow_map.mmd" in result.stdout
     assert "scripts/release_smoke.py::ai-reception-line-inquiry" in result.stdout
     assert "scripts/release_smoke.py::setup_requirements.md" in result.stdout
+    assert "scripts/release_smoke.py::ai_action_procedure.md" in result.stdout
     assert "scripts/release_smoke.py::operator_ui/index.html" in result.stdout
     assert "scripts/release_smoke.py::automation_output" in result.stdout
     assert "scripts/release_smoke.py::local_outbox" in result.stdout

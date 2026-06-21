@@ -46,10 +46,16 @@ def main() -> int:
 def _run_flow_smoke(output: Path, env: dict[str, str]) -> None:
     flow_output = output / "flow-invoice-document-followup"
     reception_output = output / "flow-ai-reception-line-inquiry"
+    admin_output = output / "flow-ai-admin-faq-routing"
+    sales_research_output = output / "flow-ai-sales-research-brief"
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "list"], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "list", "--industry", "reception"], env=env)
+    _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "list", "--industry", "admin"], env=env)
+    _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "list", "--industry", "sales-research"], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "show", "invoice-document-followup"], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "show", "ai-reception-line-inquiry"], env=env)
+    _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "show", "ai-admin-faq-routing"], env=env)
+    _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "show", "ai-sales-research-brief"], env=env)
     _run(
         [
             sys.executable,
@@ -76,8 +82,36 @@ def _run_flow_smoke(output: Path, env: dict[str, str]) -> None:
         ],
         env=env,
     )
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "flows",
+            "install",
+            "ai-admin-faq-routing",
+            "--output",
+            str(admin_output),
+        ],
+        env=env,
+    )
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "flows",
+            "install",
+            "ai-sales-research-brief",
+            "--output",
+            str(sales_research_output),
+        ],
+        env=env,
+    )
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "validate", str(flow_output)], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "validate", str(reception_output)], env=env)
+    _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "validate", str(admin_output)], env=env)
+    _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "validate", str(sales_research_output)], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "run", str(flow_output)], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "approve", str(flow_output), "--approver", "release@example.com"], env=env)
     _run([sys.executable, "scripts/run_dry_run.py"], cwd=flow_output, env=env)
@@ -89,6 +123,7 @@ def _run_flow_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(flow_output / "docs" / "SYSTEM_RUNBOOK.md")
     _require_file(flow_output / "flow.yaml")
     _require_file(flow_output / "workflow_map.mmd")
+    _require_file(flow_output / "ai_action_procedure.md")
     _require_file(flow_output / "setup_requirements.md")
     _require_file(flow_output / "client_setup_request.md")
     _require_file(flow_output / "connector_status.md")
@@ -104,10 +139,17 @@ def _run_flow_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(flow_output / "local_outbox" / "email_drafts.md")
     _require_file(flow_output / "local_outbox" / "slack_messages.md")
     _require_file(reception_output / "setup_requirements.md")
+    _require_file(reception_output / "ai_action_procedure.md")
     _require_file(reception_output / "client_setup_request.md")
     _require_file(reception_output / "connector_status.md")
     _require_file(reception_output / "monetization_plan.md")
     _require_file(reception_output / "operator_ui" / "index.html")
+    _require_file(admin_output / "ai_action_procedure.md")
+    _require_file(admin_output / "setup_requirements.md")
+    _require_file(admin_output / "operator_ui" / "index.html")
+    _require_file(sales_research_output / "ai_action_procedure.md")
+    _require_file(sales_research_output / "setup_requirements.md")
+    _require_file(sales_research_output / "operator_ui" / "index.html")
 
 
 def _run_beginner_sales_smoke(output: Path, env: dict[str, str]) -> None:

@@ -71,6 +71,18 @@ def test_catalog_includes_ai_reception_employee_flows_from_business_research():
     assert expected <= flow_ids
 
 
+def test_catalog_includes_next_priority_ai_employee_flows_from_report():
+    flow_ids = {flow["id"] for flow in list_flows()}
+
+    expected = {
+        "ai-admin-faq-routing",
+        "ai-admin-policy-request",
+        "ai-sales-research-brief",
+        "ai-sales-meeting-followup-prep",
+    }
+    assert expected <= flow_ids
+
+
 def test_get_flow_returns_structured_steps():
     flow = get_flow("invoice-document-followup")
 
@@ -91,6 +103,7 @@ def test_install_flow_creates_local_project_scaffold(tmp_path):
     assert (output / "workflow_map.mmd").exists()
     assert (output / "before_after_workflow.md").exists()
     assert (output / "human_approval_points.md").exists()
+    assert (output / "ai_action_procedure.md").exists()
     assert (output / "sample_data" / "input.csv").exists()
     assert (output / "scripts" / "run_dry_run.py").exists()
     assert (output / "scripts" / "run_automation.py").exists()
@@ -114,12 +127,16 @@ def test_install_ai_reception_flow_creates_beginner_setup_and_operator_ui(tmp_pa
     assert (output / "operator_ui" / "index.html").exists()
 
     setup_text = (output / "setup_requirements.md").read_text()
+    procedure_text = (output / "ai_action_procedure.md").read_text()
     ui_text = (output / "operator_ui" / "index.html").read_text()
     monetization_text = (output / "monetization_plan.md").read_text()
 
     assert "API keys" in setup_text
     assert "reception folder" in setup_text
     assert "human approval" in setup_text
+    assert "Allowed Actions" in procedure_text
+    assert "Forbidden Actions" in procedure_text
+    assert "Escalation Rules" in procedure_text
     assert "AI Reception Employee" in ui_text
     assert "Approval Queue" in ui_text
     assert "Paid dry-run PoC" in monetization_text
