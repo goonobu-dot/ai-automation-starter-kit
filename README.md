@@ -49,6 +49,8 @@ Need a practical first path or use-case examples?
 - [顧客デモ台本](docs/CLIENT_DEMO_SCRIPT.ja.md)
 - [Real-world setup guide](docs/REAL_WORLD_SETUP_GUIDE.md)
 - [実運用セットアップガイド](docs/REAL_WORLD_SETUP_GUIDE.ja.md)
+- [AI Reception Employee Pack](docs/AI_RECEPTION_EMPLOYEE_PACK.md)
+- [AI受付社員パック](docs/AI_RECEPTION_EMPLOYEE_PACK.ja.md)
 - [FAQ](docs/FAQ.md)
 - [FAQ](docs/FAQ.ja.md)
 - [Use Cases](docs/USE_CASES.md)
@@ -163,6 +165,9 @@ Choose and install a local automation-flow scaffold when you want to turn an ide
 ```bash
 ai-automation-kit flows list
 ai-automation-kit flows list --industry finance
+ai-automation-kit flows list --industry reception
+ai-automation-kit flows show ai-reception-line-inquiry
+ai-automation-kit flows install ai-reception-line-inquiry --output .tmp/ai-reception-line-inquiry
 ai-automation-kit flows show invoice-document-followup
 ai-automation-kit flows install invoice-document-followup --output .tmp/flow-invoice-document-followup
 ai-automation-kit flows validate .tmp/flow-invoice-document-followup
@@ -485,7 +490,10 @@ List 60+ automation flows by industry or genre, inspect the steps, and install a
 ```bash
 ai-automation-kit flows list
 ai-automation-kit flows list --industry finance
+ai-automation-kit flows list --industry reception
 ai-automation-kit flows list --genre approval
+ai-automation-kit flows show ai-reception-line-inquiry
+ai-automation-kit flows install ai-reception-line-inquiry --output .tmp/ai-reception-line-inquiry
 ai-automation-kit flows show invoice-document-followup
 ai-automation-kit flows install invoice-document-followup --output .tmp/flow-invoice-document-followup
 ai-automation-kit flows validate .tmp/flow-invoice-document-followup
@@ -493,7 +501,9 @@ ai-automation-kit flows run .tmp/flow-invoice-document-followup
 ai-automation-kit flows approve .tmp/flow-invoice-document-followup --approver owner@example.com
 ```
 
-Installed flow projects include `README.md`, `.env.example`, `config/connectors.json`, `docs/SYSTEM_RUNBOOK.md`, `flow.yaml`, `flow.json`, `workflow_map.mmd`, `before_after_workflow.md`, `human_approval_points.md`, `sample_data/input.csv`, `scripts/run_automation.py`, `scripts/approve_all.py`, `scripts/run_dry_run.py`, and `tests/test_flow_contract.py`. Running the flow creates `automation_output/work_queue.csv`, `automation_output/draft_outputs.md`, `automation_output/approval_queue.csv`, `automation_output/connector_tasks.jsonl`, `automation_output/status_report.md`, and `automation_output/run_log.json`. Approving the flow creates `automation_output/approved_actions.csv`, `local_outbox/email_drafts.md`, and `local_outbox/slack_messages.md`. The runtime is local-first and dry-run only, so it does not send external messages, grant access, move money, approve hiring decisions, or update production systems.
+Installed flow projects include `README.md`, `.env.example`, `config/connectors.json`, `docs/SYSTEM_RUNBOOK.md`, `flow.yaml`, `flow.json`, `workflow_map.mmd`, `before_after_workflow.md`, `human_approval_points.md`, `setup_requirements.md`, `client_setup_request.md`, `connector_status.md`, `monetization_plan.md`, `operator_ui/index.html`, `sample_data/input.csv`, `scripts/run_automation.py`, `scripts/approve_all.py`, `scripts/run_dry_run.py`, and `tests/test_flow_contract.py`. Running the flow creates `automation_output/work_queue.csv`, `automation_output/draft_outputs.md`, `automation_output/approval_queue.csv`, `automation_output/connector_tasks.jsonl`, `automation_output/status_report.md`, and `automation_output/run_log.json`. Approving the flow creates `automation_output/approved_actions.csv`, `local_outbox/email_drafts.md`, and `local_outbox/slack_messages.md`. The runtime is local-first and dry-run only, so it does not send external messages, grant access, move money, approve hiring decisions, or update production systems.
+
+The AI reception employee flows are the recommended first business offer for new operators. They show what API keys, reception folder, sample data, output folder, approval owner, and client rules are needed before real automation is enabled. Open `operator_ui/index.html` to explain the selected workflow visually, then use `setup_requirements.md`, `client_setup_request.md`, and `monetization_plan.md` to package a bounded paid dry-run PoC.
 
 ### doctor
 

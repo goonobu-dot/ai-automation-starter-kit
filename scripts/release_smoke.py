@@ -45,8 +45,11 @@ def main() -> int:
 
 def _run_flow_smoke(output: Path, env: dict[str, str]) -> None:
     flow_output = output / "flow-invoice-document-followup"
+    reception_output = output / "flow-ai-reception-line-inquiry"
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "list"], env=env)
+    _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "list", "--industry", "reception"], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "show", "invoice-document-followup"], env=env)
+    _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "show", "ai-reception-line-inquiry"], env=env)
     _run(
         [
             sys.executable,
@@ -60,7 +63,21 @@ def _run_flow_smoke(output: Path, env: dict[str, str]) -> None:
         ],
         env=env,
     )
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "flows",
+            "install",
+            "ai-reception-line-inquiry",
+            "--output",
+            str(reception_output),
+        ],
+        env=env,
+    )
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "validate", str(flow_output)], env=env)
+    _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "validate", str(reception_output)], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "run", str(flow_output)], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "approve", str(flow_output), "--approver", "release@example.com"], env=env)
     _run([sys.executable, "scripts/run_dry_run.py"], cwd=flow_output, env=env)
@@ -72,6 +89,11 @@ def _run_flow_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(flow_output / "docs" / "SYSTEM_RUNBOOK.md")
     _require_file(flow_output / "flow.yaml")
     _require_file(flow_output / "workflow_map.mmd")
+    _require_file(flow_output / "setup_requirements.md")
+    _require_file(flow_output / "client_setup_request.md")
+    _require_file(flow_output / "connector_status.md")
+    _require_file(flow_output / "monetization_plan.md")
+    _require_file(flow_output / "operator_ui" / "index.html")
     _require_file(flow_output / "scripts" / "run_dry_run.py")
     _require_file(flow_output / "automation_output" / "work_queue.csv")
     _require_file(flow_output / "automation_output" / "draft_outputs.md")
@@ -81,6 +103,11 @@ def _run_flow_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(flow_output / "automation_output" / "approved_actions.csv")
     _require_file(flow_output / "local_outbox" / "email_drafts.md")
     _require_file(flow_output / "local_outbox" / "slack_messages.md")
+    _require_file(reception_output / "setup_requirements.md")
+    _require_file(reception_output / "client_setup_request.md")
+    _require_file(reception_output / "connector_status.md")
+    _require_file(reception_output / "monetization_plan.md")
+    _require_file(reception_output / "operator_ui" / "index.html")
 
 
 def _run_beginner_sales_smoke(output: Path, env: dict[str, str]) -> None:

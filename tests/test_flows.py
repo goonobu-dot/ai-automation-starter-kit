@@ -59,6 +59,18 @@ def test_catalog_covers_high_demand_workflow_patterns_from_research():
     assert expected <= flow_ids
 
 
+def test_catalog_includes_ai_reception_employee_flows_from_business_research():
+    flow_ids = {flow["id"] for flow in list_flows()}
+
+    expected = {
+        "ai-reception-line-inquiry",
+        "ai-reception-estimate-intake",
+        "ai-reception-appointment-precheck",
+        "ai-reception-daily-report",
+    }
+    assert expected <= flow_ids
+
+
 def test_get_flow_returns_structured_steps():
     flow = get_flow("invoice-document-followup")
 
@@ -87,6 +99,31 @@ def test_install_flow_creates_local_project_scaffold(tmp_path):
     assert (output / "config" / "connectors.json").exists()
     assert (output / "docs" / "SYSTEM_RUNBOOK.md").exists()
     assert (output / "tests" / "test_flow_contract.py").exists()
+
+
+def test_install_ai_reception_flow_creates_beginner_setup_and_operator_ui(tmp_path):
+    output = tmp_path / "ai-reception-project"
+
+    payload = install_flow("ai-reception-line-inquiry", output)
+
+    assert payload["flow_id"] == "ai-reception-line-inquiry"
+    assert (output / "setup_requirements.md").exists()
+    assert (output / "client_setup_request.md").exists()
+    assert (output / "connector_status.md").exists()
+    assert (output / "monetization_plan.md").exists()
+    assert (output / "operator_ui" / "index.html").exists()
+
+    setup_text = (output / "setup_requirements.md").read_text()
+    ui_text = (output / "operator_ui" / "index.html").read_text()
+    monetization_text = (output / "monetization_plan.md").read_text()
+
+    assert "API keys" in setup_text
+    assert "reception folder" in setup_text
+    assert "human approval" in setup_text
+    assert "AI Reception Employee" in ui_text
+    assert "Approval Queue" in ui_text
+    assert "Paid dry-run PoC" in monetization_text
+    assert "Do not promise income" in monetization_text
 
 
 def test_run_flow_project_executes_generic_automation_outputs(tmp_path):

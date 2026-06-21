@@ -40,6 +40,8 @@ def test_readme_links_start_here_and_use_cases_docs():
     assert "docs/CLIENT_DEMO_SCRIPT.md" in readme
     assert "docs/REAL_WORLD_SETUP_GUIDE.md" in readme
     assert "docs/FAQ.md" in readme
+    assert "docs/AI_RECEPTION_EMPLOYEE_PACK.md" in readme
+    assert "docs/AI_RECEPTION_EMPLOYEE_PACK.ja.md" in readme
 
 
 def test_start_here_and_use_cases_docs_help_first_time_users():
@@ -65,6 +67,30 @@ def test_english_manuals_match_japanese_business_proposal_coverage():
         "docs/CLIENT_DEMO_SCRIPT.md": ["Client Demo Script", "work queue", "approval queue", "continue, revise, or stop"],
         "docs/REAL_WORLD_SETUP_GUIDE.md": ["connector-doctor", "Gmail / Outlook", "Go Live", "rollback"],
         "docs/FAQ.md": ["business-launch", "side business", "dry-run", "production"],
+    }
+    for path, snippets in expected_docs.items():
+        text = Path(path).read_text()
+        assert len(text) > 800, path
+        for snippet in snippets:
+            assert snippet in text, f"{path} missing {snippet}"
+
+
+def test_ai_reception_employee_docs_explain_setup_and_monetization_path():
+    expected_docs = {
+        "docs/AI_RECEPTION_EMPLOYEE_PACK.md": [
+            "AI Reception Employee",
+            "reception folder",
+            "API keys",
+            "operator_ui/index.html",
+            "Paid dry-run PoC",
+        ],
+        "docs/AI_RECEPTION_EMPLOYEE_PACK.ja.md": [
+            "AI受付社員",
+            "受付フォルダ",
+            "APIキー",
+            "operator_ui/index.html",
+            "有料dry-run PoC",
+        ],
     }
     for path, snippets in expected_docs.items():
         text = Path(path).read_text()
@@ -236,6 +262,9 @@ def test_public_release_audit_script_checks_final_release_evidence():
     assert "scripts/release_smoke.py::flows approve" in result.stdout
     assert "scripts/release_smoke.py::flow.yaml" in result.stdout
     assert "scripts/release_smoke.py::workflow_map.mmd" in result.stdout
+    assert "scripts/release_smoke.py::ai-reception-line-inquiry" in result.stdout
+    assert "scripts/release_smoke.py::setup_requirements.md" in result.stdout
+    assert "scripts/release_smoke.py::operator_ui/index.html" in result.stdout
     assert "scripts/release_smoke.py::automation_output" in result.stdout
     assert "scripts/release_smoke.py::local_outbox" in result.stdout
     assert "scripts/release_smoke.py::github-discover" in result.stdout

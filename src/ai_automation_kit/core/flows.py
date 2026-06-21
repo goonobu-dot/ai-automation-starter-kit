@@ -14,6 +14,11 @@ REQUIRED_PROJECT_FILES = [
     "workflow_map.mmd",
     "before_after_workflow.md",
     "human_approval_points.md",
+    "setup_requirements.md",
+    "client_setup_request.md",
+    "connector_status.md",
+    "monetization_plan.md",
+    "operator_ui/index.html",
     "sample_data/input.csv",
     "scripts/run_dry_run.py",
     "scripts/run_automation.py",
@@ -67,6 +72,75 @@ FLOW_CATALOG = [
             _step("log", "Record response status", "Helpdesk export", "Approved reply", "Updated ticket log", False),
         ],
         "success_metrics": ["reply_time", "draft_acceptance_rate", "escalation_rate"],
+    },
+    {
+        "id": "ai-reception-line-inquiry",
+        "name": "AI Reception Employee: LINE / Form Inquiry",
+        "industry": "reception",
+        "genre": "first-response",
+        "summary": "Receive LINE, web form, or email inquiries, draft first responses, collect missing details, and escalate items that need a human owner.",
+        "tools": ["LINE / Web form / Email export", "FAQ / knowledge base", "Google Sheets", "Slack / Teams"],
+        "sample_columns": ["inquiry_id", "customer", "channel", "message", "requested_action", "owner", "status"],
+        "steps": [
+            _step("intake", "Collect new inquiries from the reception channel", "LINE / Web form / Email export", "Inbound inquiry rows", "Reception work queue", False),
+            _step("classify", "Classify FAQ, booking, estimate, complaint, or human-only request", "Local rules + FAQ", "Reception work queue", "Intent and risk labels", False),
+            _step("draft", "Draft first response and missing-information questions", "AI assistant", "Intent and risk labels", "Customer reply draft", True),
+            _step("record", "Record inquiry details and next action", "Google Sheets", "Customer reply draft", "Reception log row", False),
+            _step("escalate", "Notify the human owner for approval or direct handling", "Slack / Teams", "Reception log row", "Human approval request", True),
+            _step("report", "Create daily reception summary", "Markdown report", "Reception log row", "Daily reception report", False),
+        ],
+        "success_metrics": ["first_response_time", "missed_inquiries", "human_escalation_rate", "hours_saved"],
+    },
+    {
+        "id": "ai-reception-estimate-intake",
+        "name": "AI Reception Employee: Estimate Intake",
+        "industry": "reception",
+        "genre": "first-response",
+        "summary": "Turn quote or estimate requests into structured requirement packets before a human prepares the final proposal.",
+        "tools": ["Web form / Email inbox", "Question checklist", "Google Sheets", "Email draft"],
+        "sample_columns": ["request_id", "customer", "service_needed", "budget", "deadline", "missing_info", "owner"],
+        "steps": [
+            _step("intake", "Collect estimate requests", "Web form / Email inbox", "Request rows", "Estimate request queue", False),
+            _step("check", "Check required fields for estimate readiness", "Question checklist", "Estimate request queue", "Missing-information list", False),
+            _step("draft", "Draft follow-up questions for missing details", "Email draft", "Missing-information list", "Customer question draft", True),
+            _step("record", "Save structured estimate packet", "Google Sheets", "Customer question draft", "Estimate intake log", False),
+            _step("handoff", "Route ready packets to the human estimator", "Slack / Teams", "Estimate intake log", "Estimator handoff", True),
+        ],
+        "success_metrics": ["estimate_prep_time", "missing_information_rate", "handoff_quality", "response_time"],
+    },
+    {
+        "id": "ai-reception-appointment-precheck",
+        "name": "AI Reception Employee: Appointment Precheck",
+        "industry": "reception",
+        "genre": "scheduling",
+        "summary": "Prepare appointment requests by collecting availability, required details, and human approval before confirmation.",
+        "tools": ["Booking form / LINE", "Calendar export", "Google Sheets", "Email / LINE draft"],
+        "sample_columns": ["request_id", "customer", "preferred_date", "service", "contact", "owner", "status"],
+        "steps": [
+            _step("intake", "Collect appointment requests", "Booking form / LINE", "Booking rows", "Appointment queue", False),
+            _step("precheck", "Check required details and schedule constraints", "Calendar export", "Appointment queue", "Precheck result", False),
+            _step("draft", "Draft confirmation or clarification message", "Email / LINE draft", "Precheck result", "Appointment message draft", True),
+            _step("record", "Record precheck status", "Google Sheets", "Appointment message draft", "Appointment log", False),
+            _step("approve", "Human owner approves final confirmation", "Human reviewer", "Appointment log", "Approval record", True),
+        ],
+        "success_metrics": ["booking_admin_time", "no_show_risk", "confirmation_speed", "missing_details"],
+    },
+    {
+        "id": "ai-reception-daily-report",
+        "name": "AI Reception Employee: Daily Report",
+        "industry": "reception",
+        "genre": "reporting",
+        "summary": "Summarize daily inquiries, unresolved items, response drafts, and owner actions for a small business operator.",
+        "tools": ["Google Sheets", "Local reports", "Slack / Teams", "Email draft"],
+        "sample_columns": ["date", "new_inquiries", "resolved", "needs_owner", "missed_items", "owner", "note"],
+        "steps": [
+            _step("collect", "Read the daily reception log", "Google Sheets", "Reception log rows", "Daily activity queue", False),
+            _step("summarize", "Summarize volume, unresolved items, and risks", "Local rules + AI assistant", "Daily activity queue", "Daily summary draft", True),
+            _step("actions", "Create owner action list", "Local reports", "Daily summary draft", "Owner task list", True),
+            _step("notify", "Prepare internal daily report message", "Slack / Teams", "Owner task list", "Internal report draft", True),
+            _step("archive", "Archive report and metrics", "Markdown report", "Internal report draft", "Daily report archive", False),
+        ],
+        "success_metrics": ["unresolved_inquiries", "owner_response_time", "daily_report_time", "missed_followups"],
     },
     {
         "id": "weekly-kpi-report",
@@ -363,6 +437,12 @@ def install_flow(flow_id: str, output: Path) -> dict:
     (output / "workflow_map.mmd").write_text(_render_mermaid(flow), encoding="utf-8")
     (output / "before_after_workflow.md").write_text(_render_before_after(flow), encoding="utf-8")
     (output / "human_approval_points.md").write_text(_render_approval_points(flow), encoding="utf-8")
+    (output / "setup_requirements.md").write_text(_render_setup_requirements(flow), encoding="utf-8")
+    (output / "client_setup_request.md").write_text(_render_client_setup_request(flow), encoding="utf-8")
+    (output / "connector_status.md").write_text(_render_connector_status(flow), encoding="utf-8")
+    (output / "monetization_plan.md").write_text(_render_monetization_plan(flow), encoding="utf-8")
+    (output / "operator_ui").mkdir(exist_ok=True)
+    (output / "operator_ui" / "index.html").write_text(_render_operator_ui(flow), encoding="utf-8")
     (output / "sample_data" / "input.csv").write_text(_render_sample_csv(flow), encoding="utf-8")
     (output / "scripts" / "run_dry_run.py").write_text(_render_dry_run_script(flow), encoding="utf-8")
     (output / "scripts" / "run_automation.py").write_text(_render_run_automation_script(flow), encoding="utf-8")
@@ -416,6 +496,11 @@ def _render_project_readme(flow: dict) -> str:
             "- `workflow_map.mmd` - Mermaid workflow diagram.",
             "- `before_after_workflow.md` - before/after business explanation.",
             "- `human_approval_points.md` - steps that require human review.",
+            "- `setup_requirements.md` - what the operator and client must prepare.",
+            "- `client_setup_request.md` - client-facing request list for data, folders, and API access.",
+            "- `connector_status.md` - setup checklist for input, output, approval, and production connectors.",
+            "- `monetization_plan.md` - scoped paid dry-run PoC positioning and price guardrails.",
+            "- `operator_ui/index.html` - browser-friendly local UI for explaining the flow.",
             "- `sample_data/input.csv` - safe sample input data.",
             "- `scripts/run_automation.py` - local runtime script.",
             "- `scripts/approve_all.py` - local approval-to-outbox script.",
@@ -603,6 +688,220 @@ def _render_approval_points(flow: dict) -> str:
     return "\n".join(lines)
 
 
+def _render_setup_requirements(flow: dict) -> str:
+    return "\n".join(
+        [
+            f"# Setup Requirements: {flow['name']}",
+            "",
+            "Use this checklist before promising real automation to a client. The default project runs locally and writes safe dry-run files.",
+            "",
+            "## What The Operator Must Prepare",
+            "",
+            "- API keys or OAuth access for any real connector that will be enabled later.",
+            "- A reception folder or source export folder for incoming CSV, email, LINE, form, or spreadsheet data.",
+            "- A local output folder for work queues, drafts, approval records, reports, and outbox files.",
+            "- A named human approval owner who can review customer-facing messages and sensitive actions.",
+            "- A small sample dataset that does not contain secrets, payment data, medical decisions, legal advice, or production-only records.",
+            "",
+            "## What The Client Must Prepare",
+            "",
+            "- The current manual workflow and the person responsible for each decision.",
+            "- Frequently asked questions, standard answers, service menus, pricing rules, or intake questions.",
+            "- Escalation rules for complaints, refunds, contracts, medical/legal/financial questions, and urgent requests.",
+            "- Success metrics such as response time, missed inquiries, hours saved, error reduction, or owner follow-up time.",
+            "",
+            "## First Safe Run",
+            "",
+            "1. Put sample rows in `sample_data/input.csv`.",
+            "2. Run `python3 scripts/run_automation.py`.",
+            "3. Review `automation_output/approval_queue.csv`.",
+            "4. Run `python3 scripts/approve_all.py --approver owner@example.com` only after confirming the drafts.",
+            "5. Share `operator_ui/index.html`, `before_after_workflow.md`, and `monetization_plan.md` with the client for the PoC discussion.",
+            "",
+        ]
+    )
+
+
+def _render_client_setup_request(flow: dict) -> str:
+    return "\n".join(
+        [
+            f"# Client Setup Request: {flow['name']}",
+            "",
+            "Please provide only the minimum information required for a dry-run proof of concept. Do not send passwords, private API secrets, production customer exports, payment records, or legally sensitive documents through chat.",
+            "",
+            "## Business Context",
+            "",
+            f"- Target workflow: {flow['name']}",
+            f"- Main business outcome: {', '.join(flow['success_metrics'])}",
+            "- Current owner for the workflow:",
+            "- Final approver for customer-facing outputs:",
+            "",
+            "## Data And Folders",
+            "",
+            "- Sample input file or reception folder path:",
+            "- Output folder where reports can be written:",
+            "- Existing Google Sheet, CRM export, inbox export, or form export:",
+            "- Fields that must never be shared externally:",
+            "",
+            "## Rules",
+            "",
+            "- Standard reply or FAQ source:",
+            "- When the AI should ask a follow-up question:",
+            "- When the AI must stop and escalate to a human:",
+            "- Actions that are forbidden during the PoC:",
+            "",
+            "## Approval",
+            "",
+            "- Approver name:",
+            "- Approver email:",
+            "- Review cadence:",
+            "- Go-live condition after the dry run:",
+            "",
+        ]
+    )
+
+
+def _render_connector_status(flow: dict) -> str:
+    connector_rows = [
+        ("Input source", "local CSV / exported folder", "ready", "Use `sample_data/input.csv` until real connector access is approved."),
+        ("Draft output", "local Markdown and CSV", "ready", "Generated files stay local and are not sent automatically."),
+        ("Approval queue", "local CSV", "ready", "Named owner approval is required for human approval steps."),
+        ("Operator UI", "local HTML", "ready", "Open `operator_ui/index.html` in a browser for demos."),
+        ("Gmail / Outlook", "OAuth", "needs_setup", "Enable only after client approves credentials and sending rules."),
+        ("Google Sheets", "service account / OAuth", "needs_setup", "Enable only after data classification and write permissions are reviewed."),
+        ("LINE / Slack / Teams", "token or webhook", "needs_setup", "Enable only after notification wording and escalation rules are approved."),
+    ]
+    lines = [
+        f"# Connector Status: {flow['name']}",
+        "",
+        "| Area | Connector | Status | Notes |",
+        "|---|---|---|---|",
+    ]
+    lines.extend(f"| {area} | {connector} | {status} | {notes} |" for area, connector, status, notes in connector_rows)
+    lines.extend(
+        [
+            "",
+            "Production connectors remain disabled by default. A real connector should not send, post, update, or delete anything until dry-run evidence, rollback rules, and human approval are accepted.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _render_monetization_plan(flow: dict) -> str:
+    return "\n".join(
+        [
+            f"# Monetization Plan: {flow['name']}",
+            "",
+            "This file helps a beginner package the workflow as a bounded service. Do not promise income, guaranteed savings, or fully autonomous operation.",
+            "",
+            "## Offer Positioning",
+            "",
+            f"Sell this as a Paid dry-run PoC for `{flow['name']}`. The client pays for workflow mapping, sample-data setup, dry-run automation, review UI, and a decision report.",
+            "",
+            "## Suggested Scope",
+            "",
+            "- 1 workflow",
+            "- 1 source export or reception folder",
+            "- 1 output report location",
+            "- 1 human approval owner",
+            "- 3 to 5 business days for the first PoC",
+            "- No production sending, no irreversible updates, and no high-risk decisions",
+            "",
+            "## Pricing Guardrails",
+            "",
+            "- Starter dry-run PoC: 50,000 to 150,000 JPY",
+            "- Setup plus first month support: 100,000 to 300,000 JPY",
+            "- Monthly maintenance after approval: 30,000 to 100,000 JPY",
+            "",
+            "## Value Evidence To Collect",
+            "",
+            "- Number of items processed per month",
+            "- Current manual minutes per item",
+            "- Response delay or missed-work count",
+            "- Draft acceptance rate",
+            "- Human escalation rate",
+            "- Client decision: continue, revise, or stop",
+            "",
+            "## Safety Rule",
+            "",
+            "Do not promise income. Present this as a practical automation delivery kit that helps operators explain, test, and safely package one client workflow.",
+            "",
+        ]
+    )
+
+
+def _render_operator_ui(flow: dict) -> str:
+    approval_steps = [step for step in flow["steps"] if step["human_approval"]]
+    step_cards = "\n".join(
+        f"<li><strong>{index}. {step['name']}</strong><span>{step['tool']} -> {step['output']}</span></li>"
+        for index, step in enumerate(flow["steps"], start=1)
+    )
+    approval_cards = "\n".join(
+        f"<li>{step['name']} <span>{step['output']}</span></li>" for step in approval_steps
+    )
+    metrics = "\n".join(f"<li>{metric.replace('_', ' ')}</li>" for metric in flow["success_metrics"])
+    return f"""<!doctype html>
+<html lang=\"en\">
+<head>
+  <meta charset=\"utf-8\">
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
+  <title>{flow['name']} Operator UI</title>
+  <style>
+    body {{ margin: 0; font-family: Arial, sans-serif; background: #f6f7f9; color: #17202a; }}
+    header {{ background: #12343b; color: white; padding: 28px; }}
+    main {{ max-width: 1080px; margin: 0 auto; padding: 24px; }}
+    section {{ background: white; border: 1px solid #d8dee4; border-radius: 8px; padding: 18px; margin-bottom: 16px; }}
+    h1, h2 {{ margin-top: 0; }}
+    ul {{ padding-left: 22px; }}
+    li {{ margin: 10px 0; }}
+    li span {{ display: block; color: #57606a; font-size: 14px; margin-top: 3px; }}
+    .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }}
+    .status {{ display: inline-block; padding: 4px 8px; border-radius: 6px; background: #dafbe1; color: #116329; font-weight: 700; }}
+    .warning {{ background: #fff8c5; color: #7d4e00; }}
+  </style>
+</head>
+<body>
+  <header>
+    <p class=\"status\">Local dry-run</p>
+    <h1>AI Reception Employee</h1>
+    <p>{flow['name']} - {flow['summary']}</p>
+  </header>
+  <main>
+    <section>
+      <h2>What This Automates</h2>
+      <p>This UI explains the selected workflow for a client demo. It does not connect to live systems or send external messages.</p>
+    </section>
+    <div class=\"grid\">
+      <section>
+        <h2>Workflow</h2>
+        <ul>{step_cards}</ul>
+      </section>
+      <section>
+        <h2>Approval Queue</h2>
+        <p class=\"status warning\">Human approval required</p>
+        <ul>{approval_cards}</ul>
+      </section>
+      <section>
+        <h2>Success Metrics</h2>
+        <ul>{metrics}</ul>
+      </section>
+      <section>
+        <h2>Files To Review</h2>
+        <ul>
+          <li>setup_requirements.md<span>What the operator and client must prepare.</span></li>
+          <li>client_setup_request.md<span>Questions to collect before a paid PoC.</span></li>
+          <li>automation_output/approval_queue.csv<span>Items waiting for human review after dry-run.</span></li>
+          <li>monetization_plan.md<span>Scoped paid PoC positioning.</span></li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
+"""
+
+
 def _render_sample_csv(flow: dict) -> str:
     header = ",".join(flow["sample_columns"])
     sample = ",".join(_sample_value(column) for column in flow["sample_columns"])
@@ -624,6 +923,23 @@ def _sample_value(column: str) -> str:
         "last_week": "42",
         "this_week": "31",
         "note": "sample",
+        "inquiry_id": "INQ-1001",
+        "channel": "LINE",
+        "message": "I would like to ask about availability and pricing.",
+        "requested_action": "appointment",
+        "request_id": "REQ-1001",
+        "service_needed": "initial consultation",
+        "budget": "100000",
+        "deadline": "2026-07-15",
+        "missing_info": "preferred date",
+        "preferred_date": "2026-07-01",
+        "service": "consultation",
+        "contact": "customer@example.com",
+        "date": "2026-06-21",
+        "new_inquiries": "12",
+        "resolved": "9",
+        "needs_owner": "3",
+        "missed_items": "0",
     }
     return samples.get(column, f"sample_{column}")
 
