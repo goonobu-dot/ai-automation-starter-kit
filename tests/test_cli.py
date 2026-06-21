@@ -182,6 +182,26 @@ def test_parser_accepts_guided_review_command():
     assert args.output == "setup-review"
 
 
+def test_parser_accepts_cloud_plan_command():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "cloud-plan",
+            "--flow-id",
+            "ai-reception-line-inquiry",
+            "--provider",
+            "aws",
+            "--output",
+            "cloud-plan",
+        ]
+    )
+
+    assert args.command == "cloud-plan"
+    assert args.flow_id == "ai-reception-line-inquiry"
+    assert args.provider == "aws"
+    assert args.output == "cloud-plan"
+
+
 def test_parser_accepts_flows_commands():
     parser = build_parser()
 
@@ -387,6 +407,72 @@ def test_main_runs_guided_review_from_answer_file(tmp_path):
     assert "Ready now for local dry-run" in report
     assert "cloud_operator" in email
     assert "ai-automation-kit flows install ai-reception-line-inquiry" in commands
+
+
+def test_main_runs_cloud_plan_for_aws_line_bot(tmp_path):
+    output = tmp_path / "cloud-plan-aws"
+
+    exit_code = main(
+        [
+            "cloud-plan",
+            "--flow-id",
+            "ai-reception-line-inquiry",
+            "--provider",
+            "aws",
+            "--output",
+            str(output),
+        ]
+    )
+
+    assert exit_code == 0
+    assert (output / "START_HERE_CLOUD_PLAN.md").exists()
+    assert (output / "cloud_architecture.md").exists()
+    assert (output / "cloud_cost_note.md").exists()
+    assert (output / "secret_setup.md").exists()
+    assert (output / "iam_setup.md").exists()
+    assert (output / "deploy_commands.md").exists()
+    assert (output / "webhook_setup.md").exists()
+    assert (output / "post_deploy_test.md").exists()
+    assert (output / "rollback_plan.md").exists()
+    assert (output / "human_approval_required.md").exists()
+    assert (output / "cloud_plan.json").exists()
+
+    architecture = (output / "cloud_architecture.md").read_text()
+    commands = (output / "deploy_commands.md").read_text()
+    secrets = (output / "secret_setup.md").read_text()
+    plan = json.loads((output / "cloud_plan.json").read_text())
+
+    assert plan["provider"] == "aws"
+    assert "API Gateway" in architecture
+    assert "Lambda" in architecture
+    assert "Secrets Manager" in architecture
+    assert "aws lambda" in commands
+    assert "LINE_CHANNEL_SECRET" in secrets
+    assert plan["human_steps_required"]
+
+
+def test_main_runs_cloud_plan_for_major_providers(tmp_path):
+    providers = ["google-cloud", "azure", "render", "railway", "vercel", "digitalocean", "fly"]
+    for provider in providers:
+        output = tmp_path / f"cloud-plan-{provider}"
+
+        exit_code = main(
+            [
+                "cloud-plan",
+                "--flow-id",
+                "ai-reception-line-inquiry",
+                "--provider",
+                provider,
+                "--output",
+                str(output),
+            ]
+        )
+
+        assert exit_code == 0
+        plan = json.loads((output / "cloud_plan.json").read_text())
+        assert plan["provider"] == provider
+        assert (output / "deploy_commands.md").exists()
+        assert (output / "human_approval_required.md").exists()
 
 
 def test_main_runs_github_discover_without_config(tmp_path, monkeypatch):

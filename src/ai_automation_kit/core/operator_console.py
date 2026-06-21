@@ -225,6 +225,39 @@ def generate_guided_review(answers: Path, output: Path) -> dict:
     return payload
 
 
+def generate_cloud_plan(flow_id: str, provider: str, output: Path) -> dict:
+    output.mkdir(parents=True, exist_ok=True)
+    flow = get_flow(flow_id)
+    profile = _cloud_provider_profile(provider)
+    env_values = _cloud_required_env_values(flow)
+    payload = {
+        "status": "plan_ready",
+        "flow_id": flow["id"],
+        "flow_name": flow["name"],
+        "provider": provider,
+        "provider_name": profile["name"],
+        "architecture": profile["architecture"],
+        "best_for": profile["best_for"],
+        "beginner_fit": profile["beginner_fit"],
+        "recommended_for_line_bot": profile["recommended_for_line_bot"],
+        "human_steps_required": profile["human_steps_required"],
+        "env_values": env_values,
+        "does_not_auto_create_accounts": True,
+    }
+    (output / "cloud_plan.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output / "START_HERE_CLOUD_PLAN.md").write_text(_render_cloud_plan_start(flow, payload), encoding="utf-8")
+    (output / "cloud_architecture.md").write_text(_render_cloud_architecture(flow, payload), encoding="utf-8")
+    (output / "cloud_cost_note.md").write_text(_render_cloud_cost_note(payload), encoding="utf-8")
+    (output / "secret_setup.md").write_text(_render_cloud_secret_setup(payload), encoding="utf-8")
+    (output / "iam_setup.md").write_text(_render_cloud_iam_setup(payload), encoding="utf-8")
+    (output / "deploy_commands.md").write_text(_render_cloud_deploy_commands(flow, payload), encoding="utf-8")
+    (output / "webhook_setup.md").write_text(_render_cloud_webhook_setup(flow, payload), encoding="utf-8")
+    (output / "post_deploy_test.md").write_text(_render_cloud_post_deploy_test(payload), encoding="utf-8")
+    (output / "rollback_plan.md").write_text(_render_cloud_rollback_plan(payload), encoding="utf-8")
+    (output / "human_approval_required.md").write_text(_render_cloud_human_approval(payload), encoding="utf-8")
+    return payload
+
+
 def generate_flow_guide(industry: str | None, genre: str | None, niche: str, output: Path) -> dict:
     output.mkdir(parents=True, exist_ok=True)
     candidates = list_flows(industry=industry, genre=genre)
@@ -2366,6 +2399,332 @@ def _guided_review_next_step(status: str, local_ready: bool, deployment: str) ->
     if status == "ready_for_cloud_planning":
         return f"Prepare {deployment} environment variables, logs, rollback, and billing ownership after local dry-run approval."
     return "Install the flow, run local dry-run, review approval queue, then decide whether cloud deployment is needed."
+
+
+def _cloud_provider_profile(provider: str) -> dict:
+    profiles = {
+        "google-cloud": {
+            "name": "Google Cloud Run",
+            "architecture": "LINE -> Cloud Run -> Secret Manager -> Cloud Logging",
+            "best_for": "Containerized webhook APIs, Google Sheets/Gmail-heavy workflows, and teams already using Google Cloud.",
+            "beginner_fit": "medium",
+            "recommended_for_line_bot": True,
+            "human_steps_required": ["Google account login", "billing setup", "project selection", "LINE Developers webhook paste"],
+        },
+        "aws": {
+            "name": "AWS Lambda + API Gateway",
+            "architecture": "LINE -> API Gateway -> Lambda -> Secrets Manager -> CloudWatch Logs",
+            "best_for": "Serverless webhook APIs, enterprise AWS accounts, and low-idle-cost event processing.",
+            "beginner_fit": "medium",
+            "recommended_for_line_bot": True,
+            "human_steps_required": ["AWS account login", "region selection", "IAM approval", "LINE Developers webhook paste"],
+        },
+        "azure": {
+            "name": "Azure Container Apps",
+            "architecture": "LINE -> Azure Container Apps -> Key Vault -> Azure Monitor",
+            "best_for": "Microsoft 365, Teams, SharePoint, Entra ID, and enterprise Azure environments.",
+            "beginner_fit": "medium",
+            "recommended_for_line_bot": True,
+            "human_steps_required": ["Azure login", "subscription selection", "resource group approval", "LINE Developers webhook paste"],
+        },
+        "render": {
+            "name": "Render Web Service",
+            "architecture": "LINE -> Render HTTPS Web Service -> Render Environment Variables -> Render Logs",
+            "best_for": "Fast beginner PoC, demo webhook, and small paid pilot before enterprise cloud migration.",
+            "beginner_fit": "high",
+            "recommended_for_line_bot": True,
+            "human_steps_required": ["Render login", "repo connection", "environment variable entry", "LINE Developers webhook paste"],
+        },
+        "railway": {
+            "name": "Railway Service",
+            "architecture": "LINE -> Railway HTTPS Service -> Railway Variables -> Railway Logs",
+            "best_for": "Fast prototype deployment with simple variable management and low setup friction.",
+            "beginner_fit": "high",
+            "recommended_for_line_bot": True,
+            "human_steps_required": ["Railway login", "project creation", "environment variable entry", "LINE Developers webhook paste"],
+        },
+        "vercel": {
+            "name": "Vercel Functions",
+            "architecture": "LINE -> Vercel Function / API Route -> Vercel Environment Variables -> Vercel Logs",
+            "best_for": "Web UI, intake forms, and lightweight API routes attached to a customer-facing app.",
+            "beginner_fit": "high",
+            "recommended_for_line_bot": False,
+            "human_steps_required": ["Vercel login", "project import", "environment variable entry", "LINE Developers webhook paste"],
+        },
+        "digitalocean": {
+            "name": "DigitalOcean App Platform",
+            "architecture": "LINE -> DigitalOcean App Platform -> App Environment Variables -> App Logs",
+            "best_for": "Small business apps, predictable PaaS deployment, and GitHub-connected low-friction hosting.",
+            "beginner_fit": "medium",
+            "recommended_for_line_bot": True,
+            "human_steps_required": ["DigitalOcean login", "app creation", "environment variable entry", "LINE Developers webhook paste"],
+        },
+        "fly": {
+            "name": "Fly.io Machines",
+            "architecture": "LINE -> Fly Machine -> Fly Secrets -> fly logs",
+            "best_for": "Docker-first developers who want edge placement and a simple `fly deploy` workflow.",
+            "beginner_fit": "medium",
+            "recommended_for_line_bot": True,
+            "human_steps_required": ["Fly.io login", "app launch", "secret entry", "LINE Developers webhook paste"],
+        },
+    }
+    return profiles[provider]
+
+
+def _cloud_required_env_values(flow: dict) -> list[str]:
+    values = ["APPROVER_EMAIL", "FLOW_MODE", "PUBLIC_BASE_URL"]
+    if "line" in flow["id"] or "reception" in flow["industry"]:
+        values.extend(["LINE_CHANNEL_SECRET", "LINE_CHANNEL_ACCESS_TOKEN"])
+    return values
+
+
+def _render_cloud_plan_start(flow: dict, payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Start Here: Cloud Plan",
+            "",
+            f"Flow: `{flow['id']}` - {flow['name']}",
+            f"Provider: `{payload['provider']}` - {payload['provider_name']}",
+            "",
+            "This folder does not create real cloud resources by itself. It creates the architecture, commands, secret plan, IAM notes, webhook setup, test plan, and rollback plan needed before a human approves deployment.",
+            "",
+            "## Read In This Order",
+            "",
+            "1. `cloud_architecture.md`",
+            "2. `secret_setup.md`",
+            "3. `iam_setup.md`",
+            "4. `deploy_commands.md`",
+            "5. `webhook_setup.md`",
+            "6. `post_deploy_test.md`",
+            "7. `rollback_plan.md`",
+            "8. `human_approval_required.md`",
+            "",
+        ]
+    )
+
+
+def _render_cloud_architecture(flow: dict, payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Cloud Architecture: {payload['provider_name']}",
+            "",
+            f"Flow: `{flow['id']}`",
+            "",
+            f"Architecture: {payload['architecture']}",
+            "",
+            f"Best for: {payload['best_for']}",
+            f"Beginner fit: `{payload['beginner_fit']}`",
+            f"Recommended for LINE Bot: `{str(payload['recommended_for_line_bot']).lower()}`",
+            "",
+            "## Boundary",
+            "",
+            "AI can generate files, commands, and checks. A human still needs to log in, approve billing, create or select accounts, enter secrets into the provider UI or CLI, and paste the final webhook URL into LINE Developers.",
+            "",
+        ]
+    )
+
+
+def _render_cloud_cost_note(payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Cloud Cost Note: {payload['provider_name']}",
+            "",
+            "Costs depend on account plan, region, traffic, memory, logs, build minutes, and outbound network usage.",
+            "",
+            "## Beginner Rule",
+            "",
+            "- Start with local dry-run.",
+            "- Deploy a small cloud PoC only after the client approves the sample workflow.",
+            "- Set a billing owner before any production webhook is enabled.",
+            "- Review logs and billing after the first test day.",
+            "",
+        ]
+    )
+
+
+def _render_cloud_secret_setup(payload: dict) -> str:
+    lines = [
+        f"# Secret Setup: {payload['provider_name']}",
+        "",
+        "Do not paste real secrets into chat and do not commit them to GitHub.",
+        "",
+        "## Required Values",
+        "",
+    ]
+    lines.extend(f"- `{name}`" for name in payload["env_values"])
+    lines.extend(["", "## Provider Notes", ""])
+    if payload["provider"] == "google-cloud":
+        lines.extend(
+            [
+                "Use Google Secret Manager for `LINE_CHANNEL_SECRET` and `LINE_CHANNEL_ACCESS_TOKEN`.",
+                "Use `gcloud secrets create` and `gcloud secrets versions add` after human login.",
+            ]
+        )
+    elif payload["provider"] == "aws":
+        lines.extend(
+            [
+                "Use AWS Secrets Manager for `LINE_CHANNEL_SECRET` and `LINE_CHANNEL_ACCESS_TOKEN`.",
+                "Use `aws secretsmanager create-secret` after human login and region selection.",
+            ]
+        )
+    elif payload["provider"] == "azure":
+        lines.extend(["Use Azure Key Vault secrets or Container Apps secrets after subscription approval."])
+    elif payload["provider"] == "fly":
+        lines.extend(["Use `fly secrets set` for runtime secrets."])
+    else:
+        lines.extend(["Use the provider dashboard environment variable or secrets screen."])
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _render_cloud_iam_setup(payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# IAM Setup: {payload['provider_name']}",
+            "",
+            "Use the minimum role needed for deployment and logs. Do not reuse personal owner/admin credentials for client production work.",
+            "",
+            "## Human Approval Required",
+            "",
+            "\n".join(f"- {item}" for item in payload["human_steps_required"]),
+            "",
+            "## Minimum Access Pattern",
+            "",
+            "- Deploy service or function.",
+            "- Read configured secrets at runtime.",
+            "- Write application logs.",
+            "- Roll back to the previous revision or disable the webhook.",
+            "",
+        ]
+    )
+
+
+def _render_cloud_deploy_commands(flow: dict, payload: dict) -> str:
+    app = flow["id"].replace("_", "-")
+    provider = payload["provider"]
+    commands = {
+        "google-cloud": [
+            "gcloud auth login",
+            "gcloud config set project YOUR_PROJECT_ID",
+            f"gcloud run deploy {app} --source . --region asia-northeast1 --allow-unauthenticated",
+        ],
+        "aws": [
+            "aws configure sso",
+            f"aws lambda create-function --function-name {app} --runtime python3.11 --handler main.handler --role YOUR_LAMBDA_ROLE_ARN --zip-file fileb://function.zip",
+            f"aws apigatewayv2 create-api --name {app}-api --protocol-type HTTP",
+        ],
+        "azure": [
+            "az login",
+            "az group create --name ai-automation-rg --location japaneast",
+            f"az containerapp up --name {app} --resource-group ai-automation-rg --location japaneast --source .",
+        ],
+        "render": [
+            "Connect this repository in the Render dashboard.",
+            "Create a Web Service and set the environment variables from `secret_setup.md`.",
+            "Deploy, then copy the HTTPS service URL.",
+        ],
+        "railway": [
+            "railway login",
+            "railway init",
+            "railway up",
+        ],
+        "vercel": [
+            "vercel login",
+            "vercel env add LINE_CHANNEL_SECRET",
+            "vercel deploy",
+        ],
+        "digitalocean": [
+            "doctl auth init",
+            "Create an App Platform app from the repository or container image.",
+            "Set environment variables in App Platform before enabling webhook traffic.",
+        ],
+        "fly": [
+            "fly auth login",
+            f"fly launch --name {app} --no-deploy",
+            "fly secrets set LINE_CHANNEL_SECRET=replace_me LINE_CHANNEL_ACCESS_TOKEN=replace_me",
+            "fly deploy",
+        ],
+    }[provider]
+    lines = [f"# Deploy Commands: {payload['provider_name']}", "", "Review before running. Replace placeholders first.", "", "```bash"]
+    lines.extend(commands)
+    lines.extend(["```", ""])
+    return "\n".join(lines)
+
+
+def _render_cloud_webhook_setup(flow: dict, payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Webhook Setup: {flow['name']}",
+            "",
+            "After deployment, copy the public HTTPS URL and set the LINE Developers webhook URL.",
+            "",
+            "Example:",
+            "",
+            "```text",
+            "https://YOUR_PUBLIC_HOST/line/webhook",
+            "```",
+            "",
+            "Human steps:",
+            "",
+            "1. Open LINE Developers.",
+            "2. Select the correct provider and channel.",
+            "3. Paste the webhook URL.",
+            "4. Enable webhook use.",
+            "5. Send a test message only after `post_deploy_test.md` is reviewed.",
+            "",
+        ]
+    )
+
+
+def _render_cloud_post_deploy_test(payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Post Deploy Test: {payload['provider_name']}",
+            "",
+            "- Confirm the service has a public HTTPS URL.",
+            "- Confirm secrets are set in the provider, not in GitHub.",
+            "- Confirm logs are visible.",
+            "- Send one test webhook or LINE message.",
+            "- Confirm the response is dry-run or approval-gated.",
+            "- Stop if errors, unexpected sends, or missing logs appear.",
+            "",
+        ]
+    )
+
+
+def _render_cloud_rollback_plan(payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Rollback Plan: {payload['provider_name']}",
+            "",
+            "1. Disable or clear the LINE webhook URL first.",
+            "2. Roll back to the previous cloud revision or stop the service.",
+            "3. Rotate any exposed secrets.",
+            "4. Export logs for review.",
+            "5. Notify the client that production traffic is stopped.",
+            "",
+        ]
+    )
+
+
+def _render_cloud_human_approval(payload: dict) -> str:
+    lines = [
+        "# Human Approval Required",
+        "",
+        "The AI can prepare the plan, but these items require a human owner.",
+        "",
+    ]
+    lines.extend(f"- {item}" for item in payload["human_steps_required"])
+    lines.extend(
+        [
+            "- Enter real secrets only in the approved cloud secrets manager or provider dashboard.",
+            "- Approve billing before public deployment.",
+            "- Approve webhook activation before real LINE traffic.",
+            "- Confirm rollback owner before production use.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
 
 
 _GUIDED_FIELD_LABELS = {

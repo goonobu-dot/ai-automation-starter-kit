@@ -18,6 +18,7 @@ from ai_automation_kit.core.flow_runtime import approve_all_pending
 from ai_automation_kit.core.flow_runtime import run_flow_project
 from ai_automation_kit.core.offer_pack import generate_offer_pack
 from ai_automation_kit.core.operator_console import generate_client_report
+from ai_automation_kit.core.operator_console import generate_cloud_plan
 from ai_automation_kit.core.operator_console import generate_complete_workspace
 from ai_automation_kit.core.operator_console import generate_connector_doctor
 from ai_automation_kit.core.operator_console import generate_demo_site
@@ -163,6 +164,15 @@ def build_parser() -> argparse.ArgumentParser:
     guided_review = subparsers.add_parser("guided-review")
     guided_review.add_argument("--answers", required=True)
     guided_review.add_argument("--output", required=True)
+
+    cloud_plan = subparsers.add_parser("cloud-plan")
+    cloud_plan.add_argument("--flow-id", required=True)
+    cloud_plan.add_argument(
+        "--provider",
+        required=True,
+        choices=["google-cloud", "aws", "azure", "render", "railway", "vercel", "digitalocean", "fly"],
+    )
+    cloud_plan.add_argument("--output", required=True)
 
     flows = subparsers.add_parser("flows")
     flow_subparsers = flows.add_subparsers(dest="flow_command", required=True)
@@ -421,6 +431,14 @@ def main(argv: list[str] | None = None) -> int:
         print(f"guided_review={args.output}/START_HERE_GUIDED_REVIEW.md")
         print(f"setup_readiness_report={args.output}/setup_readiness_report.md")
         print(f"next_commands={args.output}/next_commands.md")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "cloud-plan":
+        payload = generate_cloud_plan(flow_id=args.flow_id, provider=args.provider, output=Path(args.output))
+        print(f"cloud_plan={args.output}/START_HERE_CLOUD_PLAN.md")
+        print(f"architecture={args.output}/cloud_architecture.md")
+        print(f"deploy_commands={args.output}/deploy_commands.md")
+        print(f"provider={payload['provider']}")
         print(f"status={payload['status']}")
         return 0
     if args.command == "flows":

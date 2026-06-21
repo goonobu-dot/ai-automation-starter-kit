@@ -342,6 +342,34 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(guided_review_output / "next_commands.md")
     _require_file(guided_review_output / "guided_review.json")
 
+    cloud_plan_output = output / "cloud-plan-aws-ai-reception"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "cloud-plan",
+            "--flow-id",
+            "ai-reception-line-inquiry",
+            "--provider",
+            "aws",
+            "--output",
+            str(cloud_plan_output),
+        ],
+        env=env,
+    )
+    _require_file(cloud_plan_output / "START_HERE_CLOUD_PLAN.md")
+    _require_file(cloud_plan_output / "cloud_architecture.md")
+    _require_file(cloud_plan_output / "cloud_cost_note.md")
+    _require_file(cloud_plan_output / "secret_setup.md")
+    _require_file(cloud_plan_output / "iam_setup.md")
+    _require_file(cloud_plan_output / "deploy_commands.md")
+    _require_file(cloud_plan_output / "webhook_setup.md")
+    _require_file(cloud_plan_output / "post_deploy_test.md")
+    _require_file(cloud_plan_output / "rollback_plan.md")
+    _require_file(cloud_plan_output / "human_approval_required.md")
+    _require_file(cloud_plan_output / "cloud_plan.json")
+
     connector_output = output / "connector-doctor"
     _run(
         [
