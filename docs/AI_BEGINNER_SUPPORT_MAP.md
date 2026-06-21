@@ -2,6 +2,23 @@
 
 This map explains what AI can do now for a beginner who wants to use this project for business automation, and what a human must still do. It is designed for people who are comfortable asking an AI agent questions but are not yet comfortable with APIs, folders, cloud settings, deployment, or client delivery.
 
+## First, do this
+
+1. Pick one small task that repeats every week.
+2. Ask an AI agent to read this page with you.
+3. Let the AI ask one question at a time.
+4. Prepare fake or redacted sample data.
+5. Do not paste real keys, passwords, customer private data, or production access.
+6. Run a dry-run before anything sends real messages or changes real business data.
+
+## Words in plain language
+
+- API key means a private password-like value that lets software access another service. Do not paste it into chat.
+- Cloud account means an account on AWS, Google Cloud, Azure, Render, Railway, Vercel, DigitalOcean, Fly.io, or another hosting service.
+- Dry-run means a safe test that creates drafts, queues, reports, or files without sending or changing real production data.
+- Human approval means a person checks and approves before messages are sent, records are changed, billing is used, or cloud traffic goes live.
+- Reception folder means the place where incoming files or requests are collected before the automation reviews them.
+
 ## Main Principle
 
 AI can guide, draft, check, classify, generate files, explain errors, and prepare safe commands. A human must still approve accounts, billing, client access, secrets, production traffic, legal boundaries, and client promises.

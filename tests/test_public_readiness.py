@@ -301,6 +301,59 @@ def test_ai_beginner_support_docs_cover_current_practical_follow_up():
             assert snippet in text, f"{path} missing {snippet}"
 
 
+def test_beginner_docs_are_written_for_non_developers_first():
+    expected_docs = {
+        "README.md": [
+            "If you are new, start here",
+            "You do not need to understand cloud or APIs first",
+            "Ask an AI agent to read these guides with you",
+            "First, choose one small workflow",
+        ],
+        "docs/AI_BEGINNER_SUPPORT_MAP.md": [
+            "First, do this",
+            "Words in plain language",
+            "API key means",
+            "Cloud account means",
+            "Dry-run means",
+            "Human approval means",
+        ],
+        "docs/AI_BEGINNER_SUPPORT_MAP.ja.md": [
+            "まず、これだけやってください",
+            "やさしい言葉での説明",
+            "APIキーとは",
+            "クラウドアカウントとは",
+            "dry-runとは",
+            "人間承認とは",
+        ],
+        "docs/AI_AGENT_SETUP_ASSISTANT_PLAYBOOK.md": [
+            "Beginner first rule",
+            "Do not start with technical setup",
+            "Ask what the user wants to improve",
+            "explain the word before using it",
+        ],
+        "docs/AI_AGENT_SETUP_ASSISTANT_PLAYBOOK.ja.md": [
+            "初心者ファーストのルール",
+            "技術設定から始めない",
+            "何を改善したいかを先に聞く",
+            "専門用語は使う前に説明する",
+        ],
+        "docs/CLIENT_DELIVERY_SUPPORT_RUNBOOK.md": [
+            "Plain client explanation",
+            "Do not sound like a developer manual",
+            "The client should understand the before and after",
+        ],
+        "docs/CLIENT_DELIVERY_SUPPORT_RUNBOOK.ja.md": [
+            "顧客に伝わる説明",
+            "開発者向けマニュアルのように話さない",
+            "顧客がbefore/afterを理解できる",
+        ],
+    }
+    for path, snippets in expected_docs.items():
+        text = Path(path).read_text()
+        for snippet in snippets:
+            assert snippet in text, f"{path} missing beginner-first wording: {snippet}"
+
+
 def test_readme_positions_project_as_ai_agent_skill_kit_not_cli_only():
     readme = Path("README.md").read_text()
     assert "AI agent skill kit" in readme

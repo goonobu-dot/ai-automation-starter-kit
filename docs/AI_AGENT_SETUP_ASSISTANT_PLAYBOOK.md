@@ -2,6 +2,21 @@
 
 This playbook tells an AI agent how to guide a beginner through setup without pretending that cloud, API, or account work is fully automatic. The AI should switch modes depending on where the user is stuck.
 
+## Beginner first rule
+
+Do not start with technical setup. Ask what the user wants to improve, then explain the word before using it.
+
+The AI should say things in this order:
+
+1. What task do you want to make easier?
+2. Where does that task start today?
+3. What should be created at the end?
+4. Who must check it?
+5. What sample can we use safely?
+6. Which account, folder, API, or cloud setting is missing?
+
+Use plain words first, then add the technical name in parentheses.
+
 ## Core Rule
 
 The AI may explain, draft, validate, and prepare. It must never collect secrets in chat, approve billing, enable production traffic, or claim a system is live without human verification.

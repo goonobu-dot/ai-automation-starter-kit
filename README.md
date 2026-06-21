@@ -4,6 +4,21 @@ GitHub-data-driven AI agent skill kit for developers, AI agent builders, automat
 
 It finds promising public OSS projects for a business area, ranks them, and turns the result into practical adoption artifacts: executive decisions, value scorecards, rollout maps, risk registers, audit plans, dry-run adapter starters, client-ready offer packs, and full sales-to-delivery automation packs.
 
+## If you are new, start here
+
+You do not need to understand cloud or APIs first. Ask an AI agent to read these guides with you, then answer one question at a time.
+
+First, choose one small workflow. Good first examples are inquiry handling, invoice follow-up, missing document checks, appointment pre-checks, FAQ routing, sales research, and weekly reports.
+
+Use this first path:
+
+1. Open [AI Beginner Support Map](docs/AI_BEGINNER_SUPPORT_MAP.md).
+2. Open [AI Agent Grill Me Skill](docs/AI_AGENT_GRILL_ME_SKILL.md).
+3. Paste the skill into ChatGPT, Claude, Gemini, Cursor, Codex, Claude Code, or another AI agent.
+4. Tell the AI what business task you want to improve.
+5. Keep real API keys, passwords, client private data, and production access out of chat.
+6. Start with a dry-run before any real sending or cloud traffic.
+
 ## What Is This?
 
 AI Automation Starter Kit is an AI agent skill kit for turning public GitHub signals, workflow templates, and setup checklists into repeatable business automation plans. The CLI is optional: it generates the same files faster, but the core value is giving any AI agent a clear process for interviewing the user, choosing a workflow, preparing required inputs, and keeping risky steps behind human approval.

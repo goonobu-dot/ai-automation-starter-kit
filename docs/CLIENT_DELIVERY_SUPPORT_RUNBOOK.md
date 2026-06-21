@@ -2,6 +2,17 @@
 
 This runbook explains how a beginner can use AI support before, during, and after a client automation project. The goal is to make the work sellable without exaggerating what the system can do.
 
+## Plain client explanation
+
+Do not sound like a developer manual. The client should understand the before and after without knowing APIs, cloud, or automation tools.
+
+Use this shape:
+
+- Before: your team manually checks incoming work, writes drafts, and remembers follow-up.
+- After: the automation prepares a queue, draft, checklist, or report.
+- Human approval: a person still checks important outputs before they affect customers or business records.
+- First test: we start with fake or redacted data in a dry-run.
+
 ## Operating Principle
 
 Use AI to prepare, question, draft, check, and document. Use humans to approve client facts, accounts, secrets, production changes, legal boundaries, and money.
