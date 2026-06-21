@@ -12,7 +12,9 @@ def test_project_readme_has_public_quickstart_and_all_templates():
     assert "docs/BEGINNER_GUIDE.ja.md" in text
     assert "3-Minute Walkthrough" in text
     assert "Example Use Cases" in text
-    assert "GitHub-data-driven AI automation starter kit" in text
+    assert "GitHub-data-driven AI agent skill kit" in text
+    assert "The CLI is optional" in text
+    assert "No-CLI AI Agent Path" in text
     assert "executive_decision_brief.md" in text
     assert "pilot_scorecard.csv" in text
     assert "python3 -m venv .venv" in text

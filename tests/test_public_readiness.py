@@ -52,6 +52,8 @@ def test_readme_links_start_here_and_use_cases_docs():
     assert "docs/CONNECTOR_SETUP_GUIDE.ja.md" in readme
     assert "docs/CLOUD_TROUBLESHOOTING.md" in readme
     assert "docs/CLOUD_TROUBLESHOOTING.ja.md" in readme
+    assert "docs/AI_AGENT_GRILL_ME_SKILL.md" in readme
+    assert "docs/AI_AGENT_GRILL_ME_SKILL.ja.md" in readme
     assert "docs/AI_GRILL_ME_GUIDE.md" in readme
     assert "docs/AI_GRILL_ME_GUIDE.ja.md" in readme
     assert "docs/GRILL_ME_PROMPTS.md" in readme
@@ -183,8 +185,25 @@ def test_cloud_beginner_docs_make_cloud_setup_approachable():
 
 def test_grill_me_docs_teach_ai_consultation_for_beginners():
     expected_docs = {
+        "docs/AI_AGENT_GRILL_ME_SKILL.md": [
+            "AI Agent Grill Me Skill",
+            "not tied to a CLI agent",
+            "Copy this skill into ChatGPT, Claude, Gemini, Cursor, Codex, Claude Code, or another AI agent",
+            "ask exactly one question at a time",
+            "Do not ask for real secrets",
+            "human approval gate",
+        ],
+        "docs/AI_AGENT_GRILL_ME_SKILL.ja.md": [
+            "AIエージェント Grill Me スキル",
+            "CLI版AIエージェント専用ではありません",
+            "ChatGPT、Claude、Gemini、Cursor、Codex、Claude Code など",
+            "必ず1問ずつ質問する",
+            "本物のsecretを求めない",
+            "人間承認ゲート",
+        ],
         "docs/AI_GRILL_ME_GUIDE.md": [
             "AI Grill Me Guide",
+            "You can use the skill without running the CLI",
             "one question at a time",
             "Do not paste real API keys or secrets",
             "challenge vague answers",
@@ -192,6 +211,7 @@ def test_grill_me_docs_teach_ai_consultation_for_beginners():
         ],
         "docs/AI_GRILL_ME_GUIDE.ja.md": [
             "AI Grill Me ガイド",
+            "CLIを実行しなくても使えます",
             "1問ずつ",
             "本物のAPIキーやsecretを貼らない",
             "曖昧な答え",
@@ -207,6 +227,16 @@ def test_grill_me_docs_teach_ai_consultation_for_beginners():
         assert len(text) > 1000, path
         for snippet in snippets:
             assert snippet in text, f"{path} missing {snippet}"
+
+
+def test_readme_positions_project_as_ai_agent_skill_kit_not_cli_only():
+    readme = Path("README.md").read_text()
+    assert "AI agent skill kit" in readme
+    assert "The CLI is optional" in readme
+    assert "not a requirement to use a CLI-based AI agent" in readme
+    assert "AI Agent Grill Me Skill" in readme
+    assert "Ask the AI to read the skill document" in readme
+    assert "local Python CLI for turning public GitHub signals" not in readme
 
 
 def test_ci_runs_tests_from_project_root():

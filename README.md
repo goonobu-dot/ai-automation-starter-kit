@@ -1,12 +1,12 @@
 # AI Automation Starter Kit
 
-GitHub-data-driven AI automation starter kit for developers, AI agent builders, and automation consultants.
+GitHub-data-driven AI agent skill kit for developers, AI agent builders, automation consultants, and beginners who want AI to guide business automation setup safely.
 
 It finds promising public OSS projects for a business area, ranks them, and turns the result into practical adoption artifacts: executive decisions, value scorecards, rollout maps, risk registers, audit plans, dry-run adapter starters, client-ready offer packs, and full sales-to-delivery automation packs.
 
 ## What Is This?
 
-AI Automation Starter Kit is a local Python CLI for turning public GitHub signals into repeatable business automation plans.
+AI Automation Starter Kit is an AI agent skill kit for turning public GitHub signals, workflow templates, and setup checklists into repeatable business automation plans. The CLI is optional: it generates the same files faster, but the core value is giving any AI agent a clear process for interviewing the user, choosing a workflow, preparing required inputs, and keeping risky steps behind human approval.
 
 Instead of stopping at "this repository looks interesting", it creates the files a team needs before trying automation in a real company:
 
@@ -26,7 +26,7 @@ For the easiest hands-on path, `complete-workspace` creates the full local deliv
 
 For selling and choosing work, `opportunity-catalog` creates a browser-friendly automation offer catalog, `recommend-flow` turns a short client intake into a recommended flow and PoC scope, `guided-setup` creates a step-by-step input checklist for local or cloud setup, `guided-review` reviews completed setup answers and tells the operator what to do next, `cloud-plan` creates provider-specific deployment plans for major clouds, and `share-check` scans generated assets before sharing them with a client.
 
-For AI beginners who do not know what to ask next, `grill-me` creates a one-question-at-a-time review pack. It gives the user copy-ready AI prompts, client interview questions, cloud readiness questions, risk checks, and proposal review checks so Claude Code, Codex, Cursor, or another AI agent can challenge vague answers without asking for secrets in chat.
+For AI beginners who do not know what to ask next, the AI Agent Grill Me Skill gives any AI assistant a one-question-at-a-time interview pattern. It is not a requirement to use a CLI-based AI agent. A user can paste the skill into ChatGPT, Claude, Gemini, Cursor, Codex, Claude Code, or another AI agent and ask it to guide workflow selection, client questions, cloud readiness, risk checks, and proposal review without collecting secrets in chat. The `grill-me` command is only a helper that generates the same review pack as files.
 
 For hands-on automation work, `flows` gives users a research-backed catalog of 60+ ready-made business automation flows. A user can choose a flow by industry or genre, install it into a local project folder, inspect `flow.yaml`, view `workflow_map.mmd`, and run the local automation runtime to generate a work queue, draft outputs, an approval queue, connector tasks, a status report, and a run log. The installed project also includes `.env.example`, `config/connectors.json`, a system runbook, approval scripts, and local outbox files so the flow can become a real integration project without sending anything by accident. See [Automation Demand Research](docs/AUTOMATION_DEMAND_RESEARCH.md) for the industry and workflow demand map behind the catalog.
 
@@ -59,6 +59,8 @@ Need a practical first path or use-case examples?
 - [連携設定ガイド](docs/CONNECTOR_SETUP_GUIDE.ja.md)
 - [Cloud troubleshooting](docs/CLOUD_TROUBLESHOOTING.md)
 - [クラウド トラブルシューティング](docs/CLOUD_TROUBLESHOOTING.ja.md)
+- [AI Agent Grill Me Skill](docs/AI_AGENT_GRILL_ME_SKILL.md)
+- [AIエージェント Grill Me スキル](docs/AI_AGENT_GRILL_ME_SKILL.ja.md)
 - [AI Grill Me guide](docs/AI_GRILL_ME_GUIDE.md)
 - [AI Grill Me ガイド](docs/AI_GRILL_ME_GUIDE.ja.md)
 - [Grill Me prompts](docs/GRILL_ME_PROMPTS.md)
@@ -80,6 +82,18 @@ Need a practical first path or use-case examples?
 - AI agent builders who need repeatable workflow artifacts instead of one-off chat output.
 - Automation consultants who want to turn GitHub research into client-ready pilot plans.
 - Business operations teams that need approvals, audit evidence, and value metrics before adopting AI automation.
+
+## No-CLI AI Agent Path
+
+You do not have to start by running commands. Ask the AI to read the skill document first:
+
+1. Open [AI Agent Grill Me Skill](docs/AI_AGENT_GRILL_ME_SKILL.md) or [AIエージェント Grill Me スキル](docs/AI_AGENT_GRILL_ME_SKILL.ja.md).
+2. Paste the skill into ChatGPT, Claude, Gemini, Cursor, Codex, Claude Code, or another AI agent.
+3. Ask the AI to read this GitHub project and interview you one question at a time.
+4. Answer with business context, redacted sample data, folder or inbox names, connector names, and approval rules.
+5. Use the generated plan to decide whether a local dry-run, cloud plan, or paid PoC is safe.
+
+The command-line tools remain useful when you want repeatable files, tests, smoke checks, and generated project folders. They are not the only way to use the project.
 
 ## What You Get
 
@@ -477,7 +491,7 @@ Use this when the local dry-run has value and the next blocker is cloud setup. I
 
 ### grill-me
 
-Generate a one-question-at-a-time review pack for AI beginners:
+Generate a one-question-at-a-time review pack for AI beginners. This command is a file generator for the AI Agent Grill Me Skill, not a requirement to use a CLI-based AI agent:
 
 ```bash
 ai-automation-kit grill-me --flow-id invoice-document-followup --mode beginner --client-type local-business --deployment cloud --connectors gmail,google-sheets --output .tmp/grill-me
@@ -485,7 +499,7 @@ ai-automation-kit grill-me --flow-id invoice-document-followup --mode beginner -
 
 Creates `START_HERE_GRILL_ME.md`, `questions_to_answer.md`, `client_interview_grill.md`, `cloud_readiness_grill.md`, `risk_grill.md`, `proposal_grill.md`, `ai_agent_prompt.md`, and `grill_me.json`.
 
-Use this when the user does not know what to ask an AI agent. The generated prompt tells Claude Code, Codex, Cursor, or another AI agent to ask one question at a time, challenge vague answers, avoid real API keys or secrets in chat, keep production traffic blocked until human approval, and guide the user toward a safe dry-run and bounded paid PoC.
+Use this when the user does not know what to ask an AI agent. The generated prompt tells ChatGPT, Claude, Gemini, Cursor, Codex, Claude Code, or another AI agent to ask one question at a time, challenge vague answers, avoid real API keys or secrets in chat, keep production traffic blocked until human approval, and guide the user toward a safe dry-run and bounded paid PoC.
 
 ### quickstart
 
