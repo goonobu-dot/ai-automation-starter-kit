@@ -286,6 +286,38 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(business_launch_output / "first_client_offer.md")
     _require_file(business_launch_output / "risk_boundary_sheet.md")
 
+    guided_setup_output = output / "guided-setup-ai-reception"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "guided-setup",
+            "--flow-id",
+            "ai-reception-line-inquiry",
+            "--mode",
+            "beginner",
+            "--deployment",
+            "undecided",
+            "--connectors",
+            "line,gmail,google-sheets",
+            "--output",
+            str(guided_setup_output),
+        ],
+        env=env,
+    )
+    _require_file(guided_setup_output / "START_HERE_GUIDED_SETUP.md")
+    _require_file(guided_setup_output / "guided_setup_questions.md")
+    _require_file(guided_setup_output / "guided_setup_answers.example.json")
+    _require_file(guided_setup_output / "missing_inputs.md")
+    _require_file(guided_setup_output / "local_setup_plan.md")
+    _require_file(guided_setup_output / "cloud_setup_plan.md")
+    _require_file(guided_setup_output / "env_values_needed.md")
+    _require_file(guided_setup_output / "client_request_list.md")
+    _require_file(guided_setup_output / "ai_agent_instruction.md")
+    _require_file(guided_setup_output / "readiness_score.json")
+    _require_file(guided_setup_output / "next_action.md")
+
     connector_output = output / "connector-doctor"
     _run(
         [

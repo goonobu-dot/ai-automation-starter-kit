@@ -22,6 +22,7 @@ from ai_automation_kit.core.operator_console import generate_complete_workspace
 from ai_automation_kit.core.operator_console import generate_connector_doctor
 from ai_automation_kit.core.operator_console import generate_demo_site
 from ai_automation_kit.core.operator_console import generate_flow_guide
+from ai_automation_kit.core.operator_console import generate_guided_setup
 from ai_automation_kit.core.operator_console import generate_install_bundle
 from ai_automation_kit.core.operator_console import generate_business_launch_pack
 from ai_automation_kit.core.operator_console import generate_opportunity_catalog
@@ -146,6 +147,17 @@ def build_parser() -> argparse.ArgumentParser:
     business_launch.add_argument("--niche", default="accounting")
     business_launch.add_argument("--operator-level", default="beginner")
     business_launch.add_argument("--output", required=True)
+
+    guided_setup = subparsers.add_parser("guided-setup")
+    guided_setup.add_argument("--flow-id", required=True)
+    guided_setup.add_argument("--mode", default="beginner", choices=["beginner", "operator", "client"])
+    guided_setup.add_argument(
+        "--deployment",
+        default="undecided",
+        choices=["undecided", "local", "cloud", "render", "railway", "cloud-run", "vps"],
+    )
+    guided_setup.add_argument("--connectors", default="local-folder")
+    guided_setup.add_argument("--output", required=True)
 
     flows = subparsers.add_parser("flows")
     flow_subparsers = flows.add_subparsers(dest="flow_command", required=True)
@@ -384,6 +396,19 @@ def main(argv: list[str] | None = None) -> int:
         print(f"business_launch={args.output}/START_HERE_BUSINESS_LAUNCH.md")
         print(f"first_client_offer={args.output}/first_client_offer.md")
         print(f"recommended_flow={payload['recommended_flow']['id']}")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "guided-setup":
+        payload = generate_guided_setup(
+            flow_id=args.flow_id,
+            mode=args.mode,
+            deployment=args.deployment,
+            connectors=args.connectors,
+            output=Path(args.output),
+        )
+        print(f"guided_setup={args.output}/START_HERE_GUIDED_SETUP.md")
+        print(f"questions={args.output}/guided_setup_questions.md")
+        print(f"ai_agent_instruction={args.output}/ai_agent_instruction.md")
         print(f"status={payload['status']}")
         return 0
     if args.command == "flows":

@@ -139,6 +139,32 @@ def test_parser_accepts_beginner_sales_command():
     assert args.output == "beginner-sales"
 
 
+def test_parser_accepts_guided_setup_command():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "guided-setup",
+            "--flow-id",
+            "ai-reception-line-inquiry",
+            "--mode",
+            "operator",
+            "--deployment",
+            "cloud",
+            "--connectors",
+            "line,gmail,google-sheets",
+            "--output",
+            "guided",
+        ]
+    )
+
+    assert args.command == "guided-setup"
+    assert args.flow_id == "ai-reception-line-inquiry"
+    assert args.mode == "operator"
+    assert args.deployment == "cloud"
+    assert args.connectors == "line,gmail,google-sheets"
+    assert args.output == "guided"
+
+
 def test_parser_accepts_flows_commands():
     parser = build_parser()
 
@@ -249,6 +275,49 @@ def test_main_runs_delivery_pipeline(tmp_path):
 
     assert exit_code == 0
     assert (output / "docs" / "delivery-checklist.md").exists()
+
+
+def test_main_runs_guided_setup(tmp_path):
+    output = tmp_path / "guided-setup"
+
+    exit_code = main(
+        [
+            "guided-setup",
+            "--flow-id",
+            "ai-reception-line-inquiry",
+            "--mode",
+            "beginner",
+            "--deployment",
+            "undecided",
+            "--connectors",
+            "line,gmail,google-sheets",
+            "--output",
+            str(output),
+        ]
+    )
+
+    assert exit_code == 0
+    assert (output / "START_HERE_GUIDED_SETUP.md").exists()
+    assert (output / "guided_setup_questions.md").exists()
+    assert (output / "guided_setup_answers.example.json").exists()
+    assert (output / "missing_inputs.md").exists()
+    assert (output / "local_setup_plan.md").exists()
+    assert (output / "cloud_setup_plan.md").exists()
+    assert (output / "env_values_needed.md").exists()
+    assert (output / "client_request_list.md").exists()
+    assert (output / "ai_agent_instruction.md").exists()
+    assert (output / "readiness_score.json").exists()
+    assert (output / "next_action.md").exists()
+
+    questions = (output / "guided_setup_questions.md").read_text()
+    agent_instruction = (output / "ai_agent_instruction.md").read_text()
+    score = json.loads((output / "readiness_score.json").read_text())
+
+    assert "reception source" in questions
+    assert "deployment target" in questions
+    assert "Ask the user one question at a time" in agent_instruction
+    assert score["status"] == "needs_input"
+    assert "missing_required_inputs" in score
 
 
 def test_main_runs_github_discover_without_config(tmp_path, monkeypatch):

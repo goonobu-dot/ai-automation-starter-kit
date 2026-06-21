@@ -133,6 +133,45 @@ def generate_business_launch_pack(
     return payload
 
 
+def generate_guided_setup(
+    flow_id: str,
+    mode: str,
+    deployment: str,
+    connectors: str,
+    output: Path,
+) -> dict:
+    output.mkdir(parents=True, exist_ok=True)
+    flow = get_flow(flow_id)
+    connector_list = _parse_connector_list(connectors)
+    questions = _guided_setup_questions(flow, deployment, connector_list)
+    answers = _guided_setup_answer_template(flow, mode, deployment, connector_list, questions)
+    missing_inputs = [question["id"] for question in questions if question["required"]]
+    payload = {
+        "status": "needs_input",
+        "flow_id": flow["id"],
+        "flow_name": flow["name"],
+        "mode": mode,
+        "deployment": deployment,
+        "connectors": connector_list,
+        "required_question_count": len(missing_inputs),
+        "missing_required_inputs": missing_inputs,
+        "next_action": "Use guided_setup_questions.md with an AI agent and answer one question at a time.",
+    }
+    (output / "guided_setup.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output / "START_HERE_GUIDED_SETUP.md").write_text(_render_guided_setup_start(flow, payload), encoding="utf-8")
+    (output / "guided_setup_questions.md").write_text(_render_guided_setup_questions(flow, questions, mode), encoding="utf-8")
+    (output / "guided_setup_answers.example.json").write_text(json.dumps(answers, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output / "missing_inputs.md").write_text(_render_missing_inputs(flow, questions), encoding="utf-8")
+    (output / "local_setup_plan.md").write_text(_render_local_setup_plan(flow, connector_list), encoding="utf-8")
+    (output / "cloud_setup_plan.md").write_text(_render_cloud_setup_plan(flow, deployment, connector_list), encoding="utf-8")
+    (output / "env_values_needed.md").write_text(_render_env_values_needed(connector_list, deployment), encoding="utf-8")
+    (output / "client_request_list.md").write_text(_render_client_request_list(flow, connector_list), encoding="utf-8")
+    (output / "ai_agent_instruction.md").write_text(_render_ai_agent_instruction(flow, mode), encoding="utf-8")
+    (output / "readiness_score.json").write_text(json.dumps(_guided_readiness_score(payload), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output / "next_action.md").write_text(_render_guided_next_action(flow, mode, deployment), encoding="utf-8")
+    return payload
+
+
 def generate_flow_guide(industry: str | None, genre: str | None, niche: str, output: Path) -> dict:
     output.mkdir(parents=True, exist_ok=True)
     candidates = list_flows(industry=industry, genre=genre)
@@ -1944,3 +1983,323 @@ def _markdown_shell_html(title: str, markdown: str) -> str:
 <body><pre>{escaped}</pre></body>
 </html>
 """
+
+
+def _parse_connector_list(connectors: str) -> list[str]:
+    values = [item.strip().lower() for item in connectors.split(",") if item.strip()]
+    return values or ["local-folder"]
+
+
+def _guided_setup_questions(flow: dict, deployment: str, connectors: list[str]) -> list[dict]:
+    base_questions = [
+        {
+            "id": "business_goal",
+            "label": "What business result should this automation improve?",
+            "plain_language": "Example: reduce missed LINE inquiries, reply faster, or prepare daily reports.",
+            "required": True,
+        },
+        {
+            "id": "reception_source",
+            "label": "Where does the work arrive today?",
+            "plain_language": "Choose the reception source: LINE, Gmail, web form, Google Sheets, CSV folder, or another inbox.",
+            "required": True,
+        },
+        {
+            "id": "knowledge_source",
+            "label": "What should the AI use as approved reference information?",
+            "plain_language": "Examples: FAQ, price list, service menu, policy docs, booking rules, or past approved replies.",
+            "required": True,
+        },
+        {
+            "id": "output_destination",
+            "label": "Where should outputs go?",
+            "plain_language": "Examples: local folder, email drafts, Google Sheets, Slack notification, or operator UI.",
+            "required": True,
+        },
+        {
+            "id": "human_approval_rules",
+            "label": "Which cases must stop for human approval?",
+            "plain_language": "Examples: complaints, refunds, contracts, legal/medical/financial topics, price changes, or booking confirmation.",
+            "required": True,
+        },
+        {
+            "id": "deployment_target",
+            "label": "Where should the automation run?",
+            "plain_language": "Choose local PC, Render/Railway, Google Cloud Run, VPS, or undecided.",
+            "required": True,
+        },
+        {
+            "id": "client_data_boundary",
+            "label": "What client data is allowed in the dry-run?",
+            "plain_language": "Use sample or masked data first. Do not include passwords, secrets, payment records, or sensitive production exports.",
+            "required": True,
+        },
+        {
+            "id": "success_metric",
+            "label": "How will you know the PoC worked?",
+            "plain_language": f"Good metrics for this flow include: {', '.join(flow['success_metrics'])}.",
+            "required": True,
+        },
+    ]
+    if any(connector in {"line", "gmail", "google-sheets", "slack"} for connector in connectors):
+        base_questions.append(
+            {
+                "id": "connector_owner",
+                "label": "Who owns each API account or connector?",
+                "plain_language": "The client should confirm who owns LINE, Gmail, Google Sheets, Slack, or other accounts before keys are created.",
+                "required": True,
+            }
+        )
+    if deployment in {"cloud", "render", "railway", "cloud-run", "vps", "undecided"}:
+        base_questions.append(
+            {
+                "id": "cloud_operator",
+                "label": "Who will manage cloud settings and monthly checks?",
+                "plain_language": "Pick a named operator for environment variables, logs, billing, uptime checks, and incident response.",
+                "required": True,
+            }
+        )
+    return base_questions
+
+
+def _guided_setup_answer_template(
+    flow: dict,
+    mode: str,
+    deployment: str,
+    connectors: list[str],
+    questions: list[dict],
+) -> dict:
+    return {
+        "flow_id": flow["id"],
+        "mode": mode,
+        "deployment": deployment,
+        "connectors": connectors,
+        "answers": {question["id"]: "" for question in questions},
+        "notes": "Fill this file after answering guided_setup_questions.md. Leave unknown values blank and rerun readiness review manually or with an AI agent.",
+    }
+
+
+def _render_guided_setup_start(flow: dict, payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Start Here: Guided Setup",
+            "",
+            f"Flow: `{flow['id']}` - {flow['name']}",
+            f"Mode: `{payload['mode']}`",
+            f"Deployment: `{payload['deployment']}`",
+            "",
+            "This folder is a guided intake package. It does not deploy anything by itself. It tells the operator, client, or AI agent which inputs are required before local or cloud automation can be prepared.",
+            "",
+            "## Read In This Order",
+            "",
+            "1. `guided_setup_questions.md`",
+            "2. `guided_setup_answers.example.json`",
+            "3. `missing_inputs.md`",
+            "4. `env_values_needed.md`",
+            "5. `local_setup_plan.md` or `cloud_setup_plan.md`",
+            "6. `client_request_list.md`",
+            "7. `ai_agent_instruction.md`",
+            "8. `next_action.md`",
+            "",
+            "Use an AI agent such as Codex, Claude Code, or Cursor to ask these questions one at a time and write the answers into a real `guided_setup_answers.json` file.",
+            "",
+        ]
+    )
+
+
+def _render_guided_setup_questions(flow: dict, questions: list[dict], mode: str) -> str:
+    lines = [
+        f"# Guided Setup Questions: {flow['name']}",
+        "",
+        "These questions collect the minimum inputs needed before local or cloud automation setup.",
+        "",
+        f"Mode: `{mode}`",
+        "",
+    ]
+    for index, question in enumerate(questions, start=1):
+        lines.extend(
+            [
+                f"## {index}. {question['label']}",
+                "",
+                f"- ID: `{question['id']}`",
+                f"- Required: `{str(question['required']).lower()}`",
+                f"- Beginner explanation: {question['plain_language']}",
+                "",
+            ]
+        )
+    lines.extend(
+        [
+            "## Required Keywords",
+            "",
+            "This guide must identify the reception source, knowledge source, output destination, human approval rules, deployment target, and success metric before production planning.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _render_missing_inputs(flow: dict, questions: list[dict]) -> str:
+    lines = [
+        f"# Missing Inputs: {flow['name']}",
+        "",
+        "The following required inputs are still missing until the operator or AI agent fills `guided_setup_answers.json`.",
+        "",
+    ]
+    lines.extend(f"- `{question['id']}`: {question['label']}" for question in questions if question["required"])
+    lines.extend(
+        [
+            "",
+            "Do not create real credentials, webhooks, or production sends until these inputs are answered and reviewed.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _render_local_setup_plan(flow: dict, connectors: list[str]) -> str:
+    return "\n".join(
+        [
+            f"# Local Setup Plan: {flow['name']}",
+            "",
+            "Use this when the operator wants to run the first proof locally.",
+            "",
+            "1. Install the selected flow with `ai-automation-kit flows install`.",
+            "2. Put sample or masked input data in `sample_data/input.csv`.",
+            "3. Keep connectors in dry-run mode.",
+            "4. Run `python3 scripts/run_automation.py`.",
+            "5. Review `automation_output/approval_queue.csv`.",
+            "6. Open `operator_ui/index.html` for the client explanation.",
+            "",
+            f"Requested connectors: {', '.join(connectors)}",
+            "",
+        ]
+    )
+
+
+def _render_cloud_setup_plan(flow: dict, deployment: str, connectors: list[str]) -> str:
+    recommendation = "Render or Railway for first PoC" if deployment in {"cloud", "undecided", "render", "railway"} else deployment
+    if "google-sheets" in connectors or "gmail" in connectors:
+        recommendation += "; consider Google Cloud Run when Google OAuth and Sheets are central"
+    return "\n".join(
+        [
+            f"# Cloud Setup Plan: {flow['name']}",
+            "",
+            f"Recommended first cloud path: {recommendation}.",
+            "",
+            "Cloud setup should happen only after the dry-run answers are complete.",
+            "",
+            "## Minimum Cloud Requirements",
+            "",
+            "- GitHub repository access.",
+            "- Cloud account owner.",
+            "- Environment variables configured outside GitHub.",
+            "- HTTPS endpoint for webhooks.",
+            "- Logs that do not expose secrets or unnecessary personal data.",
+            "- Human approval before real external sends.",
+            "- Monthly billing and operations owner.",
+            "",
+            f"Requested connectors: {', '.join(connectors)}",
+            "",
+        ]
+    )
+
+
+def _render_env_values_needed(connectors: list[str], deployment: str) -> str:
+    env_rows = [
+        ("APPROVER_EMAIL", "Named person who reviews AI drafts before real action."),
+        ("FLOW_MODE", "Use `dry-run` until go-live is approved."),
+    ]
+    if "line" in connectors:
+        env_rows.extend(
+            [
+                ("LINE_CHANNEL_SECRET", "Verifies that LINE webhook events are from the correct LINE account."),
+                ("LINE_CHANNEL_ACCESS_TOKEN", "Allows approved LINE actions after production approval."),
+            ]
+        )
+    if "gmail" in connectors:
+        env_rows.extend(
+            [
+                ("GMAIL_CLIENT_ID", "Google OAuth application ID for Gmail access."),
+                ("GMAIL_CLIENT_SECRET", "Google OAuth secret. Do not commit it to GitHub."),
+            ]
+        )
+    if "google-sheets" in connectors:
+        env_rows.append(("GOOGLE_SHEETS_CREDENTIALS_JSON", "Service account or OAuth credentials for spreadsheet access."))
+    if "slack" in connectors:
+        env_rows.append(("SLACK_WEBHOOK_URL", "Webhook URL for approved internal notifications."))
+    if deployment != "local":
+        env_rows.append(("PUBLIC_BASE_URL", "Cloud HTTPS URL used by webhooks."))
+    lines = ["# Environment Values Needed", "", "| Name | Plain-language meaning |", "|---|---|"]
+    lines.extend(f"| `{name}` | {meaning} |" for name, meaning in env_rows)
+    lines.append("")
+    return "\n".join(lines)
+
+
+def _render_client_request_list(flow: dict, connectors: list[str]) -> str:
+    return "\n".join(
+        [
+            f"# Client Request List: {flow['name']}",
+            "",
+            "Ask the client for these items before setup.",
+            "",
+            "- One sample input export with private data removed.",
+            "- FAQ, price list, policy, service menu, or approved reply examples.",
+            "- Name and email of the approval owner.",
+            "- Clear list of cases that must stop for human approval.",
+            "- Decision on local dry-run first, then cloud setup later.",
+            f"- Connector account owners for: {', '.join(connectors)}.",
+            "- Confirmation that API keys and secrets will not be shared in chat or committed to GitHub.",
+            "",
+        ]
+    )
+
+
+def _render_ai_agent_instruction(flow: dict, mode: str) -> str:
+    detail_rule = "Explain terms in plain language before asking for values." if mode == "beginner" else "Keep explanations short and focus on required fields."
+    return "\n".join(
+        [
+            f"# AI Agent Instruction: {flow['name']}",
+            "",
+            "Ask the user one question at a time using `guided_setup_questions.md`.",
+            "",
+            f"- Mode: `{mode}`",
+            f"- Instruction style: {detail_rule}",
+            "- Write final answers into `guided_setup_answers.json`.",
+            "- If the user does not know an answer, leave it blank and list it in `missing_inputs.md`.",
+            "- Do not ask for raw secrets in chat.",
+            "- Explain API keys, OAuth, webhooks, folders, and deployment target in plain language when needed.",
+            "- Keep production sends blocked until human approval and go-live conditions are complete.",
+            "",
+        ]
+    )
+
+
+def _guided_readiness_score(payload: dict) -> dict:
+    missing_count = len(payload["missing_required_inputs"])
+    score = max(0, 100 - missing_count * 10)
+    return {
+        "status": "needs_input" if missing_count else "ready_for_dry_run",
+        "score": score,
+        "missing_required_inputs": payload["missing_required_inputs"],
+        "deployment": payload["deployment"],
+        "mode": payload["mode"],
+    }
+
+
+def _render_guided_next_action(flow: dict, mode: str, deployment: str) -> str:
+    return "\n".join(
+        [
+            f"# Next Action: {flow['name']}",
+            "",
+            "1. Open `guided_setup_questions.md`.",
+            "2. Ask an AI agent to question the operator one item at a time.",
+            "3. Save answers as `guided_setup_answers.json`.",
+            "4. Review `missing_inputs.md`.",
+            "5. If local, install the flow and run a dry-run.",
+            "6. If cloud, complete `cloud_setup_plan.md` and `env_values_needed.md` before creating real credentials.",
+            "",
+            f"Current mode: `{mode}`",
+            f"Current deployment preference: `{deployment}`",
+            "",
+        ]
+    )
