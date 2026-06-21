@@ -98,6 +98,14 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - `.tmp/release-smoke/cloud-plan-aws-scheduled-job/incident_rollback.md`
 - `.tmp/release-smoke/cloud-plan-aws-scheduled-job/human_approval_required.md`
 - `.tmp/release-smoke/cloud-plan-aws-scheduled-job/cloud_plan.json`
+- `.tmp/release-smoke/grill-me-invoice-cloud/START_HERE_GRILL_ME.md`
+- `.tmp/release-smoke/grill-me-invoice-cloud/questions_to_answer.md`
+- `.tmp/release-smoke/grill-me-invoice-cloud/client_interview_grill.md`
+- `.tmp/release-smoke/grill-me-invoice-cloud/cloud_readiness_grill.md`
+- `.tmp/release-smoke/grill-me-invoice-cloud/risk_grill.md`
+- `.tmp/release-smoke/grill-me-invoice-cloud/proposal_grill.md`
+- `.tmp/release-smoke/grill-me-invoice-cloud/ai_agent_prompt.md`
+- `.tmp/release-smoke/grill-me-invoice-cloud/grill_me.json`
 - `.tmp/release-smoke/opportunity-catalog/opportunity_catalog.html`
 - `.tmp/release-smoke/recommend-flow/recommended_flow.md`
 - `.tmp/release-smoke/share-check/share_check.md`
@@ -210,6 +218,7 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - [ ] Confirm `guided-review` separates local dry-run readiness from cloud readiness and gives a client-safe missing-items email, provider decision, AI handoff prompt, and next CLI commands.
 - [ ] Confirm `cloud-plan` covers Google Cloud, AWS, Azure, Render, Railway, Vercel, DigitalOcean, and Fly.io; supports webhook/API, scheduled job, worker queue, web app, static functions, and container service workloads; separates AI-generated commands from human account, billing, secret, IAM, domain, webhook/scheduler/queue, and rollback approval.
 - [ ] Confirm beginner cloud docs explain what to prepare, what AI can do, what humans must approve, connector setup, troubleshooting, and rollback without implying full automation or income guarantees.
+- [ ] Confirm `grill-me` explains the one-question-at-a-time AI consultation pattern, blocks secrets in chat, challenges vague answers, and keeps production traffic behind human approval.
 - [ ] Confirm English manuals explain the same business proposal path as the Japanese manuals.
 - [ ] Confirm AI reception docs explain required API keys, reception folder, sample data, operator UI, approval owner, and paid dry-run PoC boundaries without promising income.
 - [ ] Confirm AI employee roadmap prioritizes reception first, internal FAQ/admin second, sales research third, and delays outbound sales, autonomous high-risk decisions, and broad multi-department bundles.

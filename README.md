@@ -26,6 +26,8 @@ For the easiest hands-on path, `complete-workspace` creates the full local deliv
 
 For selling and choosing work, `opportunity-catalog` creates a browser-friendly automation offer catalog, `recommend-flow` turns a short client intake into a recommended flow and PoC scope, `guided-setup` creates a step-by-step input checklist for local or cloud setup, `guided-review` reviews completed setup answers and tells the operator what to do next, `cloud-plan` creates provider-specific deployment plans for major clouds, and `share-check` scans generated assets before sharing them with a client.
 
+For AI beginners who do not know what to ask next, `grill-me` creates a one-question-at-a-time review pack. It gives the user copy-ready AI prompts, client interview questions, cloud readiness questions, risk checks, and proposal review checks so Claude Code, Codex, Cursor, or another AI agent can challenge vague answers without asking for secrets in chat.
+
 For hands-on automation work, `flows` gives users a research-backed catalog of 60+ ready-made business automation flows. A user can choose a flow by industry or genre, install it into a local project folder, inspect `flow.yaml`, view `workflow_map.mmd`, and run the local automation runtime to generate a work queue, draft outputs, an approval queue, connector tasks, a status report, and a run log. The installed project also includes `.env.example`, `config/connectors.json`, a system runbook, approval scripts, and local outbox files so the flow can become a real integration project without sending anything by accident. See [Automation Demand Research](docs/AUTOMATION_DEMAND_RESEARCH.md) for the industry and workflow demand map behind the catalog.
 
 ## Beginner-Friendly Guides
@@ -57,6 +59,12 @@ Need a practical first path or use-case examples?
 - [連携設定ガイド](docs/CONNECTOR_SETUP_GUIDE.ja.md)
 - [Cloud troubleshooting](docs/CLOUD_TROUBLESHOOTING.md)
 - [クラウド トラブルシューティング](docs/CLOUD_TROUBLESHOOTING.ja.md)
+- [AI Grill Me guide](docs/AI_GRILL_ME_GUIDE.md)
+- [AI Grill Me ガイド](docs/AI_GRILL_ME_GUIDE.ja.md)
+- [Grill Me prompts](docs/GRILL_ME_PROMPTS.md)
+- [Grill Me プロンプト集](docs/GRILL_ME_PROMPTS.ja.md)
+- [Grill Me checklists](docs/GRILL_ME_CHECKLISTS.md)
+- [Grill Me チェックリスト](docs/GRILL_ME_CHECKLISTS.ja.md)
 - [AI Reception Employee Pack](docs/AI_RECEPTION_EMPLOYEE_PACK.md)
 - [AI受付社員パック](docs/AI_RECEPTION_EMPLOYEE_PACK.ja.md)
 - [AI Employee Roadmap](docs/AI_EMPLOYEE_ROADMAP.md)
@@ -173,6 +181,7 @@ ai-automation-kit business-launch --industry finance --client-type local-busines
 ai-automation-kit guided-setup --flow-id ai-reception-line-inquiry --mode beginner --deployment undecided --connectors line,gmail,google-sheets --output .tmp/guided-setup
 ai-automation-kit guided-review --answers .tmp/guided-setup/guided_setup_answers.example.json --output .tmp/guided-review
 ai-automation-kit cloud-plan --flow-id invoice-document-followup --provider aws --workload scheduled-job --connectors gmail,google-sheets --output .tmp/cloud-plan-aws
+ai-automation-kit grill-me --flow-id invoice-document-followup --mode beginner --client-type local-business --deployment cloud --connectors gmail,google-sheets --output .tmp/grill-me
 ai-automation-kit share-check --source .tmp/complete-accounting --output .tmp/share-check
 ```
 
@@ -465,6 +474,18 @@ Supported workloads are `webhook-api`, `scheduled-job`, `worker-queue`, `web-app
 Creates `START_HERE_CLOUD_PLAN.md`, `cloud_provider_matrix.md`, `workload_architecture.md`, `runtime_choice.md`, `secrets_and_env.md`, `network_and_domain.md`, `deploy_runbook.md`, `operations_runbook.md`, `cost_guardrails.md`, `compliance_data_boundary.md`, `incident_rollback.md`, `human_approval_required.md`, and `cloud_plan.json`. Legacy compatibility files such as `cloud_architecture.md`, `secret_setup.md`, and `deploy_commands.md` are also written.
 
 Use this when the local dry-run has value and the next blocker is cloud setup. It supports Google Cloud, AWS, Azure, Render, Railway, Vercel, DigitalOcean, and Fly.io. The command does not log in, create billing accounts, create app credentials, configure DNS, or enable production traffic automatically. It prepares the safest next files and commands so a human can approve account, billing, secret, IAM, deployment, webhook/scheduler/queue activation, test, and rollback steps.
+
+### grill-me
+
+Generate a one-question-at-a-time review pack for AI beginners:
+
+```bash
+ai-automation-kit grill-me --flow-id invoice-document-followup --mode beginner --client-type local-business --deployment cloud --connectors gmail,google-sheets --output .tmp/grill-me
+```
+
+Creates `START_HERE_GRILL_ME.md`, `questions_to_answer.md`, `client_interview_grill.md`, `cloud_readiness_grill.md`, `risk_grill.md`, `proposal_grill.md`, `ai_agent_prompt.md`, and `grill_me.json`.
+
+Use this when the user does not know what to ask an AI agent. The generated prompt tells Claude Code, Codex, Cursor, or another AI agent to ask one question at a time, challenge vague answers, avoid real API keys or secrets in chat, keep production traffic blocked until human approval, and guide the user toward a safe dry-run and bounded paid PoC.
 
 ### quickstart
 

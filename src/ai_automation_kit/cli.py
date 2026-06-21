@@ -23,6 +23,7 @@ from ai_automation_kit.core.operator_console import generate_complete_workspace
 from ai_automation_kit.core.operator_console import generate_connector_doctor
 from ai_automation_kit.core.operator_console import generate_demo_site
 from ai_automation_kit.core.operator_console import generate_flow_guide
+from ai_automation_kit.core.operator_console import generate_grill_me_pack
 from ai_automation_kit.core.operator_console import generate_guided_review
 from ai_automation_kit.core.operator_console import generate_guided_setup
 from ai_automation_kit.core.operator_console import generate_install_bundle
@@ -179,6 +180,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     cloud_plan.add_argument("--connectors", default="local-folder")
     cloud_plan.add_argument("--output", required=True)
+
+    grill_me = subparsers.add_parser("grill-me")
+    grill_me.add_argument("--flow-id", required=True)
+    grill_me.add_argument("--mode", default="beginner", choices=["beginner", "operator", "consultant"])
+    grill_me.add_argument("--client-type", default="local-business")
+    grill_me.add_argument(
+        "--deployment",
+        default="undecided",
+        choices=["undecided", "local", "cloud", "render", "railway", "cloud-run", "vps"],
+    )
+    grill_me.add_argument("--connectors", default="local-folder")
+    grill_me.add_argument("--output", required=True)
 
     flows = subparsers.add_parser("flows")
     flow_subparsers = flows.add_subparsers(dest="flow_command", required=True)
@@ -452,6 +465,21 @@ def main(argv: list[str] | None = None) -> int:
         print(f"deploy_runbook={args.output}/deploy_runbook.md")
         print(f"provider={payload['provider']}")
         print(f"workload={payload['workload']}")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "grill-me":
+        payload = generate_grill_me_pack(
+            flow_id=args.flow_id,
+            mode=args.mode,
+            client_type=args.client_type,
+            deployment=args.deployment,
+            connectors=args.connectors,
+            output=Path(args.output),
+        )
+        print(f"grill_me={args.output}/START_HERE_GRILL_ME.md")
+        print(f"questions={args.output}/questions_to_answer.md")
+        print(f"ai_agent_prompt={args.output}/ai_agent_prompt.md")
+        print(f"flow_id={payload['flow_id']}")
         print(f"status={payload['status']}")
         return 0
     if args.command == "flows":

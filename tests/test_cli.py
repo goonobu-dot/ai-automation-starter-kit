@@ -208,6 +208,35 @@ def test_parser_accepts_cloud_plan_command():
     assert args.output == "cloud-plan"
 
 
+def test_parser_accepts_grill_me_command():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "grill-me",
+            "--flow-id",
+            "invoice-document-followup",
+            "--mode",
+            "beginner",
+            "--client-type",
+            "local-business",
+            "--deployment",
+            "cloud",
+            "--connectors",
+            "gmail,google-sheets",
+            "--output",
+            "grill-me",
+        ]
+    )
+
+    assert args.command == "grill-me"
+    assert args.flow_id == "invoice-document-followup"
+    assert args.mode == "beginner"
+    assert args.client_type == "local-business"
+    assert args.deployment == "cloud"
+    assert args.connectors == "gmail,google-sheets"
+    assert args.output == "grill-me"
+
+
 def test_parser_accepts_flows_commands():
     parser = build_parser()
 
@@ -488,6 +517,52 @@ def test_main_runs_cloud_plan_for_major_providers(tmp_path):
         assert plan["provider"] == provider
         assert (output / "deploy_commands.md").exists()
         assert (output / "human_approval_required.md").exists()
+
+
+def test_main_runs_grill_me_for_beginner_flow_review(tmp_path):
+    output = tmp_path / "grill-me"
+
+    exit_code = main(
+        [
+            "grill-me",
+            "--flow-id",
+            "invoice-document-followup",
+            "--mode",
+            "beginner",
+            "--client-type",
+            "local-business",
+            "--deployment",
+            "cloud",
+            "--connectors",
+            "gmail,google-sheets",
+            "--output",
+            str(output),
+        ]
+    )
+
+    assert exit_code == 0
+    assert (output / "START_HERE_GRILL_ME.md").exists()
+    assert (output / "questions_to_answer.md").exists()
+    assert (output / "client_interview_grill.md").exists()
+    assert (output / "cloud_readiness_grill.md").exists()
+    assert (output / "risk_grill.md").exists()
+    assert (output / "proposal_grill.md").exists()
+    assert (output / "ai_agent_prompt.md").exists()
+    assert (output / "grill_me.json").exists()
+
+    start = (output / "START_HERE_GRILL_ME.md").read_text()
+    questions = (output / "questions_to_answer.md").read_text()
+    prompt = (output / "ai_agent_prompt.md").read_text()
+    payload = json.loads((output / "grill_me.json").read_text())
+
+    assert payload["flow_id"] == "invoice-document-followup"
+    assert payload["mode"] == "beginner"
+    assert payload["deployment"] == "cloud"
+    assert payload["connectors"] == ["gmail", "google-sheets"]
+    assert "one question at a time" in start
+    assert "Do not ask for real API keys or secrets in chat" in prompt
+    assert "What business pain" in questions
+    assert "human approval" in questions
 
 
 def test_main_runs_github_discover_without_config(tmp_path, monkeypatch):

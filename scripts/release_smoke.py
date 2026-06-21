@@ -376,6 +376,37 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(cloud_plan_output / "human_approval_required.md")
     _require_file(cloud_plan_output / "cloud_plan.json")
 
+    grill_me_output = output / "grill-me-invoice-cloud"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "grill-me",
+            "--flow-id",
+            "invoice-document-followup",
+            "--mode",
+            "beginner",
+            "--client-type",
+            "local-business",
+            "--deployment",
+            "cloud",
+            "--connectors",
+            "gmail,google-sheets",
+            "--output",
+            str(grill_me_output),
+        ],
+        env=env,
+    )
+    _require_file(grill_me_output / "START_HERE_GRILL_ME.md")
+    _require_file(grill_me_output / "questions_to_answer.md")
+    _require_file(grill_me_output / "client_interview_grill.md")
+    _require_file(grill_me_output / "cloud_readiness_grill.md")
+    _require_file(grill_me_output / "risk_grill.md")
+    _require_file(grill_me_output / "proposal_grill.md")
+    _require_file(grill_me_output / "ai_agent_prompt.md")
+    _require_file(grill_me_output / "grill_me.json")
+
     connector_output = output / "connector-doctor"
     _run(
         [

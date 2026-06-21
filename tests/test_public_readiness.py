@@ -52,6 +52,12 @@ def test_readme_links_start_here_and_use_cases_docs():
     assert "docs/CONNECTOR_SETUP_GUIDE.ja.md" in readme
     assert "docs/CLOUD_TROUBLESHOOTING.md" in readme
     assert "docs/CLOUD_TROUBLESHOOTING.ja.md" in readme
+    assert "docs/AI_GRILL_ME_GUIDE.md" in readme
+    assert "docs/AI_GRILL_ME_GUIDE.ja.md" in readme
+    assert "docs/GRILL_ME_PROMPTS.md" in readme
+    assert "docs/GRILL_ME_PROMPTS.ja.md" in readme
+    assert "docs/GRILL_ME_CHECKLISTS.md" in readme
+    assert "docs/GRILL_ME_CHECKLISTS.ja.md" in readme
 
 
 def test_start_here_and_use_cases_docs_help_first_time_users():
@@ -175,6 +181,34 @@ def test_cloud_beginner_docs_make_cloud_setup_approachable():
             assert snippet in text, f"{path} missing {snippet}"
 
 
+def test_grill_me_docs_teach_ai_consultation_for_beginners():
+    expected_docs = {
+        "docs/AI_GRILL_ME_GUIDE.md": [
+            "AI Grill Me Guide",
+            "one question at a time",
+            "Do not paste real API keys or secrets",
+            "challenge vague answers",
+            "grill-me",
+        ],
+        "docs/AI_GRILL_ME_GUIDE.ja.md": [
+            "AI Grill Me ガイド",
+            "1問ずつ",
+            "本物のAPIキーやsecretを貼らない",
+            "曖昧な答え",
+            "grill-me",
+        ],
+        "docs/GRILL_ME_PROMPTS.md": ["Grill Me Prompts", "client interview", "cloud readiness", "proposal review"],
+        "docs/GRILL_ME_PROMPTS.ja.md": ["Grill Me プロンプト集", "顧客ヒアリング", "クラウド準備", "提案レビュー"],
+        "docs/GRILL_ME_CHECKLISTS.md": ["Grill Me Checklists", "workflow fit", "human approval", "stop condition"],
+        "docs/GRILL_ME_CHECKLISTS.ja.md": ["Grill Me チェックリスト", "業務適合", "人間の承認", "停止条件"],
+    }
+    for path, snippets in expected_docs.items():
+        text = Path(path).read_text()
+        assert len(text) > 1000, path
+        for snippet in snippets:
+            assert snippet in text, f"{path} missing {snippet}"
+
+
 def test_ci_runs_tests_from_project_root():
     workflow = Path(".github/workflows/ci.yml").read_text()
     assert "permissions:" in workflow
@@ -221,6 +255,7 @@ def test_public_release_audit_script_checks_publish_prerequisites():
     assert "README.md::ai-automation-kit guided-setup" in result.stdout
     assert "README.md::ai-automation-kit guided-review" in result.stdout
     assert "README.md::ai-automation-kit cloud-plan" in result.stdout
+    assert "README.md::ai-automation-kit grill-me" in result.stdout
     assert "README.md::ai-automation-kit flows list" in result.stdout
     assert "README.md::ai-automation-kit flows install" in result.stdout
     assert "README.md::ai-automation-kit github-discover --business-area operations" in result.stdout
@@ -343,6 +378,10 @@ def test_public_release_audit_script_checks_final_release_evidence():
     assert "scripts/release_smoke.py::workload_architecture.md" in result.stdout
     assert "scripts/release_smoke.py::deploy_runbook.md" in result.stdout
     assert "scripts/release_smoke.py::human_approval_required.md" in result.stdout
+    assert "scripts/release_smoke.py::grill-me" in result.stdout
+    assert "scripts/release_smoke.py::START_HERE_GRILL_ME.md" in result.stdout
+    assert "scripts/release_smoke.py::questions_to_answer.md" in result.stdout
+    assert "scripts/release_smoke.py::ai_agent_prompt.md" in result.stdout
     assert "scripts/release_smoke.py::FINAL_DELIVERY_GUIDE.md" in result.stdout
     assert "scripts/release_smoke.py::completion_checklist.md" in result.stdout
     assert "scripts/release_smoke.py::roi_calculator.csv" in result.stdout
@@ -391,6 +430,8 @@ def test_release_checklist_mentions_doctor_and_live_github_smoke():
     assert ".tmp/release-smoke/guided-review-ai-reception/next_commands.md" in checklist
     assert ".tmp/release-smoke/cloud-plan-aws-scheduled-job/workload_architecture.md" in checklist
     assert ".tmp/release-smoke/cloud-plan-aws-scheduled-job/human_approval_required.md" in checklist
+    assert ".tmp/release-smoke/grill-me-invoice-cloud/START_HERE_GRILL_ME.md" in checklist
+    assert ".tmp/release-smoke/grill-me-invoice-cloud/ai_agent_prompt.md" in checklist
     assert ".tmp/release-smoke/flow-invoice-document-followup/flow.yaml" in checklist
     assert ".tmp/release-smoke/flow-invoice-document-followup/workflow_map.mmd" in checklist
     assert ".tmp/release-smoke/flow-invoice-document-followup/config/connectors.json" in checklist

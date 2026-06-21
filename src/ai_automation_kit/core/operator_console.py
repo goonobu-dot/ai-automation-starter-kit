@@ -275,6 +275,39 @@ def generate_cloud_plan(flow_id: str, provider: str, output: Path, workload: str
     return payload
 
 
+def generate_grill_me_pack(
+    flow_id: str,
+    mode: str,
+    client_type: str,
+    deployment: str,
+    connectors: str,
+    output: Path,
+) -> dict:
+    output.mkdir(parents=True, exist_ok=True)
+    flow = get_flow(flow_id)
+    connector_list = _parse_connector_list(connectors)
+    payload = {
+        "status": "ready",
+        "flow_id": flow["id"],
+        "flow_name": flow["name"],
+        "mode": mode,
+        "client_type": client_type,
+        "deployment": deployment,
+        "connectors": connector_list,
+        "principle": "Ask one question at a time, block unsafe shortcuts, and keep real secrets out of chat.",
+        "question_count": len(_grill_me_questions(flow, deployment, connector_list)),
+    }
+    (output / "grill_me.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output / "START_HERE_GRILL_ME.md").write_text(_render_grill_me_start(flow, payload), encoding="utf-8")
+    (output / "questions_to_answer.md").write_text(_render_grill_me_questions(flow, payload), encoding="utf-8")
+    (output / "client_interview_grill.md").write_text(_render_client_interview_grill(flow, payload), encoding="utf-8")
+    (output / "cloud_readiness_grill.md").write_text(_render_cloud_readiness_grill(flow, payload), encoding="utf-8")
+    (output / "risk_grill.md").write_text(_render_risk_grill(flow, payload), encoding="utf-8")
+    (output / "proposal_grill.md").write_text(_render_proposal_grill(flow, payload), encoding="utf-8")
+    (output / "ai_agent_prompt.md").write_text(_render_grill_me_ai_agent_prompt(flow, payload), encoding="utf-8")
+    return payload
+
+
 def generate_flow_guide(industry: str | None, genre: str | None, niche: str, output: Path) -> dict:
     output.mkdir(parents=True, exist_ok=True)
     candidates = list_flows(industry=industry, genre=genre)
@@ -2966,6 +2999,229 @@ def _render_cloud_human_approval(payload: dict) -> str:
         ]
     )
     return "\n".join(lines)
+
+
+def _grill_me_questions(flow: dict, deployment: str, connectors: list[str]) -> list[tuple[str, str]]:
+    questions = [
+        ("business_pain", "What business pain are we trying to reduce, and how does the client feel it today?"),
+        ("current_process", "What is the current manual process from input to output?"),
+        ("sample_data", "What sample data can be used for a no-send dry-run?"),
+        ("output_review", "Who reviews the AI output before it reaches a customer or production system?"),
+        ("success_metric", "What number proves the PoC helped: time saved, missed work reduced, faster replies, or fewer errors?"),
+        ("human_approval", "Where must human approval remain before production use?"),
+        ("risk_boundary", "What must the automation never do automatically?"),
+        ("client_owner", "Who owns the client account, data source, connector, and final approval?"),
+    ]
+    if deployment != "local":
+        questions.extend(
+            [
+                ("cloud_reason", "Why is cloud deployment needed now instead of staying in local dry-run?"),
+                ("billing_owner", "Who approves cloud billing, budget alerts, logs, and rollback ownership?"),
+            ]
+        )
+    if connectors:
+        questions.append(("connector_scope", f"What access is needed for these connectors: {', '.join(connectors)}?"))
+    if "line" in connectors or "slack" in connectors or "gmail" in connectors:
+        questions.append(("send_boundary", "Are messages sent automatically, drafted only, or held in an approval queue?"))
+    return questions
+
+
+def _render_grill_me_start(flow: dict, payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Start Here: Grill Me Review",
+            "",
+            f"Flow: `{flow['id']}` - {flow['name']}",
+            f"Mode: `{payload['mode']}`",
+            f"Client type: `{payload['client_type']}`",
+            f"Deployment target: `{payload['deployment']}`",
+            f"Connectors: `{', '.join(payload['connectors'])}`",
+            "",
+            "Use this folder when the operator is new to AI and does not know what to ask next.",
+            "",
+            "The operating rule is simple: ask one question at a time, wait for the answer, challenge vague answers, and stop before secrets, production traffic, or unsafe promises enter the workflow.",
+            "",
+            "## Read In This Order",
+            "",
+            "1. `ai_agent_prompt.md`",
+            "2. `questions_to_answer.md`",
+            "3. `client_interview_grill.md`",
+            "4. `risk_grill.md`",
+            "5. `cloud_readiness_grill.md`",
+            "6. `proposal_grill.md`",
+            "",
+            "## Success",
+            "",
+            "Success is not a perfect answer on the first try. Success is a safer, clearer automation proposal after repeated questions.",
+            "",
+        ]
+    )
+
+
+def _render_grill_me_questions(flow: dict, payload: dict) -> str:
+    lines = [
+        f"# Questions To Answer: {flow['name']}",
+        "",
+        "Answer these with an AI agent. The AI should ask one question at a time and should not move forward when the answer is vague.",
+        "",
+    ]
+    for index, (question_id, question) in enumerate(_grill_me_questions(flow, payload["deployment"], payload["connectors"]), start=1):
+        lines.extend([f"## {index}. `{question_id}`", "", question, "", "Good answer should include:", "", "- A concrete owner.", "- A concrete data source or business event.", "- A clear human approval point.", ""])
+    return "\n".join(lines)
+
+
+def _render_client_interview_grill(flow: dict, payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Client Interview Grill: {flow['name']}",
+            "",
+            "Use this when talking to a client or preparing a discovery call.",
+            "",
+            "## Ask One Question At A Time",
+            "",
+            "1. What work is currently repetitive, delayed, or often missed?",
+            "2. Who does the work today?",
+            "3. What input starts the work?",
+            "4. What output should exist at the end?",
+            "5. Who checks the output?",
+            "6. What should never be sent, updated, or promised automatically?",
+            "7. What sample data can be used without exposing sensitive production information?",
+            "8. What would make this PoC worth paying for?",
+            "",
+            "## Stop Conditions",
+            "",
+            "- The client cannot name the workflow owner.",
+            "- The client wants production automation before dry-run evidence.",
+            "- The client asks to paste real secrets into chat.",
+            "- The client cannot define success or approval rules.",
+            "",
+        ]
+    )
+
+
+def _render_cloud_readiness_grill(flow: dict, payload: dict) -> str:
+    connectors = ", ".join(payload["connectors"])
+    return "\n".join(
+        [
+            f"# Cloud Readiness Grill: {flow['name']}",
+            "",
+            f"Deployment target: `{payload['deployment']}`",
+            f"Connectors: `{connectors}`",
+            "",
+            "Cloud is justified only after local dry-run value is visible.",
+            "",
+            "## Questions",
+            "",
+            "1. What exactly failed or became inconvenient in local dry-run?",
+            "2. Is the workload a webhook/API, scheduled job, worker queue, web app, static functions app, or container service?",
+            "3. Who owns the cloud account?",
+            "4. Who approves billing and budget alerts?",
+            "5. Where will secrets be stored?",
+            "6. Where will logs be reviewed?",
+            "7. What turns production traffic on?",
+            "8. What turns production traffic off?",
+            "",
+            "## Required Before Cloud",
+            "",
+            "- `guided-setup` answers are filled.",
+            "- `guided-review` has no blocking missing items.",
+            "- `cloud-plan` exists for the selected provider and workload.",
+            "- Human approval is recorded before secrets, webhook, scheduler, queue, domain, or public traffic are enabled.",
+            "",
+        ]
+    )
+
+
+def _render_risk_grill(flow: dict, payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Risk Grill: {flow['name']}",
+            "",
+            "This file is for challenging the idea before it becomes a risky automation.",
+            "",
+            "## Hard Questions",
+            "",
+            "1. Could the automation send a wrong message to a real customer?",
+            "2. Could it update a real system without approval?",
+            "3. Could it expose personal, legal, medical, financial, or confidential data?",
+            "4. Could the client misunderstand this as guaranteed income or complete automation?",
+            "5. Is there a rollback owner?",
+            "6. Are logs available without exposing secrets?",
+            "7. Is there a manual fallback if the automation stops?",
+            "",
+            "## Default Safe Position",
+            "",
+            "- Start with dry-run.",
+            "- Keep AI output as draft or work queue.",
+            "- Require human approval before sending, posting, updating, or deleting.",
+            "- Do not ask for real API keys or secrets in chat.",
+            "- Do not promise income, 24-hour unmanned operation, or full replacement of human judgment.",
+            "",
+        ]
+    )
+
+
+def _render_proposal_grill(flow: dict, payload: dict) -> str:
+    return "\n".join(
+        [
+            f"# Proposal Grill: {flow['name']}",
+            "",
+            "Use this before sending a proposal to a client.",
+            "",
+            "## Proposal Must Answer",
+            "",
+            "1. What workflow is included?",
+            "2. What workflow is excluded?",
+            "3. What sample data is needed?",
+            "4. What output will the client see?",
+            "5. Who approves AI output?",
+            "6. What is the first paid PoC fee, duration, and stop condition?",
+            "7. What happens after the PoC: continue, revise, or stop?",
+            "",
+            "## Proposal Must Not Say",
+            "",
+            "- Fully automatic without review.",
+            "- Guaranteed revenue.",
+            "- Production deployment without client approval.",
+            "- Real connector access before scope is approved.",
+            "",
+        ]
+    )
+
+
+def _render_grill_me_ai_agent_prompt(flow: dict, payload: dict) -> str:
+    return "\n".join(
+        [
+            "# AI Agent Prompt",
+            "",
+            "Copy this into Claude Code, Codex, Cursor, or another AI agent.",
+            "",
+            "```text",
+            "You are helping me use ai-automation-starter-kit. I am new to AI agents and business automation.",
+            "",
+            f"Target flow: {flow['id']} - {flow['name']}",
+            f"Mode: {payload['mode']}",
+            f"Client type: {payload['client_type']}",
+            f"Deployment target: {payload['deployment']}",
+            f"Connectors: {', '.join(payload['connectors'])}",
+            "",
+            "Please grill me one question at a time.",
+            "Do not give me a long list first.",
+            "Ask one question, wait for my answer, then challenge unclear answers.",
+            "",
+            "Use the project README and docs, especially:",
+            "- docs/CLOUD_DEPLOYMENT_GUIDE.md or docs/CLOUD_DEPLOYMENT_GUIDE.ja.md",
+            "- docs/CLOUD_BEGINNER_PLAYBOOK.md or docs/CLOUD_BEGINNER_PLAYBOOK.ja.md",
+            "- docs/CONNECTOR_SETUP_GUIDE.md or docs/CONNECTOR_SETUP_GUIDE.ja.md",
+            "",
+            "Do not ask for real API keys or secrets in chat.",
+            "Keep production sending, webhook activation, schedulers, queues, and real cloud traffic blocked until human approval is explicit.",
+            "If my idea is too vague, risky, or hard to sell as a small PoC, say so directly and ask the next clarifying question.",
+            "Help me reach a safe dry-run first, then a bounded paid PoC proposal.",
+            "```",
+            "",
+        ]
+    )
 
 
 _GUIDED_FIELD_LABELS = {
