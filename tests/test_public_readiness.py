@@ -52,6 +52,12 @@ def test_readme_links_start_here_and_use_cases_docs():
     assert "docs/CONNECTOR_SETUP_GUIDE.ja.md" in readme
     assert "docs/CLOUD_TROUBLESHOOTING.md" in readme
     assert "docs/CLOUD_TROUBLESHOOTING.ja.md" in readme
+    assert "docs/AI_BEGINNER_SUPPORT_MAP.md" in readme
+    assert "docs/AI_BEGINNER_SUPPORT_MAP.ja.md" in readme
+    assert "docs/AI_AGENT_SETUP_ASSISTANT_PLAYBOOK.md" in readme
+    assert "docs/AI_AGENT_SETUP_ASSISTANT_PLAYBOOK.ja.md" in readme
+    assert "docs/CLIENT_DELIVERY_SUPPORT_RUNBOOK.md" in readme
+    assert "docs/CLIENT_DELIVERY_SUPPORT_RUNBOOK.ja.md" in readme
     assert "docs/AI_AGENT_GRILL_ME_SKILL.md" in readme
     assert "docs/AI_AGENT_GRILL_ME_SKILL.ja.md" in readme
     assert "docs/AI_GRILL_ME_GUIDE.md" in readme
@@ -225,6 +231,72 @@ def test_grill_me_docs_teach_ai_consultation_for_beginners():
     for path, snippets in expected_docs.items():
         text = Path(path).read_text()
         assert len(text) > 1000, path
+        for snippet in snippets:
+            assert snippet in text, f"{path} missing {snippet}"
+
+
+def test_ai_beginner_support_docs_cover_current_practical_follow_up():
+    expected_docs = {
+        "docs/AI_BEGINNER_SUPPORT_MAP.md": [
+            "AI Beginner Support Map",
+            "what AI can do now",
+            "what a human must still do",
+            "API keys",
+            "reception folder",
+            "cloud account",
+            "rollback",
+            "paid dry-run PoC",
+        ],
+        "docs/AI_BEGINNER_SUPPORT_MAP.ja.md": [
+            "AI初心者サポートマップ",
+            "今の技術でAIが支援できること",
+            "人間が必ず行うこと",
+            "APIキー",
+            "受付フォルダ",
+            "クラウドアカウント",
+            "rollback",
+            "有料dry-run PoC",
+        ],
+        "docs/AI_AGENT_SETUP_ASSISTANT_PLAYBOOK.md": [
+            "AI Agent Setup Assistant Playbook",
+            "intake mode",
+            "connector mode",
+            "cloud mode",
+            "troubleshooting mode",
+            "never collect secrets in chat",
+            "safe substitute",
+        ],
+        "docs/AI_AGENT_SETUP_ASSISTANT_PLAYBOOK.ja.md": [
+            "AIエージェント セットアップ補助プレイブック",
+            "ヒアリングモード",
+            "連携設定モード",
+            "クラウドモード",
+            "トラブル対応モード",
+            "チャットでsecretを集めない",
+            "安全な代替情報",
+        ],
+        "docs/CLIENT_DELIVERY_SUPPORT_RUNBOOK.md": [
+            "Client Delivery Support Runbook",
+            "before the sales call",
+            "during the discovery call",
+            "after the first demo",
+            "go-live gate",
+            "monthly operation",
+            "do not promise revenue",
+        ],
+        "docs/CLIENT_DELIVERY_SUPPORT_RUNBOOK.ja.md": [
+            "顧客導入サポート運用手順書",
+            "営業前",
+            "ヒアリング中",
+            "初回デモ後",
+            "go-liveゲート",
+            "月次運用",
+            "収益保証しない",
+        ],
+    }
+    for path, snippets in expected_docs.items():
+        text = Path(path).read_text()
+        assert len(text) > 1500, path
         for snippet in snippets:
             assert snippet in text, f"{path} missing {snippet}"
 

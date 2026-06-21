@@ -17,6 +17,7 @@
 - Added beginner-focused cloud manuals so AI beginners can understand what to prepare, what AI can do, what humans must approve, how connectors such as Gmail, Google Sheets, Slack, and LINE fit, and how to troubleshoot deployment, secrets, webhooks, schedulers, queues, and rollback.
 - Added `grill-me` and bilingual Grill Me guides/prompts/checklists so AI beginners can ask an AI agent to interview them one question at a time, challenge vague answers, avoid secrets in chat, and move toward a safe dry-run and bounded paid PoC.
 - Repositioned Grill Me as a reusable AI agent skill that works in ChatGPT, Claude, Gemini, Cursor, Codex, Claude Code, or other assistants without requiring a CLI-based AI agent.
+- Added beginner support map, setup assistant playbook, and client delivery runbook so AI agents can guide users through intake, connectors, cloud setup, troubleshooting, client delivery, go-live gates, rollback, and monthly operation without collecting secrets in chat.
 - Added English manuals matching the Japanese business proposal docs: user manual, selling guide, flow selection guide, client demo script, real-world setup guide, and FAQ.
 - Added AI reception employee flows and setup artifacts so beginners can see required API keys, reception folders, sample data, operator UI, approval ownership, and paid dry-run PoC boundaries before client delivery.
 - Added AI employee roadmap, AI action procedures, internal FAQ/admin flows, and sales research flows based on the report's recommended expansion order.
