@@ -44,6 +44,14 @@ def test_readme_links_start_here_and_use_cases_docs():
     assert "docs/AI_RECEPTION_EMPLOYEE_PACK.ja.md" in readme
     assert "docs/AI_EMPLOYEE_ROADMAP.md" in readme
     assert "docs/AI_EMPLOYEE_ROADMAP.ja.md" in readme
+    assert "docs/CLOUD_DEPLOYMENT_GUIDE.md" in readme
+    assert "docs/CLOUD_DEPLOYMENT_GUIDE.ja.md" in readme
+    assert "docs/CLOUD_BEGINNER_PLAYBOOK.md" in readme
+    assert "docs/CLOUD_BEGINNER_PLAYBOOK.ja.md" in readme
+    assert "docs/CONNECTOR_SETUP_GUIDE.md" in readme
+    assert "docs/CONNECTOR_SETUP_GUIDE.ja.md" in readme
+    assert "docs/CLOUD_TROUBLESHOOTING.md" in readme
+    assert "docs/CLOUD_TROUBLESHOOTING.ja.md" in readme
 
 
 def test_start_here_and_use_cases_docs_help_first_time_users():
@@ -121,6 +129,48 @@ def test_ai_employee_roadmap_docs_explain_priority_and_exclusions():
     for path, snippets in expected_docs.items():
         text = Path(path).read_text()
         assert len(text) > 800, path
+        for snippet in snippets:
+            assert snippet in text, f"{path} missing {snippet}"
+
+
+def test_cloud_beginner_docs_make_cloud_setup_approachable():
+    expected_docs = {
+        "docs/CLOUD_DEPLOYMENT_GUIDE.md": [
+            "Cloud Deployment Guide",
+            "You do not need to understand all cloud services first",
+            "AI agent handoff prompt",
+            "human approval",
+            "cloud-plan",
+        ],
+        "docs/CLOUD_DEPLOYMENT_GUIDE.ja.md": [
+            "クラウド導入ガイド",
+            "クラウドを全部理解してから始める必要はありません",
+            "AIエージェントへの依頼文",
+            "人間の承認",
+            "cloud-plan",
+        ],
+        "docs/CLOUD_BEGINNER_PLAYBOOK.md": [
+            "Beginner Cloud Challenge Playbook",
+            "first paid PoC",
+            "what to prepare",
+            "what the AI can do",
+            "what the human must approve",
+        ],
+        "docs/CLOUD_BEGINNER_PLAYBOOK.ja.md": [
+            "初心者向けクラウド挑戦プレイブック",
+            "最初の有料PoC",
+            "用意するもの",
+            "AIができること",
+            "人間が承認すること",
+        ],
+        "docs/CONNECTOR_SETUP_GUIDE.md": ["Connector Setup Guide", "Gmail", "Google Sheets", "Slack", "LINE"],
+        "docs/CONNECTOR_SETUP_GUIDE.ja.md": ["連携設定ガイド", "Gmail", "Google Sheets", "Slack", "LINE"],
+        "docs/CLOUD_TROUBLESHOOTING.md": ["Cloud Troubleshooting", "deployment failed", "secret is missing", "rollback"],
+        "docs/CLOUD_TROUBLESHOOTING.ja.md": ["クラウド トラブルシューティング", "デプロイに失敗", "secret が足りない", "rollback"],
+    }
+    for path, snippets in expected_docs.items():
+        text = Path(path).read_text()
+        assert len(text) > 1000, path
         for snippet in snippets:
             assert snippet in text, f"{path} missing {snippet}"
 

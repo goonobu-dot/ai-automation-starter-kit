@@ -105,6 +105,14 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - `docs/SELLING_AUTOMATION_GUIDE.md`
 - `docs/FLOW_SELECTION_GUIDE.md`
 - `docs/CLIENT_DEMO_SCRIPT.md`
+- `docs/CLOUD_DEPLOYMENT_GUIDE.md`
+- `docs/CLOUD_DEPLOYMENT_GUIDE.ja.md`
+- `docs/CLOUD_BEGINNER_PLAYBOOK.md`
+- `docs/CLOUD_BEGINNER_PLAYBOOK.ja.md`
+- `docs/CONNECTOR_SETUP_GUIDE.md`
+- `docs/CONNECTOR_SETUP_GUIDE.ja.md`
+- `docs/CLOUD_TROUBLESHOOTING.md`
+- `docs/CLOUD_TROUBLESHOOTING.ja.md`
 - `docs/REAL_WORLD_SETUP_GUIDE.md`
 - `docs/AI_RECEPTION_EMPLOYEE_PACK.md`
 - `docs/AI_RECEPTION_EMPLOYEE_PACK.ja.md`
@@ -201,6 +209,7 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - [ ] Confirm `guided-setup` explains beginner, operator, and client modes; asks for reception source, knowledge source, output destination, approval rules, deployment target, and success metrics; and does not request raw secrets in chat.
 - [ ] Confirm `guided-review` separates local dry-run readiness from cloud readiness and gives a client-safe missing-items email, provider decision, AI handoff prompt, and next CLI commands.
 - [ ] Confirm `cloud-plan` covers Google Cloud, AWS, Azure, Render, Railway, Vercel, DigitalOcean, and Fly.io; supports webhook/API, scheduled job, worker queue, web app, static functions, and container service workloads; separates AI-generated commands from human account, billing, secret, IAM, domain, webhook/scheduler/queue, and rollback approval.
+- [ ] Confirm beginner cloud docs explain what to prepare, what AI can do, what humans must approve, connector setup, troubleshooting, and rollback without implying full automation or income guarantees.
 - [ ] Confirm English manuals explain the same business proposal path as the Japanese manuals.
 - [ ] Confirm AI reception docs explain required API keys, reception folder, sample data, operator UI, approval owner, and paid dry-run PoC boundaries without promising income.
 - [ ] Confirm AI employee roadmap prioritizes reception first, internal FAQ/admin second, sales research third, and delays outbound sales, autonomous high-risk decisions, and broad multi-department bundles.
