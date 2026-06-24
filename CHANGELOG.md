@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Added `flow-export` starters for `n8n`, `Activepieces`, and `Windmill` so a local dry-run workflow can move into a real execution tool without rebuilding the flow from scratch.
+- Added `deployment-pack` starters for `Coolify`, `Cloudflare Agents`, and `Supabase` so operators can generate practical deployment files after the cloud planning phase.
+- Added `runtime-safety`, `secrets-bootstrap`, `document-intake`, `observability-pack`, and `state-backend` so teams can generate approval policy, retry and rollback rules, secret ownership, document conversion paths, Langfuse-style tracing, and lightweight approval history storage.
+- Added English and Japanese guides for execution bridges and operations expansion, plus manual updates so beginners can understand how to move from local dry-run to a safer production path.
 - Added `complete-workspace` to generate a ready-to-review local delivery folder in one command.
 - Added final delivery guide, completion checklist, connector report, client report, demo site, and demo zip packaging to the operator workflow.
 - Added revenue readiness scoring, sales closing script, paid PoC scope, and value measurement sheet to the complete workspace.

@@ -8,6 +8,13 @@ from pathlib import Path
 
 from ai_automation_kit.core.beginner_sales import generate_beginner_sales_pack
 from ai_automation_kit.core.client_ready import generate_client_ready_pack
+from ai_automation_kit.core.execution_expansion import generate_deployment_pack
+from ai_automation_kit.core.execution_expansion import generate_document_intake_pack
+from ai_automation_kit.core.execution_expansion import generate_flow_export
+from ai_automation_kit.core.execution_expansion import generate_observability_pack
+from ai_automation_kit.core.execution_expansion import generate_runtime_safety_pack
+from ai_automation_kit.core.execution_expansion import generate_secrets_bootstrap
+from ai_automation_kit.core.execution_expansion import generate_state_backend_pack
 from ai_automation_kit.core.flow_runtime import approve_all_pending
 from ai_automation_kit.core.flow_runtime import run_flow_project
 from ai_automation_kit.core.flows import get_flow
@@ -509,6 +516,21 @@ def generate_complete_workspace(
     demo = generate_demo_site(source=quickstart_dir, output=output / "demo_site", title="Ready-To-Share Automation Demo")
     package = package_client_demo(source=quickstart_dir, output=output / "client_demo_package")
     flow = get_flow(quickstart["flow_id"])
+    generate_flow_export(flow["id"], "n8n", output / "flow_exports" / "n8n")
+    generate_flow_export(flow["id"], "activepieces", output / "flow_exports" / "activepieces")
+    generate_flow_export(flow["id"], "windmill", output / "flow_exports" / "windmill")
+    generate_deployment_pack(flow["id"], "coolify", "gmail,google-sheets", output / "deployment_packs" / "coolify")
+    generate_deployment_pack(
+        flow["id"], "cloudflare-agents", "gmail,google-sheets", output / "deployment_packs" / "cloudflare-agents"
+    )
+    generate_deployment_pack(flow["id"], "supabase", "gmail,google-sheets", output / "deployment_packs" / "supabase")
+    runtime_safety = generate_runtime_safety_pack(flow["id"], output / "runtime_safety")
+    secrets_bootstrap = generate_secrets_bootstrap(
+        flow["id"], "infisical", "gmail,google-sheets", output / "secrets_bootstrap"
+    )
+    document_intake = generate_document_intake_pack(flow["id"], "advanced", output / "document_intake")
+    observability_pack = generate_observability_pack(flow["id"], output / "observability_pack")
+    state_backend = generate_state_backend_pack(flow["id"], "supabase", output / "state_backend")
     business_launch = generate_business_launch_pack(
         industry=flow["industry"],
         client_type=client_type,
@@ -538,6 +560,11 @@ def generate_complete_workspace(
         "demo_asset_count": demo["asset_count"],
         "package_file_count": package["file_count"],
         "business_launch_status": business_launch["status"],
+        "runtime_safety_status": runtime_safety["status"],
+        "secrets_bootstrap_status": secrets_bootstrap["status"],
+        "document_intake_status": document_intake["status"],
+        "observability_status": observability_pack["status"],
+        "state_backend_status": state_backend["status"],
     }
     payload["revenue_score"] = _revenue_readiness_score(payload)
     (output / "delivery_manifest.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

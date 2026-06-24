@@ -31,9 +31,11 @@ You do not need to understand all cloud services first. You need to know what bu
 5. Use `guided-setup` to collect required inputs.
 6. Use `guided-review` to find missing inputs.
 7. Use `cloud-plan` to create deployment documents.
-8. Let a human approve account, billing, secrets, IAM, domain, webhook, scheduler, queue, and rollback steps.
-9. Test with one safe event.
-10. Decide continue, revise, or stop.
+8. Use `deployment-pack` if you want a starter for `Coolify`, `Cloudflare Agents`, or `Supabase`.
+9. Use `runtime-safety`, `secrets-bootstrap`, `observability-pack`, and `state-backend` before production.
+10. Let a human approve account, billing, secrets, IAM, domain, webhook, scheduler, queue, and rollback steps.
+11. Test with one safe event.
+12. Decide continue, revise, or stop.
 
 ## Example Commands
 
@@ -52,6 +54,21 @@ ai-automation-kit cloud-plan \
   --workload scheduled-job \
   --connectors gmail,google-sheets \
   --output .tmp/cloud-plan
+```
+
+```bash
+ai-automation-kit deployment-pack \
+  --flow-id invoice-document-followup \
+  --provider coolify \
+  --connectors gmail,google-sheets \
+  --output .tmp/deployment-coolify
+```
+
+```bash
+ai-automation-kit runtime-safety --flow-id invoice-document-followup --output .tmp/runtime-safety
+ai-automation-kit secrets-bootstrap --flow-id invoice-document-followup --provider infisical --connectors gmail,google-sheets --output .tmp/secrets-bootstrap
+ai-automation-kit observability-pack --flow-id invoice-document-followup --output .tmp/observability-pack
+ai-automation-kit state-backend --flow-id invoice-document-followup --backend supabase --output .tmp/state-backend
 ```
 
 ## Workload Choices
@@ -101,4 +118,3 @@ Do not promise full automation at the start. Say this instead:
 “First we create a dry-run PoC that does not send real production messages. It reads sample input, creates draft output or a work queue, and keeps human approval in the process. If the value is clear, we prepare a cloud plan with cost, secrets, permissions, logging, and rollback before enabling real traffic.”
 
 That is a realistic and safer way for beginners to start.
-

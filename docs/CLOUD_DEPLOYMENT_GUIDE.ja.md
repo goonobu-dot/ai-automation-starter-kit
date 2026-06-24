@@ -38,9 +38,11 @@ AIができること:
 5. 顧客が価値を理解したら、`guided-setup` で必要情報を集める。
 6. `guided-review` で不足項目を確認する。
 7. `cloud-plan` でクラウド導入資料を作る。
-8. 人間がアカウント、課金、secret、権限、domain、webhook、scheduler、queue を確認する。
-9. 小さなテスト traffic だけで動作確認する。
-10. 価値、リスク、費用、rollback を確認してから本番化を判断する。
+8. `deployment-pack` で Coolify、Cloudflare Agents、Supabase 向けの starter を作る。
+9. `runtime-safety`、`secrets-bootstrap`、`observability-pack`、`state-backend` を追加する。
+10. 人間がアカウント、課金、secret、権限、domain、webhook、scheduler、queue を確認する。
+11. 小さなテスト traffic だけで動作確認する。
+12. 価値、リスク、費用、rollback を確認してから本番化を判断する。
 
 ## コマンド例
 
@@ -63,6 +65,21 @@ ai-automation-kit cloud-plan \
   --workload scheduled-job \
   --connectors gmail,google-sheets \
   --output .tmp/cloud-plan
+```
+
+```bash
+ai-automation-kit deployment-pack \
+  --flow-id invoice-document-followup \
+  --provider coolify \
+  --connectors gmail,google-sheets \
+  --output .tmp/deployment-coolify
+```
+
+```bash
+ai-automation-kit runtime-safety --flow-id invoice-document-followup --output .tmp/runtime-safety
+ai-automation-kit secrets-bootstrap --flow-id invoice-document-followup --provider infisical --connectors gmail,google-sheets --output .tmp/secrets-bootstrap
+ai-automation-kit observability-pack --flow-id invoice-document-followup --output .tmp/observability-pack
+ai-automation-kit state-backend --flow-id invoice-document-followup --backend supabase --output .tmp/state-backend
 ```
 
 Webhook/API 型の例です。
@@ -158,4 +175,3 @@ Fly.io、DigitalOcean、Render の container 系が候補になります。
 - 本番化するか、修正するか、止めるかを判断できる。
 
 ここまでできれば、AI初心者でも企業に対して現実的な自動化提案ができます。
-

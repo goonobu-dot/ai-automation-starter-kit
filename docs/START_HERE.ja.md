@@ -1,44 +1,38 @@
 # まずここから
 
-AI Automation Starter Kit を初めて見る人は、このページから読むと流れを理解しやすくなります。
+このページは、初めて来た人が最初の3分で AI Automation Starter Kit の役割をつかむための入口です。
+
+## これは何か
+
+AI Automation Starter Kit は、GitHub上の公開OSSを調べて、業務自動化に使えそうな候補を見つけ、検討資料に変えるローカルPython CLIです。
+
+単なるリポジトリ検索ではありません。会社やチームで試す前に、本当に役立つか、安全に試せるか、ライセンス確認が必要か、効果をどう測るかまで整理します。
 
 ## 最初の3分
 
-次の順番で読むのがおすすめです。
+1. まず [やさしい解説](BEGINNER_GUIDE.ja.md) を読みます。
+2. 次に [ユースケース](USE_CASES.ja.md) から、近い業務領域を選びます。
+3. ローカル導入後に `ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding --create-offer-pack` を実行します。
+4. `.tmp/onboarding/onboarding_summary.md` を開き、最初の `next_read` に従って読み進めます。
+5. 副業・受託の小さな提案に変える場合は `.tmp/onboarding/offer_pack/README.md` を読みます。
+6. ひとつの業務フローを見せながら企業へ説明したい場合は `ai-automation-kit beginner-sales --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/beginner-sales` を実行します。
+7. 実行ブリッジ、デプロイ starter、安全運用資料までまとめて欲しい場合は `ai-automation-kit complete-workspace --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/complete-accounting` を実行します。
 
-1. `README.md` で概要を見る。
-2. `docs/BEGINNER_GUIDE.ja.md` でやさしい説明を読む。
-3. このファイルで最初の実行手順を見る。
-4. `docs/USE_CASES.ja.md` で業務別の使い方を見る。
+## 読む順番
 
-## 最初に実行すること
+| あなたの状況 | 次に読むもの | 最初に試すこと |
+| --- | --- | --- |
+| 開発者 | [Quickstart](../README.md#quickstart) | guided onboarding |
+| 自動化支援をしたい | [ユースケース](USE_CASES.ja.md) | `onboard --create-offer-pack` |
+| AIエージェントを使い始めて副業化したい | [やさしい解説](BEGINNER_GUIDE.ja.md) | `beginner-sales` |
+| 会社やチームで検討 | [やさしい解説](BEGINNER_GUIDE.ja.md) | executive decision brief |
+| 英語で読みたい | [Start Here](START_HERE.md) | [Beginner guide](BEGINNER_GUIDE.md) |
 
-```bash
-git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git
-cd ai-automation-starter-kit
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m ensurepip --upgrade
-python3 -m pip install --upgrade pip setuptools
-python3 -m pip install -e .
-ai-automation-kit doctor --output .tmp/doctor
-ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding --create-offer-pack
-ai-automation-kit beginner-sales --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/beginner-sales
-```
+## 安全面
 
-## コマンド実行後に読むもの
+生成される資料は、まず dry-run で検討する前提です。offer-pack は提案や納品範囲を整理するための資料であり、収益を保証するものではありません。第三者OSSを本番利用する前に、ライセンス、セキュリティ、データ取り扱い、承認者を確認してください。
 
-1. `.tmp/onboarding/onboarding_summary.md`
-2. onboarding summary に表示される最初の `next_read` ファイル
-3. `.tmp/onboarding/executive_decision_brief.md`
-4. `.tmp/onboarding/pilot_scorecard.csv`
-5. 副業・受託の小さな提案に変える場合は `.tmp/onboarding/offer_pack/README.md`
-6. ひとつの業務フローを企業へ見せたい場合は `.tmp/beginner-sales/selected_flow_demo.html`
+## 次の段階
 
-## 結果の見方
-
-- `adapter_starter/README.md`: dry-run 用の adapter starter があります。
-- `offer_pack/README.md`: 顧客向けの提案・納品資料があります。
-- `beginner-sales/README.md`: フローの見えるデモ、営業トーク、ROI計算、提案書、3日PoC計画があります。
-- `manual_review_pack.md`: ライセンス、メンテナンス、安全性の確認が先に必要です。
-- `query_recovery.md`: 自動化計画の前に検索条件を広げる必要があります。
+- [実行ブリッジ](EXECUTION_BRIDGES.ja.md)
+- [運用拡張ガイド](OPERATIONS_EXPANSION.ja.md)

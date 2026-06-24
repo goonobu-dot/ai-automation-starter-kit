@@ -10,6 +10,13 @@ from pathlib import Path
 from ai_automation_kit import __version__
 from ai_automation_kit.core.beginner_sales import generate_beginner_sales_pack
 from ai_automation_kit.core.client_ready import generate_client_ready_pack
+from ai_automation_kit.core.execution_expansion import generate_deployment_pack
+from ai_automation_kit.core.execution_expansion import generate_document_intake_pack
+from ai_automation_kit.core.execution_expansion import generate_flow_export
+from ai_automation_kit.core.execution_expansion import generate_observability_pack
+from ai_automation_kit.core.execution_expansion import generate_runtime_safety_pack
+from ai_automation_kit.core.execution_expansion import generate_secrets_bootstrap
+from ai_automation_kit.core.execution_expansion import generate_state_backend_pack
 from ai_automation_kit.core.flows import get_flow
 from ai_automation_kit.core.flows import install_flow
 from ai_automation_kit.core.flows import list_flows
@@ -192,6 +199,41 @@ def build_parser() -> argparse.ArgumentParser:
     )
     grill_me.add_argument("--connectors", default="local-folder")
     grill_me.add_argument("--output", required=True)
+
+    flow_export = subparsers.add_parser("flow-export")
+    flow_export.add_argument("--flow-id", required=True)
+    flow_export.add_argument("--target", required=True, choices=["n8n", "activepieces", "windmill"])
+    flow_export.add_argument("--output", required=True)
+
+    deployment_pack = subparsers.add_parser("deployment-pack")
+    deployment_pack.add_argument("--flow-id", required=True)
+    deployment_pack.add_argument("--provider", required=True, choices=["coolify", "cloudflare-agents", "supabase"])
+    deployment_pack.add_argument("--connectors", default="local-folder")
+    deployment_pack.add_argument("--output", required=True)
+
+    runtime_safety = subparsers.add_parser("runtime-safety")
+    runtime_safety.add_argument("--flow-id", required=True)
+    runtime_safety.add_argument("--output", required=True)
+
+    secrets_bootstrap = subparsers.add_parser("secrets-bootstrap")
+    secrets_bootstrap.add_argument("--flow-id", required=True)
+    secrets_bootstrap.add_argument("--provider", required=True, choices=["infisical"])
+    secrets_bootstrap.add_argument("--connectors", default="local-folder")
+    secrets_bootstrap.add_argument("--output", required=True)
+
+    document_intake = subparsers.add_parser("document-intake")
+    document_intake.add_argument("--flow-id", required=True)
+    document_intake.add_argument("--mode", default="fast", choices=["fast", "advanced"])
+    document_intake.add_argument("--output", required=True)
+
+    observability_pack = subparsers.add_parser("observability-pack")
+    observability_pack.add_argument("--flow-id", required=True)
+    observability_pack.add_argument("--output", required=True)
+
+    state_backend = subparsers.add_parser("state-backend")
+    state_backend.add_argument("--flow-id", required=True)
+    state_backend.add_argument("--backend", required=True, choices=["supabase", "cloudflare-agents"])
+    state_backend.add_argument("--output", required=True)
 
     flows = subparsers.add_parser("flows")
     flow_subparsers = flows.add_subparsers(dest="flow_command", required=True)
@@ -481,6 +523,51 @@ def main(argv: list[str] | None = None) -> int:
         print(f"ai_agent_prompt={args.output}/ai_agent_prompt.md")
         print(f"flow_id={payload['flow_id']}")
         print(f"status={payload['status']}")
+        return 0
+    if args.command == "flow-export":
+        payload = generate_flow_export(flow_id=args.flow_id, target=args.target, output=Path(args.output))
+        print(f"flow_export={args.output}/START_HERE_FLOW_EXPORT.md")
+        print(f"target={payload['target']}")
+        return 0
+    if args.command == "deployment-pack":
+        payload = generate_deployment_pack(
+            flow_id=args.flow_id,
+            provider=args.provider,
+            connectors=args.connectors,
+            output=Path(args.output),
+        )
+        print(f"deployment_pack={args.output}/START_HERE_DEPLOYMENT_PACK.md")
+        print(f"provider={payload['provider']}")
+        return 0
+    if args.command == "runtime-safety":
+        payload = generate_runtime_safety_pack(flow_id=args.flow_id, output=Path(args.output))
+        print(f"runtime_safety={args.output}/approval_policy.md")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "secrets-bootstrap":
+        payload = generate_secrets_bootstrap(
+            flow_id=args.flow_id,
+            provider=args.provider,
+            connectors=args.connectors,
+            output=Path(args.output),
+        )
+        print(f"secrets_bootstrap={args.output}/secrets_manifest.json")
+        print(f"provider={payload['provider']}")
+        return 0
+    if args.command == "document-intake":
+        payload = generate_document_intake_pack(flow_id=args.flow_id, mode=args.mode, output=Path(args.output))
+        print(f"document_intake={args.output}/START_HERE_DOCUMENT_INTAKE.md")
+        print(f"mode={payload['mode']}")
+        return 0
+    if args.command == "observability-pack":
+        payload = generate_observability_pack(flow_id=args.flow_id, output=Path(args.output))
+        print(f"observability_pack={args.output}/observability_pack.json")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "state-backend":
+        payload = generate_state_backend_pack(flow_id=args.flow_id, backend=args.backend, output=Path(args.output))
+        print(f"state_backend={args.output}/START_HERE_STATE_BACKEND.md")
+        print(f"backend={payload['backend']}")
         return 0
     if args.command == "flows":
         if args.flow_command == "list":

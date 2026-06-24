@@ -1,44 +1,38 @@
 # Start Here
 
-Use this page when you are visiting AI Automation Starter Kit for the first time.
+This page helps a first-time visitor understand AI Automation Starter Kit in the First 3 minutes.
+
+## What This Project Is
+
+AI Automation Starter Kit is a local Python CLI that finds promising public OSS projects from GitHub and turns them into practical business automation planning artifacts.
+
+It is not just a repository search tool. It helps a team decide whether an OSS project is useful, safe to try, legally reviewable, measurable, and ready for a controlled pilot.
 
 ## First 3 minutes
 
-Read the project in this order:
+1. Read the [beginner guide](BEGINNER_GUIDE.md) if the project is new to you.
+2. Skim [Use Cases](USE_CASES.md) and choose a business area.
+3. Run `ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding --create-offer-pack` after local setup.
+4. Open `.tmp/onboarding/onboarding_summary.md` and follow the first `next_read` file.
+5. Open `.tmp/onboarding/offer_pack/README.md` if you want to turn the result into a scoped consulting or freelance pilot.
+6. Run `ai-automation-kit beginner-sales --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/beginner-sales` if you want a visual, beginner-friendly sales pack around one workflow.
+7. Run `ai-automation-kit complete-workspace --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/complete-accounting` if you want the full workspace plus bridge, deployment, safety, secrets, document, observability, and state starters.
 
-1. `README.md` for the short project overview.
-2. `docs/BEGINNER_GUIDE.md` for a plain explanation.
-3. This file when you want the first command path.
-4. `docs/USE_CASES.md` for examples by business area.
+## Choose Your Path
 
-## First command path
+| You are | Read next | Try first |
+| --- | --- | --- |
+| Developer | [Quickstart](../README.md#quickstart) | guided onboarding |
+| Automation consultant | [Use Cases](USE_CASES.md) | `onboard --create-offer-pack` |
+| New AI-agent side-business builder | [Beginner guide](BEGINNER_GUIDE.md) | `beginner-sales` |
+| Business team | [Beginner guide](BEGINNER_GUIDE.md) | executive decision brief |
+| Japanese reader | [まずここから](START_HERE.ja.md) | [日本語のやさしい解説](BEGINNER_GUIDE.ja.md) |
 
-```bash
-git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git
-cd ai-automation-starter-kit
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m ensurepip --upgrade
-python3 -m pip install --upgrade pip setuptools
-python3 -m pip install -e .
-ai-automation-kit doctor --output .tmp/doctor
-ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding --create-offer-pack
-ai-automation-kit beginner-sales --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/beginner-sales
-```
+## Safety Note
 
-## Read after the command
+Generated pilot assets are dry-run oriented. Offer-pack files help scope and explain paid work, but they do not guarantee income. Review license, security, data handling, and approvals before using any third-party OSS in production.
 
-1. `.tmp/onboarding/onboarding_summary.md`
-2. The first `next_read` file listed in the onboarding summary.
-3. `.tmp/onboarding/executive_decision_brief.md`
-4. `.tmp/onboarding/pilot_scorecard.csv`
-5. `.tmp/onboarding/offer_pack/README.md` if you want to package the result as a scoped consulting or freelance pilot.
-6. `.tmp/beginner-sales/selected_flow_demo.html` if you want to show one concrete workflow to a client.
+## New Bridge Layer
 
-## Result meanings
-
-- `adapter_starter/README.md`: a dry-run adapter starter is available.
-- `offer_pack/README.md`: client-facing proposal and delivery files are available.
-- `beginner-sales/README.md`: visual flow demo, pitch script, ROI calculator, proposal one-pager, and 3-day PoC plan are available.
-- `manual_review_pack.md`: review license, maintenance, and safety first.
-- `query_recovery.md`: broaden the search before planning a pilot.
+- Read [Execution bridges](EXECUTION_BRIDGES.md) for `n8n`, `Activepieces`, and `Windmill`.
+- Read [Operations expansion](OPERATIONS_EXPANSION.md) for deployment, secrets, observability, and state packs.

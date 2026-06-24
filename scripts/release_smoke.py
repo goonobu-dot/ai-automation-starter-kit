@@ -573,6 +573,143 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(complete_output / "connector_doctor" / "connector_doctor.md")
     _require_file(complete_output / "client_report" / "client_report.html")
     _require_file(complete_output / "client_demo_package" / "client_demo_package.zip")
+    _require_file(complete_output / "flow_exports" / "n8n" / "n8n_workflow.json")
+    _require_file(complete_output / "flow_exports" / "activepieces" / "activepieces_flow.json")
+    _require_file(complete_output / "flow_exports" / "windmill" / "windmill_flow.yaml")
+    _require_file(complete_output / "deployment_packs" / "coolify" / "deployment_pack.json")
+    _require_file(complete_output / "deployment_packs" / "cloudflare-agents" / "deployment_pack.json")
+    _require_file(complete_output / "deployment_packs" / "supabase" / "deployment_pack.json")
+    _require_file(complete_output / "runtime_safety" / "runtime_safety.json")
+    _require_file(complete_output / "secrets_bootstrap" / "secrets_manifest.json")
+    _require_file(complete_output / "document_intake" / "document_pipeline.md")
+    _require_file(complete_output / "observability_pack" / "observability_pack.json")
+    _require_file(complete_output / "state_backend" / "state_backend.json")
+
+    flow_export_output = output / "flow-export-n8n"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "flow-export",
+            "--flow-id",
+            "invoice-document-followup",
+            "--target",
+            "n8n",
+            "--output",
+            str(flow_export_output),
+        ],
+        env=env,
+    )
+    _require_file(flow_export_output / "n8n_workflow.json")
+
+    deployment_pack_output = output / "deployment-coolify"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "deployment-pack",
+            "--flow-id",
+            "invoice-document-followup",
+            "--provider",
+            "coolify",
+            "--connectors",
+            "gmail,google-sheets",
+            "--output",
+            str(deployment_pack_output),
+        ],
+        env=env,
+    )
+    _require_file(deployment_pack_output / "docker-compose.yml")
+
+    runtime_safety_output = output / "runtime-safety"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "runtime-safety",
+            "--flow-id",
+            "invoice-document-followup",
+            "--output",
+            str(runtime_safety_output),
+        ],
+        env=env,
+    )
+    _require_file(runtime_safety_output / "retry_policy.json")
+
+    secrets_output = output / "secrets-bootstrap"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "secrets-bootstrap",
+            "--flow-id",
+            "invoice-document-followup",
+            "--provider",
+            "infisical",
+            "--connectors",
+            "gmail,google-sheets",
+            "--output",
+            str(secrets_output),
+        ],
+        env=env,
+    )
+    _require_file(secrets_output / "secrets_manifest.json")
+
+    document_output = output / "document-intake"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "document-intake",
+            "--flow-id",
+            "invoice-document-followup",
+            "--mode",
+            "advanced",
+            "--output",
+            str(document_output),
+        ],
+        env=env,
+    )
+    _require_file(document_output / "docling_config.json")
+
+    observability_output = output / "observability-pack"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "observability-pack",
+            "--flow-id",
+            "invoice-document-followup",
+            "--output",
+            str(observability_output),
+        ],
+        env=env,
+    )
+    _require_file(observability_output / "langfuse_env.example")
+
+    state_output = output / "state-backend"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "state-backend",
+            "--flow-id",
+            "invoice-document-followup",
+            "--backend",
+            "supabase",
+            "--output",
+            str(state_output),
+        ],
+        env=env,
+    )
+    _require_file(state_output / "supabase_schema.sql")
 
 
 def _run_github_smokes(output: Path, env: dict[str, str]) -> None:

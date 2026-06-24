@@ -237,6 +237,114 @@ def test_parser_accepts_grill_me_command():
     assert args.output == "grill-me"
 
 
+def test_parser_accepts_flow_export_command():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "flow-export",
+            "--flow-id",
+            "invoice-document-followup",
+            "--target",
+            "n8n",
+            "--output",
+            "exports",
+        ]
+    )
+
+    assert args.command == "flow-export"
+    assert args.flow_id == "invoice-document-followup"
+    assert args.target == "n8n"
+    assert args.output == "exports"
+
+
+def test_parser_accepts_deployment_pack_command():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "deployment-pack",
+            "--flow-id",
+            "invoice-document-followup",
+            "--provider",
+            "coolify",
+            "--connectors",
+            "gmail,google-sheets",
+            "--output",
+            "deploy",
+        ]
+    )
+
+    assert args.command == "deployment-pack"
+    assert args.flow_id == "invoice-document-followup"
+    assert args.provider == "coolify"
+    assert args.connectors == "gmail,google-sheets"
+    assert args.output == "deploy"
+
+
+def test_parser_accepts_runtime_safety_command():
+    parser = build_parser()
+    args = parser.parse_args(["runtime-safety", "--flow-id", "invoice-document-followup", "--output", "ops"])
+
+    assert args.command == "runtime-safety"
+    assert args.flow_id == "invoice-document-followup"
+    assert args.output == "ops"
+
+
+def test_parser_accepts_secrets_bootstrap_command():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "secrets-bootstrap",
+            "--flow-id",
+            "invoice-document-followup",
+            "--provider",
+            "infisical",
+            "--connectors",
+            "gmail,google-sheets",
+            "--output",
+            "secrets",
+        ]
+    )
+
+    assert args.command == "secrets-bootstrap"
+    assert args.flow_id == "invoice-document-followup"
+    assert args.provider == "infisical"
+    assert args.connectors == "gmail,google-sheets"
+    assert args.output == "secrets"
+
+
+def test_parser_accepts_document_intake_command():
+    parser = build_parser()
+    args = parser.parse_args(
+        ["document-intake", "--flow-id", "invoice-document-followup", "--mode", "fast", "--output", "docs"]
+    )
+
+    assert args.command == "document-intake"
+    assert args.flow_id == "invoice-document-followup"
+    assert args.mode == "fast"
+    assert args.output == "docs"
+
+
+def test_parser_accepts_observability_pack_command():
+    parser = build_parser()
+    args = parser.parse_args(["observability-pack", "--flow-id", "invoice-document-followup", "--output", "obs"])
+
+    assert args.command == "observability-pack"
+    assert args.flow_id == "invoice-document-followup"
+    assert args.output == "obs"
+
+
+def test_parser_accepts_state_backend_command():
+    parser = build_parser()
+    args = parser.parse_args(
+        ["state-backend", "--flow-id", "invoice-document-followup", "--backend", "supabase", "--output", "state"]
+    )
+
+    assert args.command == "state-backend"
+    assert args.flow_id == "invoice-document-followup"
+    assert args.backend == "supabase"
+    assert args.output == "state"
+
+
 def test_parser_accepts_flows_commands():
     parser = build_parser()
 

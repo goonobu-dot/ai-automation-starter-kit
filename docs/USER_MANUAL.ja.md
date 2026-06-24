@@ -53,6 +53,13 @@ ai-automation-kit complete-workspace \
 - `.tmp/complete-accounting/before_after_demo.html`
 - `.tmp/complete-accounting/business_launch/START_HERE_BUSINESS_LAUNCH.md`
 - `.tmp/complete-accounting/business_launch/first_client_offer.md`
+- `.tmp/complete-accounting/flow_exports/n8n/START_HERE_FLOW_EXPORT.md`
+- `.tmp/complete-accounting/deployment_packs/coolify/START_HERE_DEPLOYMENT_PACK.md`
+- `.tmp/complete-accounting/runtime_safety/approval_policy.md`
+- `.tmp/complete-accounting/secrets_bootstrap/secret_ownership.md`
+- `.tmp/complete-accounting/document_intake/START_HERE_DOCUMENT_INTAKE.md`
+- `.tmp/complete-accounting/observability_pack/trace_model.md`
+- `.tmp/complete-accounting/state_backend/START_HERE_STATE_BACKEND.md`
 
 個別に作業したい場合は、次の `quickstart` から順番に進めます。
 
@@ -194,3 +201,19 @@ ai-automation-kit connector-doctor --project .tmp/flow-project --output .tmp/con
 Gmail送信、Slack投稿、Google Sheets書き込みなどは、初期状態では無効です。本番接続は、顧客の承認、認証情報、データ分類、停止手順、承認者を決めてから進めます。
 
 `client_command_center.html` を最初に開くと、初回確認、案件化、有償PoC、顧客確認、本番移行のどの資料を見るべきかをブラウザ上で確認できます。さらに `oss_pattern_benchmark.md`、`integration_backlog.md`、`deployment_options.md`、`production_observability_plan.md`、`automation_opportunity_scorecard.csv`、`client_onboarding_form.md`、`go_live_decision.md` も確認します。n8n、Activepieces、Windmill、Trigger.dev のような公開OSS/公開サービスで一般的な考え方を参考に、テンプレート化、MCP化できる統合、Webhook/UI化、リトライ、キュー、承認監査、ログ確認、顧客の承認者、本番移行の可否まで準備してから実運用へ進めます。
+
+## 9. 実行基盤へ渡す
+
+ローカル dry-run の次に、実行基盤へ渡す starter を作れます。
+
+```bash
+ai-automation-kit flow-export --flow-id invoice-document-followup --target n8n --output .tmp/flow-export-n8n
+ai-automation-kit deployment-pack --flow-id invoice-document-followup --provider coolify --connectors gmail,google-sheets --output .tmp/deployment-coolify
+ai-automation-kit runtime-safety --flow-id invoice-document-followup --output .tmp/runtime-safety
+ai-automation-kit secrets-bootstrap --flow-id invoice-document-followup --provider infisical --connectors gmail,google-sheets --output .tmp/secrets-bootstrap
+ai-automation-kit document-intake --flow-id invoice-document-followup --mode advanced --output .tmp/document-intake
+ai-automation-kit observability-pack --flow-id invoice-document-followup --output .tmp/observability-pack
+ai-automation-kit state-backend --flow-id invoice-document-followup --backend supabase --output .tmp/state-backend
+```
+
+この段階で大事なのは、すぐに本番化することではなく、導入に必要な実行ファイル、secret の置き場所、承認ルール、履歴保管先を先に揃えることです。

@@ -38,6 +38,13 @@ Read these first:
 - `.tmp/complete-accounting/pre_contract_checklist.md`
 - `.tmp/complete-accounting/business_launch/START_HERE_BUSINESS_LAUNCH.md`
 - `.tmp/complete-accounting/business_launch/first_client_offer.md`
+- `.tmp/complete-accounting/flow_exports/n8n/START_HERE_FLOW_EXPORT.md`
+- `.tmp/complete-accounting/deployment_packs/coolify/START_HERE_DEPLOYMENT_PACK.md`
+- `.tmp/complete-accounting/runtime_safety/approval_policy.md`
+- `.tmp/complete-accounting/secrets_bootstrap/secret_ownership.md`
+- `.tmp/complete-accounting/document_intake/START_HERE_DOCUMENT_INTAKE.md`
+- `.tmp/complete-accounting/observability_pack/trace_model.md`
+- `.tmp/complete-accounting/state_backend/START_HERE_STATE_BACKEND.md`
 
 ## 3. Build A Business Proposal Pack
 
@@ -98,7 +105,38 @@ ai-automation-kit share-check --source .tmp/complete-accounting --output .tmp/sh
 
 If `share_check.md` says `blocked`, remove the secret-like markers before sharing.
 
-## 6. Move From Demo To Paid PoC
+## 6. Move Into A Real Execution Stack
+
+Export the chosen flow into a real automation tool:
+
+```bash
+ai-automation-kit flow-export \
+  --flow-id invoice-document-followup \
+  --target n8n \
+  --output .tmp/flow-export-n8n
+```
+
+Create a deployment starter:
+
+```bash
+ai-automation-kit deployment-pack \
+  --flow-id invoice-document-followup \
+  --provider coolify \
+  --connectors gmail,google-sheets \
+  --output .tmp/deployment-coolify
+```
+
+Add runtime safety, secrets, document conversion, observability, and state:
+
+```bash
+ai-automation-kit runtime-safety --flow-id invoice-document-followup --output .tmp/runtime-safety
+ai-automation-kit secrets-bootstrap --flow-id invoice-document-followup --provider infisical --connectors gmail,google-sheets --output .tmp/secrets-bootstrap
+ai-automation-kit document-intake --flow-id invoice-document-followup --mode advanced --output .tmp/document-intake
+ai-automation-kit observability-pack --flow-id invoice-document-followup --output .tmp/observability-pack
+ai-automation-kit state-backend --flow-id invoice-document-followup --backend supabase --output .tmp/state-backend
+```
+
+## 7. Move From Demo To Paid PoC
 
 The safest first offer is a bounded Paid PoC:
 
@@ -110,4 +148,3 @@ The safest first offer is a bounded Paid PoC:
 - ask the client to choose continue, revise, or stop
 
 Do not sell the first engagement as fully autonomous production automation. Sell it as a safe discovery and proof-of-value step.
-

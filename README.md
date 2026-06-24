@@ -45,6 +45,8 @@ For AI beginners who do not know what to ask next, the AI Agent Grill Me Skill g
 
 For hands-on automation work, `flows` gives users a research-backed catalog of 60+ ready-made business automation flows. A user can choose a flow by industry or genre, install it into a local project folder, inspect `flow.yaml`, view `workflow_map.mmd`, and run the local automation runtime to generate a work queue, draft outputs, an approval queue, connector tasks, a status report, and a run log. The installed project also includes `.env.example`, `config/connectors.json`, a system runbook, approval scripts, and local outbox files so the flow can become a real integration project without sending anything by accident. See [Automation Demand Research](docs/AUTOMATION_DEMAND_RESEARCH.md) for the industry and workflow demand map behind the catalog.
 
+The kit also includes a bridge layer for moving a proven local flow into real execution platforms. `flow-export` creates starter artifacts for `n8n`, `Activepieces`, and `Windmill`. `deployment-pack` creates starter deployment files for `Coolify`, `Cloudflare Agents`, and `Supabase`. `runtime-safety`, `secrets-bootstrap`, `document-intake`, `observability-pack`, and `state-backend` generate the operational files that teams often discover too late: approval policy, retry and rollback rules, secret ownership, document conversion paths, run tracing, and approval history storage.
+
 ## Beginner-Friendly Guides
 
 New to this project? Start with a plain-language explanation:
@@ -68,6 +70,8 @@ Need a practical first path or use-case examples?
 - [実運用セットアップガイド](docs/REAL_WORLD_SETUP_GUIDE.ja.md)
 - [Cloud deployment guide](docs/CLOUD_DEPLOYMENT_GUIDE.md)
 - [クラウド導入ガイド](docs/CLOUD_DEPLOYMENT_GUIDE.ja.md)
+- [Execution bridges](docs/EXECUTION_BRIDGES.md)
+- [Operations expansion](docs/OPERATIONS_EXPANSION.md)
 - [Beginner cloud challenge playbook](docs/CLOUD_BEGINNER_PLAYBOOK.md)
 - [初心者向けクラウド挑戦プレイブック](docs/CLOUD_BEGINNER_PLAYBOOK.ja.md)
 - [Connector setup guide](docs/CONNECTOR_SETUP_GUIDE.md)
@@ -218,6 +222,13 @@ ai-automation-kit guided-review --answers .tmp/guided-setup/guided_setup_answers
 ai-automation-kit cloud-plan --flow-id invoice-document-followup --provider aws --workload scheduled-job --connectors gmail,google-sheets --output .tmp/cloud-plan-aws
 ai-automation-kit grill-me --flow-id invoice-document-followup --mode beginner --client-type local-business --deployment cloud --connectors gmail,google-sheets --output .tmp/grill-me
 ai-automation-kit share-check --source .tmp/complete-accounting --output .tmp/share-check
+ai-automation-kit flow-export --flow-id invoice-document-followup --target n8n --output .tmp/flow-export-n8n
+ai-automation-kit deployment-pack --flow-id invoice-document-followup --provider coolify --connectors gmail,google-sheets --output .tmp/deployment-coolify
+ai-automation-kit runtime-safety --flow-id invoice-document-followup --output .tmp/runtime-safety
+ai-automation-kit secrets-bootstrap --flow-id invoice-document-followup --provider infisical --connectors gmail,google-sheets --output .tmp/secrets-bootstrap
+ai-automation-kit document-intake --flow-id invoice-document-followup --mode advanced --output .tmp/document-intake
+ai-automation-kit observability-pack --flow-id invoice-document-followup --output .tmp/observability-pack
+ai-automation-kit state-backend --flow-id invoice-document-followup --backend supabase --output .tmp/state-backend
 ```
 
 Open the final delivery guide:
