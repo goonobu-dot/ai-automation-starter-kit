@@ -30,6 +30,12 @@ ai-automation-kit complete-workspace --flow-id invoice-document-followup --outpu
 
 This creates the final delivery guide, checklist, client report, demo site, shareable package, revenue readiness scorecard, Paid PoC scope, value sheet, pre-contract checklist, proposal email, 30-day plan, proof-of-value template, OSS benchmark, integration backlog, deployment options, observability plan, opportunity scorecard, onboarding form, go-live decision, command center, and `business_launch/` proposal pack.
 
+## Which guide should a beginner read first?
+
+Start with [Start Here](START_HERE.md), then read [User Manual](USER_MANUAL.md). If you want to use this for your first freelance or consulting automation client, read [First Client Walkthrough](FIRST_CLIENT_WALKTHROUGH.md).
+
+If cloud, API keys, intake folders, or approval owners feel confusing, ask an AI agent to read [AI Beginner Support Map](AI_BEGINNER_SUPPORT_MAP.md) with you and guide you one question at a time.
+
 ## What should I show a company?
 
 Start with `demo_site/index.html` and `beginner_sales/selected_flow_demo.html`. Then use `client_questions.md` or `discovery_call_script.md` to ask about the real workflow. Finish with a small proposal, not a production promise.
@@ -41,4 +47,3 @@ Use `opportunity-catalog` to create a sales catalog, then use `recommend-flow` t
 ## Can it connect to production systems?
 
 Yes, but production is intentionally gated. Use `connector-doctor`, `client_onboarding_form.md`, `deployment_options.md`, `production_observability_plan.md`, and `go_live_decision.md` before enabling real connectors, webhooks, retries, queues, or production writes.
-

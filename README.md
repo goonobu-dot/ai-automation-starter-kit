@@ -60,6 +60,7 @@ Need a practical first path or use-case examples?
 - [まずここから](docs/START_HERE.ja.md)
 - [User manual](docs/USER_MANUAL.md)
 - [日本語の使い方マニュアル](docs/USER_MANUAL.ja.md)
+- [First client walkthrough](docs/FIRST_CLIENT_WALKTHROUGH.md)
 - [最初の顧客案件ウォークスルー](docs/FIRST_CLIENT_WALKTHROUGH.ja.md)
 - [Selling automation guide](docs/SELLING_AUTOMATION_GUIDE.md)
 - [業務自動化を企業へ提案するガイド](docs/SELLING_AUTOMATION_GUIDE.ja.md)

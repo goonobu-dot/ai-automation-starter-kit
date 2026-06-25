@@ -22,6 +22,8 @@ This project helps you look at those public projects and ask practical questions
 - What should a team try in a small pilot?
 - How do we measure whether the automation actually helped?
 
+It does not guarantee income. It helps you turn a business pain into a safer dry-run, a clearer client conversation, and a smaller PoC offer.
+
 ## Why it exists
 
 Normal AI chat can give advice. That is useful, but it often ends as a conversation.
@@ -66,7 +68,13 @@ Important files include:
 
 ## How to use it
 
-First, download the project:
+If you are new, first read [Start Here](START_HERE.md).
+
+If you want to use this for a first freelance or consulting client, read [First Client Walkthrough](FIRST_CLIENT_WALKTHROUGH.md).
+
+If cloud, API keys, intake folders, or approval owners feel confusing, ask an AI agent to read [AI Beginner Support Map](AI_BEGINNER_SUPPORT_MAP.md) with you and guide you one question at a time.
+
+Then download the project:
 
 ```bash
 git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git
@@ -83,27 +91,27 @@ python3 -m pip install --upgrade pip setuptools
 python3 -m pip install -e .
 ```
 
-Run the guided first workflow:
+Run the easiest full starter workflow. If you are not sure where to begin, `complete-workspace` creates the demo, dry-run files, client report, and business launch materials in one folder.
 
 ```bash
-ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding --create-offer-pack
+ai-automation-kit complete-workspace --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/complete-accounting
 ```
 
-Then read the onboarding summary:
+Open the first guide:
 
 ```bash
-sed -n '1,180p' .tmp/onboarding/onboarding_summary.md
+sed -n '1,180p' .tmp/complete-accounting/FINAL_DELIVERY_GUIDE.md
 ```
 
 Then read these files in order:
 
-1. `.tmp/onboarding/run_summary.md`
-2. `.tmp/onboarding/executive_decision_brief.md`
-3. `.tmp/onboarding/pilot_scorecard.csv`
-4. `.tmp/onboarding/artifact_index.md`
-5. `.tmp/onboarding/offer_pack/README.md` if you want to package the result as a small client pilot.
+1. `.tmp/complete-accounting/FINAL_DELIVERY_GUIDE.md`
+2. `.tmp/complete-accounting/client_command_center.html`
+3. `.tmp/complete-accounting/demo_site/index.html`
+4. `.tmp/complete-accounting/client_report/client_report.html`
+5. `.tmp/complete-accounting/business_launch/START_HERE_BUSINESS_LAUNCH.md`
 
-The offer pack can help with freelance or consulting work because it creates proposal and delivery documents. It does not guarantee income.
+The generated folder contains many files, but you do not need to read all of them at first. Start with the guide, demo, report, and business launch materials.
 
 If you are new to AI agents and want to explain one automation idea to a business, generate the beginner sales pack:
 
