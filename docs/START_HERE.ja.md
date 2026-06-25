@@ -10,13 +10,13 @@ AI Automation Starter Kit は、GitHub上の公開OSSを調べて、業務自動
 
 ## 最初の3分
 
-1. まず [やさしい解説](BEGINNER_GUIDE.ja.md) を読みます。
-2. 次に [ユースケース](USE_CASES.ja.md) から、近い業務領域を選びます。
-3. ローカル導入後に `ai-automation-kit onboard --business-area operations --limit 2 --output .tmp/onboarding --create-offer-pack` を実行します。
-4. `.tmp/onboarding/onboarding_summary.md` を開き、最初の `next_read` に従って読み進めます。
-5. 副業・受託の小さな提案に変える場合は `.tmp/onboarding/offer_pack/README.md` を読みます。
-6. ひとつの業務フローを見せながら企業へ説明したい場合は `ai-automation-kit beginner-sales --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/beginner-sales` を実行します。
-7. 実行ブリッジ、デプロイ starter、安全運用資料までまとめて欲しい場合は `ai-automation-kit complete-workspace --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/complete-accounting` を実行します。
+1. まず [やさしい解説](BEGINNER_GUIDE.ja.md) で、このプロジェクトの目的をつかみます。
+2. 次に [使い方マニュアル](USER_MANUAL.ja.md) の「最初に安心してほしいこと」と「5分で分かる全体像」を読みます。
+3. AIやクラウドが不安な場合は [AI初心者サポートマップ](AI_BEGINNER_SUPPORT_MAP.ja.md) をAIエージェントに読ませます。
+4. 副業や受託として最初の1件を進めたい場合は [最初の顧客案件ウォークスルー](FIRST_CLIENT_WALKTHROUGH.ja.md) を読みます。
+5. ローカル導入後に `ai-automation-kit complete-workspace --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/complete-accounting` を実行します。
+6. `.tmp/complete-accounting/client_command_center.html` と `.tmp/complete-accounting/FINAL_DELIVERY_GUIDE.md` を開きます。
+7. クラウドやAPI設定へ進む前に `guided-setup`、`guided-review`、`cloud-plan` の順番で不足情報を整理します。
 
 ## 読む順番
 
@@ -24,7 +24,8 @@ AI Automation Starter Kit は、GitHub上の公開OSSを調べて、業務自動
 | --- | --- | --- |
 | 開発者 | [Quickstart](../README.md#quickstart) | guided onboarding |
 | 自動化支援をしたい | [ユースケース](USE_CASES.ja.md) | `onboard --create-offer-pack` |
-| AIエージェントを使い始めて副業化したい | [やさしい解説](BEGINNER_GUIDE.ja.md) | `beginner-sales` |
+| AIエージェントを使い始めて副業化したい | [最初の顧客案件ウォークスルー](FIRST_CLIENT_WALKTHROUGH.ja.md) | `complete-workspace` |
+| クラウドやAPI設定が不安 | [AI初心者サポートマップ](AI_BEGINNER_SUPPORT_MAP.ja.md) | `guided-setup` |
 | 会社やチームで検討 | [やさしい解説](BEGINNER_GUIDE.ja.md) | executive decision brief |
 | 英語で読みたい | [Start Here](START_HERE.md) | [Beginner guide](BEGINNER_GUIDE.md) |
 

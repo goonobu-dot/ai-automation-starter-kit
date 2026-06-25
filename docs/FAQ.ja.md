@@ -30,6 +30,12 @@ ai-automation-kit complete-workspace --flow-id invoice-document-followup --outpu
 
 `FINAL_DELIVERY_GUIDE.md`、`completion_checklist.md`、顧客レポート、デモサイト、共有用 zip、収益化評価、営業クロージング台本、有償PoC範囲、価値測定シート、契約前チェック、提案メール、30日運用計画、成果証明テンプレート、公開OSSパターン比較、統合バックログ、導入方式、運用監視計画、案件化スコア、顧客オンボーディング、本番移行判断、ブラウザ用コマンドセンター、`business_launch/` の事業化提案パックまで作られます。
 
+## 初心者はどのマニュアルから読めばいいですか？
+
+まず [まずここから](START_HERE.ja.md) を読み、次に [使い方マニュアル](USER_MANUAL.ja.md) を読みます。副業や受託として最初の1件を進めたい場合は [最初の顧客案件ウォークスルー](FIRST_CLIENT_WALKTHROUGH.ja.md) を読んでください。
+
+クラウド、APIキー、受付フォルダ、承認者で不安がある場合は [AI初心者サポートマップ](AI_BEGINNER_SUPPORT_MAP.ja.md) をAIエージェントに読ませて、1問ずつ質問してもらうのがおすすめです。
+
 ## 企業に何を見せればいいですか？
 
 まず `demo_site/index.html` と `beginner_sales/selected_flow_demo.html` を見せます。そのあと `client_questions.md` でヒアリングし、`proposal_one_pager.md` で小さなPoCを提案します。

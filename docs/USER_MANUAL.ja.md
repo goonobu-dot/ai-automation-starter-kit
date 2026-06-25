@@ -1,12 +1,94 @@
 # AI Automation Starter Kit 使い方マニュアル
 
-このマニュアルは、AIエージェントを使い始めた人が、業務自動化の候補を選び、デモを作り、企業へ説明し、小さな dry-run PoC まで進めるための手順です。
+このマニュアルは、AIやクラウドにまだ慣れていない人が、企業の業務自動化を安全に提案し、最初の dry-run まで進めるための手順書です。
 
-収益を保証するものではありません。目的は、あいまいなAI自動化の話を、見えるフロー、提案書、実行結果、承認ポイントつきの安全な案件に変えることです。
+最初から全部を理解する必要はありません。まずは「1つの業務」「1つの入力」「1つの出力」「1人の承認者」に絞ります。
 
-## 1. 最初に実行する
+このプロジェクトが目指すのは、あいまいなAI自動化の話を、見えるフロー、必要な入力、提案資料、実行結果、承認ポイントつきの小さな案件に変えることです。収益や受注を保証するものではありませんが、企業へ説明しやすい形に整えるための道具として使えます。
+
+## 最初に安心してほしいこと
+
+このプロジェクトは、いきなり本番送信や本番データ更新をするものではありません。
+
+最初は dry-run です。dry-run とは、実際の送信、投稿、顧客データ更新をせずに、下書き、作業キュー、承認リスト、レポートだけを作る安全な試し方です。
+
+最初からチャットに貼らないもの:
+
+- 本物のAPIキー
+- password
+- 顧客の個人情報
+- 本番のWebhook URL
+- クラウドの管理者権限
+- 顧客の機密資料
+
+AIに相談してよいもの:
+
+- どの業務を自動化候補にするか
+- 顧客に何を聞くか
+- どの資料を見ればよいか
+- サンプルデータの形
+- dry-run の進め方
+- クラウドに進む前の確認事項
+- 提案文や説明文の下書き
+
+## 5分で分かる全体像
+
+1. 企業の困りごとを1つ選びます。
+2. このプロジェクトで近い業務フローを選びます。
+3. ローカルPCで見本フォルダを作ります。
+4. サンプルデータで dry-run します。
+5. 下書き、作業キュー、承認リスト、レポートを確認します。
+6. 顧客に「本番ではなく見本」として説明します。
+7. 価値がありそうなら、必要なAPI、フォルダ、クラウド、承認者を整理します。
+8. 有料PoCにする場合は、範囲、期間、費用、停止条件を明確にします。
+
+初心者が最初に目指すゴールは「全部自動化」ではありません。顧客が見て分かる形で、手作業がどう減るかを説明できる状態です。
+
+## 最初に読む3つの資料
+
+迷ったら、まずこの順番で読んでください。
+
+1. [まずここから](START_HERE.ja.md)
+2. [AI初心者サポートマップ](AI_BEGINNER_SUPPORT_MAP.ja.md)
+3. [初心者向けクラウド挑戦プレイブック](CLOUD_BEGINNER_PLAYBOOK.ja.md)
+
+営業や副業として使いたい場合は、次に [最初の顧客案件ウォークスルー](FIRST_CLIENT_WALKTHROUGH.ja.md) を読んでください。
+
+クラウドやAPI設定で不安がある場合は、[クラウド導入ガイド](CLOUD_DEPLOYMENT_GUIDE.ja.md) と [連携設定ガイド](CONNECTOR_SETUP_GUIDE.ja.md) を読みます。
+
+## まずAIに読ませる依頼文
+
+ChatGPT、Claude、Gemini、Cursor、Codex、Claude Code などに、次の文章を貼ってください。
+
+```text
+この GitHub プロジェクト ai-automation-starter-kit を確認してください。
+私はAIやクラウドにまだ慣れていません。
+
+まず docs/START_HERE.ja.md、docs/USER_MANUAL.ja.md、docs/AI_BEGINNER_SUPPORT_MAP.ja.md、docs/CLOUD_BEGINNER_PLAYBOOK.ja.md を読んでください。
+
+その後、私に1問ずつ質問してください。
+一度にたくさん聞かず、次の順番で確認してください。
+
+1. どの業務を自動化したいか
+2. 入力はどこから来るか
+3. 出力は何にしたいか
+4. 誰が確認・承認するか
+5. サンプルデータを用意できるか
+6. APIやクラウドが必要か
+7. まずローカル dry-run で見せられるか
+8. 顧客へ有料PoCとして提案できる範囲はどこか
+
+本物のAPIキー、password、secret、顧客の機密情報はチャットに書かせないでください。
+本番送信、本番更新、課金、クラウド公開の前には、必ず人間の承認を入れてください。
+```
+
+## インストール
+
+ターミナルで次を実行します。
 
 ```bash
+git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git
+cd ai-automation-starter-kit
 python3 -m venv .venv
 source .venv/bin/activate
 python3 -m pip install --upgrade pip setuptools
@@ -14,9 +96,11 @@ python3 -m pip install -e .
 ai-automation-kit doctor --output .tmp/doctor
 ```
 
-## 2. まず1つの案件フォルダを作る
+`doctor` は、ローカル環境が使える状態か確認するためのコマンドです。
 
-迷った場合は、まずこの1コマンドを使います。案件フォルダ、dry-run 実行結果、承認記録、コネクタ診断、顧客レポート、デモサイト、共有用 zip、最終チェックリスト、収益化評価、営業クロージング台本、有償PoC範囲、価値測定シート、契約前チェック、提案メール、30日運用計画、成果証明テンプレート、公開OSSパターン比較、統合バックログ、導入方式、運用監視計画、案件化スコア、顧客オンボーディング、本番移行判断、ブラウザで見られるコマンドセンター、AI初心者向けの事業化提案パックまでまとめて作ります。
+## いちばん簡単な始め方
+
+迷ったら、この1コマンドから始めます。
 
 ```bash
 ai-automation-kit complete-workspace \
@@ -26,122 +110,51 @@ ai-automation-kit complete-workspace \
   --output .tmp/complete-accounting
 ```
 
-最初に見るファイル:
+これは、請求書や不足書類のフォローを例にした見本フォルダを作ります。
 
-- `.tmp/complete-accounting/FINAL_DELIVERY_GUIDE.md`
-- `.tmp/complete-accounting/completion_checklist.md`
-- `.tmp/complete-accounting/client_report/client_report.html`
-- `.tmp/complete-accounting/demo_site/index.html`
-- `.tmp/complete-accounting/client_demo_package/client_demo_package.zip`
-- `.tmp/complete-accounting/revenue_readiness_scorecard.md`
-- `.tmp/complete-accounting/sales_closing_script.md`
-- `.tmp/complete-accounting/paid_poc_scope.md`
-- `.tmp/complete-accounting/value_measurement_sheet.csv`
-- `.tmp/complete-accounting/pre_contract_checklist.md`
-- `.tmp/complete-accounting/client_proposal_email.md`
-- `.tmp/complete-accounting/first_30_days_plan.md`
-- `.tmp/complete-accounting/proof_of_value_template.md`
-- `.tmp/complete-accounting/oss_pattern_benchmark.md`
-- `.tmp/complete-accounting/integration_backlog.md`
-- `.tmp/complete-accounting/deployment_options.md`
-- `.tmp/complete-accounting/production_observability_plan.md`
-- `.tmp/complete-accounting/automation_opportunity_scorecard.csv`
-- `.tmp/complete-accounting/client_onboarding_form.md`
-- `.tmp/complete-accounting/go_live_decision.md`
-- `.tmp/complete-accounting/client_command_center.html`
-- `.tmp/complete-accounting/side_business_starter_10.md`
-- `.tmp/complete-accounting/before_after_demo.html`
-- `.tmp/complete-accounting/business_launch/START_HERE_BUSINESS_LAUNCH.md`
-- `.tmp/complete-accounting/business_launch/first_client_offer.md`
-- `.tmp/complete-accounting/flow_exports/n8n/START_HERE_FLOW_EXPORT.md`
-- `.tmp/complete-accounting/deployment_packs/coolify/START_HERE_DEPLOYMENT_PACK.md`
-- `.tmp/complete-accounting/runtime_safety/approval_policy.md`
-- `.tmp/complete-accounting/secrets_bootstrap/secret_ownership.md`
-- `.tmp/complete-accounting/document_intake/START_HERE_DOCUMENT_INTAKE.md`
-- `.tmp/complete-accounting/observability_pack/trace_model.md`
-- `.tmp/complete-accounting/state_backend/START_HERE_STATE_BACKEND.md`
+最初に見るファイルはこの5つだけで十分です。
 
-個別に作業したい場合は、次の `quickstart` から順番に進めます。
+| ファイル | 何を見るためのものか |
+|---|---|
+| `.tmp/complete-accounting/FINAL_DELIVERY_GUIDE.md` | 全体の入口です。まずここを読みます。 |
+| `.tmp/complete-accounting/client_command_center.html` | ブラウザで資料の場所を確認できます。 |
+| `.tmp/complete-accounting/demo_site/index.html` | 顧客に見せる見本です。 |
+| `.tmp/complete-accounting/client_report/client_report.html` | dry-run の結果を説明するレポートです。 |
+| `.tmp/complete-accounting/business_launch/START_HERE_BUSINESS_LAUNCH.md` | 副業や受託提案に進む時の入口です。 |
 
-## 2.1. AIに慣れていない人が企業へ事業化提案する
+生成されるファイルは多いですが、最初から全部読む必要はありません。まず上の5つを開けば、何ができるかをつかめます。
 
-「どの会社に、何を、いくらで、どう説明すればいいか」が分からない場合は、事業化提案パックを作ります。
+## 業務フローを選ぶ
 
-```bash
-ai-automation-kit business-launch \
-  --industry finance \
-  --client-type local-business \
-  --niche accounting \
-  --output .tmp/business-launch
-```
-
-生成される主なファイル:
-
-- `.tmp/business-launch/START_HERE_BUSINESS_LAUNCH.md`
-- `.tmp/business-launch/target_industry_playbook.md`
-- `.tmp/business-launch/first_client_offer.md`
-- `.tmp/business-launch/discovery_call_script.md`
-- `.tmp/business-launch/proposal_builder.md`
-- `.tmp/business-launch/pricing_and_scope_menu.md`
-- `.tmp/business-launch/risk_boundary_sheet.md`
-- `.tmp/business-launch/30_day_business_launch_plan.md`
-- `.tmp/business-launch/client_pitch_email.md`
-
-このパックは、いきなり本番自動化を売るためのものではありません。最初は、企業の繰り返し業務を見える化し、サンプルデータで dry-run し、Paid PoC として安全に提案するためのものです。
-
-## 2.5. 何を売り込むか迷った場合
-
-営業用の案件カタログを作ります。
-
-```bash
-ai-automation-kit opportunity-catalog --industry finance --output .tmp/opportunity-catalog
-```
-
-`opportunity_catalog.html` を開くと、提案しやすい自動化案件、価格目安、導入日数、証明する指標を一覧できます。
-
-顧客の困りごとからおすすめフローを選ぶ場合:
-
-```bash
-ai-automation-kit recommend-flow \
-  --industry finance \
-  --pain "missing invoice follow up" \
-  --tools "Google Sheets Gmail" \
-  --monthly-items 80 \
-  --output .tmp/recommend-flow
-```
-
-共有前に安全確認する場合:
-
-```bash
-ai-automation-kit share-check --source .tmp/complete-accounting --output .tmp/share-check
-```
-
-`share_check.md` が `blocked` の場合は、秘密情報らしい文字列を消してから共有します。
-
-```bash
-ai-automation-kit quickstart \
-  --flow-id invoice-document-followup \
-  --client-type local-business \
-  --niche accounting \
-  --output .tmp/quickstart-accounting
-```
-
-生成される主なファイル:
-
-- `.tmp/quickstart-accounting/START_HERE.md`
-- `.tmp/quickstart-accounting/flow_project/`
-- `.tmp/quickstart-accounting/beginner_sales/`
-- `.tmp/quickstart-accounting/demo_site/index.html`
-
-## 3. 業務フローを選ぶ
+企業へ提案しやすいフローを探す場合は、次を使います。
 
 ```bash
 ai-automation-kit flow-guide --industry finance --niche accounting --output .tmp/flow-guide
 ```
 
-`recommended_flows.md` を見て、企業に説明しやすいフローを選びます。最初は、請求書、問い合わせ、日報、承認、リマインドのように、入力と出力が分かりやすいものを選びます。
+`recommended_flows.md` を見て、説明しやすいフローを1つ選びます。
 
-## 4. 企業に見せる資料を作る
+最初に選びやすい業務:
+
+- 問い合わせ返信の下書き
+- 請求書や不足書類のフォロー
+- 予約前の確認リスト
+- FAQ振り分け
+- 週次レポート作成
+- 顧客リスト整理
+- 日報や作業報告の要約
+
+最初は避けた方がよい業務:
+
+- 法律、医療、金融などの重要判断
+- 自動で契約、支払い、解約、値引きを行う業務
+- 失敗時に取り消しが難しい本番DB更新
+- 承認者が決まっていない業務
+- 顧客データの取り扱いルールが不明な業務
+
+## 顧客に見せる資料を作る
+
+AI初心者が企業へ説明したい場合は、`beginner-sales` を使います。
 
 ```bash
 ai-automation-kit beginner-sales \
@@ -153,13 +166,24 @@ ai-automation-kit beginner-sales \
 
 見る順番:
 
-1. `selected_flow_demo.html`
-2. `client_questions.md`
-3. `roi_simple_calculator.csv`
-4. `proposal_one_pager.md`
-5. `three_day_poc_plan.md`
+1. `.tmp/beginner-sales/flow_gallery.html`
+2. `.tmp/beginner-sales/selected_flow_demo.html`
+3. `.tmp/beginner-sales/client_questions.md`
+4. `.tmp/beginner-sales/roi_simple_calculator.csv`
+5. `.tmp/beginner-sales/proposal_one_pager.md`
+6. `.tmp/beginner-sales/three_day_poc_plan.md`
 
-## 5. 実際の dry-run を動かす
+顧客には、次のように説明します。
+
+```text
+まず本番送信はしません。
+サンプルデータで業務の流れを再現し、AIが下書きや作業キューを作り、人間が確認する形で見せます。
+価値が見えたら、API、フォルダ、クラウド、費用、停止手順を整理して、小さなPoCとして進めるか判断します。
+```
+
+## dry-run を動かす
+
+実際のフローをローカルで試す場合は、次を使います。
 
 ```bash
 ai-automation-kit flows install invoice-document-followup --output .tmp/flow-project
@@ -169,42 +193,95 @@ ai-automation-kit flows approve .tmp/flow-project --approver owner@example.com
 
 生成される主な結果:
 
-- `automation_output/work_queue.csv`
-- `automation_output/draft_outputs.md`
-- `automation_output/approval_queue.csv`
-- `automation_output/status_report.md`
-- `local_outbox/email_drafts.md`
-- `local_outbox/slack_messages.md`
+| ファイル | 意味 |
+|---|---|
+| `automation_output/work_queue.csv` | AIが作った作業候補の一覧です。 |
+| `automation_output/draft_outputs.md` | 返信や処理内容の下書きです。 |
+| `automation_output/approval_queue.csv` | 人間が確認するための承認リストです。 |
+| `automation_output/status_report.md` | 実行結果のまとめです。 |
+| `local_outbox/email_drafts.md` | 実送信しないメール下書きです。 |
 
-## 6. 顧客向けレポートを作る
+ここで重要なのは「AIが勝手に送らない」ことです。まず人間が見て、修正し、承認する形にします。
+
+## 顧客向けレポートを作る
+
+dry-run の結果を顧客へ説明する資料に変えます。
 
 ```bash
 ai-automation-kit client-report --flow-project .tmp/flow-project --output .tmp/client-report
 ```
 
-`client_report.md` と `client_report.html` が作られます。企業には、何件処理したか、どのファイルを見ればよいか、次に続けるべきかを説明できます。
+`client_report.md` と `client_report.html` が作られます。
 
-## 7. 共有用パッケージを作る
+顧客に伝えること:
+
+- 何件を処理したか
+- AIが何を下書きしたか
+- 人間が確認すべきものは何か
+- 本番化する前に何が足りないか
+- 続ける、直す、止めるのどれがよいか
+
+## 共有前に安全確認する
+
+顧客へ送る前に、秘密情報らしい文字列が混ざっていないか確認します。
 
 ```bash
-ai-automation-kit package-client-demo --source .tmp/quickstart-accounting --output .tmp/client-demo-package
+ai-automation-kit share-check --source .tmp/complete-accounting --output .tmp/share-check
 ```
 
-`client_demo_package.zip` が作られます。共有前に、秘密情報や顧客の機密データが入っていないか必ず確認してください。
+`share_check.md` が `blocked` の場合は、共有せずに該当箇所を消してください。
 
-## 8. 実運用へ進む前に確認する
+共有用のzipを作る場合:
 
 ```bash
-ai-automation-kit connector-doctor --project .tmp/flow-project --output .tmp/connector-doctor
+ai-automation-kit package-client-demo --source .tmp/complete-accounting --output .tmp/client-demo-package
 ```
 
-Gmail送信、Slack投稿、Google Sheets書き込みなどは、初期状態では無効です。本番接続は、顧客の承認、認証情報、データ分類、停止手順、承認者を決めてから進めます。
+## クラウドやAPIに進む前に
 
-`client_command_center.html` を最初に開くと、初回確認、案件化、有償PoC、顧客確認、本番移行のどの資料を見るべきかをブラウザ上で確認できます。さらに `oss_pattern_benchmark.md`、`integration_backlog.md`、`deployment_options.md`、`production_observability_plan.md`、`automation_opportunity_scorecard.csv`、`client_onboarding_form.md`、`go_live_decision.md` も確認します。n8n、Activepieces、Windmill、Trigger.dev のような公開OSS/公開サービスで一般的な考え方を参考に、テンプレート化、MCP化できる統合、Webhook/UI化、リトライ、キュー、承認監査、ログ確認、顧客の承認者、本番移行の可否まで準備してから実運用へ進めます。
+クラウドは、ローカル dry-run で価値が見えた後に進めます。
 
-## 9. 実行基盤へ渡す
+まず必要情報を集めます。
 
-ローカル dry-run の次に、実行基盤へ渡す starter を作れます。
+```bash
+ai-automation-kit guided-setup \
+  --flow-id invoice-document-followup \
+  --mode beginner \
+  --deployment undecided \
+  --connectors gmail,google-sheets \
+  --output .tmp/guided-setup
+```
+
+回答内容を確認します。
+
+```bash
+ai-automation-kit guided-review \
+  --answers .tmp/guided-setup/guided_setup_answers.example.json \
+  --output .tmp/guided-review
+```
+
+クラウド導入資料を作ります。
+
+```bash
+ai-automation-kit cloud-plan \
+  --flow-id invoice-document-followup \
+  --provider aws \
+  --workload scheduled-job \
+  --connectors gmail,google-sheets \
+  --output .tmp/cloud-plan
+```
+
+初心者向けの考え方:
+
+- Gmail、Google Sheets、Slack、LINEなどは connector です。
+- APIキーは外部サービスを使うための秘密の値です。
+- 本物のsecretはチャットに貼りません。
+- クラウドの課金、権限、公開URL、本番Webhookは人間が承認します。
+- 最初は本番送信ではなく、下書き、テストフォルダ、テストチャンネルで進めます。
+
+## 実行基盤へ渡す
+
+ローカルで価値が見えた後、実行基盤へ渡すための starter を作れます。
 
 ```bash
 ai-automation-kit flow-export --flow-id invoice-document-followup --target n8n --output .tmp/flow-export-n8n
@@ -216,4 +293,61 @@ ai-automation-kit observability-pack --flow-id invoice-document-followup --outpu
 ai-automation-kit state-backend --flow-id invoice-document-followup --backend supabase --output .tmp/state-backend
 ```
 
-この段階で大事なのは、すぐに本番化することではなく、導入に必要な実行ファイル、secret の置き場所、承認ルール、履歴保管先を先に揃えることです。
+この段階の目的は、いきなり本番化することではありません。実行ファイル、secret の置き場所、承認ルール、履歴保管、ログ、rollback を先に揃えることです。
+
+## 副業・受託にする時の考え方
+
+最初に売るものは「完全自動化」ではなく、「業務自動化診断 + dry-run PoC」が向いています。
+
+提案しやすい形:
+
+- 3日から2週間の小さなPoC
+- サンプルデータだけで実施
+- 本番送信なし
+- 人間承認あり
+- before/after の説明あり
+- 続けるか止めるかを最後に判断
+
+売り込み前に確認すること:
+
+- 顧客の困りごとは本当にあるか
+- 月に何件くらい発生しているか
+- 手作業にどれくらい時間がかかっているか
+- サンプルデータを出せるか
+- 承認者は誰か
+- 本番化しない範囲を説明できるか
+- 失敗した時に止める手順があるか
+
+## よくある不安
+
+「クラウドが分からない」
+
+最初は分からなくて大丈夫です。ローカル dry-run で見せてから、`guided-setup`、`guided-review`、`cloud-plan` の順番で整理します。
+
+「APIキーが分からない」
+
+AIに「どのサービスの、どの値が必要か」を説明してもらいます。ただし、本物の値はチャットに貼りません。
+
+「企業に売ってよいレベルか不安」
+
+最初から本番導入として売らず、業務診断と dry-run PoC として提案します。成果、リスク、続ける条件を見える化してから次に進みます。
+
+「コマンドが多すぎる」
+
+最初は `complete-workspace`、`beginner-sales`、`guided-setup`、`cloud-plan` だけで十分です。
+
+## 最後のチェックリスト
+
+企業へ見せる前に確認してください。
+
+- 本番送信していない
+- 本物のsecretを共有資料に入れていない
+- 顧客データは伏せ字またはサンプルである
+- 何を自動化するか1文で説明できる
+- 入力、出力、承認者が決まっている
+- dry-run の結果を見せられる
+- 顧客に聞く質問がある
+- 有料PoCの範囲、期間、停止条件がある
+- クラウドに進む前の不足情報が見えている
+
+ここまでできていれば、AI初心者でも企業へ無理なく説明できます。
