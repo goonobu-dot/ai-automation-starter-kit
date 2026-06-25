@@ -286,6 +286,32 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(business_launch_output / "first_client_offer.md")
     _require_file(business_launch_output / "risk_boundary_sheet.md")
 
+    website_side_hustle_output = output / "website-side-hustle"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "website-side-hustle",
+            "--industry",
+            "hospitality",
+            "--client-type",
+            "local-business",
+            "--niche",
+            "tourism-hotel",
+            "--output",
+            str(website_side_hustle_output),
+        ],
+        env=env,
+    )
+    _require_file(website_side_hustle_output / "START_HERE_WEBSITE_SIDE_HUSTLE.md")
+    _require_file(website_side_hustle_output / "ai_agent_handoff.md")
+    _require_file(website_side_hustle_output / "beginner_human_guide.md")
+    _require_file(website_side_hustle_output / "beginner_human_guide.ja.md")
+    _require_file(website_side_hustle_output / "reservation_inquiry_system.md")
+    _require_file(website_side_hustle_output / "inquiry_dashboard.html")
+    _require_file(website_side_hustle_output / "sample_site" / "index.html")
+
     guided_setup_output = output / "guided-setup-ai-reception"
     _run(
         [

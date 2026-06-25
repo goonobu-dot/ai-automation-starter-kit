@@ -140,6 +140,100 @@ def generate_business_launch_pack(
     return payload
 
 
+def generate_website_side_hustle_pack(
+    industry: str | None,
+    client_type: str,
+    niche: str,
+    operator_level: str,
+    output: Path,
+) -> dict:
+    output.mkdir(parents=True, exist_ok=True)
+    vertical = niche.replace("-", " ")
+    sources = _website_side_hustle_sources()
+    payload = {
+        "status": "ready",
+        "industry": industry or "hospitality",
+        "client_type": client_type,
+        "niche": niche,
+        "operator_level": operator_level,
+        "positioning": "AI coding agent native starter pack for selling, designing, building, checking, and maintaining small-business websites safely.",
+        "delivery_stack": [
+            "Codex or another coding agent",
+            "shadcn/ui or equivalent accessible primitives",
+            "Astro or static HTML for marketing sites",
+            "Open Props or local CSS tokens",
+            "lucide icons",
+            "WCAG and Google Search guidance",
+        ],
+        "sources": sources,
+        "starter_verticals": [
+            "tourism hotel",
+            "clinic",
+            "salon",
+            "restaurant",
+            "lawyer or accountant",
+            "local service trades",
+        ],
+        "artifacts": [
+            "START_HERE_WEBSITE_SIDE_HUSTLE.md",
+            "commercial_use_sources.md",
+            "client_brief.md",
+            "ai_agent_handoff.md",
+            "beginner_human_guide.md",
+            "beginner_human_guide.ja.md",
+            "reservation_inquiry_system.md",
+            "inquiry_intake_schema.csv",
+            "reservation_pipeline.csv",
+            "response_templates.md",
+            "operator_runbook.md",
+            "integration_options.md",
+            "privacy_and_consent.md",
+            "sla_and_followup.md",
+            "inquiry_dashboard.html",
+            "proposal_one_pager.md",
+            "maintenance_plan.md",
+            "sample_site/index.html",
+        ],
+    }
+    (output / "website_side_hustle.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output / "START_HERE_WEBSITE_SIDE_HUSTLE.md").write_text(_render_website_side_hustle_start(payload), encoding="utf-8")
+    (output / "README.md").write_text(_render_website_side_hustle_readme(payload), encoding="utf-8")
+    (output / "positioning.md").write_text(_render_website_side_hustle_positioning(payload), encoding="utf-8")
+    (output / "niche_offer_menu.md").write_text(_render_website_side_hustle_niche_offer_menu(payload), encoding="utf-8")
+    (output / "commercial_use_sources.md").write_text(_render_website_side_hustle_sources_md(payload), encoding="utf-8")
+    (output / "source_catalog.csv").write_text(_render_website_side_hustle_sources_csv(payload), encoding="utf-8")
+    (output / "client_brief.md").write_text(_render_website_side_hustle_client_brief(payload), encoding="utf-8")
+    (output / "ai_agent_handoff.md").write_text(_render_website_side_hustle_agent_handoff(payload), encoding="utf-8")
+    (output / "beginner_human_guide.md").write_text(_render_website_side_hustle_beginner_human_guide_en(payload), encoding="utf-8")
+    (output / "beginner_human_guide.ja.md").write_text(_render_website_side_hustle_beginner_human_guide(payload), encoding="utf-8")
+    (output / "design_direction_template.md").write_text(_render_website_side_hustle_design_direction(payload), encoding="utf-8")
+    (output / "copy_collection_sheet.md").write_text(_render_website_side_hustle_copy_sheet(payload), encoding="utf-8")
+    (output / "codex_workflow.md").write_text(_render_website_side_hustle_codex_workflow(payload), encoding="utf-8")
+    (output / "implementation_stack.md").write_text(_render_website_side_hustle_stack(payload), encoding="utf-8")
+    (output / "homepage_structure_guide.md").write_text(_render_website_side_hustle_structure(payload), encoding="utf-8")
+    (output / "reservation_inquiry_system.md").write_text(_render_website_side_hustle_reservation_system(payload), encoding="utf-8")
+    (output / "inquiry_intake_schema.csv").write_text(_render_website_side_hustle_inquiry_schema_csv(payload), encoding="utf-8")
+    (output / "reservation_pipeline.csv").write_text(_render_website_side_hustle_reservation_pipeline_csv(payload), encoding="utf-8")
+    (output / "response_templates.md").write_text(_render_website_side_hustle_response_templates(payload), encoding="utf-8")
+    (output / "operator_runbook.md").write_text(_render_website_side_hustle_operator_runbook(payload), encoding="utf-8")
+    (output / "integration_options.md").write_text(_render_website_side_hustle_integration_options(payload), encoding="utf-8")
+    (output / "privacy_and_consent.md").write_text(_render_website_side_hustle_privacy_consent(payload), encoding="utf-8")
+    (output / "sla_and_followup.md").write_text(_render_website_side_hustle_sla_followup(payload), encoding="utf-8")
+    (output / "inquiry_dashboard.html").write_text(_render_website_side_hustle_inquiry_dashboard(payload), encoding="utf-8")
+    (output / "originality_and_license_rules.md").write_text(_render_website_side_hustle_rules(payload), encoding="utf-8")
+    (output / "delivery_checklist.md").write_text(_render_website_side_hustle_delivery_checklist(payload), encoding="utf-8")
+    (output / "accessibility_and_seo_checklist.md").write_text(_render_website_side_hustle_accessibility_seo(payload), encoding="utf-8")
+    (output / "proposal_one_pager.md").write_text(_render_website_side_hustle_proposal(payload), encoding="utf-8")
+    (output / "pricing_menu.md").write_text(_render_website_side_hustle_pricing(payload), encoding="utf-8")
+    (output / "maintenance_plan.md").write_text(_render_website_side_hustle_maintenance(payload), encoding="utf-8")
+    (output / "outreach_messages.md").write_text(_render_website_side_hustle_outreach(payload), encoding="utf-8")
+    (output / "launch_checklist.md").write_text(_render_website_side_hustle_launch(payload), encoding="utf-8")
+    sample_dir = output / "sample_site"
+    sample_dir.mkdir(parents=True, exist_ok=True)
+    (sample_dir / "index.html").write_text(_render_website_side_hustle_sample_site(payload), encoding="utf-8")
+    return payload
+
+
 def generate_guided_setup(
     flow_id: str,
     mode: str,
@@ -3480,3 +3574,1387 @@ def _render_guided_review_next_commands(flow: dict, payload: dict) -> str:
         lines.append("# Complete missing inputs before running the automation.")
     lines.extend(["```", ""])
     return "\n".join(lines)
+
+
+def _website_side_hustle_sources() -> list[dict]:
+    return [
+        {
+            "name": "shadcn/ui",
+            "url": "https://github.com/shadcn-ui/ui",
+            "license": "MIT",
+            "use": "Accessible UI primitives and patterns for React websites",
+            "why": "Commercial-friendly component baseline with strong real-world adoption",
+            "verify": "Review the project license and generated dependencies before shipping",
+        },
+        {
+            "name": "Astro",
+            "url": "https://github.com/withastro/astro",
+            "license": "MIT",
+            "use": "Fast content-heavy marketing sites and static builds",
+            "why": "Good fit for brochure sites that need speed and low hosting cost",
+            "verify": "Choose project-local integrations only when needed",
+        },
+        {
+            "name": "Headless UI",
+            "url": "https://github.com/tailwindlabs/headlessui",
+            "license": "MIT",
+            "use": "Accessible menus, dialogs, disclosures, and interactions",
+            "why": "Helps beginners avoid brittle custom interaction code",
+            "verify": "Use only components needed for the page to keep bundles small",
+        },
+        {
+            "name": "Open Props",
+            "url": "https://github.com/argyleink/open-props",
+            "license": "MIT",
+            "use": "CSS tokens for spacing, shadows, easing, and responsive sizing",
+            "why": "Improves visual consistency without a heavy design system dependency",
+            "verify": "Copy only the tokens the project actually uses",
+        },
+        {
+            "name": "Lucide",
+            "url": "https://github.com/lucide-icons/lucide",
+            "license": "ISC",
+            "use": "Consistent icon set for navigation and feature cards",
+            "why": "Simple commercial use and wide framework coverage",
+            "verify": "Keep icon usage restrained and purposeful",
+        },
+        {
+            "name": "WCAG Quick Reference",
+            "url": "https://www.w3.org/WAI/WCAG22/quickref/",
+            "license": "Public reference",
+            "use": "Accessibility checks for contrast, headings, labels, focus, and semantics",
+            "why": "Raises quality above pretty mockups toward real client readiness",
+            "verify": "Treat screenshots as partial evidence; manual checks still matter",
+        },
+        {
+            "name": "web.dev Accessibility",
+            "url": "https://web.dev/accessibility/",
+            "license": "Public reference",
+            "use": "Practical implementation guidance for forms, layout, and responsive behavior",
+            "why": "Beginner-friendly bridge from theory to production fixes",
+            "verify": "Pair with browser checks and actual keyboard testing",
+        },
+        {
+            "name": "Google Search SEO Starter Guide",
+            "url": "https://developers.google.com/search/docs/fundamentals/seo-starter-guide",
+            "license": "Public reference",
+            "use": "On-page SEO, titles, links, and content structure",
+            "why": "Helps side-hustle sites avoid basic discoverability mistakes",
+            "verify": "Do not oversell SEO outcomes or rankings",
+        },
+        {
+            "name": "Schema.org Hotel",
+            "url": "https://schema.org/Hotel",
+            "license": "Public reference",
+            "use": "Structured data vocabulary for hotel websites",
+            "why": "Shows how to make hospitality sites more machine-readable",
+            "verify": "Use only fields the client can support truthfully",
+        },
+    ]
+
+
+def _render_website_side_hustle_start(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Start Here: Website Side Hustle",
+            "",
+            "This pack turns AI-assisted website building into a safer client-delivery system.",
+            "",
+            "## Recommended Order",
+            "",
+            "1. Read `commercial_use_sources.md` and `originality_and_license_rules.md`.",
+            "2. Pick one vertical from `niche_offer_menu.md`.",
+            "3. Use `client_brief.md` to collect facts before designing.",
+            "4. Use `codex_workflow.md` with Codex or another coding agent.",
+            "5. Draft copy with `copy_collection_sheet.md` and `homepage_structure_guide.md`.",
+            "6. Design the back office with `reservation_inquiry_system.md`, `operator_runbook.md`, and `integration_options.md`.",
+            "7. Price the job with `pricing_menu.md` and send `proposal_one_pager.md`.",
+            "8. Finish with `delivery_checklist.md`, `accessibility_and_seo_checklist.md`, and `launch_checklist.md`.",
+            "9. Open `sample_site/index.html` and `inquiry_dashboard.html` for editable examples.",
+            "",
+            "## Ground Rule",
+            "",
+            "Do not sell exact clones. Sell original small-business websites that borrow proven patterns, not protected identity.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_readme(payload: dict) -> str:
+    sources = ", ".join(source["name"] for source in payload["sources"][:5])
+    return "\n".join(
+        [
+            "# Website Side Hustle Pack",
+            "",
+            payload["positioning"],
+            "",
+            f"Best starting niches: {', '.join(payload['starter_verticals'])}.",
+            "",
+            "## Included",
+            "",
+            "- Commercial-use-aware source catalog",
+            "- Codex workflow and prompting guide",
+            "- Client brief, copy sheet, proposal, pricing, maintenance, QA, and launch checklists",
+            "- Reservation and inquiry aggregation templates",
+            "- One editable sample site and one static back-office dashboard mockup",
+            "",
+            "## Public Source Base",
+            "",
+            f"This pack is grounded in public resources such as {sources}, plus public accessibility and SEO references.",
+            "",
+            "No income is guaranteed. The value of this pack is reducing beginner mistakes, legal risk, and delivery chaos.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_positioning(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Positioning",
+            "",
+            "Offer: original, small-business websites built quickly with AI assistance and reviewed with human-quality checklists.",
+            "",
+            "What this is not:",
+            "- Not a promise of rankings, leads, or passive income.",
+            "- Not a license to clone competitors.",
+            "- Not a substitute for legal review, brand strategy, or custom photography when those matter.",
+            "",
+            "Why a client buys:",
+            "- Faster first draft than a traditional agency process.",
+            "- Lower cost for brochure sites, landing pages, and local-business refreshes.",
+            "- Clear scope, visible mockups, and a reviewable delivery checklist.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_niche_offer_menu(payload: dict) -> str:
+    rows = [
+        ("tourism-hotel", "Quiet hotel or villa", "photos, booking CTA, rooms, access, FAQ", "Story, rooms, local trust, mobile booking"),
+        ("clinic", "Clinic or therapist", "services, doctor profile, access, intake CTA", "Trust, compliance boundaries, clear steps"),
+        ("salon", "Salon or beauty studio", "services, price ranges, staff, booking CTA", "Photos, repeat visits, social proof"),
+        ("restaurant", "Restaurant or cafe", "menu highlights, reservation CTA, map, hours", "Food imagery, hours, route clarity"),
+        ("professional-service", "Lawyer, accountant, consultant", "specialization, process, contact CTA", "Serious tone, proof, boundaries"),
+        ("local-service", "Trades or repair", "service area, quote CTA, before/after, FAQ", "Fast trust, phone CTA, coverage area"),
+    ]
+    lines = [
+        "# Niche Offer Menu",
+        "",
+        "| Niche | Buyer | First scope | What raises quality |",
+        "|---|---|---|---|",
+    ]
+    for niche_id, buyer, scope, quality in rows:
+        lines.append(f"| `{niche_id}` | {buyer} | {scope} | {quality} |")
+    lines.extend(["", "Pick one niche and specialize before broadening the pack.", ""])
+    return "\n".join(lines)
+
+
+def _render_website_side_hustle_sources_md(payload: dict) -> str:
+    lines = [
+        "# Commercial-Use Public Sources",
+        "",
+        "Review each source again before live client use. Licenses and repository terms can change.",
+        "",
+        "| Source | License | Safe use | Why include it | Verify before shipping |",
+        "|---|---|---|---|---|",
+    ]
+    for source in payload["sources"]:
+        lines.append(
+            f"| [{source['name']}]({source['url']}) | {source['license']} | {source['use']} | {source['why']} | {source['verify']} |"
+        )
+    lines.extend(
+        [
+            "",
+            "Practical rule: public repos are source material for patterns, components, and checklists. They are not automatic permission to copy a whole site or run unknown setup scripts.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _render_website_side_hustle_sources_csv(payload: dict) -> str:
+    rows = [
+        "name,url,license,safe_use,why,verify",
+    ]
+    for source in payload["sources"]:
+        fields = [source["name"], source["url"], source["license"], source["use"], source["why"], source["verify"]]
+        rows.append(",".join(f'"{field}"' for field in fields))
+    rows.append("")
+    return "\n".join(rows)
+
+
+def _render_website_side_hustle_client_brief(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Client Brief",
+            "",
+            "- Business name:",
+            "- Industry and niche:",
+            "- Primary goal: inquiry / booking / phone / quote / walk-in support",
+            "- Required pages:",
+            "- Required sections on the homepage:",
+            "- Existing logo, photos, colors, fonts:",
+            "- Competitor or inspiration links:",
+            "- What must be avoided:",
+            "- Main CTA:",
+            "- Address, hours, phone, map, social links:",
+            "- Price range or plan range:",
+            "- Trust signals: testimonials, qualifications, reviews, certifications",
+            "- Hosting and domain owner:",
+            "- Delivery deadline:",
+            "",
+            "Do not start polished design work until the CTA, facts, and trust signals are clear.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_agent_handoff(payload: dict) -> str:
+    niche = payload["niche"].replace("-", " ")
+    return "\n".join(
+        [
+            "# AI Agent Handoff",
+            "",
+            "Use this file with Codex, Claude Code, Cursor, or another coding agent. It is written as a tool-neutral instruction so the same project can move between agents.",
+            "",
+            "## Agent Role",
+            "",
+            f"You are helping a beginner deliver an original small-business website and inquiry operations pack for `{niche}`.",
+            "",
+            "## Files To Read First",
+            "",
+            "1. `START_HERE_WEBSITE_SIDE_HUSTLE.md`",
+            "2. `client_brief.md`",
+            "3. `commercial_use_sources.md`",
+            "4. `originality_and_license_rules.md`",
+            "5. `homepage_structure_guide.md`",
+            "6. `reservation_inquiry_system.md`",
+            "7. `operator_runbook.md`",
+            "8. `privacy_and_consent.md`",
+            "",
+            "## Build The Front Of The Website",
+            "",
+            "- Confirm the business goal: booking, inquiry, phone call, quote request, or walk-in support.",
+            "- Use client-approved facts only. If facts are missing, leave placeholders and list what is needed.",
+            "- Build an original layout. Public GitHub projects can inform components and patterns, but do not copy a competitor's identity, text, images, or full layout.",
+            "- Make the first viewport clear: business type, offer, location or audience, and primary CTA.",
+            "- Check mobile width, CTA visibility, image loading, text overflow, and form labels.",
+            "",
+            "## Build The Back Office",
+            "",
+            "- Treat the website form, phone notes, email, LINE, and booking portal exports as possible sources.",
+            "- Normalize all leads into `inquiry_intake_schema.csv`.",
+            "- Use `reservation_pipeline.csv` for statuses.",
+            "- Draft replies from `response_templates.md`, but do not auto-send final replies.",
+            "- Do not auto-confirm bookings, change prices, or make policy exceptions without human approval.",
+            "- Keep secrets, API keys, passwords, and real private customer data out of chat.",
+            "",
+            "## Recommended Output",
+            "",
+            "- One browser-ready website or sample site",
+            "- One browser-ready inquiry dashboard or spreadsheet plan",
+            "- A client handoff note explaining how to update text, images, contact destinations, and inquiry statuses",
+            "- A short risk note listing what still requires human approval",
+            "",
+            "## Final Verification",
+            "",
+            "Before saying the work is complete, verify the site and dashboard in a browser, inspect generated files, and confirm that no real secrets or private customer records are included.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_beginner_human_guide_en(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Beginner Human Guide: Website And Back-Office Delivery",
+            "",
+            "This guide is for people who are new to AI-assisted website work. The goal is not only to create a nice-looking homepage. The goal is to help a real business receive inquiries, review them safely, reply consistently, and know what a human must approve.",
+            "",
+            "## The Big Picture",
+            "",
+            "A sellable small-business website package has two sides:",
+            "",
+            "- Front office: the public website customers see.",
+            "- Back office: the inquiry, reservation, response, and follow-up workflow the business uses after a customer contacts them.",
+            "",
+            "A pretty page without a clear back-office process is hard to sell as a serious service. A simple website plus a simple operating system is much stronger.",
+            "",
+            "## Step 1: Understand The Business",
+            "",
+            "Before asking an AI agent to design anything, collect plain facts from the client.",
+            "",
+            "- Business name",
+            "- Location or service area",
+            "- Main customer type",
+            "- Main goal: booking, inquiry, phone call, quote request, visit, or appointment",
+            "- Services, rooms, plans, or products",
+            "- Opening hours and contact methods",
+            "- Trust signals: reviews, certifications, awards, years in business, staff profiles",
+            "- Policies: cancellation, parking, payment, check-in, appointment rules",
+            "- Existing assets: logo, photos, colors, social links, booking links",
+            "",
+            "If a fact is missing, leave a placeholder. Do not invent business claims, prices, testimonials, or awards.",
+            "",
+            "## Step 2: Build The Front Website",
+            "",
+            "Use a simple page order that helps a visitor decide quickly.",
+            "",
+            "1. Hero: what the business is, who it helps, where it is, and the main call to action.",
+            "2. Reasons to choose: concrete proof instead of vague adjectives.",
+            "3. Services, rooms, plans, or offers: clear names, short descriptions, and price ranges when approved.",
+            "4. How it works: what happens after the customer contacts the business.",
+            "5. Proof: reviews, credentials, photos, case notes, or FAQ answers.",
+            "6. Access and contact: map, phone, email, form, booking link, hours, and service area.",
+            "7. Final call to action: repeat the next step at the bottom.",
+            "",
+            "Design rule: use public design projects as learning material, not as permission to copy a competitor. Do not copy another business's text, photos, logo, full layout, or brand identity.",
+            "",
+            "## Step 3: Build The Back Office",
+            "",
+            "Start simple. Most first clients do not need a custom backend. They need one reliable place where inquiries are collected and reviewed.",
+            "",
+            "Good beginner setup:",
+            "",
+            "- Form: Google Forms, Tally, Typeform, Netlify Forms, or Formspree",
+            "- Table: Google Sheets, Airtable, or Notion",
+            "- Inbox support: Gmail labels or shared mailbox rules",
+            "- Dashboard: a simple HTML mockup or spreadsheet view",
+            "",
+            "Use `inquiry_intake_schema.csv` as the field list. Use `reservation_pipeline.csv` as the status list.",
+            "",
+            "Recommended statuses:",
+            "",
+            "- `new`: not reviewed yet",
+            "- `needs-info`: missing dates, contact method, guest count, or request details",
+            "- `availability-check`: staff must check room, appointment, inventory, or schedule",
+            "- `quoted`: a price or plan was sent",
+            "- `tentative`: held but not final",
+            "- `confirmed`: human-approved booking or appointment",
+            "- `declined`: cannot accept the request",
+            "- `canceled`: customer or business canceled",
+            "- `follow-up`: waiting for a reminder or next action",
+            "",
+            "## Step 4: Write Response Templates",
+            "",
+            "Create drafts for common replies:",
+            "",
+            "- inquiry received",
+            "- missing information",
+            "- availability and quote",
+            "- no availability",
+            "- follow-up",
+            "- general contact",
+            "",
+            "AI can draft replies, but a human should check names, dates, prices, policies, and tone before sending.",
+            "",
+            "## Step 5: Daily Operations",
+            "",
+            "Every business day, the operator should:",
+            "",
+            "1. Open the inquiry table.",
+            "2. Sort by priority and next action due date.",
+            "3. Remove spam and duplicate rows.",
+            "4. Fill missing information when possible.",
+            "5. Ask staff to check availability, price, or exceptions.",
+            "6. Draft the reply.",
+            "7. Have a human review and send the reply.",
+            "8. Update the status and next action due date.",
+            "",
+            "Weekly review:",
+            "",
+            "- How many inquiries came from each source?",
+            "- How many became bookings, appointments, or qualified leads?",
+            "- Which replies were late?",
+            "- Which questions were repeated?",
+            "- What FAQ or website section should be improved?",
+            "",
+            "## Step 6: What Humans Must Approve",
+            "",
+            "Keep these behind human approval:",
+            "",
+            "- launch decision",
+            "- final copy and brand tone",
+            "- real customer facts",
+            "- final booking confirmation",
+            "- price exceptions",
+            "- cancellation or refund policy exceptions",
+            "- production email, SMS, LINE, or CRM sending",
+            "- legal, privacy, and license decisions",
+            "",
+            "## Step 7: What Not To Do",
+            "",
+            "- Do not paste API keys, passwords, or real private customer data into chat.",
+            "- Do not ask AI to confirm reservations by itself.",
+            "- Do not collect payment card details through a plain contact form.",
+            "- Do not create fake reviews, fake awards, or fake credentials.",
+            "- Do not copy competitor websites.",
+            "- Do not promise rankings, sales, or guaranteed bookings.",
+            "",
+            "## Step 8: Delivery Checklist",
+            "",
+            "Before handing the project to a client, verify:",
+            "",
+            "- The website opens on desktop and mobile.",
+            "- The main call to action is visible near the top.",
+            "- Contact destinations are correct.",
+            "- The inquiry table fields are understandable.",
+            "- Status rules are documented.",
+            "- Response templates are reviewed.",
+            "- The client knows who checks inquiries each day.",
+            "- Human approval boundaries are written down.",
+            "- No secrets or private customer records are included in generated files.",
+            "",
+            "## Why This Can Become A Side Hustle",
+            "",
+            "Small businesses often do not only need a new homepage. They need a clearer way to receive and handle customer interest. This package helps a beginner sell a practical outcome: a website people can use and an operating workflow the business can understand.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_beginner_human_guide(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# 初心者向け: ホームページ制作と裏側運用の人間用ガイド",
+            "",
+            "このガイドは、AIやコードに慣れていない人が、ホームページ制作の副業を安全に始めるための手順書です。目的は「きれいなページを作ること」だけではありません。問い合わせが来た後に、誰が見て、どう返信し、どこまで人間が確認するかまで作ることです。",
+            "",
+            "## 全体像",
+            "",
+            "1. お客様の商売を理解する",
+            "2. ホームページに載せる事実を集める",
+            "3. 表側のページを作る",
+            "4. 問い合わせ・予約を集める台帳を作る",
+            "5. 返信テンプレートと確認ルールを作る",
+            "6. PCとスマホで確認する",
+            "7. お客様に渡す説明文を作る",
+            "",
+            "## 1. 最初に聞くこと",
+            "",
+            "- 何を増やしたいか: 予約、問い合わせ、電話、来店、見積もり依頼",
+            "- お客様は誰か: 観光客、近所の人、法人、リピーター、新規客",
+            "- 必ず載せる情報: 営業時間、場所、料金、サービス、部屋、写真、注意事項",
+            "- 信頼材料: 口コミ、実績、資格、受賞、スタッフ紹介、よくある質問",
+            "- 連絡先: メール、電話、LINE、予約サイト、Googleフォームなど",
+            "",
+            "## 2. 表側のホームページの作り方",
+            "",
+            "ホームページは、上から順番に読んだ人が迷わない構成にします。",
+            "",
+            "1. 最初の画面: 何の店・施設で、誰向けで、何をしてほしいかを書く",
+            "2. 選ばれる理由: 他と違う点を事実で書く",
+            "3. サービスや部屋: 写真、内容、料金の目安を書く",
+            "4. 利用の流れ: 問い合わせから予約・来店までの流れを書く",
+            "5. 信頼材料: 口コミ、実績、FAQを書く",
+            "6. アクセス・営業時間・連絡先を書く",
+            "7. 最後にもう一度問い合わせボタンを置く",
+            "",
+            "注意点: 競合サイトをそのまま真似しないでください。構成の考え方は参考にできますが、文章、写真、ロゴ、色使い、レイアウトを丸ごとコピーしてはいけません。",
+            "",
+            "## 3. 裏側の管理の作り方",
+            "",
+            "問い合わせや予約は、最初から複雑なシステムにしなくて大丈夫です。まずは一つの台帳に集めます。",
+            "",
+            "おすすめの最初の形:",
+            "",
+            "- フォーム: Googleフォーム、Tally、Netlify Formsなど",
+            "- 台帳: Googleスプレッドシート、Airtable、Notionなど",
+            "- ステータス: new、needs-info、availability-check、quoted、tentative、confirmed、declined、canceled、follow-up",
+            "- 返信: テンプレートを使って下書きし、人間が確認して送る",
+            "",
+            "重要: AIが予約確定や価格変更を勝手に行う形にはしないでください。最初は、AIは整理と下書きまで、人間が最終確認という形が安全です。",
+            "",
+            "## 4. 毎日の運用",
+            "",
+            "毎日見る順番:",
+            "",
+            "1. 新しい問い合わせを見る",
+            "2. 重複や迷惑メールを除く",
+            "3. 足りない情報があれば聞き返す",
+            "4. 予約や空き状況は人間が確認する",
+            "5. 返信文を作り、人間が確認して送る",
+            "6. 次に何をするか、いつまでにするかを書く",
+            "",
+            "週に一度見るもの:",
+            "",
+            "- 問い合わせがどこから来たか",
+            "- 何件が予約や商談につながったか",
+            "- 返信が遅れたものはないか",
+            "- 同じ質問が何度も来ていないか",
+            "- ホームページに追加すべきFAQはないか",
+            "",
+            "## 5. 納品するときに説明すること",
+            "",
+            "お客様には、次の4つを短く説明します。",
+            "",
+            "1. ホームページのどこを見ればよいか",
+            "2. 問い合わせがどこに入るか",
+            "3. ステータスをどう変えるか",
+            "4. AIに任せてよいこと、人間が必ず確認すること",
+            "",
+            "## 6. やってはいけないこと",
+            "",
+            "- APIキー、パスワード、顧客の個人情報をチャットに貼る",
+            "- 予約をAIだけで確定する",
+            "- 料金やキャンセル規定をAIだけで変更する",
+            "- 競合サイトを丸ごとコピーする",
+            "- 実在しない口コミや実績を書く",
+            "",
+            "このガイドのゴールは、初心者でも「何を作り、何を確認し、どこからお金をもらう価値が出るのか」を見失わないようにすることです。",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_design_direction(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Design Direction Template",
+            "",
+            "## Site Goal",
+            "",
+            "## Audience",
+            "",
+            "## Visual Tone",
+            "",
+            "## Section Order",
+            "",
+            "## Design Tokens",
+            "- Typography",
+            "- Background and surface colors",
+            "- CTA color",
+            "- Border and radius rules",
+            "- Spacing scale",
+            "",
+            "## Proof And Trust Elements",
+            "",
+            "## Originality Notes",
+            "- Pattern principles to borrow",
+            "- Brand signals that must be different",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_copy_sheet(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Copy Collection Sheet",
+            "",
+            "Collect client facts before asking the AI to write homepage copy.",
+            "",
+            "- Exact business name:",
+            "- Short one-line promise:",
+            "- Services or room types:",
+            "- Why customers choose this business over nearby options:",
+            "- What happens after inquiry or booking:",
+            "- Best testimonial or review quote:",
+            "- Local details that make the page believable:",
+            "- FAQ topics customers ask already:",
+            "- Policy notes that matter: cancellation, parking, appointments, payment, hours:",
+            "",
+            "Rule: replace vague adjectives with facts, scenes, or outcomes.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_codex_workflow(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Codex Workflow",
+            "",
+            "Use this with Codex, Claude Code, Cursor, or another coding agent after sharing the repository and the current project folder.",
+            "",
+            "```text",
+            "Read commercial_use_sources.md, originality_and_license_rules.md, client_brief.md, and homepage_structure_guide.md first.",
+            "Then build an original small-business website in one narrow niche.",
+            "Use public GitHub design resources only as references for patterns and accessible components.",
+            "Do not copy competitor copy, logos, or layouts exactly.",
+            "Before finishing, verify desktop and mobile rendering, CTA visibility, image loading, text overflow, and the delivery checklist.",
+            "```",
+            "",
+            "Use browser verification for every visual milestone, not only at the end.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_stack(payload: dict) -> str:
+    lines = [
+        "# Implementation Stack",
+        "",
+        "Default stack for brochure and landing-page work:",
+        "",
+        "| Layer | Recommendation | Why |",
+        "|---|---|---|",
+        "| Site type | Static HTML or Astro | Fast, cheap hosting, low maintenance |",
+        "| Components | shadcn/ui or lightweight local components | Accessible base patterns |",
+        "| Tokens | CSS variables, optionally Open Props | Consistent spacing and styling |",
+        "| Icons | lucide | Predictable, commercial-friendly icon set |",
+        "| QA | Browser screenshots plus checklist | Stops layout regressions |",
+        "| Hosting | GitHub Pages, Netlify, Cloudflare Pages, Vercel | Beginner-friendly deployment options |",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def _render_website_side_hustle_structure(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Homepage Structure Guide",
+            "",
+            "Recommended order for small-business websites:",
+            "",
+            "1. Hero with exact buyer, offer, and primary CTA",
+            "2. Why choose this business",
+            "3. Services, room types, or featured offers",
+            "4. Process or how booking/contact works",
+            "5. Proof: reviews, certifications, case notes, before/after",
+            "6. Access, map, hours, contact",
+            "7. FAQ",
+            "8. Final CTA",
+            "",
+            "Remove sections that do not help the client decide.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_reservation_system(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Reservation And Inquiry System",
+            "",
+            "This is the back-office layer that makes a website project more useful than a brochure page.",
+            "",
+            "## Core Flow",
+            "",
+            "1. Capture inquiries from the website form, phone notes, email, LINE, booking portal exports, or manual staff entry.",
+            "2. Normalize every item into `inquiry_intake_schema.csv` so the operator can compare them in one place.",
+            "3. Deduplicate by email, phone, requested date range, and message similarity before replying.",
+            "4. Classify the item: reservation request, availability question, general inquiry, group booking, complaint, or spam.",
+            "5. Check availability and policy manually before sending a reply.",
+            "6. Draft a response from `response_templates.md`, then have a human review and send it.",
+            "7. Move the item through `reservation_pipeline.csv` until it is confirmed, declined, canceled, or archived.",
+            "",
+            "## Safety Boundaries",
+            "",
+            "- Do not auto-confirm a booking without human approval.",
+            "- Do not quote final prices unless the client has approved the current price table and exceptions.",
+            "- Do not store card numbers, passport scans, medical details, or other unnecessary sensitive data.",
+            "- Do not mix multiple client businesses in one shared spreadsheet unless access controls are clear.",
+            "",
+            "## Deliverable To Client",
+            "",
+            "For a beginner-friendly package, deliver a form, one shared intake table, status rules, response templates, and a daily runbook before adding automation.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_inquiry_schema_csv(payload: dict) -> str:
+    rows = [
+        [
+            "field",
+            "type",
+            "required",
+            "example",
+            "operator_note",
+        ],
+        ["lead_id", "text", "yes", "TH-2026-0001", "Stable ID used across email, sheet, and dashboard"],
+        ["received_at", "datetime", "yes", "2026-06-25 09:15", "Use one timezone for the client"],
+        ["source", "select", "yes", "website_form", "website_form, phone, email, LINE, booking_portal, manual"],
+        ["customer_name", "text", "yes", "Aoki Hana", "Minimum name needed to reply"],
+        ["contact_method", "select", "yes", "email", "email, phone, LINE, other"],
+        ["email", "email", "no", "guest@example.com", "Needed for email replies"],
+        ["phone", "text", "no", "090-0000-0000", "Keep formatting consistent"],
+        ["check_in", "date", "no", "2026-08-12", "Reservation inquiries only"],
+        ["check_out", "date", "no", "2026-08-14", "Reservation inquiries only"],
+        ["guests", "number", "no", "2", "Adults and children can become separate fields later"],
+        ["requested_room_or_service", "text", "no", "Ocean view twin", "Room, plan, service, or inquiry category"],
+        ["message", "long_text", "yes", "Is parking available?", "Original customer request"],
+        ["status", "select", "yes", "new", "Must match reservation_pipeline.csv"],
+        ["priority", "select", "yes", "normal", "urgent, normal, low"],
+        ["owner", "text", "no", "front-desk", "Person or team responsible"],
+        ["next_action_due", "datetime", "no", "2026-06-25 13:00", "Prevents stale leads"],
+        ["consent_notes", "text", "no", "form privacy notice accepted", "Record consent source when available"],
+    ]
+    return "\n".join(",".join(f'"{field}"' for field in row) for row in rows) + "\n"
+
+
+def _render_website_side_hustle_reservation_pipeline_csv(payload: dict) -> str:
+    rows = [
+        ["status", "meaning", "owner_action", "exit_rule"],
+        ["new", "Unreviewed inquiry", "Check source, spam, duplicates, and required fields", "Valid item is classified"],
+        ["needs-info", "Customer details are missing", "Send missing-info template", "Customer replies or lead is closed"],
+        ["availability-check", "Dates or service availability must be checked", "Confirm calendar, room, staff, or inventory", "Availability is known"],
+        ["quoted", "Price or plan has been sent", "Wait for customer response and set follow-up due date", "Customer accepts, declines, or expires"],
+        ["tentative", "Held but not final", "Confirm hold rule and deadline with staff", "Human approves confirmation or releases hold"],
+        ["confirmed", "Booking or appointment is accepted", "Send approved confirmation details", "Service completed or canceled"],
+        ["declined", "Cannot accept request", "Send no-availability or out-of-scope reply", "Archive after review"],
+        ["canceled", "Customer or business canceled", "Record reason and notify relevant staff", "Archive after review"],
+        ["follow-up", "Lead needs a reminder", "Send approved follow-up before due date", "Customer replies or lead is closed"],
+    ]
+    return "\n".join(",".join(f'"{field}"' for field in row) for row in rows) + "\n"
+
+
+def _render_website_side_hustle_response_templates(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Response Templates",
+            "",
+            "Use these as drafts only. A human should review availability, price, names, dates, and policy before sending.",
+            "",
+            "## Reservation Inquiry Received",
+            "",
+            "Subject: Thank you for your inquiry",
+            "",
+            "Thank you for contacting us. We received your request for [DATE / SERVICE]. We will check availability and reply with the next step shortly.",
+            "",
+            "## Missing Information",
+            "",
+            "Subject: A quick question about your request",
+            "",
+            "Thank you for your inquiry. To check availability, could you please send: [MISSING FIELD LIST]? Once we receive this, we will review the request.",
+            "",
+            "## Availability And Quote",
+            "",
+            "Subject: Availability for your requested dates",
+            "",
+            "We have availability for [DATE RANGE / SERVICE]. The estimated price is [APPROVED PRICE], including [INCLUSIONS]. Please reply by [DEADLINE] if you would like us to proceed.",
+            "",
+            "## No Availability",
+            "",
+            "Subject: About your requested dates",
+            "",
+            "Thank you for checking with us. Unfortunately, we do not have availability for [DATE RANGE]. If your dates are flexible, we can check [ALTERNATIVE DATE / OPTION].",
+            "",
+            "## Follow-Up",
+            "",
+            "Subject: Following up on your inquiry",
+            "",
+            "I wanted to follow up on your request for [DATE / SERVICE]. If you are still interested, please reply by [DATE]. If your plans changed, no problem.",
+            "",
+            "## General Contact",
+            "",
+            "Subject: Thank you for contacting us",
+            "",
+            "Thank you for your message. We will review it and reply as soon as possible. For urgent same-day matters, please call [PHONE NUMBER].",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_operator_runbook(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Operator Runbook",
+            "",
+            "## Daily Review",
+            "",
+            "1. Open the intake table and sort by `priority`, then `next_action_due`, then `received_at`.",
+            "2. Check `new` rows for spam, duplicates, and missing fields.",
+            "3. Move valid rows to the correct status in `reservation_pipeline.csv`.",
+            "4. Draft replies from `response_templates.md`.",
+            "5. Ask the client or staff to approve availability, price, and exceptions before sending.",
+            "6. Record the sent reply summary and set the next action due date.",
+            "",
+            "## Weekly Review",
+            "",
+            "- Count new inquiries by source.",
+            "- Count confirmed, declined, canceled, and stale leads.",
+            "- List repeated questions that should become FAQ content on the website.",
+            "- Review response speed and missed follow-ups.",
+            "",
+            "## Automation Rule",
+            "",
+            "Automation may draft, label, copy rows, and remind. It should not send final confirmations, change prices, or make policy exceptions without human approval.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_integration_options(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Integration Options",
+            "",
+            "Choose the lowest-risk setup that fits the client. Keep account ownership and credentials with the client whenever possible.",
+            "",
+            "| Setup | Good for | Notes |",
+            "|---|---|---|",
+            "| Google Forms + Google Sheets | beginner intake | cheap, visible, easy to audit |",
+            "| Tally or Typeform + Sheets | polished forms | check plan limits and data storage terms |",
+            "| Formspree or Netlify Forms | static websites | useful for GitHub Pages, Netlify, or Astro sites |",
+            "| Airtable | richer status tracking | better views, more moving parts |",
+            "| Notion database | small teams already using Notion | simple, but permissions must be checked |",
+            "| Gmail labels + filters | email-heavy businesses | good for triage, weak as a source of truth |",
+            "| Zapier, Make, or n8n | cross-tool automation | start after the manual workflow is stable |",
+            "| Self-hosted backend | custom requirements | higher maintenance and security responsibility |",
+            "",
+            "Do not paste API keys, email passwords, or private customer data into chat. Store secrets in the hosting provider or the client's approved password manager.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_privacy_consent(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Privacy And Consent",
+            "",
+            "This is an operational checklist, not legal advice. Ask the client to review privacy language for their location and industry.",
+            "",
+            "## Data Minimization",
+            "",
+            "- Collect only the fields needed to answer or process the inquiry.",
+            "- Avoid sensitive data unless the business has a clear legal and operational reason.",
+            "- Do not request payment card data through a plain contact form.",
+            "",
+            "## Form Notice",
+            "",
+            "Example notice: The information you send will be used to respond to your inquiry or reservation request. Please do not include sensitive personal information in this form.",
+            "",
+            "## Retention",
+            "",
+            "- Decide how long to keep unconverted inquiries.",
+            "- Archive or delete stale leads on a schedule approved by the client.",
+            "- Limit spreadsheet and inbox access to people who need it.",
+            "",
+            "## Japan-Oriented Reminder",
+            "",
+            "For Japanese clients, privacy handling should be reviewed against the Act on the Protection of Personal Information and the client's own privacy policy.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_sla_followup(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# SLA And Follow-Up Rules",
+            "",
+            "## Suggested Response Targets",
+            "",
+            "| Priority | Target | Example |",
+            "|---|---|---|",
+            "| urgent | same business day | same-day stay, complaint, phone escalation |",
+            "| normal | within 24 hours | normal reservation or contact inquiry |",
+            "| low | within 2 business days | broad question, future planning, partnership |",
+            "",
+            "## Stale Lead Rules",
+            "",
+            "- If `new` is older than 24 hours, escalate to the owner.",
+            "- If `quoted` has no reply after 48 hours, send one follow-up.",
+            "- If no reply after the follow-up deadline, close or archive the lead.",
+            "- If the same question repeats, add it to the website FAQ or booking notes.",
+            "",
+            "## Metrics To Track",
+            "",
+            "- inquiries by source",
+            "- average first response time",
+            "- confirmed reservations or accepted inquiries",
+            "- stale leads",
+            "- repeated FAQ topics",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_inquiry_dashboard(payload: dict) -> str:
+    niche_label = html.escape(payload["niche"].replace("-", " ").title())
+    return f"""<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reservation Inbox | {niche_label}</title>
+    <style>
+      :root {{
+        --ink: #182126;
+        --paper: #f7f4ee;
+        --line: #d8d0c3;
+        --brand: #1f5f68;
+        --accent: #b96b32;
+        --ok: #2f6f4e;
+        --warn: #a15c18;
+        --soft: #fffaf2;
+      }}
+      * {{ box-sizing: border-box; }}
+      body {{
+        margin: 0;
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--ink);
+        background: var(--paper);
+      }}
+      main {{
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 32px 0 48px;
+      }}
+      header {{
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        align-items: end;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 20px;
+      }}
+      h1 {{ margin: 0; font-size: 34px; line-height: 1.08; }}
+      p {{ margin: 8px 0 0; color: #536067; }}
+      .grid {{
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin: 24px 0;
+      }}
+      .metric {{
+        background: var(--soft);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 16px;
+      }}
+      .metric strong {{ display: block; font-size: 28px; }}
+      .metric span {{ color: #5d696f; font-size: 13px; }}
+      .toolbar {{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 14px;
+      }}
+      button {{
+        border: 1px solid var(--line);
+        background: #fffdf8;
+        color: var(--ink);
+        border-radius: 999px;
+        padding: 8px 12px;
+        font-weight: 700;
+      }}
+      button.primary {{ background: var(--brand); color: white; border-color: var(--brand); }}
+      table {{
+        width: 100%;
+        border-collapse: collapse;
+        background: #fffdf8;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+      }}
+      th, td {{
+        padding: 13px 14px;
+        text-align: left;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+      }}
+      th {{ font-size: 12px; color: #5d696f; text-transform: uppercase; background: #f1ece3; }}
+      tr:last-child td {{ border-bottom: 0; }}
+      .status {{
+        display: inline-block;
+        border-radius: 999px;
+        padding: 4px 8px;
+        font-size: 12px;
+        font-weight: 800;
+        background: #e6efe8;
+        color: var(--ok);
+      }}
+      .status.warn {{ background: #fff0df; color: var(--warn); }}
+      .status.new {{ background: #e8f1f2; color: var(--brand); }}
+      .note {{
+        margin-top: 18px;
+        padding: 14px 16px;
+        border-left: 4px solid var(--accent);
+        background: #fff7ec;
+      }}
+      @media (max-width: 760px) {{
+        header {{ display: block; }}
+        .grid {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
+        table, thead, tbody, tr, th, td {{ display: block; }}
+        thead {{ display: none; }}
+        tr {{ border-bottom: 1px solid var(--line); }}
+        td {{ border-bottom: 0; padding: 9px 14px; }}
+        td::before {{ content: attr(data-label); display: block; font-size: 11px; color: #68747a; text-transform: uppercase; }}
+      }}
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <h1>Reservation Inbox</h1>
+          <p>Static dashboard mockup for aggregating website, phone, email, and booking inquiries.</p>
+        </div>
+        <p>{niche_label} back office</p>
+      </header>
+      <section class="grid" aria-label="Inquiry metrics">
+        <div class="metric"><strong>12</strong><span>new this week</span></div>
+        <div class="metric"><strong>4</strong><span>need availability check</span></div>
+        <div class="metric"><strong>7h</strong><span>average first response</span></div>
+        <div class="metric"><strong>3</strong><span>follow-ups due</span></div>
+      </section>
+      <div class="toolbar" aria-label="Filters">
+        <button class="primary">All active</button>
+        <button>New</button>
+        <button>Availability check</button>
+        <button>Follow-up due</button>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Lead</th>
+            <th>Source</th>
+            <th>Request</th>
+            <th>Status</th>
+            <th>Next action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td data-label="Lead">TH-2026-0001<br />Aoki Hana</td>
+            <td data-label="Source">website form</td>
+            <td data-label="Request">Aug 12-14, 2 guests, ocean view twin</td>
+            <td data-label="Status"><span class="status new">new</span></td>
+            <td data-label="Next action">Check availability by 13:00</td>
+          </tr>
+          <tr>
+            <td data-label="Lead">TH-2026-0002<br />Miller Group</td>
+            <td data-label="Source">email</td>
+            <td data-label="Request">Group stay, 8 guests, parking question</td>
+            <td data-label="Status"><span class="status warn">needs-info</span></td>
+            <td data-label="Next action">Ask room split and arrival time</td>
+          </tr>
+          <tr>
+            <td data-label="Lead">TH-2026-0003<br />Tanaka Ren</td>
+            <td data-label="Source">phone note</td>
+            <td data-label="Request">Weekend stay, flexible dates</td>
+            <td data-label="Status"><span class="status">quoted</span></td>
+            <td data-label="Next action">Follow up tomorrow morning</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="note">
+        Human approval is required before final booking confirmation, price exceptions, or policy changes.
+      </div>
+    </main>
+  </body>
+</html>
+"""
+
+
+def _render_website_side_hustle_rules(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Originality And License Rules",
+            "",
+            "1. Never ship a direct competitor clone.",
+            "2. Never reuse third-party logos, photos, or protected copy without permission.",
+            "3. Verify the source license before copying code into a commercial job.",
+            "4. Prefer learning from the pattern and re-implementing it when license scope is unclear.",
+            "5. Keep a record of which public sources influenced the build.",
+            "6. Treat AI image generation as draft art unless the client approves the rights and usage policy.",
+            "7. Keep promises narrow: site design and implementation, not guaranteed sales.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_delivery_checklist(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Delivery Checklist",
+            "",
+            "- [ ] Desktop and mobile checked in a browser",
+            "- [ ] No horizontal scroll",
+            "- [ ] CTA visible in first viewport",
+            "- [ ] Contact, address, map, hours, or booking path confirmed",
+            "- [ ] Images load and are rights-safe",
+            "- [ ] Client copy and policies reviewed",
+            "- [ ] SEO title and description set",
+            "- [ ] Favicon, OGP, and footer reviewed if included",
+            "- [ ] Deployment target agreed",
+            "- [ ] Handoff notes written: how to edit text, images, contact info",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_accessibility_seo(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Accessibility And SEO Checklist",
+            "",
+            "Accessibility:",
+            "- [ ] One clear H1",
+            "- [ ] Labels on forms and contact inputs",
+            "- [ ] Focus states visible",
+            "- [ ] Contrast checked for body text and buttons",
+            "- [ ] Images have alt text when informative",
+            "",
+            "SEO and local trust:",
+            "- [ ] Title tag names the business and offer",
+            "- [ ] Meta description is specific and truthful",
+            "- [ ] Heading structure is readable",
+            "- [ ] Address, phone, hours, and service area are consistent",
+            "- [ ] Add structured data only for facts the client can support",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_proposal(payload: dict) -> str:
+    vertical = payload["niche"].replace("-", " ")
+    return "\n".join(
+        [
+            f"# Proposal One Pager: {vertical.title()} Website",
+            "",
+            "## Scope",
+            "",
+            "One original homepage or small brochure site built from approved client facts, with mobile-responsive layout, contact or booking CTA, and browser-tested delivery.",
+            "",
+            "## Included",
+            "",
+            "- Client brief and content collection",
+            "- Homepage structure and design direction",
+            "- Original implementation using public, commercial-friendly references",
+            "- Reservation and inquiry intake structure with manual approval boundaries",
+            "- Browser QA and handoff notes",
+            "",
+            "## Not Included",
+            "",
+            "- Guaranteed rankings or sales",
+            "- Fully custom back-office software",
+            "- Automated booking confirmation or payment handling",
+            "- Unlicensed stock libraries or competitor cloning",
+            "- Ongoing ad management",
+            "",
+            "## Delivery Standard",
+            "",
+            "The site is reviewed on desktop and mobile, with visible CTA, stable layout, and documented content ownership boundaries.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_pricing(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Pricing Menu",
+            "",
+            "| Offer | Scope | Typical beginner range |",
+            "|---|---|---|",
+            "| Starter page | One homepage, basic contact CTA, simple copy shaping | JPY 30,000-60,000 |",
+            "| Standard brochure site | Homepage plus 3-5 sections or pages, stronger trust content | JPY 80,000-180,000 |",
+            "| Premium launch pack | Brochure site, copy workshop, SEO basics, launch checklist, one revision cycle | JPY 180,000-350,000 |",
+            "| Inquiry operations add-on | intake schema, status pipeline, response templates, simple dashboard mockup | JPY 50,000-150,000 |",
+            "| Monthly care | text swaps, image updates, basic monitoring, small fixes | JPY 10,000-30,000 / month |",
+            "",
+            "Price with boundaries. Say what is included, what is not, and what triggers a new quote.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_maintenance(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Maintenance Plan",
+            "",
+            "Monthly care can include:",
+            "- text, prices, hours, and CTA updates",
+            "- one small section refresh",
+            "- link and contact checks",
+            "- inquiry table and follow-up rule review",
+            "- uptime or render spot checks",
+            "- image swaps supplied by the client",
+            "",
+            "Do not include unlimited redesign work in a low-cost retainer.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_outreach(payload: dict) -> str:
+    niche = payload["niche"].replace("-", " ")
+    return "\n".join(
+        [
+            "# Outreach Messages",
+            "",
+            "Subject: Small website refresh idea for your business",
+            "",
+            f"I build original small-business websites for niches like {niche} using a faster AI-assisted workflow plus human review checklists.",
+            "",
+            "If your current site feels outdated, hard to update, or unclear on mobile, I can start with a small homepage refresh proposal and a browser-ready mockup before any larger build.",
+            "",
+            "I do not clone competitor sites and I keep the first scope narrow so you can review the result safely.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_launch(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Launch Checklist",
+            "",
+            "- [ ] Domain and hosting owner confirmed",
+            "- [ ] Analytics decision confirmed or intentionally skipped",
+            "- [ ] Contact destination tested",
+            "- [ ] Legal pages reviewed if needed",
+            "- [ ] Backup copy of final files kept",
+            "- [ ] Client knows how to request edits",
+            "- [ ] Post-launch review date scheduled",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_sample_site(payload: dict) -> str:
+    niche_label = payload["niche"].replace("-", " ").title()
+    return f"""<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Harbor Light Stay | Sample {html.escape(niche_label)} Website</title>
+    <meta name="description" content="Sample small-business website generated by the Website Side Hustle Pack." />
+    <style>
+      :root {{
+        --ink: #172226;
+        --paper: #f6f1e8;
+        --sea: #184d52;
+        --foam: #dcebe9;
+        --accent: #d77f61;
+        --line: rgba(23, 34, 38, 0.14);
+      }}
+      * {{ box-sizing: border-box; }}
+      body {{
+        margin: 0;
+        font-family: Georgia, "Times New Roman", serif;
+        color: var(--ink);
+        background: linear-gradient(180deg, #f7f2ea 0%, #eef7f6 48%, #f7f2ea 100%);
+      }}
+      .hero {{
+        min-height: 88vh;
+        padding: 28px;
+        display: grid;
+        align-items: end;
+        background:
+          linear-gradient(120deg, rgba(24, 77, 82, 0.82), rgba(24, 77, 82, 0.18) 58%, rgba(24, 77, 82, 0.04)),
+          radial-gradient(circle at top right, rgba(255,255,255,0.5), transparent 30%),
+          linear-gradient(135deg, #7da6a1, #d8cfbf 55%, #355d61);
+        color: #fffaf3;
+      }}
+      .hero-inner {{
+        max-width: 1120px;
+        width: 100%;
+        margin: 0 auto;
+        display: grid;
+        gap: 24px;
+      }}
+      h1, h2, p {{ margin: 0; }}
+      h1 {{
+        max-width: 760px;
+        font-size: clamp(3rem, 8vw, 6rem);
+        line-height: 0.95;
+        font-weight: 500;
+      }}
+      .hero p {{
+        max-width: 580px;
+        font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+        font-size: 1.05rem;
+        line-height: 1.8;
+      }}
+      .actions {{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin-top: 12px;
+      }}
+      .button {{
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 50px;
+        padding: 0 22px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-family: "Hiragino Sans", "Yu Gothic", sans-serif;
+        font-weight: 700;
+      }}
+      .button.primary {{ background: var(--accent); color: #fffaf3; }}
+      .button.secondary {{ border: 1px solid rgba(255,255,255,0.45); color: #fffaf3; }}
+      main {{ max-width: 1120px; margin: 0 auto; padding: 72px 28px 96px; }}
+      .grid {{ display: grid; gap: 18px; }}
+      .intro {{ grid-template-columns: 1.15fr 0.85fr; align-items: start; }}
+      .panel {{
+        padding: 24px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 250, 243, 0.72);
+      }}
+      .stats strong {{
+        display: block;
+        color: var(--sea);
+        font-size: 2.2rem;
+      }}
+      .sections {{ margin-top: 46px; grid-template-columns: repeat(3, minmax(0, 1fr)); }}
+      .section-card {{
+        min-height: 220px;
+        display: grid;
+        align-content: end;
+        padding: 24px;
+        background: linear-gradient(160deg, rgba(24,77,82,0.16), rgba(24,77,82,0.78));
+        color: #fffaf3;
+        border-radius: 8px;
+      }}
+      .section-card p {{ font-family: "Hiragino Sans", "Yu Gothic", sans-serif; margin-top: 10px; line-height: 1.7; }}
+      @media (max-width: 840px) {{
+        .intro, .sections {{ grid-template-columns: 1fr; }}
+      }}
+    </style>
+  </head>
+  <body>
+    <section class="hero">
+      <div class="hero-inner">
+        <div>
+          <p style="font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif; letter-spacing: .16em; text-transform: uppercase;">Sample Website Side Hustle Demo</p>
+          <h1>Quiet hospitality, designed to convert on mobile.</h1>
+        </div>
+        <p>Use this sample as a starting point for a tourism-hotel or villa homepage: strong first viewport, direct booking CTA, visible trust, and section rhythm without heavy framework requirements.</p>
+        <div class="actions">
+          <a class="button primary" href="#">Primary CTA</a>
+          <a class="button secondary" href="#">See Rooms</a>
+        </div>
+      </div>
+    </section>
+    <main>
+      <section class="grid intro">
+        <div class="panel">
+          <h2 style="font-size: clamp(2.2rem, 6vw, 4rem); line-height: 1.02;">This sample exists to show structure, not fake prestige.</h2>
+          <p style="font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif; margin-top: 18px; line-height: 1.8;">Swap in real photos, verified amenities, pricing ranges, and local proof before sending to a client. Keep the page original and fact-based.</p>
+        </div>
+        <div class="panel stats">
+          <strong>3</strong><span>core offers or room types</span>
+          <strong>1</strong><span>clear mobile-first CTA</span>
+          <strong>0</strong><span>competitor clone permission</span>
+        </div>
+      </section>
+      <section class="grid sections">
+        <article class="section-card">
+          <h2>Offer</h2>
+          <p>Show the room, service, or package in plain language.</p>
+        </article>
+        <article class="section-card">
+          <h2>Trust</h2>
+          <p>Use reviews, staff names, map, and policy facts to reduce hesitation.</p>
+        </article>
+        <article class="section-card">
+          <h2>CTA</h2>
+          <p>Phone, booking, quote, or contact. One next step, visible above the fold.</p>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>
+"""

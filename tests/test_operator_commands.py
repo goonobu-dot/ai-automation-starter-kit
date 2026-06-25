@@ -14,6 +14,7 @@ from ai_automation_kit.core.operator_console import generate_opportunity_catalog
 from ai_automation_kit.core.operator_console import generate_quickstart_workspace
 from ai_automation_kit.core.operator_console import generate_recommended_flow_from_intake
 from ai_automation_kit.core.operator_console import generate_share_check
+from ai_automation_kit.core.operator_console import generate_website_side_hustle_pack
 from ai_automation_kit.core.operator_console import package_client_demo
 from ai_automation_kit.core.flows import install_flow
 from ai_automation_kit.core.flow_runtime import run_flow_project
@@ -221,6 +222,47 @@ def test_generate_complete_workspace_creates_done_for_you_delivery(tmp_path):
     assert "Before / After Demo" in (output / "before_after_demo.html").read_text()
     assert "Starter 10" in (output / "side_business_starter_10.md").read_text()
     assert "企業向け自動化導入" in (output / "business_launch" / "first_client_offer.md").read_text()
+
+
+def test_generate_website_side_hustle_pack_creates_public_side_hustle_assets(tmp_path):
+    output = tmp_path / "website-pack"
+
+    payload = generate_website_side_hustle_pack(
+        industry="hospitality",
+        client_type="local-business",
+        niche="tourism-hotel",
+        operator_level="beginner",
+        output=output,
+    )
+
+    assert payload["status"] == "ready"
+    assert (output / "START_HERE_WEBSITE_SIDE_HUSTLE.md").exists()
+    assert (output / "commercial_use_sources.md").exists()
+    assert (output / "proposal_one_pager.md").exists()
+    assert (output / "maintenance_plan.md").exists()
+    assert (output / "ai_agent_handoff.md").exists()
+    assert (output / "beginner_human_guide.md").exists()
+    assert (output / "beginner_human_guide.ja.md").exists()
+    assert (output / "reservation_inquiry_system.md").exists()
+    assert (output / "inquiry_intake_schema.csv").exists()
+    assert (output / "reservation_pipeline.csv").exists()
+    assert (output / "response_templates.md").exists()
+    assert (output / "operator_runbook.md").exists()
+    assert (output / "integration_options.md").exists()
+    assert (output / "privacy_and_consent.md").exists()
+    assert (output / "sla_and_followup.md").exists()
+    assert (output / "inquiry_dashboard.html").exists()
+    assert (output / "sample_site" / "index.html").exists()
+    assert "shadcn/ui" in (output / "commercial_use_sources.md").read_text()
+    assert "Google Search SEO Starter Guide" in (output / "commercial_use_sources.md").read_text()
+    assert "direct competitor clone" in (output / "originality_and_license_rules.md").read_text()
+    assert "Codex, Claude Code, Cursor" in (output / "ai_agent_handoff.md").read_text()
+    assert "Beginner Human Guide" in (output / "beginner_human_guide.md").read_text()
+    assert "初心者向け" in (output / "beginner_human_guide.ja.md").read_text()
+    assert "Do not auto-confirm" in (output / "reservation_inquiry_system.md").read_text()
+    assert "lead_id" in (output / "inquiry_intake_schema.csv").read_text()
+    assert "Google Forms + Google Sheets" in (output / "integration_options.md").read_text()
+    assert "Reservation Inbox" in (output / "inquiry_dashboard.html").read_text()
 
 
 def test_generate_opportunity_catalog_creates_sales_catalog(tmp_path):

@@ -44,6 +44,10 @@ def test_readme_links_start_here_and_use_cases_docs():
     assert "docs/AI_RECEPTION_EMPLOYEE_PACK.ja.md" in readme
     assert "docs/AI_EMPLOYEE_ROADMAP.md" in readme
     assert "docs/AI_EMPLOYEE_ROADMAP.ja.md" in readme
+    assert "docs/WEBSITE_SIDE_HUSTLE_GUIDE.md" in readme
+    assert "docs/WEBSITE_SIDE_HUSTLE_GUIDE.ja.md" in readme
+    assert "docs/WEBSITE_PROJECT_AGENT_GUIDE.md" in readme
+    assert "docs/WEBSITE_PROJECT_AGENT_GUIDE.ja.md" in readme
     assert "docs/CLOUD_DEPLOYMENT_GUIDE.md" in readme
     assert "docs/CLOUD_DEPLOYMENT_GUIDE.ja.md" in readme
     assert "docs/CLOUD_BEGINNER_PLAYBOOK.md" in readme
@@ -138,6 +142,42 @@ def test_ai_employee_roadmap_docs_explain_priority_and_exclusions():
             "営業リサーチ",
             "アウトバウンド営業から始めない",
             "多部門",
+        ],
+    }
+    for path, snippets in expected_docs.items():
+        text = Path(path).read_text()
+        assert len(text) > 800, path
+        for snippet in snippets:
+            assert snippet in text, f"{path} missing {snippet}"
+
+
+def test_website_side_hustle_docs_are_bilingual_and_linked():
+    expected_docs = {
+        "docs/WEBSITE_SIDE_HUSTLE_GUIDE.md": [
+            "Website Side Hustle Guide",
+            "Website Project Agent Guide",
+            "website-side-hustle",
+            "beginner_human_guide.md",
+            "inquiry_dashboard.html",
+        ],
+        "docs/WEBSITE_SIDE_HUSTLE_GUIDE.ja.md": [
+            "ホームページ副業ガイド",
+            "ホームページ制作プロジェクト AIエージェント利用ガイド",
+            "website-side-hustle",
+            "beginner_human_guide.ja.md",
+            "inquiry_dashboard.html",
+        ],
+        "docs/WEBSITE_PROJECT_AGENT_GUIDE.md": [
+            "Website Project Agent Guide",
+            "docs/WEBSITE_SIDE_HUSTLE_GUIDE.md",
+            "Do not clone competitors",
+            "START_HERE_WEBSITE_SIDE_HUSTLE.md",
+        ],
+        "docs/WEBSITE_PROJECT_AGENT_GUIDE.ja.md": [
+            "ホームページ制作プロジェクト AIエージェント利用ガイド",
+            "docs/WEBSITE_SIDE_HUSTLE_GUIDE.ja.md",
+            "競合サイトの丸ごとコピーはしない",
+            "START_HERE_WEBSITE_SIDE_HUSTLE.md",
         ],
     }
     for path, snippets in expected_docs.items():

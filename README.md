@@ -37,6 +37,8 @@ The project also includes five reusable workflow templates for research, documen
 
 For monetization work, `offer-pack` creates proposal assets, `client-ready` creates the deeper sales-to-delivery pack, `beginner-sales` creates the first side-business operating pack, and `business-launch` creates a Japanese beginner business proposal system for people who are new to AI: target industry playbook, first client offer, discovery call script, proposal builder, pricing menu, risk boundaries, 30-day launch plan, and pitch email.
 
+For website side-hustle work, `website-side-hustle` creates a commercial-use-aware website delivery pack: public source catalog, originality rules, client brief, Codex workflow, homepage structure guide, reservation and inquiry operations templates, proposal, pricing, maintenance, QA checklists, launch checklist, a small editable sample site, and a static back-office dashboard mockup for client work.
+
 For the easiest hands-on path, `complete-workspace` creates the full local delivery folder in one command: quickstart workspace, dry-run execution, approval export, connector check, client report, demo site, shareable demo zip, final checklist, revenue readiness scorecard, sales closing script, paid PoC scope, value measurement sheet, pre-contract checklist, client proposal email, first 30 days plan, proof-of-value template, OSS pattern benchmark, integration backlog, deployment options, production observability plan, opportunity scorecard, client onboarding form, go-live decision gate, browser-friendly client command center, and the `business_launch/` proposal system. `quickstart` remains useful when you want only the workspace, while `install-bundle`, `client-report`, `connector-doctor`, and `package-client-demo` are available as separate steps.
 
 For selling and choosing work, `opportunity-catalog` creates a browser-friendly automation offer catalog, `recommend-flow` turns a short client intake into a recommended flow and PoC scope, `guided-setup` creates a step-by-step input checklist for local or cloud setup, `guided-review` reviews completed setup answers and tells the operator what to do next, `cloud-plan` creates provider-specific deployment plans for major clouds, and `share-check` scans generated assets before sharing them with a client.
@@ -98,6 +100,10 @@ Need a practical first path or use-case examples?
 - [AI受付社員パック](docs/AI_RECEPTION_EMPLOYEE_PACK.ja.md)
 - [AI Employee Roadmap](docs/AI_EMPLOYEE_ROADMAP.md)
 - [AI社員ロードマップ](docs/AI_EMPLOYEE_ROADMAP.ja.md)
+- [Website side hustle guide](docs/WEBSITE_SIDE_HUSTLE_GUIDE.md)
+- [ホームページ副業ガイド](docs/WEBSITE_SIDE_HUSTLE_GUIDE.ja.md)
+- [Website project agent guide](docs/WEBSITE_PROJECT_AGENT_GUIDE.md)
+- [ホームページ制作プロジェクト AIエージェント利用ガイド](docs/WEBSITE_PROJECT_AGENT_GUIDE.ja.md)
 - [FAQ](docs/FAQ.md)
 - [FAQ](docs/FAQ.ja.md)
 - [Use Cases](docs/USE_CASES.md)
@@ -219,6 +225,7 @@ ai-automation-kit complete-workspace --flow-id invoice-document-followup --clien
 ai-automation-kit opportunity-catalog --industry finance --output .tmp/opportunity-catalog
 ai-automation-kit recommend-flow --industry finance --pain "missing invoice follow up" --tools "Google Sheets Gmail" --output .tmp/recommend-flow
 ai-automation-kit business-launch --industry finance --client-type local-business --niche accounting --output .tmp/business-launch
+ai-automation-kit website-side-hustle --industry hospitality --client-type local-business --niche tourism-hotel --output .tmp/website-side-hustle
 ai-automation-kit guided-setup --flow-id ai-reception-line-inquiry --mode beginner --deployment undecided --connectors line,gmail,google-sheets --output .tmp/guided-setup
 ai-automation-kit guided-review --answers .tmp/guided-setup/guided_setup_answers.example.json --output .tmp/guided-review
 ai-automation-kit cloud-plan --flow-id invoice-document-followup --provider aws --workload scheduled-job --connectors gmail,google-sheets --output .tmp/cloud-plan-aws

@@ -139,6 +139,28 @@ def test_parser_accepts_beginner_sales_command():
     assert args.output == "beginner-sales"
 
 
+def test_parser_accepts_website_side_hustle_command():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "website-side-hustle",
+            "--industry",
+            "hospitality",
+            "--client-type",
+            "local-business",
+            "--niche",
+            "tourism-hotel",
+            "--output",
+            "website-pack",
+        ]
+    )
+    assert args.command == "website-side-hustle"
+    assert args.industry == "hospitality"
+    assert args.client_type == "local-business"
+    assert args.niche == "tourism-hotel"
+    assert args.output == "website-pack"
+
+
 def test_parser_accepts_guided_setup_command():
     parser = build_parser()
     args = parser.parse_args(
@@ -961,6 +983,33 @@ def test_main_runs_beginner_sales_and_prints_key_files(tmp_path, capsys):
     assert (output / "START_HERE_FOR_SIDE_BUSINESS.md").exists()
     assert (output / "selected_flow_demo.html").exists()
     assert (output / "proposal_one_pager.md").exists()
+
+
+def test_main_runs_website_side_hustle_and_prints_key_files(tmp_path, capsys):
+    output = tmp_path / "website-pack"
+
+    exit_code = main(
+        [
+            "website-side-hustle",
+            "--industry",
+            "hospitality",
+            "--client-type",
+            "local-business",
+            "--niche",
+            "tourism-hotel",
+            "--output",
+            str(output),
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "website_side_hustle=" in captured.out
+    assert "proposal=" in captured.out
+    assert "sample_site=" in captured.out
+    assert (output / "START_HERE_WEBSITE_SIDE_HUSTLE.md").exists()
+    assert (output / "proposal_one_pager.md").exists()
+    assert (output / "sample_site" / "index.html").exists()
 
 
 def test_main_runs_flows_list_show_install_and_validate(tmp_path, capsys):

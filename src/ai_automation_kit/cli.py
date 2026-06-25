@@ -39,6 +39,7 @@ from ai_automation_kit.core.operator_console import generate_opportunity_catalog
 from ai_automation_kit.core.operator_console import generate_quickstart_workspace
 from ai_automation_kit.core.operator_console import generate_recommended_flow_from_intake
 from ai_automation_kit.core.operator_console import generate_share_check
+from ai_automation_kit.core.operator_console import generate_website_side_hustle_pack
 from ai_automation_kit.core.operator_console import package_client_demo
 from ai_automation_kit.templates.docs_rag import run_docs_rag
 from ai_automation_kit.templates.delivery_pipeline import run_delivery_pipeline
@@ -157,6 +158,13 @@ def build_parser() -> argparse.ArgumentParser:
     business_launch.add_argument("--niche", default="accounting")
     business_launch.add_argument("--operator-level", default="beginner")
     business_launch.add_argument("--output", required=True)
+
+    website_side_hustle = subparsers.add_parser("website-side-hustle")
+    website_side_hustle.add_argument("--industry", default="hospitality")
+    website_side_hustle.add_argument("--client-type", default="local-business")
+    website_side_hustle.add_argument("--niche", default="tourism-hotel")
+    website_side_hustle.add_argument("--operator-level", default="beginner")
+    website_side_hustle.add_argument("--output", required=True)
 
     guided_setup = subparsers.add_parser("guided-setup")
     guided_setup.add_argument("--flow-id", required=True)
@@ -472,6 +480,19 @@ def main(argv: list[str] | None = None) -> int:
         print(f"business_launch={args.output}/START_HERE_BUSINESS_LAUNCH.md")
         print(f"first_client_offer={args.output}/first_client_offer.md")
         print(f"recommended_flow={payload['recommended_flow']['id']}")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "website-side-hustle":
+        payload = generate_website_side_hustle_pack(
+            industry=args.industry,
+            client_type=args.client_type,
+            niche=args.niche,
+            operator_level=args.operator_level,
+            output=Path(args.output),
+        )
+        print(f"website_side_hustle={args.output}/START_HERE_WEBSITE_SIDE_HUSTLE.md")
+        print(f"proposal={args.output}/proposal_one_pager.md")
+        print(f"sample_site={args.output}/sample_site/index.html")
         print(f"status={payload['status']}")
         return 0
     if args.command == "guided-setup":
