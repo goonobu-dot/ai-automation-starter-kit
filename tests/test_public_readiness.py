@@ -158,6 +158,8 @@ def test_website_side_hustle_docs_are_bilingual_and_linked():
             "Website Project Agent Guide",
             "website-side-hustle",
             "beginner_human_guide.md",
+            "client_kickoff_questions.md",
+            "delivery_acceptance_checklist.md",
             "inquiry_dashboard.html",
         ],
         "docs/WEBSITE_SIDE_HUSTLE_GUIDE.ja.md": [
@@ -165,6 +167,8 @@ def test_website_side_hustle_docs_are_bilingual_and_linked():
             "ホームページ制作プロジェクト AIエージェント利用ガイド",
             "website-side-hustle",
             "beginner_human_guide.ja.md",
+            "client_kickoff_questions.md",
+            "delivery_acceptance_checklist.md",
             "inquiry_dashboard.html",
         ],
         "docs/WEBSITE_PROJECT_AGENT_GUIDE.md": [

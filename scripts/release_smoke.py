@@ -306,9 +306,12 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
     )
     _require_file(website_side_hustle_output / "START_HERE_WEBSITE_SIDE_HUSTLE.md")
     _require_file(website_side_hustle_output / "ai_agent_handoff.md")
+    _require_file(website_side_hustle_output / "client_kickoff_questions.md")
     _require_file(website_side_hustle_output / "beginner_human_guide.md")
     _require_file(website_side_hustle_output / "beginner_human_guide.ja.md")
     _require_file(website_side_hustle_output / "reservation_inquiry_system.md")
+    _require_file(website_side_hustle_output / "delivery_acceptance_checklist.md")
+    _require_file(website_side_hustle_output / "client_handoff_note.md")
     _require_file(website_side_hustle_output / "inquiry_dashboard.html")
     _require_file(website_side_hustle_output / "sample_site" / "index.html")
 

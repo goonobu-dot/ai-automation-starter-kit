@@ -100,6 +100,9 @@ ai-automation-kit website-side-hustle --industry hospitality --client-type local
 初心者が最初に見るべき生成ファイル:
 
 - `ai_agent_handoff.md`: Codex、Claude Code、Cursor などに渡す共通指示
+- `client_kickoff_questions.md`: 最初の打ち合わせで何を聞くかを迷わないための質問表
 - `beginner_human_guide.ja.md`: 人間が読むためのやさしい手順書
 - `reservation_inquiry_system.md`: 問い合わせ・予約の裏側設計
+- `delivery_acceptance_checklist.md`: 公開・納品前にお客様と確認するチェックリスト
+- `client_handoff_note.md`: 納品後に毎日どう使うかを説明する引き継ぎメモ
 - `inquiry_dashboard.html`: ブラウザーで見られる裏側の管理画面モック

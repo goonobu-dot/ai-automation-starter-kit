@@ -92,8 +92,10 @@ ai-automation-kit website-side-hustle --industry hospitality --client-type local
 生成後に見るファイル:
 
 - `.tmp/website-side-hustle/START_HERE_WEBSITE_SIDE_HUSTLE.md`
+- `.tmp/website-side-hustle/client_kickoff_questions.md`
 - `.tmp/website-side-hustle/ai_agent_handoff.md`
 - `.tmp/website-side-hustle/beginner_human_guide.ja.md`
+- `.tmp/website-side-hustle/delivery_acceptance_checklist.md`
+- `.tmp/website-side-hustle/client_handoff_note.md`
 - `.tmp/website-side-hustle/sample_site/index.html`
 - `.tmp/website-side-hustle/inquiry_dashboard.html`
-

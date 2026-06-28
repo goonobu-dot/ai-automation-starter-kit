@@ -197,9 +197,12 @@ That output gives you a commercial-use-aware source catalog, client brief, Codex
 Important generated files for beginners:
 
 - `ai_agent_handoff.md`: copy-ready instruction for Codex, Claude Code, Cursor, or another agent
+- `client_kickoff_questions.md`: first-meeting questions so beginners do not guess the business facts
 - `beginner_human_guide.md`: plain English guide for the human operator
 - `beginner_human_guide.ja.md`: plain Japanese guide for the human operator
 - `reservation_inquiry_system.md`: back-office system overview
+- `delivery_acceptance_checklist.md`: client sign-off checklist before launch or handoff
+- `client_handoff_note.md`: plain-language note explaining daily operation after delivery
 - `inquiry_dashboard.html`: browser-friendly back-office mockup
 
 ## Suggested first paid offer

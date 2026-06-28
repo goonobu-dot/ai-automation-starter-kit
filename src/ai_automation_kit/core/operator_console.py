@@ -178,6 +178,7 @@ def generate_website_side_hustle_pack(
             "START_HERE_WEBSITE_SIDE_HUSTLE.md",
             "commercial_use_sources.md",
             "client_brief.md",
+            "client_kickoff_questions.md",
             "ai_agent_handoff.md",
             "beginner_human_guide.md",
             "beginner_human_guide.ja.md",
@@ -190,6 +191,8 @@ def generate_website_side_hustle_pack(
             "privacy_and_consent.md",
             "sla_and_followup.md",
             "inquiry_dashboard.html",
+            "delivery_acceptance_checklist.md",
+            "client_handoff_note.md",
             "proposal_one_pager.md",
             "maintenance_plan.md",
             "sample_site/index.html",
@@ -203,6 +206,7 @@ def generate_website_side_hustle_pack(
     (output / "commercial_use_sources.md").write_text(_render_website_side_hustle_sources_md(payload), encoding="utf-8")
     (output / "source_catalog.csv").write_text(_render_website_side_hustle_sources_csv(payload), encoding="utf-8")
     (output / "client_brief.md").write_text(_render_website_side_hustle_client_brief(payload), encoding="utf-8")
+    (output / "client_kickoff_questions.md").write_text(_render_website_side_hustle_kickoff_questions(payload), encoding="utf-8")
     (output / "ai_agent_handoff.md").write_text(_render_website_side_hustle_agent_handoff(payload), encoding="utf-8")
     (output / "beginner_human_guide.md").write_text(_render_website_side_hustle_beginner_human_guide_en(payload), encoding="utf-8")
     (output / "beginner_human_guide.ja.md").write_text(_render_website_side_hustle_beginner_human_guide(payload), encoding="utf-8")
@@ -222,6 +226,8 @@ def generate_website_side_hustle_pack(
     (output / "inquiry_dashboard.html").write_text(_render_website_side_hustle_inquiry_dashboard(payload), encoding="utf-8")
     (output / "originality_and_license_rules.md").write_text(_render_website_side_hustle_rules(payload), encoding="utf-8")
     (output / "delivery_checklist.md").write_text(_render_website_side_hustle_delivery_checklist(payload), encoding="utf-8")
+    (output / "delivery_acceptance_checklist.md").write_text(_render_website_side_hustle_acceptance_checklist(payload), encoding="utf-8")
+    (output / "client_handoff_note.md").write_text(_render_website_side_hustle_client_handoff(payload), encoding="utf-8")
     (output / "accessibility_and_seo_checklist.md").write_text(_render_website_side_hustle_accessibility_seo(payload), encoding="utf-8")
     (output / "proposal_one_pager.md").write_text(_render_website_side_hustle_proposal(payload), encoding="utf-8")
     (output / "pricing_menu.md").write_text(_render_website_side_hustle_pricing(payload), encoding="utf-8")
@@ -3664,12 +3670,12 @@ def _render_website_side_hustle_start(payload: dict) -> str:
             "",
             "1. Read `commercial_use_sources.md` and `originality_and_license_rules.md`.",
             "2. Pick one vertical from `niche_offer_menu.md`.",
-            "3. Use `client_brief.md` to collect facts before designing.",
+            "3. Use `client_kickoff_questions.md` and `client_brief.md` to collect facts before designing.",
             "4. Use `codex_workflow.md` with Codex or another coding agent.",
             "5. Draft copy with `copy_collection_sheet.md` and `homepage_structure_guide.md`.",
             "6. Design the back office with `reservation_inquiry_system.md`, `operator_runbook.md`, and `integration_options.md`.",
             "7. Price the job with `pricing_menu.md` and send `proposal_one_pager.md`.",
-            "8. Finish with `delivery_checklist.md`, `accessibility_and_seo_checklist.md`, and `launch_checklist.md`.",
+            "8. Finish with `delivery_checklist.md`, `delivery_acceptance_checklist.md`, `client_handoff_note.md`, `accessibility_and_seo_checklist.md`, and `launch_checklist.md`.",
             "9. Open `sample_site/index.html` and `inquiry_dashboard.html` for editable examples.",
             "",
             "## Ground Rule",
@@ -3693,8 +3699,10 @@ def _render_website_side_hustle_readme(payload: dict) -> str:
             "## Included",
             "",
             "- Commercial-use-aware source catalog",
+            "- Client kickoff questions for the first meeting",
             "- Codex workflow and prompting guide",
             "- Client brief, copy sheet, proposal, pricing, maintenance, QA, and launch checklists",
+            "- Delivery acceptance checklist and client handoff note",
             "- Reservation and inquiry aggregation templates",
             "- One editable sample site and one static back-office dashboard mockup",
             "",
@@ -3805,6 +3813,62 @@ def _render_website_side_hustle_client_brief(payload: dict) -> str:
             "- Delivery deadline:",
             "",
             "Do not start polished design work until the CTA, facts, and trust signals are clear.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_kickoff_questions(payload: dict) -> str:
+    niche = payload["niche"].replace("-", " ")
+    return "\n".join(
+        [
+            "# Client Kickoff Questions",
+            "",
+            f"Use this before building the `{niche}` website. The goal is to collect enough truth to build a useful first version without guessing.",
+            "",
+            "## 1. Business Goal",
+            "",
+            "- What is the first action you want visitors to take?",
+            "- Which is most valuable: phone call, form inquiry, booking link, LINE message, email, quote request, store visit, or document upload?",
+            "- What would make this project worth paying for after 30 days?",
+            "- What result should not be promised to customers?",
+            "",
+            "## 2. Customer And Offer",
+            "",
+            "- Who is the main customer?",
+            "- What problem or desire brings them to the website?",
+            "- Which service, room, plan, or offer should be easiest to find?",
+            "- What price ranges, plan limits, or availability rules can be shown publicly?",
+            "- What common questions should the page answer before a customer contacts you?",
+            "",
+            "## 3. Proof And Trust",
+            "",
+            "- What real proof can be shown: reviews, photos, credentials, awards, years in business, staff profile, or case notes?",
+            "- Which claims need evidence before they can appear on the site?",
+            "- Are there claims the business must avoid for legal, medical, financial, or brand reasons?",
+            "",
+            "## 4. Assets And Access",
+            "",
+            "- Who owns the domain, hosting, booking tool, form tool, email inbox, and analytics account?",
+            "- Which photos, logo files, colors, fonts, maps, menus, or PDFs are approved for use?",
+            "- Which account logins must stay with the client and should never be pasted into AI chat?",
+            "",
+            "## 5. Inquiry Handling",
+            "",
+            "- Where should inquiries arrive first?",
+            "- Who checks new inquiries each business day?",
+            "- What information is required before staff can reply?",
+            "- Which replies can be drafted from templates?",
+            "- Which steps require Human approval: prices, booking confirmation, cancellation, refund, policy exception, or public launch?",
+            "",
+            "## 6. Delivery Agreement",
+            "",
+            "- What will be delivered in the first version?",
+            "- What is explicitly out of scope?",
+            "- Who approves copy, photos, contact destinations, privacy text, and launch?",
+            "- What happens after launch: one-time handoff, monthly maintenance, or improvement sprint?",
+            "",
+            "If the client cannot answer a question, mark it as missing. Do not invent facts to make the website look complete.",
             "",
         ]
     )
@@ -4674,6 +4738,93 @@ def _render_website_side_hustle_delivery_checklist(payload: dict) -> str:
             "- [ ] Favicon, OGP, and footer reviewed if included",
             "- [ ] Deployment target agreed",
             "- [ ] Handoff notes written: how to edit text, images, contact info",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_acceptance_checklist(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Delivery Acceptance Checklist",
+            "",
+            "Use this with the client before launch or handoff. It turns a vague review into visible yes/no decisions.",
+            "",
+            "## Website Review",
+            "",
+            "- [ ] The first screen clearly says what the business offers.",
+            "- [ ] The main CTA goes to the approved contact, form, booking, phone, LINE, or email destination.",
+            "- [ ] The business name, location, hours, prices, service area, and policies are correct.",
+            "- [ ] Photos, logo, reviews, credentials, and claims are approved for public use.",
+            "- [ ] The site was checked on a phone and a desktop browser.",
+            "",
+            "## Inquiry Workflow Review",
+            "",
+            "- [ ] Test inquiry reaches the chosen inbox, sheet, form backend, or dashboard.",
+            "- [ ] Required fields are understandable to a real customer.",
+            "- [ ] Status names are understood by the person who will check inquiries.",
+            "- [ ] Response templates are approved as drafts, not automatic final replies.",
+            "- [ ] Spam, duplicates, urgent cases, and missing information have a manual handling rule.",
+            "",
+            "## Human Approval",
+            "",
+            "Human approval is required before any real-world commitment or account change.",
+            "- [ ] A human approves public launch.",
+            "- [ ] A human approves booking confirmation, price changes, cancellation/refund exceptions, and policy exceptions.",
+            "- [ ] A human owns production email, SMS, LINE, CRM, payment, and cloud account changes.",
+            "- [ ] No API keys, passwords, or private customer records are included in the delivered demo files.",
+            "",
+            "## Sign-Off",
+            "",
+            "- Client approver:",
+            "- Operator:",
+            "- Launch decision: approve / revise / pause",
+            "- Remaining fixes:",
+            "- Next review date:",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_client_handoff(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Client Handoff Note",
+            "",
+            "This note is for the business owner or staff member who will use the website and inquiry workflow after delivery.",
+            "",
+            "## What the client receives",
+            "",
+            "- A website or sample site structure that can be edited for the business.",
+            "- A clear contact or booking path.",
+            "- An inquiry intake schema that explains which information should be collected.",
+            "- A reservation or lead pipeline with status names.",
+            "- Response templates that can be reviewed before sending.",
+            "- A simple dashboard or spreadsheet-style view for daily checks.",
+            "- A maintenance plan for updates after launch.",
+            "",
+            "## What to do every business day",
+            "",
+            "1. Open the inquiry destination.",
+            "2. Review new inquiries first.",
+            "3. Mark spam or duplicates.",
+            "4. Fill missing information if it is already known.",
+            "5. Ask the responsible person to confirm availability, price, or policy exceptions.",
+            "6. Review the drafted reply.",
+            "7. Send the reply from the approved account.",
+            "8. Update the status and next action date.",
+            "",
+            "## What to ask the builder to change",
+            "",
+            "- Text, photos, prices, hours, contact destinations, map links, or booking links changed.",
+            "- Customers keep asking the same question.",
+            "- Staff do not understand a status or daily step.",
+            "- Too many inquiries arrive without required information.",
+            "- A new service, room, area, campaign, or policy needs to be added.",
+            "",
+            "## Safety boundaries",
+            "",
+            "The system can organize information and prepare drafts. The business still approves public claims, bookings, prices, refunds, policy exceptions, account settings, and legal or privacy decisions.",
             "",
         ]
     )
