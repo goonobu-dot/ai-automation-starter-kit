@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Human-First Manual | AI Automation Starter Kit</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f7f6f1;
+        --ink: #18201b;
+        --muted: #59645e;
+        --line: #d9ddd4;
+        --surface: #ffffff;
+        --soft: #eef3ed;
+        --green: #0a7d68;
+        --blue: #315f9f;
+        --gold: #b66a20;
+        --red: #a3423a;
+        --shadow: 0 18px 48px rgba(24, 32, 27, 0.11);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        line-height: 1.65;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .shell {
+        width: min(1120px, calc(100% - 36px));
+        margin: 0 auto;
+      }
+
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        border-bottom: 1px solid var(--line);
+        background: rgba(247, 246, 241, 0.93);
+        backdrop-filter: blur(14px);
+      }
+
+      nav {
+        min-height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 18px;
+      }
+
+      .brand {
+        font-weight: 800;
+        letter-spacing: 0;
+      }
+
+      .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .hero {
+        padding: 70px 0 36px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(340px, 0.72fr);
+        gap: 42px;
+        align-items: center;
+      }
+
+      .eyebrow {
+        margin: 0 0 16px;
+        color: var(--green);
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        font-size: 13px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(38px, 5vw, 68px);
+        line-height: 1.02;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: clamp(28px, 3vw, 42px);
+        line-height: 1.15;
+        letter-spacing: 0;
+      }
+
+      h3 {
+        margin: 0;
+        font-size: 20px;
+        line-height: 1.25;
+        letter-spacing: 0;
+      }
+
+      p {
+        margin: 0;
+      }
+
+      .lead {
+        margin-top: 22px;
+        color: var(--muted);
+        font-size: 19px;
+        max-width: 720px;
+      }
+
+      .quick-box {
+        border: 1px solid var(--line);
+        background: var(--surface);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        padding: 22px;
+      }
+
+      .quick-box h2 {
+        font-size: 24px;
+      }
+
+      .quick-list {
+        margin: 18px 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 12px;
+      }
+
+      .quick-list li {
+        display: grid;
+        grid-template-columns: 34px 1fr;
+        gap: 12px;
+        align-items: start;
+      }
+
+      .num {
+        width: 34px;
+        height: 34px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        background: var(--soft);
+        color: var(--green);
+        font-weight: 800;
+      }
+
+      section {
+        padding: 48px 0;
+      }
+
+      .section-head {
+        display: grid;
+        gap: 12px;
+        max-width: 780px;
+        margin-bottom: 24px;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        background: var(--surface);
+        border-radius: 8px;
+        padding: 20px;
+        min-height: 190px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .tag {
+        width: fit-content;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 4px 10px;
+        color: var(--muted);
+        font-size: 13px;
+        background: #fbfcf9;
+      }
+
+      .flow-wrap {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        box-shadow: var(--shadow);
+        padding: 24px;
+        overflow: auto;
+      }
+
+      .flow {
+        min-width: 920px;
+      }
+
+      .legend {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 18px;
+      }
+
+      .lane {
+        border: 1px solid var(--line);
+        border-left: 5px solid var(--green);
+        border-radius: 8px;
+        background: var(--surface);
+        padding: 18px;
+      }
+
+      .lane.ai {
+        border-left-color: var(--blue);
+      }
+
+      .lane.stop {
+        border-left-color: var(--red);
+      }
+
+      .links {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .link-panel {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--surface);
+        padding: 20px;
+      }
+
+      .link-panel ul {
+        margin: 14px 0 0;
+        padding-left: 20px;
+      }
+
+      .cta {
+        border: 1px solid #1a2a24;
+        background: #14201a;
+        color: #effff8;
+        border-radius: 8px;
+        padding: 26px;
+        display: grid;
+        gap: 12px;
+      }
+
+      .cta a {
+        color: #b7f2df;
+      }
+
+      footer {
+        padding: 34px 0 46px;
+        color: var(--muted);
+        border-top: 1px solid var(--line);
+      }
+
+      @media (max-width: 900px) {
+        .hero,
+        .cards,
+        .legend,
+        .links {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          padding-top: 44px;
+        }
+
+        .nav-links {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav class="shell" aria-label="Manual navigation">
+        <div class="brand">AI Automation Starter Kit</div>
+        <div class="nav-links">
+          <a href="#start">Start</a>
+          <a href="#routes">Routes</a>
+          <a href="#workflow">Workflow Map</a>
+          <a href="#safety">Safety</a>
+          <a href="#manuals">Manuals</a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero shell" id="start">
+        <div>
+          <p class="eyebrow">Human-First Manual / 人間向けHTMLマニュアル</p>
+          <h1>Start with one small workflow. 1つの小さな業務から始める。</h1>
+          <p class="lead">
+            This page is the visual entrance for people who want to use AI for business automation,
+            side-hustle delivery, or internal process improvement without getting lost in technical files.
+            このページは、AI初心者が業務自動化の入口を選ぶための案内板です。
+          </p>
+        </div>
+        <aside class="quick-box" aria-label="First day checklist">
+          <h2>Today, decide only this / 今日はここだけ</h2>
+          <ul class="quick-list">
+            <li><span class="num">1</span><span>Pick one repeated task. 繰り返し発生する仕事を1つ選ぶ。</span></li>
+            <li><span class="num">2</span><span>Pick one sample input. 入ってくる情報を1つ決める。</span></li>
+            <li><span class="num">3</span><span>Pick one AI draft output. AIに作らせる下書きを1つ決める。</span></li>
+            <li><span class="num">4</span><span>Pick one human approver. 最後に確認する人を1人決める。</span></li>
+          </ul>
+        </aside>
+      </section>
+
+      <section class="shell" id="routes">
+        <div class="section-head">
+          <p class="eyebrow">Choose Your Route / ルートを選ぶ</p>
+          <h2>Do not read everything. Choose the doorway that matches your situation.</h2>
+          <p class="muted">全部を読む必要はありません。自分の状況に近い入口から始めてください。</p>
+        </div>
+        <div class="cards">
+          <article class="card">
+            <span class="tag">No-CLI</span>
+            <h3>No terminal commands / CLIなし</h3>
+            <p class="muted">Ask ChatGPT, Claude, Cursor, Codex, or another AI agent to read the project with you one question at a time.</p>
+            <p><a href="AI_AGENT_GRILL_ME_SKILL.md">Open AI Agent Grill Me Skill</a></p>
+          </article>
+          <article class="card">
+            <span class="tag">CLI</span>
+            <h3>Generate a workspace / ファイル一式を作る</h3>
+            <p class="muted">Use the command line when you want a ready folder with demo, report, proposal, and dry-run outputs.</p>
+            <p><a href="USER_MANUAL.md">Open User Manual</a></p>
+          </article>
+          <article class="card">
+            <span class="tag">Side-hustle</span>
+            <h3>Sell a small paid PoC / 副業・受託</h3>
+            <p class="muted">Package one safe dry-run workflow as a small client offer instead of promising full automation.</p>
+            <p><a href="SELLING_AUTOMATION_GUIDE.md">Open Selling Guide</a></p>
+          </article>
+          <article class="card">
+            <span class="tag">Internal</span>
+            <h3>Improve a company task / 社内導入</h3>
+            <p class="muted">Start with inquiry sorting, document checks, FAQ routing, weekly reports, or other repeated manual work.</p>
+            <p><a href="FLOW_SELECTION_GUIDE.md">Open Flow Selection Guide</a></p>
+          </article>
+          <article class="card">
+            <span class="tag">Website</span>
+            <h3>Website plus operations / ホームページ案件</h3>
+            <p class="muted">Combine a homepage offer with inquiry, reservation, or back-office workflow support.</p>
+            <p><a href="WEBSITE_SIDE_HUSTLE_GUIDE.md">Open Website Guide</a></p>
+          </article>
+          <article class="card">
+            <span class="tag">Cloud / API</span>
+            <h3>Move toward real setup / クラウド・API</h3>
+            <p class="muted">Only move here after the workflow, input, output, approver, and stop rule are clear.</p>
+            <p><a href="CLOUD_BEGINNER_PLAYBOOK.md">Open Cloud Playbook</a></p>
+          </article>
+        </div>
+      </section>
+
+      <section class="shell" id="workflow">
+        <div class="section-head">
+          <p class="eyebrow">Workflow Map / 図で見る流れ</p>
+          <h2>A safe automation project is a chain of small decisions.</h2>
+          <p class="muted">安全な業務自動化は、いきなり本番化するものではありません。相談、業務選定、サンプル入力、AI下書き、人間承認、提案またはPoCの順に進めます。</p>
+        </div>
+        <div class="flow-wrap" role="img" aria-label="Workflow map from client pain to paid dry-run PoC">
+          <svg class="flow" viewBox="0 0 980 260" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+                <path d="M0,0 L0,6 L9,3 z" fill="#59645e" />
+              </marker>
+              <style>
+                .box { fill: #ffffff; stroke: #d9ddd4; stroke-width: 2; rx: 8; }
+                .title { font: 700 17px system-ui, sans-serif; fill: #18201b; }
+                .body { font: 13px system-ui, sans-serif; fill: #59645e; }
+                .arrow { stroke: #59645e; stroke-width: 2; marker-end: url(#arrow); }
+              </style>
+            </defs>
+            <rect class="box" x="20" y="48" width="140" height="120" />
+            <text class="title" x="40" y="84">1. Listen</text>
+            <text class="body" x="40" y="112">痛みを聞く</text>
+            <text class="body" x="40" y="136">One task only</text>
+            <line class="arrow" x1="160" y1="108" x2="202" y2="108" />
+
+            <rect class="box" x="210" y="48" width="140" height="120" />
+            <text class="title" x="230" y="84">2. Input</text>
+            <text class="body" x="230" y="112">sample data</text>
+            <text class="body" x="230" y="136">サンプル入力</text>
+            <line class="arrow" x1="350" y1="108" x2="392" y2="108" />
+
+            <rect class="box" x="400" y="48" width="140" height="120" />
+            <text class="title" x="420" y="84">3. AI drafts</text>
+            <text class="body" x="420" y="112">reply / list</text>
+            <text class="body" x="420" y="136">AI下書き</text>
+            <line class="arrow" x1="540" y1="108" x2="582" y2="108" />
+
+            <rect class="box" x="590" y="48" width="150" height="120" />
+            <text class="title" x="610" y="84">4. Human approves</text>
+            <text class="body" x="610" y="112">stop risky action</text>
+            <text class="body" x="610" y="136">人間承認</text>
+            <line class="arrow" x1="740" y1="108" x2="782" y2="108" />
+
+            <rect class="box" x="790" y="48" width="170" height="120" />
+            <text class="title" x="810" y="84">5. Offer / PoC</text>
+            <text class="body" x="810" y="112">small paid dry-run</text>
+            <text class="body" x="810" y="136">小さな有料検証</text>
+
+            <path d="M90 188 C190 238, 790 238, 875 188" fill="none" stroke="#0a7d68" stroke-width="3" />
+            <text class="body" x="350" y="226">Keep production sends off until the client approves. 本番送信は承認まで止める。</text>
+          </svg>
+        </div>
+      </section>
+
+      <section class="shell" id="safety">
+        <div class="section-head">
+          <p class="eyebrow">Safety / 安全境界</p>
+          <h2>AI can help a lot, but humans keep control of real-world actions.</h2>
+        </div>
+        <div class="legend">
+          <article class="lane">
+            <h3>Human prepares / 人間が決める</h3>
+            <p class="muted">Business task, sample input, output goal, client rules, approval owner, and whether to continue.</p>
+          </article>
+          <article class="lane ai">
+            <h3>AI drafts / AIが下書きする</h3>
+            <p class="muted">Questions, workflow map, reply drafts, missing-input lists, client explanations, and PoC materials.</p>
+          </article>
+          <article class="lane stop">
+            <h3>Human approves / 人間が止める・承認する</h3>
+            <p class="muted">Real sends, bookings, refunds, price changes, production data, secrets, paid cloud, and sensitive decisions.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="shell" id="manuals">
+        <div class="section-head">
+          <p class="eyebrow">Manual Links / 詳しい資料</p>
+          <h2>Use this page as the entrance, then open the detailed guide you need.</h2>
+        </div>
+        <div class="links">
+          <article class="link-panel">
+            <h3>English</h3>
+            <ul>
+              <li><a href="BEGINNER_ROUTE_MAP.md">docs/BEGINNER_ROUTE_MAP.md</a></li>
+              <li><a href="USER_MANUAL.md">docs/USER_MANUAL.md</a></li>
+              <li><a href="AI_BEGINNER_SUPPORT_MAP.md">docs/AI_BEGINNER_SUPPORT_MAP.md</a></li>
+              <li><a href="CLOUD_BEGINNER_PLAYBOOK.md">docs/CLOUD_BEGINNER_PLAYBOOK.md</a></li>
+            </ul>
+          </article>
+          <article class="link-panel">
+            <h3>日本語</h3>
+            <ul>
+              <li><a href="BEGINNER_ROUTE_MAP.ja.md">docs/BEGINNER_ROUTE_MAP.ja.md</a></li>
+              <li><a href="USER_MANUAL.ja.md">docs/USER_MANUAL.ja.md</a></li>
+              <li><a href="AI_BEGINNER_SUPPORT_MAP.ja.md">docs/AI_BEGINNER_SUPPORT_MAP.ja.md</a></li>
+              <li><a href="CLOUD_BEGINNER_PLAYBOOK.ja.md">docs/CLOUD_BEGINNER_PLAYBOOK.ja.md</a></li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="shell">
+        <div class="cta">
+          <h2>Recommended first action / 最初のおすすめ</h2>
+          <p>
+            Open this HTML manual in a browser, choose one route, then ask an AI agent to help you pick one workflow without sharing secrets.
+            After that, use the detailed manual only for the route you selected.
+          </p>
+          <p>
+            Next read: <a href="BEGINNER_ROUTE_MAP.md">Beginner Route Map</a> /
+            <a href="BEGINNER_ROUTE_MAP.ja.md">初心者ルートマップ</a>
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <div class="shell">
+        AI Automation Starter Kit human-first manual. Static HTML, no external scripts, no secret collection.
+      </div>
+    </footer>
+  </body>
+</html>

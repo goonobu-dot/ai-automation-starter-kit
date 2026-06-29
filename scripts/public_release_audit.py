@@ -24,6 +24,7 @@ REQUIRED_FILES = [
     "docs/SHOWCASE.md",
     "docs/OSS_INTEGRATIONS.md",
     "docs/AUTOMATION_DEMAND_RESEARCH.md",
+    "docs/manual.html",
     "docs/USER_MANUAL.md",
     "docs/USER_MANUAL.ja.md",
     "docs/BEGINNER_ROUTE_MAP.md",
@@ -160,6 +161,7 @@ REQUIRED_README_SNIPPETS = [
     "ai-automation-kit github-discover",
     "python3 scripts/release_smoke.py",
     "Public Release Readiness",
+    "docs/manual.html",
     "docs/USER_MANUAL.md",
     "docs/BEGINNER_ROUTE_MAP.md",
     "docs/BEGINNER_ROUTE_MAP.ja.md",
@@ -474,6 +476,18 @@ REQUIRED_STATIC_DEMO_SNIPPETS = [
     "Five Reusable Templates",
 ]
 
+REQUIRED_HTML_MANUAL_SNIPPETS = [
+    "Human-First Manual",
+    "人間向けHTMLマニュアル",
+    "Choose Your Route",
+    "ルートを選ぶ",
+    "Workflow Map",
+    "AI drafts",
+    "Human approves",
+    "docs/BEGINNER_ROUTE_MAP.md",
+    "docs/BEGINNER_ROUTE_MAP.ja.md",
+]
+
 SECRET_SCAN_PATHS = [
     "README.md",
     "docs/PUBLISHING.md",
@@ -759,6 +773,12 @@ def main() -> int:
         if snippet not in demo_html:
             failures.append(f"docs/demo.html missing snippet: {snippet}")
         checks.append(f"docs/demo.html::{snippet}")
+
+    html_manual = _read_text("docs/manual.html")
+    for snippet in REQUIRED_HTML_MANUAL_SNIPPETS:
+        if snippet not in html_manual:
+            failures.append(f"docs/manual.html missing snippet: {snippet}")
+        checks.append(f"docs/manual.html::{snippet}")
 
     for relative_path in SECRET_SCAN_PATHS:
         scanned_text = _read_tree_text(relative_path)

@@ -8,7 +8,9 @@ It finds promising public OSS projects for a business area, ranks them, and turn
 
 You do not need to understand cloud or APIs first. Ask an AI agent to read these guides with you, then answer one question at a time.
 
-Do not read everything first. 最初から全部読まないでください。Start with the [Beginner Route Map](docs/BEGINNER_ROUTE_MAP.md) or [初心者ルートマップ](docs/BEGINNER_ROUTE_MAP.ja.md). It tells you which files to open, which files to ignore at first, and which route to choose: No-CLI, CLI, side-hustle, company internal, website project, or cloud/API setup.
+Prefer a browser page? Open the [human-first HTML manual](docs/manual.html). It gives a visual entrance, route cards, a workflow map, and safety boundaries before you read the detailed manuals.
+
+Do not read everything first. 最初から全部読まないでください。Start with the [human-first HTML manual](docs/manual.html), [Beginner Route Map](docs/BEGINNER_ROUTE_MAP.md), or [初心者ルートマップ](docs/BEGINNER_ROUTE_MAP.ja.md). It tells you which files to open, which files to ignore at first, and which route to choose: No-CLI, CLI, side-hustle, company internal, website project, or cloud/API setup.
 
 迷ったら、この順番だけで進めてください: `BEGINNER_ROUTE_MAP` -> `START_HERE` -> `AI_BEGINNER_SUPPORT_MAP` -> `AI_AGENT_GRILL_ME_SKILL` -> `USER_MANUAL`.
 
@@ -64,6 +66,7 @@ New to this project? Start with a plain-language explanation:
 
 - [English beginner guide](docs/BEGINNER_GUIDE.md)
 - [日本語のやさしい解説](docs/BEGINNER_GUIDE.ja.md)
+- [Human-first HTML manual](docs/manual.html)
 - [Beginner route map](docs/BEGINNER_ROUTE_MAP.md)
 - [初心者ルートマップ](docs/BEGINNER_ROUTE_MAP.ja.md)
 
@@ -928,4 +931,4 @@ Review:
 
 See `docs/SHOWCASE.md` for the public demo story.
 
-Open `docs/demo.html` in a browser for a static demo page that shows the value story and generated artifacts.
+Open `docs/manual.html` in a browser for the human-first visual manual. Open `docs/demo.html` for a static demo page that shows the value story and generated artifacts.

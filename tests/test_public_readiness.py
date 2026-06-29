@@ -30,6 +30,7 @@ def test_public_repo_metadata_files_exist():
 
 def test_readme_links_start_here_and_use_cases_docs():
     readme = Path("README.md").read_text()
+    assert "docs/manual.html" in readme
     assert "docs/START_HERE.md" in readme
     assert "docs/START_HERE.ja.md" in readme
     assert "docs/USE_CASES.md" in readme
@@ -162,6 +163,33 @@ def test_beginner_route_maps_prevent_manual_overload():
         assert first_screen.count("`") <= 8, f"{path} first screen is too code/file heavy"
         for snippet in snippets:
             assert snippet in text, f"{path} missing {snippet}"
+
+
+def test_html_manual_gives_humans_a_visual_first_entrypoint():
+    text = Path("docs/manual.html").read_text()
+    expected_snippets = [
+        "<!doctype html>",
+        "Human-First Manual",
+        "人間向けHTMLマニュアル",
+        "Start with one small workflow",
+        "1つの小さな業務から始める",
+        "Choose Your Route",
+        "ルートを選ぶ",
+        "No-CLI",
+        "Side-hustle",
+        "Cloud / API",
+        "Workflow Map",
+        "AI drafts",
+        "Human approves",
+        "docs/BEGINNER_ROUTE_MAP.md",
+        "docs/BEGINNER_ROUTE_MAP.ja.md",
+        "docs/USER_MANUAL.md",
+        "docs/USER_MANUAL.ja.md",
+    ]
+    assert len(text) > 8000
+    assert "<script" not in text.lower()
+    for snippet in expected_snippets:
+        assert snippet in text, f"docs/manual.html missing {snippet}"
 
 
 def test_ai_reception_employee_docs_explain_setup_and_monetization_path():
