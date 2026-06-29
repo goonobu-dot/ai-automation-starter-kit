@@ -39,7 +39,7 @@ For monetization work, `offer-pack` creates proposal assets, `client-ready` crea
 
 For choosing what to sell as a side hustle, `side-hustle-blueprints` creates a beginner-friendly catalog of sellable automation offers: buyer type, pain, required inputs, deliverables, tools, price range, human approval boundary, first pitch, first client picker, implementation paths, intake questions, risk boundaries, and AI agent handoff.
 
-For website side-hustle work, `website-side-hustle` creates a commercial-use-aware website delivery pack: public source catalog, originality rules, client kickoff questions, client brief, Codex workflow, homepage structure guide, reservation and inquiry operations templates, proposal, pricing, maintenance, QA checklists, delivery acceptance checklist, client handoff note, launch checklist, a small editable sample site, and a static back-office dashboard mockup for client work.
+For website side-hustle work, `website-side-hustle` creates a commercial-use-aware website delivery pack: public source catalog, originality rules, public AI design source map, designer-grade AI agent playbook, website quality gate, homepage scorecard, client kickoff questions, client brief, Codex workflow, homepage structure guide, reservation and inquiry operations templates, proposal, pricing, maintenance, QA checklists, delivery acceptance checklist, client handoff note, launch checklist, a small editable sample site, and a static back-office dashboard mockup for client work.
 
 For the easiest hands-on path, `complete-workspace` creates the full local delivery folder in one command: quickstart workspace, dry-run execution, approval export, connector check, client report, demo site, shareable demo zip, final checklist, revenue readiness scorecard, sales closing script, paid PoC scope, value measurement sheet, pre-contract checklist, client proposal email, first 30 days plan, proof-of-value template, OSS pattern benchmark, integration backlog, deployment options, production observability plan, opportunity scorecard, client onboarding form, go-live decision gate, browser-friendly client command center, and the `business_launch/` proposal system. `quickstart` remains useful when you want only the workspace, while `install-bundle`, `client-report`, `connector-doctor`, and `package-client-demo` are available as separate steps.
 
@@ -50,6 +50,8 @@ For AI beginners who do not know what to ask next, the AI Agent Grill Me Skill g
 For hands-on automation work, `flows` gives users a research-backed catalog of 60+ ready-made business automation flows. A user can choose a flow by industry or genre, install it into a local project folder, inspect `flow.yaml`, view `workflow_map.mmd`, and run the local automation runtime to generate a work queue, draft outputs, an approval queue, connector tasks, a status report, and a run log. The installed project also includes `.env.example`, `config/connectors.json`, a system runbook, approval scripts, and local outbox files so the flow can become a real integration project without sending anything by accident. See [Automation Demand Research](docs/AUTOMATION_DEMAND_RESEARCH.md) for the industry and workflow demand map behind the catalog.
 
 The kit also includes a bridge layer for moving a proven local flow into real execution platforms. `flow-export` creates starter artifacts for `n8n`, `Activepieces`, and `Windmill`. `deployment-pack` creates starter deployment files for `Coolify`, `Cloudflare Agents`, and `Supabase`. `runtime-safety`, `secrets-bootstrap`, `document-intake`, `observability-pack`, and `state-backend` generate the operational files that teams often discover too late: approval policy, retry and rollback rules, secret ownership, document conversion paths, run tracing, and approval history storage.
+
+For public-pattern expansion, `command-center` gives beginners a menu screen so they do not get lost, and 12 focused commands turn useful public patterns into delivery packs: `skill-pack`, `approval-gate`, `mcp-connector-plan`, `agent-team`, `eval-loop`, `workflow-explainer`, `self-host-pack`, `connector-catalog`, `script-ui-pack`, `knowledge-rag-pack`, `automation-hooks`, and `governance-pack`.
 
 ## Beginner-Friendly Guides
 
@@ -104,6 +106,8 @@ Need a practical first path or use-case examples?
 - [AI社員ロードマップ](docs/AI_EMPLOYEE_ROADMAP.ja.md)
 - [Side Hustle Blueprints Guide](docs/SIDE_HUSTLE_BLUEPRINTS.md)
 - [副業ブループリントガイド](docs/SIDE_HUSTLE_BLUEPRINTS.ja.md)
+- [Automation expansion guide](docs/AUTOMATION_EXPANSION_GUIDE.md)
+- [業務自動化 拡充機能ガイド](docs/AUTOMATION_EXPANSION_GUIDE.ja.md)
 - [Website side hustle guide](docs/WEBSITE_SIDE_HUSTLE_GUIDE.md)
 - [ホームページ副業ガイド](docs/WEBSITE_SIDE_HUSTLE_GUIDE.ja.md)
 - [Website project agent guide](docs/WEBSITE_PROJECT_AGENT_GUIDE.md)
@@ -217,6 +221,20 @@ The main `github-discover` workflow generates a practical output folder. The fir
 | `client_intake_questions.md` | Plain-language questions for collecting workflow facts before proposing automation. |
 | `implementation_paths.md` | Local dry-run, spreadsheet-first, workflow platform, AI agent, and cloud delivery paths. |
 | `risk_boundaries.md` | Safety boundaries for what must not be promised or automated without human approval. |
+| `START_HERE_COMMAND_CENTER.md` | First file generated by `command-center` for choosing the next pack without getting lost. |
+| `command_center.html` | Browser-friendly menu for the main business automation commands and public-pattern packs. |
+| `SKILL.md` | Agent-ready skill generated by `skill-pack` for Codex, Claude Code, Cursor, ChatGPT, or another AI agent. |
+| `approval_gate.json` | Machine-readable human approval policy generated by `approval-gate`. |
+| `mcp_connector_plan.md` | Connector setup plan generated by `mcp-connector-plan`. |
+| `agent_team_roles.md` | Role split generated by `agent-team` for sales, intake, build, QA, and delivery. |
+| `eval_dataset.csv` | Test dataset generated by `eval-loop` for measuring automation value. |
+| `workflow_explainer.html` | Client-friendly workflow explainer generated by `workflow-explainer`. |
+| `self_host_runbook.md` | Deployment and rollback runbook generated by `self-host-pack`. |
+| `connector_piece_catalog.md` | Practical connector catalog generated by `connector-catalog`. |
+| `script_to_ui_plan.md` | Plan generated by `script-ui-pack` for turning scripts into forms, jobs, webhooks, or dashboards. |
+| `knowledge_base_pack.md` | Knowledge and RAG setup pack generated by `knowledge-rag-pack`. |
+| `automation_hooks.md` | Hook plan generated by `automation-hooks` for preflight and sharing checks. |
+| `governance_pack.md` | Security and operating governance pack generated by `governance-pack`. |
 | `client_kickoff_questions.md` | First-meeting question sheet for website projects so beginners collect facts before building. |
 | `delivery_acceptance_checklist.md` | Client sign-off checklist for website launch, inquiry workflow, and human approval boundaries. |
 | `client_handoff_note.md` | Plain-language daily operation note for the client after website delivery. |
@@ -240,6 +258,19 @@ ai-automation-kit opportunity-catalog --industry finance --output .tmp/opportuni
 ai-automation-kit recommend-flow --industry finance --pain "missing invoice follow up" --tools "Google Sheets Gmail" --output .tmp/recommend-flow
 ai-automation-kit business-launch --industry finance --client-type local-business --niche accounting --output .tmp/business-launch
 ai-automation-kit side-hustle-blueprints --industry local-business --operator-level beginner --output .tmp/side-hustle-blueprints
+ai-automation-kit command-center --language both --output .tmp/command-center
+ai-automation-kit skill-pack --flow-id invoice-document-followup --agent codex --output .tmp/skill-pack
+ai-automation-kit approval-gate --flow-id invoice-document-followup --output .tmp/approval-gate
+ai-automation-kit mcp-connector-plan --flow-id invoice-document-followup --connectors gmail,google-sheets,slack --output .tmp/mcp-connector-plan
+ai-automation-kit agent-team --flow-id invoice-document-followup --output .tmp/agent-team
+ai-automation-kit workflow-explainer --flow-id invoice-document-followup --audience client --output .tmp/workflow-explainer
+ai-automation-kit eval-loop --flow-id invoice-document-followup --metric hours_saved --output .tmp/eval-loop
+ai-automation-kit self-host-pack --flow-id invoice-document-followup --provider docker --output .tmp/self-host-pack
+ai-automation-kit connector-catalog --industry local-business --output .tmp/connector-catalog
+ai-automation-kit script-ui-pack --flow-id invoice-document-followup --output .tmp/script-ui-pack
+ai-automation-kit knowledge-rag-pack --flow-id ai-admin-faq-routing --output .tmp/knowledge-rag-pack
+ai-automation-kit automation-hooks --flow-id invoice-document-followup --output .tmp/automation-hooks
+ai-automation-kit governance-pack --flow-id invoice-document-followup --output .tmp/governance-pack
 ai-automation-kit website-side-hustle --industry hospitality --client-type local-business --niche tourism-hotel --output .tmp/website-side-hustle
 ai-automation-kit guided-setup --flow-id ai-reception-line-inquiry --mode beginner --deployment undecided --connectors line,gmail,google-sheets --output .tmp/guided-setup
 ai-automation-kit guided-review --answers .tmp/guided-setup/guided_setup_answers.example.json --output .tmp/guided-review
@@ -510,6 +541,33 @@ ai-automation-kit side-hustle-blueprints --industry local-business --operator-le
 Creates `START_HERE_SIDE_HUSTLE_BLUEPRINTS.md`, `side_hustle_blueprints.md`, `side_hustle_blueprints.csv`, `side_hustle_blueprints.html`, `first_client_picker.md`, `offer_scripts.md`, `implementation_paths.md`, `risk_boundaries.md`, `client_intake_questions.md`, `ai_agent_handoff.md`, and `side_hustle_blueprints.json`.
 
 Use this before `beginner-sales` or `website-side-hustle` when the user does not yet know what to sell. It helps a beginner choose a bounded offer, collect the right inputs, avoid risky promises, and ask an AI agent to guide them one question at a time.
+
+### command-center and automation expansion
+
+Generate the beginner menu first when the project feels too large:
+
+```bash
+ai-automation-kit command-center --language both --output .tmp/command-center
+```
+
+Then add the public-pattern pack you need:
+
+```bash
+ai-automation-kit skill-pack --flow-id invoice-document-followup --agent codex --output .tmp/skill-pack
+ai-automation-kit approval-gate --flow-id invoice-document-followup --output .tmp/approval-gate
+ai-automation-kit mcp-connector-plan --flow-id invoice-document-followup --connectors gmail,google-sheets,slack --output .tmp/mcp-connector-plan
+ai-automation-kit agent-team --flow-id invoice-document-followup --output .tmp/agent-team
+ai-automation-kit workflow-explainer --flow-id invoice-document-followup --audience client --output .tmp/workflow-explainer
+ai-automation-kit eval-loop --flow-id invoice-document-followup --metric hours_saved --output .tmp/eval-loop
+ai-automation-kit self-host-pack --flow-id invoice-document-followup --provider docker --output .tmp/self-host-pack
+ai-automation-kit connector-catalog --industry local-business --output .tmp/connector-catalog
+ai-automation-kit script-ui-pack --flow-id invoice-document-followup --output .tmp/script-ui-pack
+ai-automation-kit knowledge-rag-pack --flow-id ai-admin-faq-routing --output .tmp/knowledge-rag-pack
+ai-automation-kit automation-hooks --flow-id invoice-document-followup --output .tmp/automation-hooks
+ai-automation-kit governance-pack --flow-id invoice-document-followup --output .tmp/governance-pack
+```
+
+These commands are inspired by public patterns from OpenAI, Anthropic, n8n, Activepieces, Windmill, Dify, Flowise, CrewAI, GitHub Actions, and similar automation ecosystems. They turn those patterns into beginner-friendly files for skills, approval gates, MCP-style connector planning, agent teams, eval loops, workflow explanation, self-host deployment, connector catalogs, script-to-UI conversion, knowledge RAG, automation hooks, and governance.
 
 ### business-launch
 

@@ -16,6 +16,7 @@ Instead:
 - commercial-use-aware public source research
 - originality and license rules
 - a repeatable AI workflow for design and implementation
+- a designer-grade AI agent critique loop
 - reservation and inquiry aggregation for the back office
 - browser QA and delivery checklists
 - proposal, pricing, and maintenance documents
@@ -43,6 +44,10 @@ This project is not for:
 
 Use public sources as ingredients, not as permission to clone.
 
+- Anthropic Claude Skills / Claude Code Skills: reusable task instructions and domain knowledge for agents
+- OpenAI Codex: agentic code editing, testing, and review workflow
+- Figma Dev Mode MCP: design-to-code context when the client has Figma assets
+- Vercel v0: rapid UI exploration that still needs project-level review
 - `shadcn/ui`: accessible UI primitives for React websites
 - `Astro`: fast static-site framework for brochure and content-heavy sites
 - `Headless UI`: accessible menus, dialogs, and disclosures
@@ -70,12 +75,29 @@ Each niche needs different proof, CTA, policy language, and trust signals.
 
 ## Quality bar
 
-A side-hustle website pack becomes valuable when it helps a beginner avoid four common failures:
+A side-hustle website pack becomes valuable when it helps a beginner avoid five common failures:
 
 1. Copying a competitor too closely
 2. Shipping a pretty page with weak CTA and no trust content
 3. Forgetting mobile QA and accessibility
 4. Finishing the code but having no proposal, price menu, maintenance scope, or inquiry operations process
+5. Treating AI output as final design without critique, browser review, and human approval
+
+## Designer-grade AI agent workflow
+
+The current design debate is often framed as "should programmers do design?" or "should designers code?" In this project, the better question is:
+
+> Can an AI agent make the design process explicit enough that a beginner can repeat it safely?
+
+Use the agent for a design loop, not a one-shot prompt:
+
+1. Brief: audience, offer, proof, main action, constraints.
+2. Direction: typography, color roles, spacing, imagery, section order, and what must differ from competitors.
+3. Build: real content, accessible forms, responsive layout, stable CTA placement.
+4. Critique: hierarchy, clarity, trust, originality, accessibility, mobile fit, and conversion path.
+5. Revise: fix the biggest design risk first, then check again in a browser.
+
+This does not replace good designers on high-stakes brand work. It does let a programmer or beginner operate with stronger design judgment because the agent is forced to explain decisions and test the result.
 
 ## Practical workflow
 
@@ -83,10 +105,11 @@ A side-hustle website pack becomes valuable when it helps a beginner avoid four 
 2. Gather facts with a client brief
 3. Choose public references and record their licenses
 4. Create an original direction, not a direct clone
-5. Build the page
-6. Create the reservation or inquiry intake table, status pipeline, and response templates
-7. Check desktop, mobile, forms, and the back-office dashboard in a real browser
-8. Deliver with a handoff and maintenance option
+5. Run the designer-grade AI agent loop before and after implementation
+6. Build the page
+7. Create the reservation or inquiry intake table, status pipeline, and response templates
+8. Check desktop, mobile, forms, and the back-office dashboard in a real browser
+9. Deliver with a handoff and maintenance option
 
 ## Front website workflow
 
@@ -160,6 +183,7 @@ This daily routine is part of the product. It tells the client how the website t
 Good AI-assisted tasks:
 
 - structure ideas
+- visual direction options and design critique
 - component implementation
 - copy drafting from approved facts
 - inquiry classification and reply drafting
@@ -169,6 +193,7 @@ Good AI-assisted tasks:
 Keep human approval for:
 
 - legal and license judgment
+- final brand judgment
 - final brand tone
 - real client facts
 - reservation confirmation, price exceptions, and policy exceptions
@@ -197,6 +222,11 @@ That output gives you a commercial-use-aware source catalog, client brief, Codex
 Important generated files for beginners:
 
 - `ai_agent_handoff.md`: copy-ready instruction for Codex, Claude Code, Cursor, or another agent
+- `designer_grade_agent_playbook.md`: AI agent loop for design quality, critique, and revision
+- `public_ai_design_sources.md`: public AI/design/OSS source map for improving the workflow
+- `website_quality_gate.md`: final quality gate covering Core Web Vitals, accessibility, SEO, forms, trust, and human approval
+- `homepage_review_scorecard.csv`: scorecard for rating homepage delivery readiness
+- `agent_design_review_prompt.md`: prompt for asking an AI agent to review the rendered site like a senior reviewer
 - `client_kickoff_questions.md`: first-meeting questions so beginners do not guess the business facts
 - `beginner_human_guide.md`: plain English guide for the human operator
 - `beginner_human_guide.ja.md`: plain Japanese guide for the human operator

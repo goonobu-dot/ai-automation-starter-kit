@@ -180,6 +180,11 @@ def generate_website_side_hustle_pack(
             "client_brief.md",
             "client_kickoff_questions.md",
             "ai_agent_handoff.md",
+            "designer_grade_agent_playbook.md",
+            "public_ai_design_sources.md",
+            "website_quality_gate.md",
+            "homepage_review_scorecard.csv",
+            "agent_design_review_prompt.md",
             "beginner_human_guide.md",
             "beginner_human_guide.ja.md",
             "reservation_inquiry_system.md",
@@ -208,6 +213,11 @@ def generate_website_side_hustle_pack(
     (output / "client_brief.md").write_text(_render_website_side_hustle_client_brief(payload), encoding="utf-8")
     (output / "client_kickoff_questions.md").write_text(_render_website_side_hustle_kickoff_questions(payload), encoding="utf-8")
     (output / "ai_agent_handoff.md").write_text(_render_website_side_hustle_agent_handoff(payload), encoding="utf-8")
+    (output / "designer_grade_agent_playbook.md").write_text(_render_website_side_hustle_designer_grade_playbook(payload), encoding="utf-8")
+    (output / "public_ai_design_sources.md").write_text(_render_website_side_hustle_public_ai_design_sources(payload), encoding="utf-8")
+    (output / "website_quality_gate.md").write_text(_render_website_side_hustle_quality_gate(payload), encoding="utf-8")
+    (output / "homepage_review_scorecard.csv").write_text(_render_website_side_hustle_scorecard_csv(payload), encoding="utf-8")
+    (output / "agent_design_review_prompt.md").write_text(_render_website_side_hustle_agent_review_prompt(payload), encoding="utf-8")
     (output / "beginner_human_guide.md").write_text(_render_website_side_hustle_beginner_human_guide_en(payload), encoding="utf-8")
     (output / "beginner_human_guide.ja.md").write_text(_render_website_side_hustle_beginner_human_guide(payload), encoding="utf-8")
     (output / "design_direction_template.md").write_text(_render_website_side_hustle_design_direction(payload), encoding="utf-8")
@@ -3672,11 +3682,12 @@ def _render_website_side_hustle_start(payload: dict) -> str:
             "2. Pick one vertical from `niche_offer_menu.md`.",
             "3. Use `client_kickoff_questions.md` and `client_brief.md` to collect facts before designing.",
             "4. Use `codex_workflow.md` with Codex or another coding agent.",
-            "5. Draft copy with `copy_collection_sheet.md` and `homepage_structure_guide.md`.",
-            "6. Design the back office with `reservation_inquiry_system.md`, `operator_runbook.md`, and `integration_options.md`.",
-            "7. Price the job with `pricing_menu.md` and send `proposal_one_pager.md`.",
-            "8. Finish with `delivery_checklist.md`, `delivery_acceptance_checklist.md`, `client_handoff_note.md`, `accessibility_and_seo_checklist.md`, and `launch_checklist.md`.",
-            "9. Open `sample_site/index.html` and `inquiry_dashboard.html` for editable examples.",
+            "5. Read `designer_grade_agent_playbook.md` and `public_ai_design_sources.md` before visual refinement.",
+            "6. Draft copy with `copy_collection_sheet.md` and `homepage_structure_guide.md`.",
+            "7. Design the back office with `reservation_inquiry_system.md`, `operator_runbook.md`, and `integration_options.md`.",
+            "8. Price the job with `pricing_menu.md` and send `proposal_one_pager.md`.",
+            "9. Finish with `delivery_checklist.md`, `delivery_acceptance_checklist.md`, `client_handoff_note.md`, `accessibility_and_seo_checklist.md`, and `launch_checklist.md`.",
+            "10. Open `sample_site/index.html` and `inquiry_dashboard.html` for editable examples.",
             "",
             "## Ground Rule",
             "",
@@ -3701,6 +3712,7 @@ def _render_website_side_hustle_readme(payload: dict) -> str:
             "- Commercial-use-aware source catalog",
             "- Client kickoff questions for the first meeting",
             "- Codex workflow and prompting guide",
+            "- Designer-grade AI agent playbook and public AI design source map",
             "- Client brief, copy sheet, proposal, pricing, maintenance, QA, and launch checklists",
             "- Delivery acceptance checklist and client handoff note",
             "- Reservation and inquiry aggregation templates",
@@ -3721,7 +3733,7 @@ def _render_website_side_hustle_positioning(payload: dict) -> str:
         [
             "# Positioning",
             "",
-            "Offer: original, small-business websites built quickly with AI assistance and reviewed with human-quality checklists.",
+            "Offer: original, small-business websites built quickly with AI assistance, designer-grade agent critique loops, and human-quality checklists.",
             "",
             "What this is not:",
             "- Not a promise of rankings, leads, or passive income.",
@@ -3730,6 +3742,7 @@ def _render_website_side_hustle_positioning(payload: dict) -> str:
             "",
             "Why a client buys:",
             "- Faster first draft than a traditional agency process.",
+            "- Stronger iteration because the agent critiques hierarchy, trust, mobile fit, and conversion before delivery.",
             "- Lower cost for brochure sites, landing pages, and local-business refreshes.",
             "- Clear scope, visible mockups, and a reviewable delivery checklist.",
             "",
@@ -3896,6 +3909,7 @@ def _render_website_side_hustle_agent_handoff(payload: dict) -> str:
             "6. `reservation_inquiry_system.md`",
             "7. `operator_runbook.md`",
             "8. `privacy_and_consent.md`",
+            "9. `designer_grade_agent_playbook.md`",
             "",
             "## Build The Front Of The Website",
             "",
@@ -3903,6 +3917,7 @@ def _render_website_side_hustle_agent_handoff(payload: dict) -> str:
             "- Use client-approved facts only. If facts are missing, leave placeholders and list what is needed.",
             "- Build an original layout. Public GitHub projects can inform components and patterns, but do not copy a competitor's identity, text, images, or full layout.",
             "- Make the first viewport clear: business type, offer, location or audience, and primary CTA.",
+            "- Run the designer-grade loop: brief, audience, visual system, layout, copy, browser critique, revision, final acceptance.",
             "- Check mobile width, CTA visibility, image loading, text overflow, and form labels.",
             "",
             "## Build The Back Office",
@@ -3924,6 +3939,254 @@ def _render_website_side_hustle_agent_handoff(payload: dict) -> str:
             "## Final Verification",
             "",
             "Before saying the work is complete, verify the site and dashboard in a browser, inspect generated files, and confirm that no real secrets or private customer records are included.",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_designer_grade_playbook(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Designer-Grade AI Agent Playbook",
+            "",
+            "This playbook helps an AI agent support design work at a higher level. The goal is not to pretend that design taste is automatic. The goal is to make the agent repeat the parts good designers do deliberately: understand the user, choose hierarchy, create a visual system, test the work in context, and revise from evidence.",
+            "",
+            "## Core Mindset",
+            "",
+            "A programmer using an AI agent can become stronger at design when the workflow forces the agent to explain design decisions, show trade-offs, and verify the rendered result. A designer using an AI agent can become stronger at implementation when the workflow turns taste into repeatable tokens, components, states, and acceptance checks.",
+            "",
+            "Do not aim for a single prompt that makes a perfect page. Aim for a loop that makes weak design visible and correctable.",
+            "",
+            "## The Seven-Step Design Loop",
+            "",
+            "1. Brief: identify the business, audience, offer, trust signals, and primary action.",
+            "2. Positioning: decide what the visitor should understand in the first five seconds.",
+            "3. Visual system: choose type scale, color roles, spacing rhythm, image treatment, buttons, forms, and cards.",
+            "4. Information architecture: decide section order before styling individual blocks.",
+            "5. Implementation: build with real content structure, accessible labels, responsive rules, and stable dimensions.",
+            "6. Browser critique: inspect desktop and mobile rendering, overflow, CTA visibility, contrast, form clarity, and whether the page feels original.",
+            "7. Revision: fix the highest-impact problems first, then repeat the browser critique.",
+            "",
+            "## Designer-Level Questions The Agent Must Answer",
+            "",
+            "- What should the visitor do next?",
+            "- What proof makes the claim believable?",
+            "- Which section can be removed because it does not help a decision?",
+            "- Which visual choice supports trust rather than decoration?",
+            "- What is intentionally different from references or competitors?",
+            "- What breaks on mobile, small screens, long words, or missing images?",
+            "- What still requires human approval: facts, claims, photos, prices, policies, privacy, or launch?",
+            "",
+            "## AI Agent Instructions",
+            "",
+            "Use this prompt before redesigning or building a client website:",
+            "",
+            "```text",
+            "Act as a design reviewer and implementation partner.",
+            "First summarize the audience, offer, trust signals, and primary action.",
+            "Then propose one original visual direction with type, color, spacing, imagery, and section order.",
+            "Build or revise the page using the existing stack.",
+            "After rendering, critique the page like a senior designer: hierarchy, clarity, trust, originality, accessibility, mobile fit, and conversion path.",
+            "Do not copy competitor identity, text, photos, or full layout.",
+            "Do not invent facts, testimonials, awards, or prices.",
+            "Keep launch, legal, privacy, prices, and booking confirmation behind human approval.",
+            "```",
+            "",
+            "## What To Borrow From Public Skills And OSS",
+            "",
+            "- From skill systems: explicit instructions, checklists, and reusable domain knowledge.",
+            "- From design systems: tokens, component states, accessible primitives, and consistency rules.",
+            "- From AI UI tools: fast visual exploration, but not final quality without human review.",
+            "- From open-source sites: patterns and implementation ideas, not brand identity or full-page cloning.",
+            "",
+            "## Quality Bar",
+            "",
+            "A page is not designer-grade because it looks expensive. It is designer-grade when a real visitor can understand the offer, trust the business, take the next action, and use the page comfortably on mobile.",
+            "",
+            "Before delivery, the agent must produce a short critique with:",
+            "",
+            "- strongest design choice",
+            "- weakest design choice",
+            "- mobile risk",
+            "- accessibility risk",
+            "- conversion risk",
+            "- originality risk",
+            "- human approvals still needed",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_public_ai_design_sources(payload: dict) -> str:
+    rows = [
+        (
+            "Anthropic Claude Skills / Claude Code skills",
+            "https://docs.anthropic.com/en/docs/claude-code/skills",
+            "Reusable task instructions and domain knowledge for agents",
+            "Use the skill pattern to package website design knowledge into clear steps and safety gates",
+            "Read the docs and license before copying any third-party skill content",
+        ),
+        (
+            "OpenAI Codex",
+            "https://platform.openai.com/docs/codex",
+            "Agentic coding workflow for reading, editing, testing, and reviewing code",
+            "Use Codex to turn the design playbook into files, browser checks, and tests",
+            "Keep secrets and private client data out of prompts and commits",
+        ),
+        (
+            "Figma Dev Mode MCP / design-to-code context",
+            "https://help.figma.com/hc/en-us/articles/32132100833559-Guide-to-the-Dev-Mode-MCP-Server",
+            "Bridge between design context and implementation tools",
+            "Use when a client or designer has Figma assets that should guide code",
+            "Respect asset rights, client ownership, and design system boundaries",
+        ),
+        (
+            "Vercel v0",
+            "https://v0.dev/",
+            "AI-assisted UI generation and exploration",
+            "Use for quick layout exploration and component ideas, then verify in the real project",
+            "Do not treat generated UI as automatically original or production-ready",
+        ),
+        (
+            "shadcn/ui",
+            "https://github.com/shadcn-ui/ui",
+            "Accessible component patterns that can be owned in the project",
+            "Use as a base for forms, buttons, cards, dialogs, and navigation",
+            "Copy only what is needed and keep styling aligned with the client brand",
+        ),
+        (
+            "A11y Project Checklist",
+            "https://www.a11yproject.com/checklist/",
+            "Practical accessibility checklist",
+            "Use as an acceptance check before delivery",
+            "Pair with browser and keyboard checks",
+        ),
+    ]
+    lines = [
+        "# Public AI Design Sources",
+        "",
+        "This file maps public AI, design, and OSS references that can improve the website side-hustle workflow. Treat these as learning sources and workflow references, not as permission to copy a full design, brand, or private system.",
+        "",
+        "| Source | URL | What it gives | How to use it | Safety check |",
+        "|---|---|---|---|---|",
+    ]
+    for name, url, gives, use, safety in rows:
+        lines.append(f"| {name} | {url} | {gives} | {use} | {safety} |")
+    lines.extend(
+        [
+            "",
+            "Recommended path:",
+            "",
+            "1. Use public sources to define the workflow and quality bar.",
+            "2. Use client facts to create the actual design direction.",
+            "3. Use AI agents to implement, critique, and revise.",
+            "4. Use human review for originality, claims, accessibility, privacy, and launch.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _render_website_side_hustle_quality_gate(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Website Quality Gate",
+            "",
+            "Use this before client delivery. It turns public quality references into a practical gate for AI-assisted small-business websites.",
+            "",
+            "## Research Base",
+            "",
+            "- Core Web Vitals: check loading, interaction responsiveness, and visual stability.",
+            "- WCAG and A11y Project: check headings, labels, keyboard access, contrast, focus, and alternative text.",
+            "- Google SEO Starter Guide: check truthful titles, descriptions, links, headings, and useful content.",
+            "- Lighthouse or browser audits: use as supporting evidence, not as the only quality judgment.",
+            "- Usability heuristics: check whether the page communicates status, prevents errors, and uses familiar patterns.",
+            "",
+            "## Pass Gate",
+            "",
+            "A page can move to client review only when all of these are true:",
+            "",
+            "- The hero says what the business is, who it serves, and what action to take.",
+            "- The primary CTA is visible on desktop and mobile before the visitor has to hunt for it.",
+            "- Body text, buttons, cards, forms, and navigation do not overflow on mobile.",
+            "- Images are rights-safe, load correctly, and are not dark filler.",
+            "- Every form control has a useful label and a clear success or error path.",
+            "- Keyboard focus is visible for links, buttons, and inputs.",
+            "- Heading order is readable and there is one clear H1.",
+            "- Page title and meta description are specific and truthful.",
+            "- The contact or booking path has been tested end to end in dry-run mode.",
+            "- No fake reviews, fake awards, invented prices, or unapproved policy claims are present.",
+            "- Human approval remains required for launch, prices, legal/privacy text, and booking confirmation.",
+            "",
+            "## Scoring",
+            "",
+            "Use `homepage_review_scorecard.csv` to score the page. If any critical item fails, revise before delivery even if the total score looks high.",
+            "",
+            "Recommended minimums:",
+            "",
+            "- 90+ points: client-ready for a small brochure or inquiry site.",
+            "- 80-89 points: usable draft, but revise weak sections before launch.",
+            "- Under 80 points: do not present as finished.",
+            "",
+            "## Evidence To Keep",
+            "",
+            "- desktop screenshot",
+            "- mobile screenshot",
+            "- form or CTA dry-run result",
+            "- scorecard result",
+            "- list of human approvals still needed",
+            "",
+        ]
+    )
+
+
+def _render_website_side_hustle_scorecard_csv(payload: dict) -> str:
+    rows = [
+        ["criterion", "pass_threshold", "points", "evidence", "critical"],
+        ["Hero clarity", "Business, audience, offer, and primary action are clear in the first viewport", "10", "desktop and mobile screenshots", "yes"],
+        ["CTA visibility", "Primary CTA is visible and distinct on desktop and mobile", "10", "screenshots", "yes"],
+        ["Trust proof", "Real reviews, credentials, photos, years, staff, or local details support the claims", "10", "client-approved proof list", "yes"],
+        ["Mobile fit", "No horizontal scroll or clipped text at common mobile widths", "10", "mobile browser check", "yes"],
+        ["Accessibility basics", "H1, labels, alt text, focus states, contrast, and keyboard paths are checked", "15", "manual checklist or audit notes", "yes"],
+        ["Performance basics", "Images are sized, layout is stable, and Core Web Vitals risks are reviewed", "10", "Lighthouse or browser performance notes", "no"],
+        ["SEO basics", "Title, meta description, headings, internal links, and useful content are truthful", "10", "page source or checklist", "no"],
+        ["Form and inquiry path", "Contact or booking path works in dry-run mode and has success/error states", "10", "dry-run result", "yes"],
+        ["Originality and rights", "No cloned identity, copied text, unlicensed images, or unsupported claims", "10", "source log and originality notes", "yes"],
+        ["Handoff readiness", "Client can understand updates, inquiry status, approvals, and maintenance scope", "5", "client handoff note", "no"],
+    ]
+    return "\n".join(",".join(f'"{field}"' for field in row) for row in rows) + "\n"
+
+
+def _render_website_side_hustle_agent_review_prompt(payload: dict) -> str:
+    return "\n".join(
+        [
+            "# Agent Design Review Prompt",
+            "",
+            "Use this prompt after the website is rendered in a browser and before client delivery.",
+            "",
+            "```text",
+            "Act as a senior website quality reviewer for a small-business website.",
+            "",
+            "Review the page against these gates:",
+            "1. Hero clarity: business, audience, offer, and primary action.",
+            "2. Conversion path: CTA visibility, form flow, booking/contact dry-run.",
+            "3. Trust: real proof, specific claims, local details, and no invented facts.",
+            "4. Accessibility: H1, heading order, labels, alt text, focus states, contrast, keyboard path.",
+            "5. Mobile: no horizontal scroll, no clipped text, no cramped controls.",
+            "6. Performance: image sizing, layout stability, heavy assets, Core Web Vitals risk.",
+            "7. SEO: truthful title, meta description, headings, useful content, internal links.",
+            "8. Originality: no copied competitor identity, text, images, or full layout.",
+            "9. Back office: inquiry table, status flow, response templates, and human approval boundaries.",
+            "",
+            "Return:",
+            "- score out of 100",
+            "- top 5 fixes in priority order",
+            "- critical blockers",
+            "- what should be tested in the browser again",
+            "- what needs human approval before launch",
+            "",
+            "Do not say the site is ready if any critical blocker remains.",
+            "```",
             "",
         ]
     )

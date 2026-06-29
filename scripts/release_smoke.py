@@ -311,6 +311,246 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(side_hustle_blueprints_output / "risk_boundaries.md")
     _require_file(side_hustle_blueprints_output / "ai_agent_handoff.md")
 
+    command_center_output = output / "command-center"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "command-center",
+            "--language",
+            "both",
+            "--output",
+            str(command_center_output),
+        ],
+        env=env,
+    )
+    _require_file(command_center_output / "START_HERE_COMMAND_CENTER.md")
+    _require_file(command_center_output / "COMMAND_CENTER.md")
+    _require_file(command_center_output / "COMMAND_CENTER.ja.md")
+    _require_file(command_center_output / "command_center.html")
+    _require_file(command_center_output / "next_step_decision_tree.md")
+
+    skill_pack_output = output / "skill-pack"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "skill-pack",
+            "--flow-id",
+            "invoice-document-followup",
+            "--agent",
+            "codex",
+            "--output",
+            str(skill_pack_output),
+        ],
+        env=env,
+    )
+    _require_file(skill_pack_output / "SKILL.md")
+    _require_file(skill_pack_output / "agent_usage.md")
+    _require_file(skill_pack_output / "agent_team_roles.md")
+
+    approval_gate_output = output / "approval-gate"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "approval-gate",
+            "--flow-id",
+            "invoice-document-followup",
+            "--output",
+            str(approval_gate_output),
+        ],
+        env=env,
+    )
+    _require_file(approval_gate_output / "approval_gate.json")
+    _require_file(approval_gate_output / "approval_policy.md")
+    _require_file(approval_gate_output / "human_review_queue.csv")
+
+    mcp_connector_output = output / "mcp-connector-plan"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "mcp-connector-plan",
+            "--flow-id",
+            "invoice-document-followup",
+            "--connectors",
+            "gmail,google-sheets,slack",
+            "--output",
+            str(mcp_connector_output),
+        ],
+        env=env,
+    )
+    _require_file(mcp_connector_output / "mcp_connector_plan.md")
+    _require_file(mcp_connector_output / "env_request_list.md")
+    _require_file(mcp_connector_output / "secrets_boundary.md")
+
+    agent_team_output = output / "agent-team"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "agent-team",
+            "--flow-id",
+            "invoice-document-followup",
+            "--output",
+            str(agent_team_output),
+        ],
+        env=env,
+    )
+    _require_file(agent_team_output / "agent_team_roles.md")
+    _require_file(agent_team_output / "agent_handoff_protocol.md")
+
+    workflow_explainer_output = output / "workflow-explainer"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "workflow-explainer",
+            "--flow-id",
+            "invoice-document-followup",
+            "--audience",
+            "client",
+            "--output",
+            str(workflow_explainer_output),
+        ],
+        env=env,
+    )
+    _require_file(workflow_explainer_output / "workflow_explainer.html")
+    _require_file(workflow_explainer_output / "workflow_map.mmd")
+    _require_file(workflow_explainer_output / "before_after.md")
+
+    eval_loop_output = output / "eval-loop"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "eval-loop",
+            "--flow-id",
+            "invoice-document-followup",
+            "--metric",
+            "hours_saved",
+            "--output",
+            str(eval_loop_output),
+        ],
+        env=env,
+    )
+    _require_file(eval_loop_output / "eval_loop.json")
+    _require_file(eval_loop_output / "eval_dataset.csv")
+    _require_file(eval_loop_output / "improvement_loop.md")
+
+    self_host_output = output / "self-host-pack"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "self-host-pack",
+            "--flow-id",
+            "invoice-document-followup",
+            "--provider",
+            "docker",
+            "--output",
+            str(self_host_output),
+        ],
+        env=env,
+    )
+    _require_file(self_host_output / "self_host_runbook.md")
+    _require_file(self_host_output / "docker_compose_plan.md")
+
+    connector_catalog_output = output / "connector-catalog"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "connector-catalog",
+            "--industry",
+            "local-business",
+            "--output",
+            str(connector_catalog_output),
+        ],
+        env=env,
+    )
+    _require_file(connector_catalog_output / "connector_piece_catalog.md")
+    _require_file(connector_catalog_output / "connector_selection_matrix.csv")
+
+    script_ui_output = output / "script-ui-pack"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "script-ui-pack",
+            "--flow-id",
+            "invoice-document-followup",
+            "--output",
+            str(script_ui_output),
+        ],
+        env=env,
+    )
+    _require_file(script_ui_output / "script_to_ui_plan.md")
+    _require_file(script_ui_output / "ui_workflow_options.md")
+
+    knowledge_rag_output = output / "knowledge-rag-pack"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "knowledge-rag-pack",
+            "--flow-id",
+            "ai-admin-faq-routing",
+            "--output",
+            str(knowledge_rag_output),
+        ],
+        env=env,
+    )
+    _require_file(knowledge_rag_output / "knowledge_base_pack.md")
+    _require_file(knowledge_rag_output / "rag_answer_policy.md")
+
+    automation_hooks_output = output / "automation-hooks"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "automation-hooks",
+            "--flow-id",
+            "invoice-document-followup",
+            "--output",
+            str(automation_hooks_output),
+        ],
+        env=env,
+    )
+    _require_file(automation_hooks_output / "automation_hooks.md")
+    _require_file(automation_hooks_output / "preflight_checks.md")
+
+    governance_output = output / "governance-pack"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "governance-pack",
+            "--flow-id",
+            "invoice-document-followup",
+            "--output",
+            str(governance_output),
+        ],
+        env=env,
+    )
+    _require_file(governance_output / "governance_pack.md")
+    _require_file(governance_output / "operational_governance.md")
+    _require_file(governance_output / "security_review_checklist.md")
+
     website_side_hustle_output = output / "website-side-hustle"
     _run(
         [

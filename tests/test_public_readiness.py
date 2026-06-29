@@ -70,6 +70,8 @@ def test_readme_links_start_here_and_use_cases_docs():
     assert "docs/GRILL_ME_PROMPTS.ja.md" in readme
     assert "docs/GRILL_ME_CHECKLISTS.md" in readme
     assert "docs/GRILL_ME_CHECKLISTS.ja.md" in readme
+    assert "docs/AUTOMATION_EXPANSION_GUIDE.md" in readme
+    assert "docs/AUTOMATION_EXPANSION_GUIDE.ja.md" in readme
 
 
 def test_start_here_and_use_cases_docs_help_first_time_users():
@@ -213,6 +215,49 @@ def test_side_hustle_blueprint_docs_are_bilingual_and_beginner_friendly():
     for path, snippets in expected_docs.items():
         text = Path(path).read_text()
         assert len(text) > 800, path
+        for snippet in snippets:
+            assert snippet in text, f"{path} missing {snippet}"
+
+
+def test_automation_expansion_docs_are_bilingual_and_beginner_friendly():
+    expected_docs = {
+        "docs/AUTOMATION_EXPANSION_GUIDE.md": [
+            "Automation Expansion Guide",
+            "command-center",
+            "skill-pack",
+            "approval-gate",
+            "mcp-connector-plan",
+            "workflow-explainer",
+            "eval-loop",
+            "self-host-pack",
+            "connector-catalog",
+            "script-ui-pack",
+            "knowledge-rag-pack",
+            "automation-hooks",
+            "governance-pack",
+            "OpenAI",
+            "Anthropic",
+        ],
+        "docs/AUTOMATION_EXPANSION_GUIDE.ja.md": [
+            "業務自動化 拡充機能ガイド",
+            "command-center",
+            "skill-pack",
+            "approval-gate",
+            "mcp-connector-plan",
+            "workflow-explainer",
+            "eval-loop",
+            "self-host-pack",
+            "connector-catalog",
+            "script-ui-pack",
+            "knowledge-rag-pack",
+            "automation-hooks",
+            "governance-pack",
+            "AIエージェント",
+        ],
+    }
+    for path, snippets in expected_docs.items():
+        text = Path(path).read_text()
+        assert len(text) > 1000, path
         for snippet in snippets:
             assert snippet in text, f"{path} missing {snippet}"
 
@@ -590,6 +635,33 @@ def test_public_release_audit_script_checks_final_release_evidence():
     assert "scripts/release_smoke.py::pricing_model.md" in result.stdout
     assert "scripts/release_smoke.py::client-ready" in result.stdout
     assert "scripts/release_smoke.py::complete-workspace" in result.stdout
+    assert "scripts/release_smoke.py::command-center" in result.stdout
+    assert "scripts/release_smoke.py::START_HERE_COMMAND_CENTER.md" in result.stdout
+    assert "scripts/release_smoke.py::command_center.html" in result.stdout
+    assert "scripts/release_smoke.py::skill-pack" in result.stdout
+    assert "scripts/release_smoke.py::SKILL.md" in result.stdout
+    assert "scripts/release_smoke.py::approval-gate" in result.stdout
+    assert "scripts/release_smoke.py::approval_gate.json" in result.stdout
+    assert "scripts/release_smoke.py::mcp-connector-plan" in result.stdout
+    assert "scripts/release_smoke.py::mcp_connector_plan.md" in result.stdout
+    assert "scripts/release_smoke.py::agent-team" in result.stdout
+    assert "scripts/release_smoke.py::agent_team_roles.md" in result.stdout
+    assert "scripts/release_smoke.py::workflow-explainer" in result.stdout
+    assert "scripts/release_smoke.py::workflow_explainer.html" in result.stdout
+    assert "scripts/release_smoke.py::eval-loop" in result.stdout
+    assert "scripts/release_smoke.py::eval_dataset.csv" in result.stdout
+    assert "scripts/release_smoke.py::self-host-pack" in result.stdout
+    assert "scripts/release_smoke.py::self_host_runbook.md" in result.stdout
+    assert "scripts/release_smoke.py::connector-catalog" in result.stdout
+    assert "scripts/release_smoke.py::connector_piece_catalog.md" in result.stdout
+    assert "scripts/release_smoke.py::script-ui-pack" in result.stdout
+    assert "scripts/release_smoke.py::script_to_ui_plan.md" in result.stdout
+    assert "scripts/release_smoke.py::knowledge-rag-pack" in result.stdout
+    assert "scripts/release_smoke.py::knowledge_base_pack.md" in result.stdout
+    assert "scripts/release_smoke.py::automation-hooks" in result.stdout
+    assert "scripts/release_smoke.py::automation_hooks.md" in result.stdout
+    assert "scripts/release_smoke.py::governance-pack" in result.stdout
+    assert "scripts/release_smoke.py::governance_pack.md" in result.stdout
     assert "scripts/release_smoke.py::guided-setup" in result.stdout
     assert "scripts/release_smoke.py::START_HERE_GUIDED_SETUP.md" in result.stdout
     assert "scripts/release_smoke.py::guided_setup_questions.md" in result.stdout

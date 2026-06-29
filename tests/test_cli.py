@@ -161,6 +161,71 @@ def test_parser_accepts_website_side_hustle_command():
     assert args.output == "website-pack"
 
 
+def test_parser_accepts_public_pattern_expansion_commands():
+    parser = build_parser()
+
+    command_center = parser.parse_args(["command-center", "--language", "both", "--output", "menu"])
+    assert command_center.command == "command-center"
+    assert command_center.language == "both"
+
+    skill = parser.parse_args(["skill-pack", "--flow-id", "invoice-document-followup", "--agent", "codex", "--output", "skill"])
+    assert skill.command == "skill-pack"
+    assert skill.flow_id == "invoice-document-followup"
+    assert skill.agent == "codex"
+
+    approval = parser.parse_args(["approval-gate", "--flow-id", "invoice-document-followup", "--output", "approval"])
+    assert approval.command == "approval-gate"
+    assert approval.flow_id == "invoice-document-followup"
+
+    mcp = parser.parse_args(
+        [
+            "mcp-connector-plan",
+            "--flow-id",
+            "invoice-document-followup",
+            "--connectors",
+            "gmail,google-sheets",
+            "--output",
+            "mcp",
+        ]
+    )
+    assert mcp.command == "mcp-connector-plan"
+    assert mcp.connectors == "gmail,google-sheets"
+
+    workflow = parser.parse_args(
+        ["workflow-explainer", "--flow-id", "invoice-document-followup", "--audience", "client", "--output", "workflow"]
+    )
+    assert workflow.command == "workflow-explainer"
+    assert workflow.audience == "client"
+
+    eval_loop = parser.parse_args(
+        ["eval-loop", "--flow-id", "invoice-document-followup", "--metric", "hours_saved", "--output", "eval"]
+    )
+    assert eval_loop.command == "eval-loop"
+    assert eval_loop.metric == "hours_saved"
+
+    agent_team = parser.parse_args(["agent-team", "--flow-id", "invoice-document-followup", "--output", "team"])
+    assert agent_team.command == "agent-team"
+
+    self_host = parser.parse_args(["self-host-pack", "--flow-id", "invoice-document-followup", "--provider", "docker", "--output", "self-host"])
+    assert self_host.command == "self-host-pack"
+    assert self_host.provider == "docker"
+
+    connector_catalog = parser.parse_args(["connector-catalog", "--industry", "local-business", "--output", "catalog"])
+    assert connector_catalog.command == "connector-catalog"
+
+    script_ui = parser.parse_args(["script-ui-pack", "--flow-id", "invoice-document-followup", "--output", "script-ui"])
+    assert script_ui.command == "script-ui-pack"
+
+    rag = parser.parse_args(["knowledge-rag-pack", "--flow-id", "ai-admin-faq-routing", "--output", "rag"])
+    assert rag.command == "knowledge-rag-pack"
+
+    hooks = parser.parse_args(["automation-hooks", "--flow-id", "invoice-document-followup", "--output", "hooks"])
+    assert hooks.command == "automation-hooks"
+
+    governance = parser.parse_args(["governance-pack", "--flow-id", "invoice-document-followup", "--output", "governance"])
+    assert governance.command == "governance-pack"
+
+
 def test_parser_accepts_guided_setup_command():
     parser = build_parser()
     args = parser.parse_args(
@@ -1034,6 +1099,35 @@ def test_main_runs_side_hustle_blueprints_and_prints_key_files(tmp_path, capsys)
     assert "count=" in captured.out
     assert (output / "START_HERE_SIDE_HUSTLE_BLUEPRINTS.md").exists()
     assert (output / "side_hustle_blueprints.html").exists()
+
+
+def test_main_runs_public_pattern_expansion_commands(tmp_path, capsys):
+    commands = [
+        (["command-center", "--language", "both"], "command_center=", "START_HERE_COMMAND_CENTER.md"),
+        (["skill-pack", "--flow-id", "invoice-document-followup", "--agent", "codex"], "skill_pack=", "SKILL.md"),
+        (["approval-gate", "--flow-id", "invoice-document-followup"], "approval_gate=", "approval_gate.json"),
+        (
+            ["mcp-connector-plan", "--flow-id", "invoice-document-followup", "--connectors", "gmail,google-sheets"],
+            "mcp_connector_plan=",
+            "mcp_connector_plan.md",
+        ),
+        (["agent-team", "--flow-id", "invoice-document-followup"], "agent_team=", "agent_team_roles.md"),
+        (["workflow-explainer", "--flow-id", "invoice-document-followup"], "workflow_explainer=", "workflow_explainer.html"),
+        (["eval-loop", "--flow-id", "invoice-document-followup", "--metric", "hours_saved"], "eval_loop=", "eval_loop.json"),
+        (["self-host-pack", "--flow-id", "invoice-document-followup"], "self_host_pack=", "self_host_runbook.md"),
+        (["connector-catalog", "--industry", "local-business"], "connector_catalog=", "connector_piece_catalog.md"),
+        (["script-ui-pack", "--flow-id", "invoice-document-followup"], "script_ui_pack=", "script_to_ui_plan.md"),
+        (["knowledge-rag-pack", "--flow-id", "ai-admin-faq-routing"], "knowledge_rag_pack=", "knowledge_base_pack.md"),
+        (["automation-hooks", "--flow-id", "invoice-document-followup"], "automation_hooks=", "automation_hooks.md"),
+        (["governance-pack", "--flow-id", "invoice-document-followup"], "governance_pack=", "governance_pack.md"),
+    ]
+    for index, (base_args, expected_print, expected_file) in enumerate(commands):
+        output = tmp_path / f"pack-{index}"
+        exit_code = main([*base_args, "--output", str(output)])
+        captured = capsys.readouterr()
+        assert exit_code == 0
+        assert expected_print in captured.out
+        assert (output / expected_file).exists()
 
 
 def test_main_runs_flows_list_show_install_and_validate(tmp_path, capsys):

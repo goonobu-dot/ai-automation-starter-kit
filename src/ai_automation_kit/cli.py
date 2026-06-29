@@ -23,6 +23,19 @@ from ai_automation_kit.core.flows import list_flows
 from ai_automation_kit.core.flows import validate_flow_project
 from ai_automation_kit.core.flow_runtime import approve_all_pending
 from ai_automation_kit.core.flow_runtime import run_flow_project
+from ai_automation_kit.core.automation_expansion import generate_agent_team
+from ai_automation_kit.core.automation_expansion import generate_approval_gate
+from ai_automation_kit.core.automation_expansion import generate_automation_hooks
+from ai_automation_kit.core.automation_expansion import generate_command_center
+from ai_automation_kit.core.automation_expansion import generate_connector_catalog
+from ai_automation_kit.core.automation_expansion import generate_eval_loop
+from ai_automation_kit.core.automation_expansion import generate_governance_pack
+from ai_automation_kit.core.automation_expansion import generate_knowledge_rag_pack
+from ai_automation_kit.core.automation_expansion import generate_mcp_connector_plan
+from ai_automation_kit.core.automation_expansion import generate_script_ui_pack
+from ai_automation_kit.core.automation_expansion import generate_self_host_pack
+from ai_automation_kit.core.automation_expansion import generate_skill_pack
+from ai_automation_kit.core.automation_expansion import generate_workflow_explainer
 from ai_automation_kit.core.offer_pack import generate_offer_pack
 from ai_automation_kit.core.operator_console import generate_client_report
 from ai_automation_kit.core.operator_console import generate_cloud_plan
@@ -171,6 +184,63 @@ def build_parser() -> argparse.ArgumentParser:
     side_hustle_blueprints.add_argument("--industry", default="local-business")
     side_hustle_blueprints.add_argument("--operator-level", default="beginner")
     side_hustle_blueprints.add_argument("--output", required=True)
+
+    command_center = subparsers.add_parser("command-center")
+    command_center.add_argument("--language", default="both", choices=["both", "en", "ja"])
+    command_center.add_argument("--output", required=True)
+
+    skill_pack = subparsers.add_parser("skill-pack")
+    skill_pack.add_argument("--flow-id", required=True)
+    skill_pack.add_argument("--agent", default="codex", choices=["codex", "claude-code", "cursor", "chatgpt"])
+    skill_pack.add_argument("--output", required=True)
+
+    approval_gate = subparsers.add_parser("approval-gate")
+    approval_gate.add_argument("--flow-id", required=True)
+    approval_gate.add_argument("--output", required=True)
+
+    mcp_connector_plan = subparsers.add_parser("mcp-connector-plan")
+    mcp_connector_plan.add_argument("--flow-id", required=True)
+    mcp_connector_plan.add_argument("--connectors", default="gmail,google-sheets,slack")
+    mcp_connector_plan.add_argument("--output", required=True)
+
+    agent_team = subparsers.add_parser("agent-team")
+    agent_team.add_argument("--flow-id", required=True)
+    agent_team.add_argument("--output", required=True)
+
+    workflow_explainer = subparsers.add_parser("workflow-explainer")
+    workflow_explainer.add_argument("--flow-id", required=True)
+    workflow_explainer.add_argument("--audience", default="client", choices=["client", "operator", "developer"])
+    workflow_explainer.add_argument("--output", required=True)
+
+    eval_loop = subparsers.add_parser("eval-loop")
+    eval_loop.add_argument("--flow-id", required=True)
+    eval_loop.add_argument("--metric", default="hours_saved")
+    eval_loop.add_argument("--output", required=True)
+
+    self_host_pack = subparsers.add_parser("self-host-pack")
+    self_host_pack.add_argument("--flow-id", required=True)
+    self_host_pack.add_argument("--provider", default="docker", choices=["docker", "vps", "cloud-run", "render", "railway"])
+    self_host_pack.add_argument("--output", required=True)
+
+    connector_catalog = subparsers.add_parser("connector-catalog")
+    connector_catalog.add_argument("--industry", default="local-business")
+    connector_catalog.add_argument("--output", required=True)
+
+    script_ui_pack = subparsers.add_parser("script-ui-pack")
+    script_ui_pack.add_argument("--flow-id", required=True)
+    script_ui_pack.add_argument("--output", required=True)
+
+    knowledge_rag_pack = subparsers.add_parser("knowledge-rag-pack")
+    knowledge_rag_pack.add_argument("--flow-id", required=True)
+    knowledge_rag_pack.add_argument("--output", required=True)
+
+    automation_hooks = subparsers.add_parser("automation-hooks")
+    automation_hooks.add_argument("--flow-id", required=True)
+    automation_hooks.add_argument("--output", required=True)
+
+    governance_pack = subparsers.add_parser("governance-pack")
+    governance_pack.add_argument("--flow-id", required=True)
+    governance_pack.add_argument("--output", required=True)
 
     guided_setup = subparsers.add_parser("guided-setup")
     guided_setup.add_argument("--flow-id", required=True)
@@ -511,6 +581,84 @@ def main(argv: list[str] | None = None) -> int:
         print(f"first_client_picker={args.output}/first_client_picker.md")
         print(f"catalog={args.output}/side_hustle_blueprints.html")
         print(f"count={payload['count']}")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "command-center":
+        payload = generate_command_center(output=Path(args.output), language=args.language)
+        print(f"command_center={args.output}/START_HERE_COMMAND_CENTER.md")
+        print(f"menu={args.output}/command_center.html")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "skill-pack":
+        payload = generate_skill_pack(flow_id=args.flow_id, agent=args.agent, output=Path(args.output))
+        print(f"skill_pack={args.output}/SKILL.md")
+        print(f"agent_usage={args.output}/agent_usage.md")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "approval-gate":
+        payload = generate_approval_gate(flow_id=args.flow_id, output=Path(args.output))
+        print(f"approval_gate={args.output}/approval_gate.json")
+        print(f"approval_policy={args.output}/approval_policy.md")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "mcp-connector-plan":
+        payload = generate_mcp_connector_plan(flow_id=args.flow_id, connectors=args.connectors, output=Path(args.output))
+        print(f"mcp_connector_plan={args.output}/mcp_connector_plan.md")
+        print(f"env_request_list={args.output}/env_request_list.md")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "agent-team":
+        payload = generate_agent_team(flow_id=args.flow_id, output=Path(args.output))
+        print(f"agent_team={args.output}/agent_team_roles.md")
+        print(f"handoff={args.output}/agent_handoff_protocol.md")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "workflow-explainer":
+        payload = generate_workflow_explainer(flow_id=args.flow_id, audience=args.audience, output=Path(args.output))
+        print(f"workflow_explainer={args.output}/workflow_explainer.html")
+        print(f"workflow_map={args.output}/workflow_map.mmd")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "eval-loop":
+        payload = generate_eval_loop(flow_id=args.flow_id, metric=args.metric, output=Path(args.output))
+        print(f"eval_loop={args.output}/eval_loop.json")
+        print(f"eval_dataset={args.output}/eval_dataset.csv")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "self-host-pack":
+        payload = generate_self_host_pack(flow_id=args.flow_id, provider=args.provider, output=Path(args.output))
+        print(f"self_host_pack={args.output}/self_host_runbook.md")
+        print(f"docker_compose_plan={args.output}/docker_compose_plan.md")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "connector-catalog":
+        payload = generate_connector_catalog(industry=args.industry, output=Path(args.output))
+        print(f"connector_catalog={args.output}/connector_piece_catalog.md")
+        print(f"connector_matrix={args.output}/connector_selection_matrix.csv")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "script-ui-pack":
+        payload = generate_script_ui_pack(flow_id=args.flow_id, output=Path(args.output))
+        print(f"script_ui_pack={args.output}/script_to_ui_plan.md")
+        print(f"operator_form_schema={args.output}/operator_form_schema.json")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "knowledge-rag-pack":
+        payload = generate_knowledge_rag_pack(flow_id=args.flow_id, output=Path(args.output))
+        print(f"knowledge_rag_pack={args.output}/knowledge_base_pack.md")
+        print(f"rag_answer_policy={args.output}/rag_answer_policy.md")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "automation-hooks":
+        payload = generate_automation_hooks(flow_id=args.flow_id, output=Path(args.output))
+        print(f"automation_hooks={args.output}/automation_hooks.md")
+        print(f"preflight_checks={args.output}/preflight_checks.md")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "governance-pack":
+        payload = generate_governance_pack(flow_id=args.flow_id, output=Path(args.output))
+        print(f"governance_pack={args.output}/governance_pack.md")
+        print(f"security_review={args.output}/security_review_checklist.md")
         print(f"status={payload['status']}")
         return 0
     if args.command == "guided-setup":

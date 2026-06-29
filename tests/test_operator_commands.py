@@ -17,6 +17,19 @@ from ai_automation_kit.core.operator_console import generate_share_check
 from ai_automation_kit.core.operator_console import generate_website_side_hustle_pack
 from ai_automation_kit.core.operator_console import package_client_demo
 from ai_automation_kit.core.side_hustle_blueprints import generate_side_hustle_blueprints
+from ai_automation_kit.core.automation_expansion import generate_approval_gate
+from ai_automation_kit.core.automation_expansion import generate_agent_team
+from ai_automation_kit.core.automation_expansion import generate_automation_hooks
+from ai_automation_kit.core.automation_expansion import generate_command_center
+from ai_automation_kit.core.automation_expansion import generate_connector_catalog
+from ai_automation_kit.core.automation_expansion import generate_eval_loop
+from ai_automation_kit.core.automation_expansion import generate_governance_pack
+from ai_automation_kit.core.automation_expansion import generate_knowledge_rag_pack
+from ai_automation_kit.core.automation_expansion import generate_mcp_connector_plan
+from ai_automation_kit.core.automation_expansion import generate_script_ui_pack
+from ai_automation_kit.core.automation_expansion import generate_self_host_pack
+from ai_automation_kit.core.automation_expansion import generate_skill_pack
+from ai_automation_kit.core.automation_expansion import generate_workflow_explainer
 from ai_automation_kit.core.flows import install_flow
 from ai_automation_kit.core.flow_runtime import run_flow_project
 from ai_automation_kit.core.flow_runtime import approve_all_pending
@@ -242,6 +255,11 @@ def test_generate_website_side_hustle_pack_creates_public_side_hustle_assets(tmp
     assert (output / "proposal_one_pager.md").exists()
     assert (output / "maintenance_plan.md").exists()
     assert (output / "ai_agent_handoff.md").exists()
+    assert (output / "designer_grade_agent_playbook.md").exists()
+    assert (output / "public_ai_design_sources.md").exists()
+    assert (output / "website_quality_gate.md").exists()
+    assert (output / "homepage_review_scorecard.csv").exists()
+    assert (output / "agent_design_review_prompt.md").exists()
     assert (output / "beginner_human_guide.md").exists()
     assert (output / "beginner_human_guide.ja.md").exists()
     assert (output / "reservation_inquiry_system.md").exists()
@@ -261,6 +279,11 @@ def test_generate_website_side_hustle_pack_creates_public_side_hustle_assets(tmp
     assert "Google Search SEO Starter Guide" in (output / "commercial_use_sources.md").read_text()
     assert "direct competitor clone" in (output / "originality_and_license_rules.md").read_text()
     assert "Codex, Claude Code, Cursor" in (output / "ai_agent_handoff.md").read_text()
+    assert "designer-grade" in (output / "designer_grade_agent_playbook.md").read_text()
+    assert "Anthropic Claude Skills" in (output / "public_ai_design_sources.md").read_text()
+    assert "Core Web Vitals" in (output / "website_quality_gate.md").read_text()
+    assert '"criterion","pass_threshold"' in (output / "homepage_review_scorecard.csv").read_text()
+    assert "senior website quality reviewer" in (output / "agent_design_review_prompt.md").read_text()
     assert "Beginner Human Guide" in (output / "beginner_human_guide.md").read_text()
     assert "初心者向け" in (output / "beginner_human_guide.ja.md").read_text()
     assert "Do not auto-confirm" in (output / "reservation_inquiry_system.md").read_text()
@@ -297,6 +320,117 @@ def test_generate_side_hustle_blueprints_creates_sellable_automation_catalog(tmp
     assert "AI Reception And First Reply" in (output / "side_hustle_blueprints.md").read_text()
     assert "Do not promise guaranteed revenue" in (output / "risk_boundaries.md").read_text()
     assert "Ask one question at a time" in (output / "ai_agent_handoff.md").read_text()
+
+
+def test_generate_command_center_creates_beginner_menu(tmp_path):
+    output = tmp_path / "command-center"
+
+    payload = generate_command_center(output=output, language="both")
+
+    assert payload["status"] == "ready"
+    assert (output / "START_HERE_COMMAND_CENTER.md").exists()
+    assert (output / "COMMAND_CENTER.ja.md").exists()
+    assert (output / "COMMAND_CENTER.md").exists()
+    assert (output / "command_center.html").exists()
+    assert (output / "next_step_decision_tree.md").exists()
+    assert "迷子にならない" in (output / "COMMAND_CENTER.ja.md").read_text()
+    assert "Side-hustle entry" in (output / "COMMAND_CENTER.md").read_text()
+    assert "side-hustle-blueprints" in (output / "command_center.html").read_text()
+
+
+def test_generate_public_pattern_packs_create_agent_ready_assets(tmp_path):
+    skill_output = tmp_path / "skill"
+    approval_output = tmp_path / "approval"
+    mcp_output = tmp_path / "mcp"
+    team_output = tmp_path / "team"
+    workflow_output = tmp_path / "workflow"
+    eval_output = tmp_path / "eval"
+    self_host_output = tmp_path / "self-host"
+    connector_catalog_output = tmp_path / "connector-catalog"
+    script_ui_output = tmp_path / "script-ui"
+    rag_output = tmp_path / "rag"
+    hooks_output = tmp_path / "hooks"
+    governance_output = tmp_path / "governance"
+
+    skill_payload = generate_skill_pack(flow_id="invoice-document-followup", agent="claude-code", output=skill_output)
+    approval_payload = generate_approval_gate(flow_id="invoice-document-followup", output=approval_output)
+    mcp_payload = generate_mcp_connector_plan(
+        flow_id="invoice-document-followup",
+        connectors="gmail,google-sheets,slack",
+        output=mcp_output,
+    )
+    team_payload = generate_agent_team(flow_id="invoice-document-followup", output=team_output)
+    workflow_payload = generate_workflow_explainer(
+        flow_id="invoice-document-followup",
+        audience="client",
+        output=workflow_output,
+    )
+    eval_payload = generate_eval_loop(
+        flow_id="invoice-document-followup",
+        metric="hours_saved",
+        output=eval_output,
+    )
+    self_host_payload = generate_self_host_pack(flow_id="invoice-document-followup", provider="docker", output=self_host_output)
+    connector_catalog_payload = generate_connector_catalog(industry="local-business", output=connector_catalog_output)
+    script_ui_payload = generate_script_ui_pack(flow_id="invoice-document-followup", output=script_ui_output)
+    rag_payload = generate_knowledge_rag_pack(flow_id="ai-admin-faq-routing", output=rag_output)
+    hooks_payload = generate_automation_hooks(flow_id="invoice-document-followup", output=hooks_output)
+    governance_payload = generate_governance_pack(flow_id="invoice-document-followup", output=governance_output)
+
+    assert skill_payload["status"] == "ready"
+    assert (skill_output / "SKILL.md").exists()
+    assert "Human approval" in (skill_output / "SKILL.md").read_text()
+    assert (skill_output / "agent_team_roles.md").exists()
+    assert "Claude Code" in (skill_output / "agent_usage.md").read_text()
+
+    assert approval_payload["status"] == "ready"
+    assert (approval_output / "approval_gate.json").exists()
+    assert (approval_output / "human_review_queue.csv").exists()
+    assert "booking confirmation" in (approval_output / "approval_policy.md").read_text()
+
+    assert mcp_payload["status"] == "ready"
+    assert (mcp_output / "mcp_connector_plan.md").exists()
+    assert (mcp_output / "env_request_list.md").exists()
+    assert "Do not paste secrets" in (mcp_output / "secrets_boundary.md").read_text()
+
+    assert team_payload["status"] == "ready"
+    assert (team_output / "agent_team_roles.md").exists()
+    assert "sales scout" in (team_output / "agent_team_roles.md").read_text().lower()
+    assert "handoff" in (team_output / "agent_handoff_protocol.md").read_text().lower()
+
+    assert workflow_payload["status"] == "ready"
+    assert (workflow_output / "workflow_explainer.html").exists()
+    assert (workflow_output / "workflow_map.mmd").exists()
+    assert "Before" in (workflow_output / "before_after.md").read_text()
+
+    assert eval_payload["status"] == "ready"
+    assert (eval_output / "eval_dataset.csv").exists()
+    assert (eval_output / "improvement_loop.md").exists()
+    assert "failure_modes" in (eval_output / "eval_loop.json").read_text()
+
+    assert self_host_payload["status"] == "ready"
+    assert (self_host_output / "docker_compose_plan.md").exists()
+    assert "rollback" in (self_host_output / "self_host_runbook.md").read_text().lower()
+
+    assert connector_catalog_payload["status"] == "ready"
+    assert (connector_catalog_output / "connector_piece_catalog.md").exists()
+    assert "Google Sheets" in (connector_catalog_output / "connector_piece_catalog.md").read_text()
+
+    assert script_ui_payload["status"] == "ready"
+    assert (script_ui_output / "script_to_ui_plan.md").exists()
+    assert "webhook" in (script_ui_output / "ui_workflow_options.md").read_text().lower()
+
+    assert rag_payload["status"] == "ready"
+    assert (rag_output / "knowledge_base_pack.md").exists()
+    assert "source citation" in (rag_output / "rag_answer_policy.md").read_text().lower()
+
+    assert hooks_payload["status"] == "ready"
+    assert (hooks_output / "automation_hooks.md").exists()
+    assert "secret scan" in (hooks_output / "preflight_checks.md").read_text().lower()
+
+    assert governance_payload["status"] == "ready"
+    assert (governance_output / "governance_pack.md").exists()
+    assert "approval audit" in (governance_output / "operational_governance.md").read_text().lower()
 
 
 def test_generate_opportunity_catalog_creates_sales_catalog(tmp_path):

@@ -10,8 +10,9 @@ The goal is not to make an AI clone websites. The goal is to help a human delive
 2. Ask it to read `docs/WEBSITE_SIDE_HUSTLE_GUIDE.md`.
 3. Generate a project pack with `website-side-hustle`.
 4. Ask the agent to read the generated `ai_agent_handoff.md`.
-5. Keep real secrets, passwords, API keys, and private customer records out of chat.
-6. Keep human approval for launch, prices, booking confirmation, and policy exceptions.
+5. Ask the agent to read `designer_grade_agent_playbook.md` before visual refinement.
+6. Keep real secrets, passwords, API keys, and private customer records out of chat.
+7. Keep human approval for launch, prices, booking confirmation, and policy exceptions.
 
 ## Recommended Agent Flow
 
@@ -33,6 +34,7 @@ This flow keeps the AI agent useful without turning it into an unsupervised busi
 Read this repository as a website side-hustle starter kit.
 Use docs/WEBSITE_PROJECT_AGENT_GUIDE.md and docs/WEBSITE_SIDE_HUSTLE_GUIDE.md as the main instructions.
 Help me create an original small-business website and a simple inquiry or reservation operations system.
+Use a designer-grade loop: brief, visual direction, build, browser critique, revision, and final acceptance.
 Do not clone competitors.
 Do not ask me to paste API keys, passwords, or real customer private data in chat.
 Ask one question at a time when information is missing.
@@ -42,7 +44,9 @@ Keep launch, final booking confirmation, prices, and policy exceptions behind hu
 ## Agent Responsibilities
 
 - Turn the client brief into a clear website structure.
+- Propose a visual direction with type, color, spacing, imagery, and section hierarchy.
 - Build or revise the front-end page.
+- Critique the rendered page for hierarchy, trust, originality, mobile fit, accessibility, and conversion clarity.
 - Create form, contact, and call-to-action paths.
 - Create or explain the back-office intake table.
 - Draft response templates.
@@ -53,6 +57,7 @@ Keep launch, final booking confirmation, prices, and policy exceptions behind hu
 ## Human Responsibilities
 
 - Confirm the real business facts.
+- Approve final brand judgment and whether the design feels appropriate for the business.
 - Approve final copy, brand tone, prices, and policies.
 - Provide licensed photos, logos, and assets.
 - Own the client accounts for hosting, forms, inboxes, spreadsheets, and booking tools.
@@ -92,6 +97,7 @@ Good requests:
 ## What The Agent Should Never Do
 
 - Never sell a direct clone.
+- Never claim that a generated UI is designer-approved without human review.
 - Never invent testimonials, awards, certifications, or customer facts.
 - Never auto-confirm a booking.
 - Never send production emails or messages without approval.
@@ -125,6 +131,8 @@ Verification completed:
 - Mobile browser:
 - Form or CTA path:
 - Back-office table or dashboard:
+- Design critique completed:
+- Human approvals still needed:
 ```
 
 ## First Command
@@ -138,6 +146,11 @@ Then open:
 - `.tmp/website-side-hustle/START_HERE_WEBSITE_SIDE_HUSTLE.md`
 - `.tmp/website-side-hustle/client_kickoff_questions.md`
 - `.tmp/website-side-hustle/ai_agent_handoff.md`
+- `.tmp/website-side-hustle/designer_grade_agent_playbook.md`
+- `.tmp/website-side-hustle/public_ai_design_sources.md`
+- `.tmp/website-side-hustle/website_quality_gate.md`
+- `.tmp/website-side-hustle/homepage_review_scorecard.csv`
+- `.tmp/website-side-hustle/agent_design_review_prompt.md`
 - `.tmp/website-side-hustle/beginner_human_guide.md`
 - `.tmp/website-side-hustle/beginner_human_guide.ja.md`
 - `.tmp/website-side-hustle/delivery_acceptance_checklist.md`
