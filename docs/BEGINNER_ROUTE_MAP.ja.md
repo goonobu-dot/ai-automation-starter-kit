@@ -1,245 +1,175 @@
 # 初心者ルートマップ
 
-このページは、このプロジェクトを開いて「資料が多すぎて、どこから読めばいいか分からない」と感じる人のための地図です。
+このページは、説明書というより案内板として読んでください。
 
-最初から全部読まないでください。このプロジェクトは、GitHub調査、副業提案、ローカルdry-run、クラウド設定、承認ゲート、デモ生成、公開前チェックまで含んでいるため、資料が多くなっています。初心者は、最初から全部を理解しようとせず、1つのルートだけを選んで進めれば大丈夫です。
+このプロジェクトには、たくさんの機能があります。だから最初から全部読まないでください。全部を理解してから使う道具ではありません。まず、自分に合う入口を1つ選ぶためのページです。
 
-最初のルールはこれです。
+## 30秒でわかる結論
 
-> 1つの業務、1つのサンプル入力、1つの下書き出力、1人の承認者。
+最初にやることは1つだけです。
 
-このルールを守ると、このプロジェクトはかなり使いやすくなります。
+> 1つの業務、1つのサンプル入力、1つの下書き出力、1人の承認者を決める。
 
-## まず結論
+これだけです。
 
-最初はこの順番です。
+たとえば、「問い合わせメールを読んで、返信文の下書きを作る」「請求書の不足書類を見つけて、確認リストを作る」くらい小さく始めます。
 
-1. このページを読む。
-2. [まずここから](START_HERE.ja.md) を読む。
-3. [AI初心者サポートマップ](AI_BEGINNER_SUPPORT_MAP.ja.md) を読む。
-4. ターミナル操作が不安なら、CLIを使わないルートで進む。
-5. ファイルを自動生成したいなら、CLIを使うルートで進む。
-6. 本物のAPIキー、顧客の機密情報、本番アクセス、課金が発生するクラウド変更は、人間承認なしに扱わない。
+最初の目的は、会社を丸ごと自動化することではありません。顧客や社内の人に「この作業ならAIで少し楽にできそう」と見える形で説明することです。
 
-## このプロジェクトで何ができるのか
+## 今日はここまで
 
-このプロジェクトは、あいまいな業務自動化の相談を、見えるファイルに変えます。
+初日は、ここまでできれば十分です。
 
-- 業務フロー図
-- 足りない入力情報の一覧
-- dry-run計画
-- AIの下書き出力
-- 人間承認キュー
-- 顧客向けレポート
-- 提案書や有料PoCの範囲
-- クラウドやコネクタ設定のチェックリスト
-- 本番化するか、止めるかの判断材料
+1. 自動化したい仕事を1つ決める。
+2. その仕事に入ってくる情報を1つ決める。
+3. AIに作らせたい下書きを1つ決める。
+4. 最後に確認する人を1人決める。
+5. 本番送信や本番更新はしない。
 
-大事なのは、初日に全部を自動化しようとしないことです。まず、1つの小さな業務を安全に説明できる状態にします。
+ここまで決まっていない状態で、クラウド、API、Webhook、データベース、本番環境に進まないでください。
+
+## このプロジェクトをどう見ればいいか
+
+このプロジェクトは、AIに詳しくない人が業務自動化を始めるための「道具箱」です。
+
+ただし、道具箱を全部開く必要はありません。最初は、使う道具を1つだけ選びます。
+
+あなたがやること:
+
+- どの仕事を楽にしたいか決める
+- 顧客や社内の人に質問する
+- サンプルデータを用意する
+- AIの下書きを確認する
+- 本番に進むか止めるか判断する
+
+AIに手伝わせること:
+
+- 何を聞けばよいか整理する
+- 業務フローを文章や図にする
+- 返信文や作業リストの下書きを作る
+- 顧客に見せる説明文を作る
+- 足りない情報を一覧にする
 
 ## 最初に開くもの
 
-5つだけ開くなら、これです。
+迷ったら、次の順番だけ見てください。
 
-| 順番 | ファイル | 理由 |
-|---|---|---|
-| 1 | `docs/BEGINNER_ROUTE_MAP.ja.md` | 読む順番を決め、資料迷子を防ぐため。 |
-| 2 | `docs/START_HERE.ja.md` | 最初の3分で全体像をつかむため。 |
-| 3 | `docs/AI_BEGINNER_SUPPORT_MAP.ja.md` | AIに任せてよいことと、人間が承認することを分けるため。 |
-| 4 | `docs/AI_AGENT_GRILL_ME_SKILL.ja.md` | ChatGPT、Claude、Cursor、Codex、Claude Code などに1問ずつ案内してもらうため。 |
-| 5 | `docs/USER_MANUAL.ja.md` | インストールや生成コマンドに進むときの詳しい手順。 |
+1. このページ
+2. まずここから
+3. AI初心者サポートマップ
+4. AIエージェント Grill Me スキル
+5. 使い方マニュアル
+
+名前で見る場合は、初心者ルートマップ、まずここから、AI初心者サポートマップ、AIエージェント Grill Me スキル、使い方マニュアルです。
 
 ## 最初は無視してよいもの
 
-最初は無視してよいもの:
+最初は無視してよいものがあります。
 
-- リリースや公開作業のためのファイル
-- GitHub Actions やパッケージングの細かい設定
-- 生成される全ファイル名の暗記
+- GitHub Actions
+- パッケージング
+- リリースチェック
 - すべてのクラウド選択肢
 - すべてのコネクタ選択肢
+- 生成されるファイル名の暗記
 - 高度なガバナンス資料
-- 公開OSS調査の細かい資料
 
-最初の業務フローが決まってから戻れば十分です。
+これらは大事ですが、初日に読むものではありません。
 
-## ルートを選ぶ
+## どの入口を選ぶか
 
-### CLIを使わないルート
+### 1. CLIを使わないルート
 
-ターミナル、Python、API、クラウド設定がまだ不安な人は、このルートです。
+ターミナルやPythonが不安なら、このルートです。
 
-1. [AIエージェント Grill Me スキル](AI_AGENT_GRILL_ME_SKILL.ja.md) を開きます。
-2. ChatGPT、Claude、Gemini、Cursor、Codex、Claude Code などに貼ります。
-3. AIに「このGitHubプロジェクトを一緒に読んで」と依頼します。
-4. 「1問ずつ質問して。1つの業務を選ぶのを手伝って」と伝えます。
-5. 業務内容は答えてよいですが、secretや顧客機密情報は貼りません。
-6. クラウドやAPI設定に入る前に、AIに簡単な計画を作らせます。
-
-そのまま使える依頼文:
+ChatGPT、Claude、Gemini、Cursor、Codex、Claude Code などに、次のように頼みます。
 
 ```text
 この GitHub プロジェクト ai-automation-starter-kit を一緒に読んでください。
-私は初心者です。一度にたくさん質問しないでください。
+私は初心者です。
+一度にたくさん説明しないでください。
 1問ずつ質問してください。
-1つの小さな業務、1つの入力元、1つの下書き出力、1人の承認者を決めるのを手伝ってください。
+まず、1つの業務、1つの入力、1つの下書き出力、1人の承認者を決めるのを手伝ってください。
 本物のAPIキー、password、secret、顧客の機密情報、本番アクセスはチャットに貼らせないでください。
-業務フローが見えたら、このプロジェクトのどのファイルを次に読めばよいか教えてください。
 ```
 
-### CLIを使うルート
+このルートでは、AIに読ませながら、人間が答える形で進めます。
 
-このプロジェクトにファイル一式を生成してほしい場合は、このルートです。
+### 2. CLIを使うルート
 
-インストール:
+ファイル一式を自動で作りたいなら、このルートです。
 
-```bash
-git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git
-cd ai-automation-starter-kit
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install --upgrade pip setuptools
-python3 -m pip install -e .
-ai-automation-kit doctor --output .tmp/doctor
-```
+最初は `complete-workspace` を使います。
 
-最初の見本ワークスペースを作ります。
+これは、見本の業務フロー、顧客向け説明、デモ、レポート、提案資料をまとめて作る入口です。
 
-```bash
-ai-automation-kit complete-workspace \
-  --flow-id invoice-document-followup \
-  --client-type local-business \
-  --niche accounting \
-  --output .tmp/complete-accounting
-```
+最初に見るのは、生成されたフォルダの中の次の2つだけで十分です。
 
-最初に開くもの:
+- `FINAL_DELIVERY_GUIDE.md`
+- `client_command_center.html`
 
-1. `.tmp/complete-accounting/FINAL_DELIVERY_GUIDE.md`
-2. `.tmp/complete-accounting/client_command_center.html`
-3. `.tmp/complete-accounting/demo_site/index.html`
-4. `.tmp/complete-accounting/client_report/client_report.html`
-5. `.tmp/complete-accounting/business_launch/START_HERE_BUSINESS_LAUNCH.md`
+### 3. 副業・受託ルート
 
-### 副業・受託ルート
+企業へ業務自動化を提案して、副業や受託につなげたいなら、このルートです。
 
-小さな会社や店舗へ、自動化支援を副業や受託として提案したい場合は、このルートです。
+最初の商品は「全部自動化します」ではありません。
 
-```bash
-ai-automation-kit side-hustle-blueprints \
-  --industry local-business \
-  --operator-level beginner \
-  --output .tmp/side-hustle-blueprints
-```
+最初の商品は、小さな有料dry-run PoCです。
 
-開くもの:
+dry-run PoCとは、本番送信せず、サンプルデータでAIの下書きや作業リストを作り、効果がありそうか見せる小さな試作です。
 
-1. `.tmp/side-hustle-blueprints/START_HERE_SIDE_HUSTLE_BLUEPRINTS.md`
-2. `.tmp/side-hustle-blueprints/first_client_picker.md`
-3. `.tmp/side-hustle-blueprints/client_intake_questions.md`
-4. `.tmp/side-hustle-blueprints/risk_boundaries.md`
+この場合は `side-hustle-blueprints` から始めます。
 
-最初の商品は「会社を丸ごと自動化します」ではありません。小さな有料dry-run PoCとして提案します。
+### 4. 社内導入ルート
 
-### 社内導入ルート
+自分の会社やチームで使いたいなら、このルートです。
 
-会社の中で、または会社の1チームを支援して、繰り返し業務を改善したい場合はこのルートです。
+最初は、誰か1人が困っている繰り返し作業を選びます。
 
-```bash
-ai-automation-kit flow-guide \
-  --industry operations \
-  --niche admin \
-  --output .tmp/flow-guide
-```
+例:
 
-1つの業務を選び、ローカルに入れます。
+- 問い合わせの整理
+- 返信文の下書き
+- 不足書類の確認
+- 週次レポート
+- FAQの振り分け
 
-```bash
-ai-automation-kit flows install invoice-document-followup --output .tmp/flow-project
-ai-automation-kit flows run .tmp/flow-project
-```
+この場合は、業務フローを選んで、ローカルでdry-runします。
 
-開くもの:
+### 5. ホームページ案件ルート
 
-1. `.tmp/flow-project/workflow_map.mmd`
-2. `.tmp/flow-project/automation_output/work_queue.csv`
-3. `.tmp/flow-project/automation_output/draft_outputs.md`
-4. `.tmp/flow-project/automation_output/approval_queue.csv`
-5. `.tmp/flow-project/automation_output/status_report.md`
+ホームページ制作と、問い合わせ・予約の管理をセットで作りたいなら、このルートです。
 
-### ホームページ案件ルート
+この場合は `website-side-hustle` を使います。
 
-ホームページ制作と、問い合わせ・予約の簡単な運用をセットで作りたい場合はこのルートです。
+ただし、競合サイトを丸ごとコピーしてはいけません。公開情報は、構成や考え方を学ぶために使います。文章、画像、ブランド、全体レイアウトをそのまま使わないでください。
 
-```bash
-ai-automation-kit website-side-hustle \
-  --industry hospitality \
-  --client-type local-business \
-  --niche tourism-hotel \
-  --output .tmp/website-side-hustle
-```
+### 6. クラウド・APIルート
 
-開くもの:
+クラウドやAPIに進むのは、最後です。
 
-1. `.tmp/website-side-hustle/START_HERE_WEBSITE_SIDE_HUSTLE.md`
-2. `.tmp/website-side-hustle/client_kickoff_questions.md`
-3. `.tmp/website-side-hustle/designer_grade_agent_playbook.md`
-4. `.tmp/website-side-hustle/website_quality_gate.md`
-5. `.tmp/website-side-hustle/delivery_acceptance_checklist.md`
+先に進む前に、次を確認してください。
 
-競合サイトを丸ごとコピーしてはいけません。公開情報は、構成や考え方を学ぶために使い、ブランド、文章、画像、全体レイアウトをそのまま使わないでください。
+- 何の業務か
+- 入力はどこから来るか
+- 出力は何か
+- 誰が承認するか
+- サンプルデータはあるか
+- 本番送信を止める方法はあるか
 
-### クラウド・APIルート
+ここまで決まったら `guided-setup` を使います。
 
-クラウドやAPIへ進むのは、業務フローが決まった後です。
-
-```bash
-ai-automation-kit guided-setup \
-  --flow-id invoice-document-followup \
-  --mode beginner \
-  --deployment undecided \
-  --connectors gmail,google-sheets \
-  --output .tmp/guided-setup
-```
-
-確認するもの:
-
-1. `.tmp/guided-setup/START_HERE_GUIDED_SETUP.md`
-2. `.tmp/guided-setup/missing_inputs.md`
-3. `.tmp/guided-setup/env_values_needed.md`
-4. `.tmp/guided-setup/client_request_list.md`
-5. `.tmp/guided-setup/ai_agent_instruction.md`
-
-クラウドが必要なら、計画を作ります。
-
-```bash
-ai-automation-kit cloud-plan \
-  --flow-id invoice-document-followup \
-  --provider aws \
-  --workload scheduled-job \
-  --connectors gmail,google-sheets,storage-folder \
-  --output .tmp/cloud-plan
-```
-
-cloud-plan は、本番公開を自動で進めるコマンドではありません。アカウント、権限、費用、secret、rollback、人間承認を整理するためのチェックリストです。
+その後、必要なら `cloud-plan` でクラウドの計画を作ります。
 
 ## command-center の位置づけ
 
-機能が増えて迷ったら、`command-center` を使います。
+機能が増えて迷ったときに使うメニューが `command-center` です。
 
-```bash
-ai-automation-kit command-center --language both --output .tmp/command-center
-```
+これは最初に必ず使うものではありません。最初の業務が決まったあと、「次に承認ゲートを作るのか」「AI用スキルを作るのか」「クラウド準備をするのか」を選ぶためのものです。
 
-開くもの:
+## 人間承認
 
-- `.tmp/command-center/START_HERE_COMMAND_CENTER.md`
-- `.tmp/command-center/command_center.html`
-- `.tmp/command-center/next_step_decision_tree.md`
-
-これは、`skill-pack`、`approval-gate`、`mcp-connector-plan`、`workflow-explainer`、`eval-loop`、`governance-pack` などの拡張パックを選ぶためのメニューです。
-
-## 人間承認ルール
+このプロジェクトでは、人間承認がとても大事です。
 
 AIに任せてよいこと:
 
@@ -250,32 +180,20 @@ AIに任せてよいこと:
 - 説明
 - チェックリスト作成
 
-人間承認が必要なこと:
+人間が必ず確認すること:
 
 - 実在顧客への送信
 - 予約確定
 - 価格変更
 - 返金
 - 本番データ変更
-- 課金が発生するクラウド有効化
-- 公開Webhook作成
-- 実在顧客の個人情報利用
+- 課金が発生するクラウド設定
+- 公開Webhook
+- 顧客の個人情報
 - 法律、医療、金融、人事、安全に関わる判断
 
-## 初心者チェックリスト
+## 最後に
 
-顧客に見せる前に、これを確認します。
+このプロジェクトは、AI初心者を置いていかないためのものです。
 
-- 業務は1つに絞れている。
-- 入力元が分かっている。
-- 出力は自動実行ではなく下書きになっている。
-- 人間の承認者が決まっている。
-- サンプルデータ、または匿名化データを使える。
-- dry-run の結果をやさしい言葉で説明できる。
-- 顧客に「まだ本番システムではない」と伝えられる。
-- 次の判断が「続ける、直す、止める」のどれかに分かれている。
-
-## このページの目的
-
-このプロジェクトの価値は、「AIで何か自動化できそう」という曖昧な状態から、「この小さな業務を、この安全な見本で、この入力を使い、このAI下書きを作り、この人が承認する」という状態に進めることです。
-
+最初から全部を理解する必要はありません。まずは、1つの小さな業務を選び、AIに下書きを作らせ、人間が確認する。その流れを見える形にするだけで十分です。

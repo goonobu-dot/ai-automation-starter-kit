@@ -1,281 +1,199 @@
 # Beginner Route Map
 
-This page is the map for people who open this project and feel, "There are too many files. I do not know what to read first."
+Read this like a signboard, not a technical manual.
 
-Do not read everything first. This project is large because it covers research, side-hustle sales, local dry-runs, cloud setup, approval gates, generated demos, and public-release checks. A beginner should not start by reading every manual. A beginner should choose one route and ignore the rest until it becomes necessary.
+This project has many features. Do not read everything first. You do not need to understand the whole repository before using it. This page only helps you choose one doorway.
 
-The first rule is simple:
+## 30-second version
+
+Start with one small decision:
 
 > One workflow, one sample input, one draft output, one human approver.
 
-If you keep that rule, this project becomes much easier to use.
+That is enough for the first day.
 
-## The Short Version
+Examples:
 
-Start here:
+- Read inquiry emails and draft replies.
+- Find missing invoice documents and create a check list.
+- Sort FAQ questions and draft answers.
+- Turn a weekly manual report into a draft report.
 
-1. Read this page.
-2. Read [Start Here](START_HERE.md).
-3. Read [AI Beginner Support Map](AI_BEGINNER_SUPPORT_MAP.md).
-4. Use the No-CLI path if you are not ready for terminal commands.
-5. Use the CLI path if you want the project to generate files for you.
-6. Keep real secrets, client private data, production access, and paid cloud changes out of chat until a human approves the next step.
+The first goal is not to automate an entire company. The first goal is to show one safe workflow that a person can understand.
 
-## What This Project Helps You Do
+## Stop here for today
 
-This project helps you turn a vague business automation idea into visible files:
+For day one, stop after this:
 
-- a workflow map
-- a list of missing inputs
-- a dry-run plan
-- AI draft outputs
-- a human approval queue
-- a client-friendly report
-- a proposal or paid PoC scope
-- a cloud or connector setup checklist
-- a go-live or stop decision
+1. Pick one repeated task.
+2. Pick where the input comes from.
+3. Pick the draft output AI should create.
+4. Pick the person who approves it.
+5. Do not send real messages or update production systems.
 
-The important point is that it does not ask you to automate everything on day one. It helps you explain one small workflow safely.
+If those are not clear, do not start cloud, APIs, webhooks, databases, or production access yet.
+
+## How to look at this project
+
+This project is a toolbox for business automation beginners.
+
+You do not open every tool at once. Pick one tool for one job.
+
+What you do:
+
+- choose the job
+- ask the client or team simple questions
+- prepare sample data
+- review the AI draft
+- decide whether to continue, revise, or stop
+
+What AI can help with:
+
+- organize the questions to ask
+- describe the workflow
+- draft replies or task lists
+- write client explanations
+- list missing inputs
 
 ## What to open first
 
-If you only open five things, open these:
+If you are lost, read only this order:
 
-| Order | File | Why |
-|---|---|---|
-| 1 | `docs/BEGINNER_ROUTE_MAP.md` | Choose the route and avoid reading overload. |
-| 2 | `docs/START_HERE.md` | Understand the first 3 minutes. |
-| 3 | `docs/AI_BEGINNER_SUPPORT_MAP.md` | Learn what AI can help with and what humans must approve. |
-| 4 | `docs/AI_AGENT_GRILL_ME_SKILL.md` | Give ChatGPT, Claude, Cursor, Codex, or Claude Code a one-question-at-a-time interview pattern. |
-| 5 | `docs/USER_MANUAL.md` | Follow the longer manual when you are ready to install or generate files. |
+1. This page
+2. Start Here
+3. AI Beginner Support Map
+4. AI Agent Grill Me Skill
+5. User Manual
+
+File names:
+
+- `docs/BEGINNER_ROUTE_MAP.md`
+- `docs/START_HERE.md`
+- `docs/AI_BEGINNER_SUPPORT_MAP.md`
+- `docs/AI_AGENT_GRILL_ME_SKILL.md`
+- `docs/USER_MANUAL.md`
 
 ## What to ignore at first
 
-What to ignore at first:
+Ignore these on the first day:
 
-- release engineering files
-- GitHub Actions and packaging details
-- every generated output filename
-- every cloud provider option
-- every connector choice
-- every advanced governance pack
-- every public OSS research artifact
+- GitHub Actions
+- packaging
+- release checks
+- every cloud option
+- every connector option
+- every generated filename
+- advanced governance files
 
-Come back to those only when your first workflow is clear.
+They matter later. They are not first-day reading.
 
-## Choose Your Route
+## Choose one doorway
 
-### No-CLI path
+### 1. No-CLI path
 
-Use this route if you are new to terminal commands, Python, APIs, or cloud setup.
+Choose this if terminal commands, Python, APIs, or cloud setup feel uncomfortable.
 
-1. Open [AI Agent Grill Me Skill](AI_AGENT_GRILL_ME_SKILL.md).
-2. Paste it into ChatGPT, Claude, Gemini, Cursor, Codex, Claude Code, or another AI agent.
-3. Ask the AI to read this GitHub project with you.
-4. Tell it: "Ask me one question at a time. Help me choose one business workflow."
-5. Answer with business context, not secrets.
-6. Ask it to produce a simple plan before any cloud or API setup.
-
-Use this prompt:
+Paste this into ChatGPT, Claude, Gemini, Cursor, Codex, Claude Code, or another AI assistant:
 
 ```text
 Please read this GitHub project with me: ai-automation-starter-kit.
-I am a beginner. Do not ask everything at once.
+I am a beginner.
+Do not explain everything at once.
 Ask one question at a time.
-Help me choose one small workflow, one input source, one draft output, and one human approver.
+Help me choose one workflow, one input, one draft output, and one human approver.
 Do not ask me to paste real API keys, passwords, secrets, private client data, or production access.
-When the workflow is clear, show me which file in this project I should read next.
 ```
 
-### CLI path
+Use this path when you want the AI to guide you before you run anything.
 
-Use this route when you are ready to let the project generate a folder of files.
+### 2. CLI path
 
-Install:
+Choose this when you want the project to generate files for you.
 
-```bash
-git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git
-cd ai-automation-starter-kit
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m pip install --upgrade pip setuptools
-python3 -m pip install -e .
-ai-automation-kit doctor --output .tmp/doctor
-```
+Start with `complete-workspace`.
 
-Then generate the first complete workspace:
+It creates a sample workflow, client explanation, demo, report, and proposal files.
 
-```bash
-ai-automation-kit complete-workspace \
-  --flow-id invoice-document-followup \
-  --client-type local-business \
-  --niche accounting \
-  --output .tmp/complete-accounting
-```
+At first, open only these generated files:
 
-Open only these first:
+- `FINAL_DELIVERY_GUIDE.md`
+- `client_command_center.html`
 
-1. `.tmp/complete-accounting/FINAL_DELIVERY_GUIDE.md`
-2. `.tmp/complete-accounting/client_command_center.html`
-3. `.tmp/complete-accounting/demo_site/index.html`
-4. `.tmp/complete-accounting/client_report/client_report.html`
-5. `.tmp/complete-accounting/business_launch/START_HERE_BUSINESS_LAUNCH.md`
+### 3. Side-hustle path
 
-### Side-hustle path
+Choose this if you want to offer small automation work to a local business or small company.
 
-Use this route if your goal is to sell a small automation service to a local business or small company.
+Your first offer is not "I will automate everything."
 
-Start with:
+Your first offer is a small paid dry-run PoC.
 
-```bash
-ai-automation-kit side-hustle-blueprints \
-  --industry local-business \
-  --operator-level beginner \
-  --output .tmp/side-hustle-blueprints
-```
+A dry-run PoC means: use sample data, create AI drafts and work lists, keep real sending off, and show whether the workflow has value.
 
-Then open:
+Start with `side-hustle-blueprints`.
 
-1. `.tmp/side-hustle-blueprints/START_HERE_SIDE_HUSTLE_BLUEPRINTS.md`
-2. `.tmp/side-hustle-blueprints/first_client_picker.md`
-3. `.tmp/side-hustle-blueprints/client_intake_questions.md`
-4. `.tmp/side-hustle-blueprints/risk_boundaries.md`
+### 4. Company internal path
 
-Your first offer should be a small paid dry-run PoC, not a promise to fully automate a company.
+Choose this if you want to improve work inside a company or team.
 
-### Company internal path
+Pick one repeated pain:
 
-Use this route if you are inside a company or helping one team improve a repeated task.
+- sorting inquiries
+- drafting replies
+- checking missing documents
+- creating weekly reports
+- routing FAQ questions
 
-Start with:
+Then choose one workflow and run a local dry-run.
 
-```bash
-ai-automation-kit flow-guide \
-  --industry operations \
-  --niche admin \
-  --output .tmp/flow-guide
-```
+### 5. Website project path
 
-Then pick one workflow and install it:
+Choose this if you want to build a homepage plus simple inquiry or reservation operations.
 
-```bash
-ai-automation-kit flows install invoice-document-followup --output .tmp/flow-project
-ai-automation-kit flows run .tmp/flow-project
-```
+Start with `website-side-hustle`.
 
-Open:
+Do not clone competitor websites. Public sources are for learning structure, not copying brand, text, images, or full page layout.
 
-1. `.tmp/flow-project/workflow_map.mmd`
-2. `.tmp/flow-project/automation_output/work_queue.csv`
-3. `.tmp/flow-project/automation_output/draft_outputs.md`
-4. `.tmp/flow-project/automation_output/approval_queue.csv`
-5. `.tmp/flow-project/automation_output/status_report.md`
+### 6. Cloud and API path
 
-### Website project path
+Choose this last.
 
-Use this route if you want to build a homepage plus a simple inquiry or reservation operation for a client.
+Before cloud or APIs, confirm:
 
-Start with:
+- What task is being automated?
+- Where does the input come from?
+- What output is created?
+- Who approves it?
+- Is sample data available?
+- How do you stop real sending?
 
-```bash
-ai-automation-kit website-side-hustle \
-  --industry hospitality \
-  --client-type local-business \
-  --niche tourism-hotel \
-  --output .tmp/website-side-hustle
-```
+Then use `guided-setup`.
 
-Open:
+If cloud is needed after that, use `cloud-plan`.
 
-1. `.tmp/website-side-hustle/START_HERE_WEBSITE_SIDE_HUSTLE.md`
-2. `.tmp/website-side-hustle/client_kickoff_questions.md`
-3. `.tmp/website-side-hustle/designer_grade_agent_playbook.md`
-4. `.tmp/website-side-hustle/website_quality_gate.md`
-5. `.tmp/website-side-hustle/delivery_acceptance_checklist.md`
+## Where command-center fits
 
-Do not clone competitor websites. Use public references for learning structure, not for copying a brand, text, image, or full layout.
+Use `command-center` when the project feels large and you need a menu.
 
-### Cloud and API path
+It is not always the first step. It is useful after you know the workflow and need to choose the next pack, such as an approval gate, AI skill, connector plan, workflow explainer, eval loop, or governance pack.
 
-Use this route only after the workflow is clear.
+## Human approval
 
-Start with:
+AI can draft, classify, summarize, organize, explain, and make checklists.
 
-```bash
-ai-automation-kit guided-setup \
-  --flow-id invoice-document-followup \
-  --mode beginner \
-  --deployment undecided \
-  --connectors gmail,google-sheets \
-  --output .tmp/guided-setup
-```
+A human must approve:
 
-Then review:
+- real customer sends
+- booking confirmations
+- price changes
+- refunds
+- production data changes
+- paid cloud changes
+- public webhooks
+- private client data use
+- legal, medical, financial, HR, or safety decisions
 
-1. `.tmp/guided-setup/START_HERE_GUIDED_SETUP.md`
-2. `.tmp/guided-setup/missing_inputs.md`
-3. `.tmp/guided-setup/env_values_needed.md`
-4. `.tmp/guided-setup/client_request_list.md`
-5. `.tmp/guided-setup/ai_agent_instruction.md`
+## Final note
 
-If cloud is needed, create a plan:
+This project should not make beginners feel behind.
 
-```bash
-ai-automation-kit cloud-plan \
-  --flow-id invoice-document-followup \
-  --provider aws \
-  --workload scheduled-job \
-  --connectors gmail,google-sheets,storage-folder \
-  --output .tmp/cloud-plan
-```
-
-The cloud plan is not a command to publish production blindly. It is a checklist for accounts, permissions, cost, secrets, rollback, and human approval.
-
-## Where command-center Fits
-
-Use `command-center` when you feel lost after the project grows:
-
-```bash
-ai-automation-kit command-center --language both --output .tmp/command-center
-```
-
-Open:
-
-- `.tmp/command-center/START_HERE_COMMAND_CENTER.md`
-- `.tmp/command-center/command_center.html`
-- `.tmp/command-center/next_step_decision_tree.md`
-
-This is the menu for the expansion packs such as `skill-pack`, `approval-gate`, `mcp-connector-plan`, `workflow-explainer`, `eval-loop`, and `governance-pack`.
-
-## Human Approval Rules
-
-AI may draft, classify, summarize, organize, and explain.
-
-Human approval is required before:
-
-- sending messages to real customers
-- confirming bookings
-- changing prices
-- issuing refunds
-- changing production data
-- enabling paid cloud resources
-- creating public webhooks
-- using real client private data
-- making legal, medical, financial, HR, or safety decisions
-
-## Beginner Checklist
-
-Before you say this is ready for a client, confirm:
-
-- The workflow is one small process.
-- The input source is known.
-- The output is a draft, not an automatic action.
-- A human approver is named.
-- Sample or anonymized data is available.
-- The dry-run output can be explained in plain language.
-- The client knows this is not a production system yet.
-- The next step is either continue, revise, or stop.
-
-## The Point
-
-This project is useful when it helps a beginner move from "AI can probably automate something" to "Here is the exact small workflow, here is the safe demo, here is what the client must provide, here is what AI can draft, and here is where a human approves."
+You do not need to understand everything. Choose one small workflow, let AI draft something, and keep a human approval step. That is a real first step.

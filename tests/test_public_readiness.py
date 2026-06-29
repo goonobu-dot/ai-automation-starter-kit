@@ -115,6 +115,9 @@ def test_beginner_route_maps_prevent_manual_overload():
     expected_docs = {
         "docs/BEGINNER_ROUTE_MAP.md": [
             "Beginner Route Map",
+            "30-second version",
+            "Stop here for today",
+            "Read this like a signboard",
             "Do not read everything first",
             "One workflow, one sample input, one draft output, one human approver",
             "No-CLI path",
@@ -132,6 +135,9 @@ def test_beginner_route_maps_prevent_manual_overload():
         ],
         "docs/BEGINNER_ROUTE_MAP.ja.md": [
             "初心者ルートマップ",
+            "30秒でわかる結論",
+            "今日はここまで",
+            "案内板として読んでください",
             "最初から全部読まない",
             "1つの業務、1つのサンプル入力、1つの下書き出力、1人の承認者",
             "CLIを使わないルート",
@@ -151,6 +157,9 @@ def test_beginner_route_maps_prevent_manual_overload():
     for path, snippets in expected_docs.items():
         text = Path(path).read_text()
         assert len(text) > 2500, path
+        first_screen = text[:1400]
+        assert "command-center" not in first_screen, f"{path} starts with tool details too early"
+        assert first_screen.count("`") <= 8, f"{path} first screen is too code/file heavy"
         for snippet in snippets:
             assert snippet in text, f"{path} missing {snippet}"
 
