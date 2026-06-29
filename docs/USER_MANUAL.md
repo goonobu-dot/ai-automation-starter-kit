@@ -48,9 +48,12 @@ The first goal is not "automate everything." The first goal is to help a client 
 
 If you are not sure where to start, read these in order:
 
-1. [Start Here](START_HERE.md)
-2. [AI Beginner Support Map](AI_BEGINNER_SUPPORT_MAP.md)
-3. [Beginner Cloud Challenge Playbook](CLOUD_BEGINNER_PLAYBOOK.md)
+1. [Beginner Route Map](BEGINNER_ROUTE_MAP.md)
+2. [Start Here](START_HERE.md)
+3. [AI Beginner Support Map](AI_BEGINNER_SUPPORT_MAP.md)
+4. [Beginner Cloud Challenge Playbook](CLOUD_BEGINNER_PLAYBOOK.md)
+
+The route map exists because this project has many useful parts. It tells you what to open first, what to ignore at first, and whether you should use the No-CLI path, CLI path, side-hustle path, company internal path, website project path, or cloud and API path.
 
 If you want to use the project for freelance or consulting work, read [First Client Walkthrough](FIRST_CLIENT_WALKTHROUGH.md).
 
@@ -64,7 +67,7 @@ Paste this into ChatGPT, Claude, Gemini, Cursor, Codex, Claude Code, or another 
 Please review this GitHub project: ai-automation-starter-kit.
 I am new to AI automation and cloud setup.
 
-First read docs/START_HERE.md, docs/USER_MANUAL.md, docs/AI_BEGINNER_SUPPORT_MAP.md, and docs/CLOUD_BEGINNER_PLAYBOOK.md.
+First read docs/BEGINNER_ROUTE_MAP.md, docs/START_HERE.md, docs/USER_MANUAL.md, docs/AI_BEGINNER_SUPPORT_MAP.md, and docs/CLOUD_BEGINNER_PLAYBOOK.md.
 
 Then ask me one question at a time.
 Do not ask everything at once.

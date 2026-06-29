@@ -26,6 +26,8 @@ REQUIRED_FILES = [
     "docs/AUTOMATION_DEMAND_RESEARCH.md",
     "docs/USER_MANUAL.md",
     "docs/USER_MANUAL.ja.md",
+    "docs/BEGINNER_ROUTE_MAP.md",
+    "docs/BEGINNER_ROUTE_MAP.ja.md",
     "docs/SELLING_AUTOMATION_GUIDE.md",
     "docs/SELLING_AUTOMATION_GUIDE.ja.md",
     "docs/FLOW_SELECTION_GUIDE.md",
@@ -159,6 +161,8 @@ REQUIRED_README_SNIPPETS = [
     "python3 scripts/release_smoke.py",
     "Public Release Readiness",
     "docs/USER_MANUAL.md",
+    "docs/BEGINNER_ROUTE_MAP.md",
+    "docs/BEGINNER_ROUTE_MAP.ja.md",
     "docs/SELLING_AUTOMATION_GUIDE.md",
     "docs/FLOW_SELECTION_GUIDE.md",
     "docs/CLIENT_DEMO_SCRIPT.md",
@@ -249,6 +253,10 @@ REQUIRED_CLI_DOC_SNIPPETS = [
     "ai-automation-kit github-discover --business-area operations",
     "docs/SHOWCASE.md",
     "docs/demo.html",
+    "docs/BEGINNER_ROUTE_MAP.md",
+    "Do not read everything first",
+    "docs/BEGINNER_ROUTE_MAP.ja.md",
+    "最初から全部読まない",
 ]
 
 REQUIRED_GENERATED_ARTIFACT_SNIPPETS = [

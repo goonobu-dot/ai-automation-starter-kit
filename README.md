@@ -8,16 +8,21 @@ It finds promising public OSS projects for a business area, ranks them, and turn
 
 You do not need to understand cloud or APIs first. Ask an AI agent to read these guides with you, then answer one question at a time.
 
+Do not read everything first. 最初から全部読まないでください。Start with the [Beginner Route Map](docs/BEGINNER_ROUTE_MAP.md) or [初心者ルートマップ](docs/BEGINNER_ROUTE_MAP.ja.md). It tells you which files to open, which files to ignore at first, and which route to choose: No-CLI, CLI, side-hustle, company internal, website project, or cloud/API setup.
+
+迷ったら、この順番だけで進めてください: `BEGINNER_ROUTE_MAP` -> `START_HERE` -> `AI_BEGINNER_SUPPORT_MAP` -> `AI_AGENT_GRILL_ME_SKILL` -> `USER_MANUAL`.
+
 First, choose one small workflow. Good first examples are inquiry handling, invoice follow-up, missing document checks, appointment pre-checks, FAQ routing, sales research, and weekly reports.
 
 Use this first path:
 
-1. Open [AI Beginner Support Map](docs/AI_BEGINNER_SUPPORT_MAP.md).
-2. Open [AI Agent Grill Me Skill](docs/AI_AGENT_GRILL_ME_SKILL.md).
-3. Paste the skill into ChatGPT, Claude, Gemini, Cursor, Codex, Claude Code, or another AI agent.
-4. Tell the AI what business task you want to improve.
-5. Keep real API keys, passwords, client private data, and production access out of chat.
-6. Start with a dry-run before any real sending or cloud traffic.
+1. Open [Beginner Route Map](docs/BEGINNER_ROUTE_MAP.md) or [初心者ルートマップ](docs/BEGINNER_ROUTE_MAP.ja.md).
+2. Open [AI Beginner Support Map](docs/AI_BEGINNER_SUPPORT_MAP.md).
+3. Open [AI Agent Grill Me Skill](docs/AI_AGENT_GRILL_ME_SKILL.md).
+4. Paste the skill into ChatGPT, Claude, Gemini, Cursor, Codex, Claude Code, or another AI agent.
+5. Tell the AI what business task you want to improve.
+6. Keep real API keys, passwords, client private data, and production access out of chat.
+7. Start with a dry-run before any real sending or cloud traffic.
 
 ## What Is This?
 
@@ -59,6 +64,8 @@ New to this project? Start with a plain-language explanation:
 
 - [English beginner guide](docs/BEGINNER_GUIDE.md)
 - [日本語のやさしい解説](docs/BEGINNER_GUIDE.ja.md)
+- [Beginner route map](docs/BEGINNER_ROUTE_MAP.md)
+- [初心者ルートマップ](docs/BEGINNER_ROUTE_MAP.ja.md)
 
 Need a practical first path or use-case examples?
 

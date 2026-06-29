@@ -10,6 +10,10 @@ def test_project_readme_has_public_quickstart_and_all_templates():
     assert "Beginner-Friendly Guides" in text
     assert "docs/BEGINNER_GUIDE.md" in text
     assert "docs/BEGINNER_GUIDE.ja.md" in text
+    assert "docs/BEGINNER_ROUTE_MAP.md" in text
+    assert "docs/BEGINNER_ROUTE_MAP.ja.md" in text
+    assert "Do not read everything first" in text
+    assert "迷ったら、この順番だけで進めてください" in text
     assert "3-Minute Walkthrough" in text
     assert "Example Use Cases" in text
     assert "GitHub-data-driven AI agent skill kit" in text

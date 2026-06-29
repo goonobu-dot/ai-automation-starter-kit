@@ -35,6 +35,8 @@ def test_readme_links_start_here_and_use_cases_docs():
     assert "docs/USE_CASES.md" in readme
     assert "docs/USE_CASES.ja.md" in readme
     assert "docs/USER_MANUAL.md" in readme
+    assert "docs/BEGINNER_ROUTE_MAP.md" in readme
+    assert "docs/BEGINNER_ROUTE_MAP.ja.md" in readme
     assert "docs/SELLING_AUTOMATION_GUIDE.md" in readme
     assert "docs/FLOW_SELECTION_GUIDE.md" in readme
     assert "docs/CLIENT_DEMO_SCRIPT.md" in readme
@@ -81,8 +83,12 @@ def test_start_here_and_use_cases_docs_help_first_time_users():
     japanese_cases = Path("docs/USE_CASES.ja.md").read_text()
     assert "Start Here" in english_start
     assert "First 3 minutes" in english_start
+    assert "Beginner Route Map" in english_start
+    assert "Do not read every document first" in english_start
     assert "まずここから" in japanese_start
     assert "最初の3分" in japanese_start
+    assert "初心者ルートマップ" in japanese_start
+    assert "全部の資料を先に読む必要はありません" in japanese_start
     assert "Use Cases" in english_cases
     assert "business automation" in english_cases
     assert "ユースケース" in japanese_cases
@@ -101,6 +107,50 @@ def test_english_manuals_match_japanese_business_proposal_coverage():
     for path, snippets in expected_docs.items():
         text = Path(path).read_text()
         assert len(text) > 800, path
+        for snippet in snippets:
+            assert snippet in text, f"{path} missing {snippet}"
+
+
+def test_beginner_route_maps_prevent_manual_overload():
+    expected_docs = {
+        "docs/BEGINNER_ROUTE_MAP.md": [
+            "Beginner Route Map",
+            "Do not read everything first",
+            "One workflow, one sample input, one draft output, one human approver",
+            "No-CLI path",
+            "CLI path",
+            "Side-hustle path",
+            "Company internal path",
+            "Website project path",
+            "Cloud and API path",
+            "What to open first",
+            "What to ignore at first",
+            "command-center",
+            "complete-workspace",
+            "guided-setup",
+            "human approval",
+        ],
+        "docs/BEGINNER_ROUTE_MAP.ja.md": [
+            "初心者ルートマップ",
+            "最初から全部読まない",
+            "1つの業務、1つのサンプル入力、1つの下書き出力、1人の承認者",
+            "CLIを使わないルート",
+            "CLIを使うルート",
+            "副業・受託ルート",
+            "社内導入ルート",
+            "ホームページ案件ルート",
+            "クラウド・APIルート",
+            "最初に開くもの",
+            "最初は無視してよいもの",
+            "command-center",
+            "complete-workspace",
+            "guided-setup",
+            "人間承認",
+        ],
+    }
+    for path, snippets in expected_docs.items():
+        text = Path(path).read_text()
+        assert len(text) > 2500, path
         for snippet in snippets:
             assert snippet in text, f"{path} missing {snippet}"
 
