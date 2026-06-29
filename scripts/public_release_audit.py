@@ -25,6 +25,7 @@ REQUIRED_FILES = [
     "docs/OSS_INTEGRATIONS.md",
     "docs/AUTOMATION_DEMAND_RESEARCH.md",
     "docs/manual.html",
+    "docs/manual.ja.html",
     "docs/USER_MANUAL.md",
     "docs/USER_MANUAL.ja.md",
     "docs/BEGINNER_ROUTE_MAP.md",
@@ -162,6 +163,7 @@ REQUIRED_README_SNIPPETS = [
     "python3 scripts/release_smoke.py",
     "Public Release Readiness",
     "docs/manual.html",
+    "docs/manual.ja.html",
     "docs/USER_MANUAL.md",
     "docs/BEGINNER_ROUTE_MAP.md",
     "docs/BEGINNER_ROUTE_MAP.ja.md",
@@ -476,17 +478,30 @@ REQUIRED_STATIC_DEMO_SNIPPETS = [
     "Five Reusable Templates",
 ]
 
-REQUIRED_HTML_MANUAL_SNIPPETS = [
-    "Human-First Manual",
-    "人間向けHTMLマニュアル",
-    "Choose Your Route",
-    "ルートを選ぶ",
-    "Workflow Map",
-    "AI drafts",
-    "Human approves",
-    "docs/BEGINNER_ROUTE_MAP.md",
-    "docs/BEGINNER_ROUTE_MAP.ja.md",
-]
+REQUIRED_HTML_MANUAL_SNIPPETS = {
+    "docs/manual.html": [
+        "Human-First Manual",
+        "Start with one small workflow",
+        "Choose Your Route",
+        "Workflow Map",
+        "AI drafts",
+        "Human approves",
+        "docs/BEGINNER_ROUTE_MAP.md",
+        "docs/USER_MANUAL.md",
+        "manual.ja.html",
+    ],
+    "docs/manual.ja.html": [
+        "人間向けHTMLマニュアル",
+        "1つの小さな業務から始める",
+        "ルートを選ぶ",
+        "図で見る流れ",
+        "AIが下書き",
+        "人間が承認",
+        "docs/BEGINNER_ROUTE_MAP.ja.md",
+        "docs/USER_MANUAL.ja.md",
+        "manual.html",
+    ],
+}
 
 SECRET_SCAN_PATHS = [
     "README.md",
@@ -774,11 +789,12 @@ def main() -> int:
             failures.append(f"docs/demo.html missing snippet: {snippet}")
         checks.append(f"docs/demo.html::{snippet}")
 
-    html_manual = _read_text("docs/manual.html")
-    for snippet in REQUIRED_HTML_MANUAL_SNIPPETS:
-        if snippet not in html_manual:
-            failures.append(f"docs/manual.html missing snippet: {snippet}")
-        checks.append(f"docs/manual.html::{snippet}")
+    for relative_path, snippets in REQUIRED_HTML_MANUAL_SNIPPETS.items():
+        html_manual = _read_text(relative_path)
+        for snippet in snippets:
+            if snippet not in html_manual:
+                failures.append(f"{relative_path} missing snippet: {snippet}")
+            checks.append(f"{relative_path}::{snippet}")
 
     for relative_path in SECRET_SCAN_PATHS:
         scanned_text = _read_tree_text(relative_path)

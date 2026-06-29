@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en">
+<html lang="ja">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Human-First Manual | AI Automation Starter Kit</title>
+    <title>人間向けHTMLマニュアル | AI Automation Starter Kit</title>
     <style>
       :root {
         color-scheme: light;
@@ -28,7 +28,7 @@
         background: var(--bg);
         color: var(--ink);
         font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        line-height: 1.62;
+        line-height: 1.72;
       }
 
       a {
@@ -90,21 +90,21 @@
       h1 {
         margin: 0;
         font-size: clamp(38px, 5vw, 68px);
-        line-height: 1.02;
+        line-height: 1.08;
         letter-spacing: 0;
       }
 
       h2 {
         margin: 0;
         font-size: clamp(28px, 3vw, 42px);
-        line-height: 1.15;
+        line-height: 1.2;
         letter-spacing: 0;
       }
 
       h3 {
         margin: 0;
         font-size: 20px;
-        line-height: 1.25;
+        line-height: 1.3;
         letter-spacing: 0;
       }
 
@@ -306,14 +306,14 @@
   </head>
   <body>
     <header>
-      <nav class="shell" aria-label="Manual navigation">
+      <nav class="shell" aria-label="マニュアル内ナビゲーション">
         <div class="brand">AI Automation Starter Kit</div>
         <div class="nav-links">
-          <a href="#start">Start</a>
-          <a href="#routes">Routes</a>
-          <a href="#workflow">Workflow Map</a>
-          <a href="#safety">Safety</a>
-          <a href="#manuals">Manuals</a>
+          <a href="#start">はじめに</a>
+          <a href="#routes">ルート</a>
+          <a href="#workflow">流れ</a>
+          <a href="#safety">安全</a>
+          <a href="#manuals">資料</a>
         </div>
       </nav>
     </header>
@@ -321,78 +321,78 @@
     <main>
       <section class="hero shell" id="start">
         <div>
-          <p class="eyebrow">Human-First Manual</p>
-          <h1>Start with one small workflow.</h1>
+          <p class="eyebrow">人間向けHTMLマニュアル</p>
+          <h1>1つの小さな業務から始める。</h1>
           <p class="lead">
-            This is the visual entrance for people who want to use AI for business automation,
-            side-hustle delivery, or internal process improvement without getting lost in technical files.
+            このページは、AIで業務自動化を始めたい人が、最初の入口を選ぶための案内板です。
+            いきなり全部の資料を読む必要はありません。まず、1つの業務と1つの進め方を選びます。
           </p>
-          <a class="language-switch" href="manual.ja.html">Japanese manual: manual.ja.html</a>
+          <a class="language-switch" href="manual.html">English manual: manual.html</a>
         </div>
-        <aside class="quick-box" aria-label="First day checklist">
-          <h2>Today, decide only this</h2>
+        <aside class="quick-box" aria-label="初日に決めること">
+          <h2>今日はここだけ決める</h2>
           <ul class="quick-list">
-            <li><span class="num">1</span><span>Pick one repeated task.</span></li>
-            <li><span class="num">2</span><span>Pick one sample input.</span></li>
-            <li><span class="num">3</span><span>Pick one AI draft output.</span></li>
-            <li><span class="num">4</span><span>Pick one human approver.</span></li>
+            <li><span class="num">1</span><span>繰り返し発生する仕事を1つ選ぶ。</span></li>
+            <li><span class="num">2</span><span>サンプルとして使う入力を1つ決める。</span></li>
+            <li><span class="num">3</span><span>AIに作らせる下書きを1つ決める。</span></li>
+            <li><span class="num">4</span><span>最後に確認する人を1人決める。</span></li>
           </ul>
         </aside>
       </section>
 
       <section class="shell" id="routes">
         <div class="section-head">
-          <p class="eyebrow">Choose Your Route</p>
-          <h2>Do not read everything. Choose the doorway that matches your situation.</h2>
-          <p class="muted">The goal is to take one safe first step, not to understand every command on day one.</p>
+          <p class="eyebrow">ルートを選ぶ</p>
+          <h2>全部を読むのではなく、自分に合う入口を1つ選んでください。</h2>
+          <p class="muted">初日の目的は、すべてのコマンドを理解することではありません。安全な最初の一歩を選ぶことです。</p>
         </div>
         <div class="cards">
           <article class="card">
-            <span class="tag">No-CLI</span>
-            <h3>No terminal commands</h3>
-            <p class="muted">Ask ChatGPT, Claude, Cursor, Codex, or another AI agent to read the project with you one question at a time.</p>
-            <p><a href="AI_AGENT_GRILL_ME_SKILL.md">Open AI Agent Grill Me Skill</a></p>
+            <span class="tag">CLIなし</span>
+            <h3>ターミナルを使わずに始める</h3>
+            <p class="muted">ChatGPT、Claude、Cursor、Codexなどに、このプロジェクトを1問ずつ一緒に読んでもらいます。</p>
+            <p><a href="AI_AGENT_GRILL_ME_SKILL.ja.md">AIエージェント用の質問ガイドを開く</a></p>
           </article>
           <article class="card">
             <span class="tag">CLI</span>
-            <h3>Generate a workspace</h3>
-            <p class="muted">Use the command line when you want a ready folder with demo, report, proposal, and dry-run outputs.</p>
-            <p><a href="USER_MANUAL.md">Open User Manual</a></p>
+            <h3>作業フォルダを生成する</h3>
+            <p class="muted">デモ、レポート、提案書、dry-run結果をまとめたフォルダを作りたい人向けです。</p>
+            <p><a href="USER_MANUAL.ja.md">使い方マニュアルを開く</a></p>
           </article>
           <article class="card">
-            <span class="tag">Side-hustle</span>
-            <h3>Sell a small paid PoC</h3>
-            <p class="muted">Package one safe dry-run workflow as a small client offer instead of promising full automation.</p>
-            <p><a href="SELLING_AUTOMATION_GUIDE.md">Open Selling Guide</a></p>
+            <span class="tag">副業・受託</span>
+            <h3>小さな有料PoCとして提案する</h3>
+            <p class="muted">会社全体の自動化ではなく、1つの安全なdry-run業務を小さな商品として提案します。</p>
+            <p><a href="SELLING_AUTOMATION_GUIDE.ja.md">営業・提案ガイドを開く</a></p>
           </article>
           <article class="card">
-            <span class="tag">Internal</span>
-            <h3>Improve a company task</h3>
-            <p class="muted">Start with inquiry sorting, document checks, FAQ routing, weekly reports, or other repeated manual work.</p>
-            <p><a href="FLOW_SELECTION_GUIDE.md">Open Flow Selection Guide</a></p>
+            <span class="tag">社内導入</span>
+            <h3>会社の繰り返し作業を楽にする</h3>
+            <p class="muted">問い合わせ整理、不足書類確認、FAQ振り分け、週次レポートなどから始めます。</p>
+            <p><a href="FLOW_SELECTION_GUIDE.ja.md">フロー選択ガイドを開く</a></p>
           </article>
           <article class="card">
-            <span class="tag">Website</span>
-            <h3>Website plus operations</h3>
-            <p class="muted">Combine a homepage offer with inquiry, reservation, or back-office workflow support.</p>
-            <p><a href="WEBSITE_SIDE_HUSTLE_GUIDE.md">Open Website Guide</a></p>
+            <span class="tag">ホームページ案件</span>
+            <h3>サイト制作と業務改善を組み合わせる</h3>
+            <p class="muted">ホームページ制作に、問い合わせ・予約・裏側の業務フローをセットで提案します。</p>
+            <p><a href="WEBSITE_SIDE_HUSTLE_GUIDE.ja.md">ホームページ案件ガイドを開く</a></p>
           </article>
           <article class="card">
-            <span class="tag">Cloud / API</span>
-            <h3>Move toward real setup</h3>
-            <p class="muted">Only move here after the workflow, input, output, approver, and stop rule are clear.</p>
-            <p><a href="CLOUD_BEGINNER_PLAYBOOK.md">Open Cloud Playbook</a></p>
+            <span class="tag">クラウド・API</span>
+            <h3>実運用に近づける</h3>
+            <p class="muted">業務、入力、出力、承認者、停止ルールが決まってから進む場所です。</p>
+            <p><a href="CLOUD_BEGINNER_PLAYBOOK.ja.md">クラウド導入ガイドを開く</a></p>
           </article>
         </div>
       </section>
 
       <section class="shell" id="workflow">
         <div class="section-head">
-          <p class="eyebrow">Workflow Map</p>
-          <h2>A safe automation project is a chain of small decisions.</h2>
-          <p class="muted">Do not begin with production access. Move from client pain to a dry-run that a person can inspect and approve.</p>
+          <p class="eyebrow">図で見る流れ</p>
+          <h2>安全な業務自動化は、小さな判断を順番に進めることです。</h2>
+          <p class="muted">本番アクセスから始めません。困りごとを聞き、サンプル入力でAI下書きを作り、人間が確認できるdry-runにします。</p>
         </div>
-        <div class="flow-wrap" role="img" aria-label="Workflow map from client pain to paid dry-run PoC">
+        <div class="flow-wrap" role="img" aria-label="相談から有料dry-run PoCまでの流れ">
           <svg class="flow" viewBox="0 0 980 260" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
@@ -406,83 +406,83 @@
               </style>
             </defs>
             <rect class="box" x="20" y="48" width="140" height="120" />
-            <text class="title" x="40" y="84">1. Listen</text>
-            <text class="body" x="40" y="112">Find the pain</text>
-            <text class="body" x="40" y="136">One task only</text>
+            <text class="title" x="40" y="84">1. 相談</text>
+            <text class="body" x="40" y="112">困りごとを聞く</text>
+            <text class="body" x="40" y="136">業務は1つ</text>
             <line class="arrow" x1="160" y1="108" x2="202" y2="108" />
 
             <rect class="box" x="210" y="48" width="140" height="120" />
-            <text class="title" x="230" y="84">2. Input</text>
-            <text class="body" x="230" y="112">Sample data</text>
-            <text class="body" x="230" y="136">No secrets</text>
+            <text class="title" x="230" y="84">2. 入力</text>
+            <text class="body" x="230" y="112">サンプルデータ</text>
+            <text class="body" x="230" y="136">秘密情報なし</text>
             <line class="arrow" x1="350" y1="108" x2="392" y2="108" />
 
             <rect class="box" x="400" y="48" width="140" height="120" />
-            <text class="title" x="420" y="84">3. AI drafts</text>
-            <text class="body" x="420" y="112">Reply or list</text>
-            <text class="body" x="420" y="136">Reviewable output</text>
+            <text class="title" x="420" y="84">3. AIが下書き</text>
+            <text class="body" x="420" y="112">返信文やリスト</text>
+            <text class="body" x="420" y="136">確認できる形</text>
             <line class="arrow" x1="540" y1="108" x2="582" y2="108" />
 
             <rect class="box" x="590" y="48" width="150" height="120" />
-            <text class="title" x="610" y="84">4. Human approves</text>
-            <text class="body" x="610" y="112">Stop risky action</text>
-            <text class="body" x="610" y="136">Approve next step</text>
+            <text class="title" x="610" y="84">4. 人間が承認</text>
+            <text class="body" x="610" y="112">危険操作を止める</text>
+            <text class="body" x="610" y="136">次へ進むか判断</text>
             <line class="arrow" x1="740" y1="108" x2="782" y2="108" />
 
             <rect class="box" x="790" y="48" width="170" height="120" />
-            <text class="title" x="810" y="84">5. Offer / PoC</text>
-            <text class="body" x="810" y="112">Small paid dry-run</text>
-            <text class="body" x="810" y="136">Measure value</text>
+            <text class="title" x="810" y="84">5. 提案・PoC</text>
+            <text class="body" x="810" y="112">小さな有料検証</text>
+            <text class="body" x="810" y="136">効果を測る</text>
 
             <path d="M90 188 C190 238, 790 238, 875 188" fill="none" stroke="#0a7d68" stroke-width="3" />
-            <text class="body" x="350" y="226">Keep production sends off until the client approves.</text>
+            <text class="body" x="350" y="226">顧客が承認するまで、本番送信や本番更新は止めます。</text>
           </svg>
         </div>
       </section>
 
       <section class="shell" id="safety">
         <div class="section-head">
-          <p class="eyebrow">Safety</p>
-          <h2>AI can help a lot, but humans keep control of real-world actions.</h2>
+          <p class="eyebrow">安全境界</p>
+          <h2>AIはかなり手伝えます。ただし、現実の操作は人間が握ります。</h2>
         </div>
         <div class="legend">
           <article class="lane">
-            <h3>Human prepares</h3>
-            <p class="muted">Business task, sample input, output goal, client rules, approval owner, and whether to continue.</p>
+            <h3>人間が準備する</h3>
+            <p class="muted">業務、サンプル入力、出力目標、顧客ルール、承認者、続けるか止めるかを決めます。</p>
           </article>
           <article class="lane ai">
-            <h3>AI drafts</h3>
-            <p class="muted">Questions, workflow map, reply drafts, missing-input lists, client explanations, and PoC materials.</p>
+            <h3>AIが下書き</h3>
+            <p class="muted">質問、業務フロー、返信文、不足情報リスト、顧客説明、PoC資料を作ります。</p>
           </article>
           <article class="lane stop">
-            <h3>Human approves</h3>
-            <p class="muted">Real sends, bookings, refunds, price changes, production data, secrets, paid cloud, and sensitive decisions.</p>
+            <h3>人間が承認</h3>
+            <p class="muted">実在顧客への送信、予約、返金、価格変更、本番データ、secret、有料クラウド、重要判断を確認します。</p>
           </article>
         </div>
       </section>
 
       <section class="shell" id="manuals">
         <div class="section-head">
-          <p class="eyebrow">Manual Links</p>
-          <h2>Use this page as the entrance, then open the detailed guide you need.</h2>
+          <p class="eyebrow">詳しい資料</p>
+          <h2>このページを入口にして、必要な資料だけ開いてください。</h2>
         </div>
         <div class="links">
           <article class="link-panel">
-            <h3>First reading</h3>
+            <h3>最初に読む資料</h3>
             <ul>
-              <li><a href="BEGINNER_ROUTE_MAP.md">docs/BEGINNER_ROUTE_MAP.md</a></li>
-              <li><a href="USER_MANUAL.md">docs/USER_MANUAL.md</a></li>
-              <li><a href="AI_BEGINNER_SUPPORT_MAP.md">docs/AI_BEGINNER_SUPPORT_MAP.md</a></li>
-              <li><a href="CLOUD_BEGINNER_PLAYBOOK.md">docs/CLOUD_BEGINNER_PLAYBOOK.md</a></li>
+              <li><a href="BEGINNER_ROUTE_MAP.ja.md">docs/BEGINNER_ROUTE_MAP.ja.md</a></li>
+              <li><a href="USER_MANUAL.ja.md">docs/USER_MANUAL.ja.md</a></li>
+              <li><a href="AI_BEGINNER_SUPPORT_MAP.ja.md">docs/AI_BEGINNER_SUPPORT_MAP.ja.md</a></li>
+              <li><a href="CLOUD_BEGINNER_PLAYBOOK.ja.md">docs/CLOUD_BEGINNER_PLAYBOOK.ja.md</a></li>
             </ul>
           </article>
           <article class="link-panel">
-            <h3>Common next steps</h3>
+            <h3>次に使う資料</h3>
             <ul>
-              <li><a href="AI_AGENT_GRILL_ME_SKILL.md">AI agent interview pattern</a></li>
-              <li><a href="SELLING_AUTOMATION_GUIDE.md">Selling automation safely</a></li>
-              <li><a href="FLOW_SELECTION_GUIDE.md">Choosing the first flow</a></li>
-              <li><a href="manual.ja.html">Japanese manual</a></li>
+              <li><a href="AI_AGENT_GRILL_ME_SKILL.ja.md">AIに1問ずつ案内してもらう</a></li>
+              <li><a href="SELLING_AUTOMATION_GUIDE.ja.md">企業へ安全に提案する</a></li>
+              <li><a href="FLOW_SELECTION_GUIDE.ja.md">最初のフローを選ぶ</a></li>
+              <li><a href="manual.html">English manual</a></li>
             </ul>
           </article>
         </div>
@@ -490,19 +490,20 @@
 
       <section class="shell">
         <div class="cta">
-          <h2>Recommended first action</h2>
+          <h2>最初のおすすめ</h2>
           <p>
-            Open this HTML manual in a browser, choose one route, then ask an AI agent to help you pick one workflow without sharing secrets.
-            After that, use only the detailed manual for the route you selected.
+            まずこのHTMLをブラウザーで開き、1つのルートを選んでください。
+            そのあと、AIエージェントに「秘密情報を貼らずに、1つの業務を選ぶところから手伝って」と頼みます。
+            詳しい資料は、選んだルートに関係するものだけ読めば十分です。
           </p>
-          <p>Next read: <a href="BEGINNER_ROUTE_MAP.md">Beginner Route Map</a></p>
+          <p>次に読む資料: <a href="BEGINNER_ROUTE_MAP.ja.md">初心者ルートマップ</a></p>
         </div>
       </section>
     </main>
 
     <footer>
       <div class="shell">
-        AI Automation Starter Kit human-first manual. Static HTML, no external scripts, no secret collection.
+        AI Automation Starter Kit 人間向けマニュアル。静的HTML、外部スクリプトなし、秘密情報の入力なし。
       </div>
     </footer>
   </body>

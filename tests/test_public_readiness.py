@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 import subprocess
 import sys
 
@@ -31,6 +32,7 @@ def test_public_repo_metadata_files_exist():
 def test_readme_links_start_here_and_use_cases_docs():
     readme = Path("README.md").read_text()
     assert "docs/manual.html" in readme
+    assert "docs/manual.ja.html" in readme
     assert "docs/START_HERE.md" in readme
     assert "docs/START_HERE.ja.md" in readme
     assert "docs/USE_CASES.md" in readme
@@ -165,16 +167,15 @@ def test_beginner_route_maps_prevent_manual_overload():
             assert snippet in text, f"{path} missing {snippet}"
 
 
-def test_html_manual_gives_humans_a_visual_first_entrypoint():
-    text = Path("docs/manual.html").read_text()
-    expected_snippets = [
+def test_html_manuals_are_language_separated_visual_entrypoints():
+    english = Path("docs/manual.html").read_text()
+    japanese = Path("docs/manual.ja.html").read_text()
+    english_snippets = [
         "<!doctype html>",
+        '<html lang="en">',
         "Human-First Manual",
-        "人間向けHTMLマニュアル",
         "Start with one small workflow",
-        "1つの小さな業務から始める",
         "Choose Your Route",
-        "ルートを選ぶ",
         "No-CLI",
         "Side-hustle",
         "Cloud / API",
@@ -182,14 +183,38 @@ def test_html_manual_gives_humans_a_visual_first_entrypoint():
         "AI drafts",
         "Human approves",
         "docs/BEGINNER_ROUTE_MAP.md",
-        "docs/BEGINNER_ROUTE_MAP.ja.md",
         "docs/USER_MANUAL.md",
-        "docs/USER_MANUAL.ja.md",
+        "Japanese manual",
+        "manual.ja.html",
     ]
-    assert len(text) > 8000
-    assert "<script" not in text.lower()
-    for snippet in expected_snippets:
-        assert snippet in text, f"docs/manual.html missing {snippet}"
+    japanese_snippets = [
+        "<!doctype html>",
+        '<html lang="ja">',
+        "人間向けHTMLマニュアル",
+        "1つの小さな業務から始める",
+        "ルートを選ぶ",
+        "CLIなし",
+        "副業・受託",
+        "クラウド・API",
+        "図で見る流れ",
+        "AIが下書き",
+        "人間が承認",
+        "docs/BEGINNER_ROUTE_MAP.ja.md",
+        "docs/USER_MANUAL.ja.md",
+        "English manual",
+        "manual.html",
+    ]
+    assert len(english) > 7000
+    assert len(japanese) > 7000
+    assert "<script" not in english.lower()
+    assert "<script" not in japanese.lower()
+    assert not re.search(r"[\u3040-\u30ff\u4e00-\u9fff]", english)
+    for forbidden in ["Human-First Manual", "Choose Your Route", "Start with one small workflow"]:
+        assert forbidden not in japanese
+    for snippet in english_snippets:
+        assert snippet in english, f"docs/manual.html missing {snippet}"
+    for snippet in japanese_snippets:
+        assert snippet in japanese, f"docs/manual.ja.html missing {snippet}"
 
 
 def test_ai_reception_employee_docs_explain_setup_and_monetization_path():
