@@ -286,6 +286,31 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(business_launch_output / "first_client_offer.md")
     _require_file(business_launch_output / "risk_boundary_sheet.md")
 
+    side_hustle_blueprints_output = output / "side-hustle-blueprints"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "side-hustle-blueprints",
+            "--industry",
+            "local-business",
+            "--operator-level",
+            "beginner",
+            "--output",
+            str(side_hustle_blueprints_output),
+        ],
+        env=env,
+    )
+    _require_file(side_hustle_blueprints_output / "START_HERE_SIDE_HUSTLE_BLUEPRINTS.md")
+    _require_file(side_hustle_blueprints_output / "side_hustle_blueprints.md")
+    _require_file(side_hustle_blueprints_output / "side_hustle_blueprints.html")
+    _require_file(side_hustle_blueprints_output / "first_client_picker.md")
+    _require_file(side_hustle_blueprints_output / "client_intake_questions.md")
+    _require_file(side_hustle_blueprints_output / "implementation_paths.md")
+    _require_file(side_hustle_blueprints_output / "risk_boundaries.md")
+    _require_file(side_hustle_blueprints_output / "ai_agent_handoff.md")
+
     website_side_hustle_output = output / "website-side-hustle"
     _run(
         [

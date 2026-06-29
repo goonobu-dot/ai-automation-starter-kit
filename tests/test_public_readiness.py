@@ -191,6 +191,32 @@ def test_website_side_hustle_docs_are_bilingual_and_linked():
             assert snippet in text, f"{path} missing {snippet}"
 
 
+def test_side_hustle_blueprint_docs_are_bilingual_and_beginner_friendly():
+    expected_docs = {
+        "docs/SIDE_HUSTLE_BLUEPRINTS.md": [
+            "Side Hustle Blueprints Guide",
+            "side-hustle-blueprints",
+            "START_HERE_SIDE_HUSTLE_BLUEPRINTS.md",
+            "first_client_picker.md",
+            "risk_boundaries.md",
+            "AI agent",
+        ],
+        "docs/SIDE_HUSTLE_BLUEPRINTS.ja.md": [
+            "副業ブループリントガイド",
+            "side-hustle-blueprints",
+            "START_HERE_SIDE_HUSTLE_BLUEPRINTS.md",
+            "first_client_picker.md",
+            "risk_boundaries.md",
+            "AIエージェント",
+        ],
+    }
+    for path, snippets in expected_docs.items():
+        text = Path(path).read_text()
+        assert len(text) > 800, path
+        for snippet in snippets:
+            assert snippet in text, f"{path} missing {snippet}"
+
+
 def test_cloud_beginner_docs_make_cloud_setup_approachable():
     expected_docs = {
         "docs/CLOUD_DEPLOYMENT_GUIDE.md": [

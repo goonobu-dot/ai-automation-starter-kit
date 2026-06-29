@@ -61,7 +61,12 @@ def test_project_readme_has_public_quickstart_and_all_templates():
     assert "docs/WEBSITE_SIDE_HUSTLE_GUIDE.ja.md" in text
     assert "docs/WEBSITE_PROJECT_AGENT_GUIDE.md" in text
     assert "docs/WEBSITE_PROJECT_AGENT_GUIDE.ja.md" in text
+    assert "docs/SIDE_HUSTLE_BLUEPRINTS.md" in text
+    assert "docs/SIDE_HUSTLE_BLUEPRINTS.ja.md" in text
     assert "ai-automation-kit website-side-hustle --industry hospitality" in text
+    assert "ai-automation-kit side-hustle-blueprints --industry local-business" in text
+    assert "START_HERE_SIDE_HUSTLE_BLUEPRINTS.md" in text
+    assert "side_hustle_blueprints.html" in text
     assert "reservation and inquiry operations templates" in text
     assert "docs/SHOWCASE.md" in text
     assert "docs/demo.html" in text

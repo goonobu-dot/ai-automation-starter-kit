@@ -41,6 +41,7 @@ from ai_automation_kit.core.operator_console import generate_recommended_flow_fr
 from ai_automation_kit.core.operator_console import generate_share_check
 from ai_automation_kit.core.operator_console import generate_website_side_hustle_pack
 from ai_automation_kit.core.operator_console import package_client_demo
+from ai_automation_kit.core.side_hustle_blueprints import generate_side_hustle_blueprints
 from ai_automation_kit.templates.docs_rag import run_docs_rag
 from ai_automation_kit.templates.delivery_pipeline import run_delivery_pipeline
 from ai_automation_kit.templates.excel_to_internal_app import run_excel_to_internal_app
@@ -165,6 +166,11 @@ def build_parser() -> argparse.ArgumentParser:
     website_side_hustle.add_argument("--niche", default="tourism-hotel")
     website_side_hustle.add_argument("--operator-level", default="beginner")
     website_side_hustle.add_argument("--output", required=True)
+
+    side_hustle_blueprints = subparsers.add_parser("side-hustle-blueprints")
+    side_hustle_blueprints.add_argument("--industry", default="local-business")
+    side_hustle_blueprints.add_argument("--operator-level", default="beginner")
+    side_hustle_blueprints.add_argument("--output", required=True)
 
     guided_setup = subparsers.add_parser("guided-setup")
     guided_setup.add_argument("--flow-id", required=True)
@@ -493,6 +499,18 @@ def main(argv: list[str] | None = None) -> int:
         print(f"website_side_hustle={args.output}/START_HERE_WEBSITE_SIDE_HUSTLE.md")
         print(f"proposal={args.output}/proposal_one_pager.md")
         print(f"sample_site={args.output}/sample_site/index.html")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "side-hustle-blueprints":
+        payload = generate_side_hustle_blueprints(
+            industry=args.industry,
+            operator_level=args.operator_level,
+            output=Path(args.output),
+        )
+        print(f"side_hustle_blueprints={args.output}/START_HERE_SIDE_HUSTLE_BLUEPRINTS.md")
+        print(f"first_client_picker={args.output}/first_client_picker.md")
+        print(f"catalog={args.output}/side_hustle_blueprints.html")
+        print(f"count={payload['count']}")
         print(f"status={payload['status']}")
         return 0
     if args.command == "guided-setup":

@@ -1012,6 +1012,30 @@ def test_main_runs_website_side_hustle_and_prints_key_files(tmp_path, capsys):
     assert (output / "sample_site" / "index.html").exists()
 
 
+def test_main_runs_side_hustle_blueprints_and_prints_key_files(tmp_path, capsys):
+    output = tmp_path / "side-hustle-blueprints"
+
+    exit_code = main(
+        [
+            "side-hustle-blueprints",
+            "--industry",
+            "local-business",
+            "--operator-level",
+            "beginner",
+            "--output",
+            str(output),
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "side_hustle_blueprints=" in captured.out
+    assert "first_client_picker=" in captured.out
+    assert "count=" in captured.out
+    assert (output / "START_HERE_SIDE_HUSTLE_BLUEPRINTS.md").exists()
+    assert (output / "side_hustle_blueprints.html").exists()
+
+
 def test_main_runs_flows_list_show_install_and_validate(tmp_path, capsys):
     exit_code = main(["flows", "list", "--industry", "finance"])
     captured = capsys.readouterr()

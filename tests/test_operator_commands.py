@@ -16,6 +16,7 @@ from ai_automation_kit.core.operator_console import generate_recommended_flow_fr
 from ai_automation_kit.core.operator_console import generate_share_check
 from ai_automation_kit.core.operator_console import generate_website_side_hustle_pack
 from ai_automation_kit.core.operator_console import package_client_demo
+from ai_automation_kit.core.side_hustle_blueprints import generate_side_hustle_blueprints
 from ai_automation_kit.core.flows import install_flow
 from ai_automation_kit.core.flow_runtime import run_flow_project
 from ai_automation_kit.core.flow_runtime import approve_all_pending
@@ -269,6 +270,33 @@ def test_generate_website_side_hustle_pack_creates_public_side_hustle_assets(tmp
     assert "lead_id" in (output / "inquiry_intake_schema.csv").read_text()
     assert "Google Forms + Google Sheets" in (output / "integration_options.md").read_text()
     assert "Reservation Inbox" in (output / "inquiry_dashboard.html").read_text()
+
+
+def test_generate_side_hustle_blueprints_creates_sellable_automation_catalog(tmp_path):
+    output = tmp_path / "side-hustle-blueprints"
+
+    payload = generate_side_hustle_blueprints(
+        industry="local-business",
+        operator_level="beginner",
+        output=output,
+    )
+
+    assert payload["status"] == "ready"
+    assert payload["count"] >= 12
+    assert (output / "START_HERE_SIDE_HUSTLE_BLUEPRINTS.md").exists()
+    assert (output / "side_hustle_blueprints.md").exists()
+    assert (output / "side_hustle_blueprints.csv").exists()
+    assert (output / "first_client_picker.md").exists()
+    assert (output / "offer_scripts.md").exists()
+    assert (output / "implementation_paths.md").exists()
+    assert (output / "risk_boundaries.md").exists()
+    assert (output / "ai_agent_handoff.md").exists()
+    assert (output / "client_intake_questions.md").exists()
+    assert (output / "side_hustle_blueprints.html").exists()
+    assert "Website + Inquiry Operations" in (output / "side_hustle_blueprints.md").read_text()
+    assert "AI Reception And First Reply" in (output / "side_hustle_blueprints.md").read_text()
+    assert "Do not promise guaranteed revenue" in (output / "risk_boundaries.md").read_text()
+    assert "Ask one question at a time" in (output / "ai_agent_handoff.md").read_text()
 
 
 def test_generate_opportunity_catalog_creates_sales_catalog(tmp_path):
