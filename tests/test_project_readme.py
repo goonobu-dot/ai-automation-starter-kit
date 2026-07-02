@@ -1,34 +1,49 @@
 from pathlib import Path
 
 
-def test_project_readme_has_public_quickstart_and_all_templates():
+def test_project_readme_leads_with_japanese_three_step_entrance():
     text = Path("README.md").read_text()
     assert "AI Automation Starter Kit" in text
-    assert "What Is This?" in text
-    assert "Who Is This For?" in text
-    assert "What You Get" in text
-    assert "Beginner-Friendly Guides" in text
-    assert "docs/BEGINNER_GUIDE.md" in text
-    assert "docs/BEGINNER_GUIDE.ja.md" in text
-    assert "docs/BEGINNER_ROUTE_MAP.md" in text
-    assert "docs/BEGINNER_ROUTE_MAP.ja.md" in text
-    assert "Do not read everything first" in text
-    assert "迷ったら、この順番だけで進めてください" in text
-    assert "3-Minute Walkthrough" in text
-    assert "Example Use Cases" in text
     assert "GitHub-data-driven AI agent skill kit" in text
-    assert "The CLI is optional" in text
-    assert "No-CLI AI Agent Path" in text
-    assert "executive_decision_brief.md" in text
-    assert "pilot_scorecard.csv" in text
+    # Japanese three-step entrance near the top.
+    assert "日本語の方へ：3ステップで始める" in text
+    assert "ai-automation-kit beginner" in text
+    assert "docs/GETTING_STARTED.ja.md" in text
+    assert "docs/INDEX.md" in text
+    assert "最初から全部読まないでください" in text
+    assert "唯一の入口" in text
+    # The Japanese section must appear before the English quick start.
+    assert text.index("日本語の方へ") < text.index("English Quick Start")
+    # English quick start.
+    assert "Do not read everything first" in text
     assert "python3 -m venv .venv" in text
     assert "source .venv/bin/activate" in text
     assert "python3 -m ensurepip --upgrade" in text
     assert "python3 -m pip install --upgrade pip setuptools" in text
     assert "pip install -e ." in text
+    assert "The CLI is optional" in text
+    # Documentation is delegated to the index.
+    assert "Documentation" in text
+    assert "docs/SHOWCASE.md" in text
+    assert "docs/demo.html" in text
+    # Compact command reference keeps every command documented.
+    assert "Command Reference" in text
     assert "ai-automation-kit onboard --business-area operations" in text
     assert "ai-automation-kit offer-pack --business-area operations" in text
     assert "ai-automation-kit client-ready --business-area operations" in text
+    assert "ai-automation-kit github-discover --business-area operations" in text
+    assert "ai-automation-kit research-agent" in text
+    assert "ai-automation-kit docs-rag" in text
+    assert "ai-automation-kit internal-ai-workflow" in text
+    assert "ai-automation-kit excel-to-internal-app" in text
+    assert "ai-automation-kit delivery-pipeline" in text
+    assert "python3 scripts/run_all_demos.py" in text
+    assert "examples/research-agent/github_repos.json" in text
+    assert "GITHUB_TOKEN" in text
+    # Key generated artifacts stay discoverable.
+    assert "What You Get" in text
+    assert "executive_decision_brief.md" in text
+    assert "pilot_scorecard.csv" in text
     assert "offer_pack/" in text
     assert "client-ready/" in text
     assert "statement_of_work.md" in text
@@ -36,53 +51,19 @@ def test_project_readme_has_public_quickstart_and_all_templates():
     assert "roi_calculator.csv" in text
     assert "implementation_readiness_score.json" in text
     assert "maintenance_plan.md" in text
-    assert "ai-automation-kit research-agent" in text
-    assert "ai-automation-kit github-discover --business-area sales" in text
-    assert "business_automation_plan.md" in text
     assert "value_realization_plan.md" in text
     assert "value_measurement_report.md" in text
     assert "stakeholder_rollout_map.md" in text
     assert "risk_exception_register.md" in text
     assert "operational_audit_plan.md" in text
     assert "artifact_index.md" in text
-    assert "adoption_shortlist.md" in text
-    assert "adapter_blueprint.md" in text
     assert "adapter_starter/" in text
-    assert "candidate_briefs/" in text
-    assert "examples/research-agent/github_repos.json" in text
-    assert "GITHUB_TOKEN" in text
-    assert "ai-automation-kit docs-rag" in text
-    assert "ai-automation-kit internal-ai-workflow" in text
-    assert "ai-automation-kit excel-to-internal-app" in text
-    assert "ai-automation-kit delivery-pipeline" in text
-    assert "python3 scripts/run_all_demos.py" in text
-    assert "How This Differs From Chat AI" in text
-    assert "1-Minute Demo" in text
-    assert "Example Output" in text
     assert "How This Fits With Local Agent Workbenches" in text
+    assert "Safety Defaults" in text
     assert "Public Release Readiness" in text
-    assert "docs/WEBSITE_SIDE_HUSTLE_GUIDE.md" in text
-    assert "docs/WEBSITE_SIDE_HUSTLE_GUIDE.ja.md" in text
-    assert "docs/WEBSITE_PROJECT_AGENT_GUIDE.md" in text
-    assert "docs/WEBSITE_PROJECT_AGENT_GUIDE.ja.md" in text
-    assert "docs/AUTOMATION_EXPANSION_GUIDE.md" in text
-    assert "docs/AUTOMATION_EXPANSION_GUIDE.ja.md" in text
-    assert "docs/SIDE_HUSTLE_BLUEPRINTS.md" in text
-    assert "docs/SIDE_HUSTLE_BLUEPRINTS.ja.md" in text
-    assert "ai-automation-kit website-side-hustle --industry hospitality" in text
-    assert "ai-automation-kit side-hustle-blueprints --industry local-business" in text
-    assert "ai-automation-kit command-center --language both" in text
-    assert "ai-automation-kit skill-pack --flow-id invoice-document-followup" in text
-    assert "ai-automation-kit governance-pack --flow-id invoice-document-followup" in text
-    assert "START_HERE_SIDE_HUSTLE_BLUEPRINTS.md" in text
-    assert "side_hustle_blueprints.html" in text
-    assert "command_center.html" in text
-    assert "governance_pack.md" in text
-    assert "reservation and inquiry operations templates" in text
-    assert "designer-grade AI agent playbook" in text
-    assert "website quality gate" in text
-    assert "docs/SHOWCASE.md" in text
-    assert "docs/demo.html" in text
+    # The old giant feature listing must stay retired.
+    assert "3-Minute Walkthrough" not in text
+    assert len(text) < 25000
 
 
 def test_beginner_guides_explain_project_in_english_and_japanese():

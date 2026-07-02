@@ -1224,6 +1224,37 @@ def test_onboard_can_create_offer_pack(tmp_path, monkeypatch, capsys):
     assert "offer_pack/README.md" in payload["next_read"]
 
 
+def test_parser_accepts_beginner_command():
+    parser = build_parser()
+    args = parser.parse_args(["beginner"])
+    assert args.command == "beginner"
+    assert args.step is None
+
+    args = parser.parse_args(["beginner", "--step", "3"])
+    assert args.step == 3
+
+
+def test_main_runs_beginner_overview(capsys):
+    exit_code = main(["beginner"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "環境準備" in captured.out
+    assert "納品と請求" in captured.out
+    assert "ai-automation-kit beginner --step 1" in captured.out
+
+
+def test_main_runs_beginner_step_detail(capsys):
+    exit_code = main(["beginner", "--step", "2"])
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "最初のデモ" in captured.out
+    assert "complete-workspace" in captured.out
+    assert "この段階でやること" in captured.out
+    assert "次の一歩" in captured.out
+
+
 def test_main_runs_doctor_without_network(tmp_path):
     output = tmp_path / "doctor"
 
@@ -1239,3 +1270,49 @@ def test_main_runs_doctor_without_network(tmp_path):
     assert "package_metadata" in check_names
     assert "console_script" in check_names
     assert (output / "doctor_report.json").exists()
+
+
+def test_doctor_diagnoses_environment_basics(tmp_path):
+    output = tmp_path / "doctor"
+
+    exit_code = main(["doctor", "--output", str(output)])
+
+    assert exit_code == 0
+    payload = json.loads((output / "doctor_report.json").read_text())
+    check_names = [check["name"] for check in payload["checks"]]
+    # Python バージョン / 書き込み権限 / git / パッケージ導入状態が診断対象に含まれる。
+    assert "python_version" in check_names
+    assert "output_writable" in check_names
+    assert "git_available" in check_names
+    assert "package_installed" in check_names
+
+
+def test_doctor_reports_japanese_remedy_when_git_is_missing(tmp_path, monkeypatch):
+    monkeypatch.setattr("ai_automation_kit.cli.shutil.which", lambda name: None)
+    output = tmp_path / "doctor"
+
+    exit_code = main(["doctor", "--output", str(output)])
+
+    assert exit_code == 1
+    payload = json.loads((output / "doctor_report.json").read_text())
+    report = (output / "doctor_report.md").read_text()
+    git_check = next(check for check in payload["checks"] if check["name"] == "git_available")
+    assert git_check["status"] == "fail"
+    assert "remedy_ja" in git_check
+    assert "git" in git_check["remedy_ja"]
+    # NG 項目の日本語対処法が next_actions とレポート本文の両方に出る。
+    assert any("git" in action and "ください" in action for action in payload["next_actions"])
+    assert "対処法" in report
+
+
+def test_doctor_keeps_existing_output_contract(tmp_path):
+    output = tmp_path / "doctor"
+
+    exit_code = main(["doctor", "--output", str(output)])
+
+    assert exit_code == 0
+    payload = json.loads((output / "doctor_report.json").read_text())
+    # 後方互換: 先頭チェックは python_version、status は従来の 3 値のまま。
+    assert payload["checks"][0]["name"] == "python_version"
+    assert payload["status"] in {"ready", "warning", "blocked"}
+    assert (output / "doctor_report.md").exists()

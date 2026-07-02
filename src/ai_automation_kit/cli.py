@@ -8,6 +8,8 @@ import sys
 from pathlib import Path
 
 from ai_automation_kit import __version__
+from ai_automation_kit.core.beginner_guide import render_beginner_overview
+from ai_automation_kit.core.beginner_guide import render_beginner_step
 from ai_automation_kit.core.beginner_sales import generate_beginner_sales_pack
 from ai_automation_kit.core.client_ready import generate_client_ready_pack
 from ai_automation_kit.core.execution_expansion import generate_deployment_pack
@@ -17,6 +19,7 @@ from ai_automation_kit.core.execution_expansion import generate_observability_pa
 from ai_automation_kit.core.execution_expansion import generate_runtime_safety_pack
 from ai_automation_kit.core.execution_expansion import generate_secrets_bootstrap
 from ai_automation_kit.core.execution_expansion import generate_state_backend_pack
+from ai_automation_kit.core.flow_diagram import write_flow_diagram
 from ai_automation_kit.core.flows import get_flow
 from ai_automation_kit.core.flows import install_flow
 from ai_automation_kit.core.flows import list_flows
@@ -333,6 +336,10 @@ def build_parser() -> argparse.ArgumentParser:
     flow_install.add_argument("flow_id")
     flow_install.add_argument("--output", required=True)
 
+    flow_diagram = flow_subparsers.add_parser("diagram")
+    flow_diagram.add_argument("flow_id")
+    flow_diagram.add_argument("--output", required=True)
+
     flow_validate = flow_subparsers.add_parser("validate")
     flow_validate.add_argument("path")
 
@@ -359,6 +366,9 @@ def build_parser() -> argparse.ArgumentParser:
     delivery = subparsers.add_parser("delivery-pipeline")
     delivery.add_argument("--config", required=True)
     delivery.add_argument("--output", required=True)
+
+    beginner = subparsers.add_parser("beginner")
+    beginner.add_argument("--step", type=int, choices=[1, 2, 3, 4, 5], default=None)
 
     doctor = subparsers.add_parser("doctor")
     doctor.add_argument("--output", required=True)
@@ -777,10 +787,21 @@ def main(argv: list[str] | None = None) -> int:
             except KeyError as exc:
                 print(str(exc), file=sys.stderr)
                 return 1
+            diagram_path = write_flow_diagram(get_flow(args.flow_id), Path(args.output))
             print(f"flow_project={args.output}")
             print(f"flow_id={payload['flow_id']}")
             print(f"workflow_map={Path(args.output) / 'workflow_map.mmd'}")
             print(f"flow_yaml={Path(args.output) / 'flow.yaml'}")
+            print(f"flow_diagram={diagram_path}")
+            return 0
+        if args.flow_command == "diagram":
+            try:
+                flow = get_flow(args.flow_id)
+            except KeyError as exc:
+                print(str(exc), file=sys.stderr)
+                return 1
+            diagram_path = write_flow_diagram(flow, Path(args.output))
+            print(f"flow_diagram={diagram_path}")
             return 0
         if args.flow_command == "validate":
             result = validate_flow_project(Path(args.path))
@@ -829,6 +850,12 @@ def main(argv: list[str] | None = None) -> int:
         print(f"status={run.status}")
         print(f"checklist={args.output}/docs/delivery-checklist.md")
         return 0 if run.status == "succeeded" else 1
+    if args.command == "beginner":
+        if args.step is None:
+            print(render_beginner_overview())
+        else:
+            print(render_beginner_step(args.step))
+        return 0
     if args.command == "doctor":
         payload = _run_doctor(output_dir=Path(args.output), check_github=args.check_github)
         print(f"status={payload['status']}")
@@ -1041,9 +1068,15 @@ def _run_doctor(output_dir: Path, check_github: bool) -> dict:
             "detail": "GITHUB_TOKEN is set" if os.environ.get("GITHUB_TOKEN") else "GITHUB_TOKEN is not set; public unauthenticated GitHub requests still work with lower limits.",
         },
         _doctor_check("env_files_ignored", Path(".gitignore").exists() and ".env" in Path(".gitignore").read_text(encoding="utf-8"), ".gitignore protects local env files"),
+        _doctor_check("package_installed", _package_installed(), "ai_automation_kit package is importable"),
     ]
     if check_github:
         checks.append(_github_doctor_check())
+    for check in checks:
+        if check["status"] != "pass":
+            remedy = _DOCTOR_REMEDIES_JA.get(check["name"])
+            if remedy:
+                check["remedy_ja"] = remedy
     status = "ready"
     if any(check["status"] == "fail" for check in checks):
         status = "blocked"
@@ -1061,6 +1094,30 @@ def _run_doctor(output_dir: Path, check_github: bool) -> dict:
 
 def _doctor_check(name: str, passed: bool, detail: str) -> dict:
     return {"name": name, "status": "pass" if passed else "fail", "detail": detail}
+
+
+# NG 項目ごとの日本語の対処法（初心者向け。専門用語には一言説明を添える）。
+_DOCTOR_REMEDIES_JA: dict = {
+    "python_version": "Python（このキットを動かす実行環境）のバージョンが古いです。https://www.python.org/ から 3.9 以上をインストールし直してください。",
+    "pip_available": "pip（Python 用のアプリ追加コマンド）が見つかりません。ターミナルで `python3 -m ensurepip --upgrade` を実行してください。",
+    "output_writable": "出力先フォルダに書き込みできません。別のフォルダを --output に指定するか、フォルダの権限（書き込み許可）を確認してください。",
+    "git_available": "git（ファイルの変更履歴を管理するツール）が見つかりません。macOS はターミナルで `xcode-select --install`、Windows は https://git-scm.com/ からインストールしてください。",
+    "package_metadata": "パッケージ情報（pyproject.toml / README.md / LICENSE）が見つかりません。このキットのリポジトリ（プロジェクトのフォルダ）の直下で実行してください。",
+    "console_script": "コマンド登録の設定が見つかりません。リポジトリ直下で `pip install -e .`（開発モードでのインストール）を実行し直してください。",
+    "github_token": "GITHUB_TOKEN（GitHub 用の認証キー）が未設定です。無くても動きますが、たくさん検索する場合は `export GITHUB_TOKEN=...` で設定してください。",
+    "env_files_ignored": ".gitignore（Git に含めないファイルの一覧）に `.env` がありません。認証情報の誤コミットを防ぐため、.gitignore に `.env` の行を追加してください。",
+    "package_installed": "本パッケージ（ai-automation-kit）がまだインストールされていません。リポジトリ直下で `pip install -e .` を実行してください。",
+    "github_api": "GitHub への接続に失敗しました。インターネット接続を確認し、社内ネットワークの場合はプロキシ（中継サーバー）の設定を確認してください。",
+}
+
+
+def _package_installed() -> bool:
+    try:
+        import importlib.util
+
+        return importlib.util.find_spec("ai_automation_kit") is not None
+    except (ImportError, ValueError):
+        return False
 
 
 def _github_doctor_check() -> dict:
@@ -1118,6 +1175,8 @@ def _doctor_next_actions(checks: list[dict]) -> list[str]:
             actions.append(f"Fix `{check['name']}` before running business automation workflows.")
         if check["name"] == "github_token" and check["status"] == "warn":
             actions.append("Set `GITHUB_TOKEN` when running many GitHub discovery searches.")
+        if check["status"] != "pass" and check.get("remedy_ja"):
+            actions.append(check["remedy_ja"])
     if not actions:
         actions.append("Run `ai-automation-kit github-discover --business-area operations --limit 2 --output .tmp/doctor-smoke` next.")
     return actions
@@ -1136,6 +1195,11 @@ def _render_doctor_report(payload: dict) -> str:
     ]
     for check in payload["checks"]:
         lines.append(f"| `{check['name']}` | `{check['status']}` | {check['detail']} |")
+    remedies = [check for check in payload["checks"] if check["status"] != "pass" and check.get("remedy_ja")]
+    if remedies:
+        lines.extend(["", "## 対処法（日本語）", ""])
+        for check in remedies:
+            lines.append(f"- `{check['name']}`: {check['remedy_ja']}")
     lines.extend(["", "## Next Actions", ""])
     lines.extend(f"- {action}" for action in payload["next_actions"])
     lines.append("")

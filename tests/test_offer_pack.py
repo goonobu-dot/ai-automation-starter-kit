@@ -44,8 +44,16 @@ def test_generate_offer_pack_uses_discovery_outputs(tmp_path):
     assert (output / "delivery_checklist.md").exists()
     assert (output / "risk_boundaries.md").exists()
     assert (output / "offer_pack.json").exists()
-    assert "workflow operations pilot" in (output / "proposal.md").read_text()
-    assert "No income is guaranteed" in (output / "pricing_model.md").read_text()
+    proposal = (output / "proposal.md").read_text()
+    assert "workflow operations pilot" in proposal
+    assert "\u514d\u8cac" in proposal
+    assert "\u69d8" in proposal
+    pricing = (output / "pricing_model.md").read_text()
+    assert "No income is guaranteed" in pricing
+    assert "5\u301c15\u4e07\u5186" in pricing
+    assert "1\u301c3\u4e07\u5186" in pricing
+    questions = (output / "client_discovery_questions.md").read_text()
+    assert "\u8aad\u307f\u4e0a\u3052" in questions
 
 
 def test_generate_offer_pack_without_source_still_creates_starter_pack(tmp_path):

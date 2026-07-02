@@ -45,6 +45,21 @@ def test_generate_beginner_sales_pack_turns_flow_into_sellable_beginner_assets(t
     stored = json.loads((output / "beginner_sales.json").read_text())
     assert stored["niche"] == "accounting"
 
+    price_menu = (output / "price_menu.md").read_text()
+    assert "5\u301c15\u4e07\u5186" in price_menu
+    assert "1\u301c3\u4e07\u5186" in price_menu
+    assert "\u4fa1\u683c\u306e\u6c7a\u3081\u65b9" in price_menu
+
+    proposal = (output / "proposal_one_pager.md").read_text()
+    assert "\u69d8" in proposal
+    assert "\u514d\u8cac" in proposal
+    assert "\u30b9\u30b1\u30b8\u30e5\u30fc\u30eb" in proposal
+    assert "5\u301c15\u4e07\u5186" in proposal
+
+    questions = (output / "client_questions.md").read_text()
+    assert "\u6708\u306b\u4f55\u56de" in questions
+    assert "\u8aad\u307f\u4e0a\u3052" in questions
+
 
 def test_generate_beginner_sales_pack_can_render_gallery_from_industry(tmp_path):
     output = tmp_path / "sales-gallery"

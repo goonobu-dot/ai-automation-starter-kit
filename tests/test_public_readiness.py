@@ -29,14 +29,12 @@ def test_public_repo_metadata_files_exist():
         assert Path(path).exists(), path
 
 
-def test_readme_links_start_here_and_use_cases_docs():
+def test_readme_links_entrance_and_key_docs():
     readme = Path("README.md").read_text()
+    assert "docs/GETTING_STARTED.ja.md" in readme
+    assert "docs/INDEX.md" in readme
     assert "docs/manual.html" in readme
     assert "docs/manual.ja.html" in readme
-    assert "docs/START_HERE.md" in readme
-    assert "docs/START_HERE.ja.md" in readme
-    assert "docs/USE_CASES.md" in readme
-    assert "docs/USE_CASES.ja.md" in readme
     assert "docs/USER_MANUAL.md" in readme
     assert "docs/BEGINNER_ROUTE_MAP.md" in readme
     assert "docs/BEGINNER_ROUTE_MAP.ja.md" in readme
@@ -45,14 +43,6 @@ def test_readme_links_start_here_and_use_cases_docs():
     assert "docs/CLIENT_DEMO_SCRIPT.md" in readme
     assert "docs/REAL_WORLD_SETUP_GUIDE.md" in readme
     assert "docs/FAQ.md" in readme
-    assert "docs/AI_RECEPTION_EMPLOYEE_PACK.md" in readme
-    assert "docs/AI_RECEPTION_EMPLOYEE_PACK.ja.md" in readme
-    assert "docs/AI_EMPLOYEE_ROADMAP.md" in readme
-    assert "docs/AI_EMPLOYEE_ROADMAP.ja.md" in readme
-    assert "docs/WEBSITE_SIDE_HUSTLE_GUIDE.md" in readme
-    assert "docs/WEBSITE_SIDE_HUSTLE_GUIDE.ja.md" in readme
-    assert "docs/WEBSITE_PROJECT_AGENT_GUIDE.md" in readme
-    assert "docs/WEBSITE_PROJECT_AGENT_GUIDE.ja.md" in readme
     assert "docs/CLOUD_DEPLOYMENT_GUIDE.md" in readme
     assert "docs/CLOUD_DEPLOYMENT_GUIDE.ja.md" in readme
     assert "docs/CLOUD_BEGINNER_PLAYBOOK.md" in readme
@@ -61,29 +51,43 @@ def test_readme_links_start_here_and_use_cases_docs():
     assert "docs/CONNECTOR_SETUP_GUIDE.ja.md" in readme
     assert "docs/CLOUD_TROUBLESHOOTING.md" in readme
     assert "docs/CLOUD_TROUBLESHOOTING.ja.md" in readme
-    assert "docs/AI_BEGINNER_SUPPORT_MAP.md" in readme
-    assert "docs/AI_BEGINNER_SUPPORT_MAP.ja.md" in readme
-    assert "docs/AI_AGENT_SETUP_ASSISTANT_PLAYBOOK.md" in readme
-    assert "docs/AI_AGENT_SETUP_ASSISTANT_PLAYBOOK.ja.md" in readme
-    assert "docs/CLIENT_DELIVERY_SUPPORT_RUNBOOK.md" in readme
-    assert "docs/CLIENT_DELIVERY_SUPPORT_RUNBOOK.ja.md" in readme
     assert "docs/AI_AGENT_GRILL_ME_SKILL.md" in readme
     assert "docs/AI_AGENT_GRILL_ME_SKILL.ja.md" in readme
-    assert "docs/AI_GRILL_ME_GUIDE.md" in readme
-    assert "docs/AI_GRILL_ME_GUIDE.ja.md" in readme
-    assert "docs/GRILL_ME_PROMPTS.md" in readme
-    assert "docs/GRILL_ME_PROMPTS.ja.md" in readme
-    assert "docs/GRILL_ME_CHECKLISTS.md" in readme
-    assert "docs/GRILL_ME_CHECKLISTS.ja.md" in readme
     assert "docs/AUTOMATION_EXPANSION_GUIDE.md" in readme
     assert "docs/AUTOMATION_EXPANSION_GUIDE.ja.md" in readme
+    assert "docs/SIDE_HUSTLE_BLUEPRINTS.md" in readme
+    assert "docs/SIDE_HUSTLE_BLUEPRINTS.ja.md" in readme
+    # Archived docs must no longer be part of the README entrance.
+    assert "docs/START_HERE.md" not in readme
+    assert "docs/AI_BEGINNER_SUPPORT_MAP.md" not in readme
+    assert "docs/GRILL_ME_PROMPTS.md" not in readme
 
 
-def test_start_here_and_use_cases_docs_help_first_time_users():
-    english_start = Path("docs/START_HERE.md").read_text()
-    japanese_start = Path("docs/START_HERE.ja.md").read_text()
-    english_cases = Path("docs/USE_CASES.md").read_text()
-    japanese_cases = Path("docs/USE_CASES.ja.md").read_text()
+def test_getting_started_index_and_archive_form_the_single_entrance():
+    getting = Path("docs/GETTING_STARTED.ja.md").read_text()
+    index = Path("docs/INDEX.md").read_text()
+    archive = Path("docs/archive/README.md").read_text()
+    assert "唯一の入口" in getting
+    assert "ai-automation-kit beginner" in getting
+    assert "complete-workspace" in getting
+    assert "beginner-sales" in getting
+    assert "TUTORIAL_SME_PROPOSAL.ja.md" in getting
+    assert "dry-run" in getting
+    assert "30分" in getting
+    assert "です" in getting
+    assert "最初は🔰入門カテゴリ以外読まないでください" in index
+    assert "GETTING_STARTED.ja.md" in index
+    assert "💼" in index and "⚙️" in index and "☁️" in index and "📚" in index
+    assert "archive/README.md" in index
+    assert "歴史的資料" in archive
+    assert "INDEX.md" in archive
+
+
+def test_start_here_and_use_cases_docs_are_archived_but_intact():
+    english_start = Path("docs/archive/START_HERE.md").read_text()
+    japanese_start = Path("docs/archive/START_HERE.ja.md").read_text()
+    english_cases = Path("docs/archive/USE_CASES.md").read_text()
+    japanese_cases = Path("docs/archive/USE_CASES.ja.md").read_text()
     assert "Start Here" in english_start
     assert "First 3 minutes" in english_start
     assert "Beginner Route Map" in english_start
@@ -100,7 +104,7 @@ def test_start_here_and_use_cases_docs_help_first_time_users():
 
 def test_english_manuals_match_japanese_business_proposal_coverage():
     expected_docs = {
-        "docs/USER_MANUAL.md": ["business-launch", "complete-workspace", "Paid PoC", "share-check"],
+        "docs/USER_MANUAL.md": ["business-launch", "complete-workspace", "paid PoC", "share-check"],
         "docs/SELLING_AUTOMATION_GUIDE.md": ["dry-run PoC", "proposal", "human approval", "Do not promise income"],
         "docs/FLOW_SELECTION_GUIDE.md": ["invoice", "support reply", "avoid", "human approver"],
         "docs/CLIENT_DEMO_SCRIPT.md": ["Client Demo Script", "work queue", "approval queue", "continue, revise, or stop"],
@@ -173,35 +177,32 @@ def test_html_manuals_are_language_separated_visual_entrypoints():
     english_snippets = [
         "<!doctype html>",
         '<html lang="en">',
-        "Human-First Manual",
-        "Start with one small workflow",
-        "Choose Your Route",
-        "No-CLI",
-        "Side-hustle",
-        "Cloud / API",
-        "Workflow Map",
-        "AI drafts",
-        "Human approves",
-        "docs/BEGINNER_ROUTE_MAP.md",
-        "docs/USER_MANUAL.md",
-        "Japanese manual",
+        "Operating Manual",
+        "How the automation works",
+        "The kit drafts",
+        "A human reviews",
+        "A human sends",
+        "5-step side-business roadmap",
+        "flows approve",
+        "share-check",
+        "USER_MANUAL.md",
+        "INDEX.md",
         "manual.ja.html",
     ]
     japanese_snippets = [
         "<!doctype html>",
         '<html lang="ja">',
-        "人間向けHTMLマニュアル",
-        "1つの小さな業務から始める",
-        "ルートを選ぶ",
-        "CLIなし",
-        "副業・受託",
-        "クラウド・API",
-        "図で見る流れ",
-        "AIが下書き",
-        "人間が承認",
-        "docs/BEGINNER_ROUTE_MAP.ja.md",
-        "docs/USER_MANUAL.ja.md",
-        "English manual",
+        "操作マニュアル",
+        "5段階ロードマップ",
+        "生成する",
+        "人間が確認・承認",
+        "人間が送る",
+        "ドライラン",
+        "flows approve",
+        "share-check",
+        "TUTORIAL_SME_PROPOSAL.ja.md",
+        "USER_MANUAL.ja.md",
+        "INDEX.md",
         "manual.html",
     ]
     assert len(english) > 7000
@@ -209,7 +210,7 @@ def test_html_manuals_are_language_separated_visual_entrypoints():
     assert "<script" not in english.lower()
     assert "<script" not in japanese.lower()
     assert not re.search(r"[\u3040-\u30ff\u4e00-\u9fff]", english)
-    for forbidden in ["Human-First Manual", "Choose Your Route", "Start with one small workflow"]:
+    for forbidden in ["How the automation works", "Core commands", "What humans do"]:
         assert forbidden not in japanese
     for snippet in english_snippets:
         assert snippet in english, f"docs/manual.html missing {snippet}"
@@ -219,14 +220,14 @@ def test_html_manuals_are_language_separated_visual_entrypoints():
 
 def test_ai_reception_employee_docs_explain_setup_and_monetization_path():
     expected_docs = {
-        "docs/AI_RECEPTION_EMPLOYEE_PACK.md": [
+        "docs/archive/AI_RECEPTION_EMPLOYEE_PACK.md": [
             "AI Reception Employee",
             "reception folder",
             "API keys",
             "operator_ui/index.html",
             "Paid dry-run PoC",
         ],
-        "docs/AI_RECEPTION_EMPLOYEE_PACK.ja.md": [
+        "docs/archive/AI_RECEPTION_EMPLOYEE_PACK.ja.md": [
             "AI受付社員",
             "受付フォルダ",
             "APIキー",
@@ -243,14 +244,14 @@ def test_ai_reception_employee_docs_explain_setup_and_monetization_path():
 
 def test_ai_employee_roadmap_docs_explain_priority_and_exclusions():
     expected_docs = {
-        "docs/AI_EMPLOYEE_ROADMAP.md": [
+        "docs/archive/AI_EMPLOYEE_ROADMAP.md": [
             "AI Reception Employee",
             "Internal FAQ",
             "Sales Research",
             "Do not start with outbound sales",
             "multi-department",
         ],
-        "docs/AI_EMPLOYEE_ROADMAP.ja.md": [
+        "docs/archive/AI_EMPLOYEE_ROADMAP.ja.md": [
             "AI受付社員",
             "社内FAQ",
             "営業リサーチ",
@@ -267,7 +268,7 @@ def test_ai_employee_roadmap_docs_explain_priority_and_exclusions():
 
 def test_website_side_hustle_docs_are_bilingual_and_linked():
     expected_docs = {
-        "docs/WEBSITE_SIDE_HUSTLE_GUIDE.md": [
+        "docs/archive/WEBSITE_SIDE_HUSTLE_GUIDE.md": [
             "Website Side Hustle Guide",
             "Website Project Agent Guide",
             "website-side-hustle",
@@ -276,7 +277,7 @@ def test_website_side_hustle_docs_are_bilingual_and_linked():
             "delivery_acceptance_checklist.md",
             "inquiry_dashboard.html",
         ],
-        "docs/WEBSITE_SIDE_HUSTLE_GUIDE.ja.md": [
+        "docs/archive/WEBSITE_SIDE_HUSTLE_GUIDE.ja.md": [
             "ホームページ副業ガイド",
             "ホームページ制作プロジェクト AIエージェント利用ガイド",
             "website-side-hustle",
@@ -285,13 +286,13 @@ def test_website_side_hustle_docs_are_bilingual_and_linked():
             "delivery_acceptance_checklist.md",
             "inquiry_dashboard.html",
         ],
-        "docs/WEBSITE_PROJECT_AGENT_GUIDE.md": [
+        "docs/archive/WEBSITE_PROJECT_AGENT_GUIDE.md": [
             "Website Project Agent Guide",
             "docs/WEBSITE_SIDE_HUSTLE_GUIDE.md",
             "Do not clone competitors",
             "START_HERE_WEBSITE_SIDE_HUSTLE.md",
         ],
-        "docs/WEBSITE_PROJECT_AGENT_GUIDE.ja.md": [
+        "docs/archive/WEBSITE_PROJECT_AGENT_GUIDE.ja.md": [
             "ホームページ制作プロジェクト AIエージェント利用ガイド",
             "docs/WEBSITE_SIDE_HUSTLE_GUIDE.ja.md",
             "競合サイトの丸ごとコピーはしない",
@@ -434,7 +435,7 @@ def test_grill_me_docs_teach_ai_consultation_for_beginners():
             "本物のsecretを求めない",
             "人間承認ゲート",
         ],
-        "docs/AI_GRILL_ME_GUIDE.md": [
+        "docs/archive/AI_GRILL_ME_GUIDE.md": [
             "AI Grill Me Guide",
             "You can use the skill without running the CLI",
             "one question at a time",
@@ -442,7 +443,7 @@ def test_grill_me_docs_teach_ai_consultation_for_beginners():
             "challenge vague answers",
             "grill-me",
         ],
-        "docs/AI_GRILL_ME_GUIDE.ja.md": [
+        "docs/archive/AI_GRILL_ME_GUIDE.ja.md": [
             "AI Grill Me ガイド",
             "CLIを実行しなくても使えます",
             "1問ずつ",
@@ -450,10 +451,10 @@ def test_grill_me_docs_teach_ai_consultation_for_beginners():
             "曖昧な答え",
             "grill-me",
         ],
-        "docs/GRILL_ME_PROMPTS.md": ["Grill Me Prompts", "client interview", "cloud readiness", "proposal review"],
-        "docs/GRILL_ME_PROMPTS.ja.md": ["Grill Me プロンプト集", "顧客ヒアリング", "クラウド準備", "提案レビュー"],
-        "docs/GRILL_ME_CHECKLISTS.md": ["Grill Me Checklists", "workflow fit", "human approval", "stop condition"],
-        "docs/GRILL_ME_CHECKLISTS.ja.md": ["Grill Me チェックリスト", "業務適合", "人間の承認", "停止条件"],
+        "docs/archive/GRILL_ME_PROMPTS.md": ["Grill Me Prompts", "client interview", "cloud readiness", "proposal review"],
+        "docs/archive/GRILL_ME_PROMPTS.ja.md": ["Grill Me プロンプト集", "顧客ヒアリング", "クラウド準備", "提案レビュー"],
+        "docs/archive/GRILL_ME_CHECKLISTS.md": ["Grill Me Checklists", "workflow fit", "human approval", "stop condition"],
+        "docs/archive/GRILL_ME_CHECKLISTS.ja.md": ["Grill Me チェックリスト", "業務適合", "人間の承認", "停止条件"],
     }
     for path, snippets in expected_docs.items():
         text = Path(path).read_text()
@@ -464,7 +465,7 @@ def test_grill_me_docs_teach_ai_consultation_for_beginners():
 
 def test_ai_beginner_support_docs_cover_current_practical_follow_up():
     expected_docs = {
-        "docs/AI_BEGINNER_SUPPORT_MAP.md": [
+        "docs/archive/AI_BEGINNER_SUPPORT_MAP.md": [
             "AI Beginner Support Map",
             "what AI can do now",
             "what a human must still do",
@@ -474,7 +475,7 @@ def test_ai_beginner_support_docs_cover_current_practical_follow_up():
             "rollback",
             "paid dry-run PoC",
         ],
-        "docs/AI_BEGINNER_SUPPORT_MAP.ja.md": [
+        "docs/archive/AI_BEGINNER_SUPPORT_MAP.ja.md": [
             "AI初心者サポートマップ",
             "今の技術でAIが支援できること",
             "人間が必ず行うこと",
@@ -484,7 +485,7 @@ def test_ai_beginner_support_docs_cover_current_practical_follow_up():
             "rollback",
             "有料dry-run PoC",
         ],
-        "docs/AI_AGENT_SETUP_ASSISTANT_PLAYBOOK.md": [
+        "docs/archive/AI_AGENT_SETUP_ASSISTANT_PLAYBOOK.md": [
             "AI Agent Setup Assistant Playbook",
             "intake mode",
             "connector mode",
@@ -493,7 +494,7 @@ def test_ai_beginner_support_docs_cover_current_practical_follow_up():
             "never collect secrets in chat",
             "safe substitute",
         ],
-        "docs/AI_AGENT_SETUP_ASSISTANT_PLAYBOOK.ja.md": [
+        "docs/archive/AI_AGENT_SETUP_ASSISTANT_PLAYBOOK.ja.md": [
             "AIエージェント セットアップ補助プレイブック",
             "ヒアリングモード",
             "連携設定モード",
@@ -502,7 +503,7 @@ def test_ai_beginner_support_docs_cover_current_practical_follow_up():
             "チャットでsecretを集めない",
             "安全な代替情報",
         ],
-        "docs/CLIENT_DELIVERY_SUPPORT_RUNBOOK.md": [
+        "docs/archive/CLIENT_DELIVERY_SUPPORT_RUNBOOK.md": [
             "Client Delivery Support Runbook",
             "before the sales call",
             "during the discovery call",
@@ -511,7 +512,7 @@ def test_ai_beginner_support_docs_cover_current_practical_follow_up():
             "monthly operation",
             "do not promise revenue",
         ],
-        "docs/CLIENT_DELIVERY_SUPPORT_RUNBOOK.ja.md": [
+        "docs/archive/CLIENT_DELIVERY_SUPPORT_RUNBOOK.ja.md": [
             "顧客導入サポート運用手順書",
             "営業前",
             "ヒアリング中",
@@ -531,12 +532,12 @@ def test_ai_beginner_support_docs_cover_current_practical_follow_up():
 def test_beginner_docs_are_written_for_non_developers_first():
     expected_docs = {
         "README.md": [
-            "If you are new, start here",
-            "You do not need to understand cloud or APIs first",
-            "Ask an AI agent to read these guides with you",
-            "First, choose one small workflow",
+            "\u65e5\u672c\u8a9e\u306e\u65b9\u3078\uff1a3\u30b9\u30c6\u30c3\u30d7\u3067\u59cb\u3081\u308b",
+            "\u521d\u5fc3\u8005\u30ca\u30d3",
+            "\u552f\u4e00\u306e\u5165\u53e3",
+            "ai-automation-kit beginner",
         ],
-        "docs/AI_BEGINNER_SUPPORT_MAP.md": [
+        "docs/archive/AI_BEGINNER_SUPPORT_MAP.md": [
             "First, do this",
             "Words in plain language",
             "API key means",
@@ -544,7 +545,7 @@ def test_beginner_docs_are_written_for_non_developers_first():
             "Dry-run means",
             "Human approval means",
         ],
-        "docs/AI_BEGINNER_SUPPORT_MAP.ja.md": [
+        "docs/archive/AI_BEGINNER_SUPPORT_MAP.ja.md": [
             "まず、これだけやってください",
             "やさしい言葉での説明",
             "APIキーとは",
@@ -552,24 +553,24 @@ def test_beginner_docs_are_written_for_non_developers_first():
             "dry-runとは",
             "人間承認とは",
         ],
-        "docs/AI_AGENT_SETUP_ASSISTANT_PLAYBOOK.md": [
+        "docs/archive/AI_AGENT_SETUP_ASSISTANT_PLAYBOOK.md": [
             "Beginner first rule",
             "Do not start with technical setup",
             "Ask what the user wants to improve",
             "explain the word before using it",
         ],
-        "docs/AI_AGENT_SETUP_ASSISTANT_PLAYBOOK.ja.md": [
+        "docs/archive/AI_AGENT_SETUP_ASSISTANT_PLAYBOOK.ja.md": [
             "初心者ファーストのルール",
             "技術設定から始めない",
             "何を改善したいかを先に聞く",
             "専門用語は使う前に説明する",
         ],
-        "docs/CLIENT_DELIVERY_SUPPORT_RUNBOOK.md": [
+        "docs/archive/CLIENT_DELIVERY_SUPPORT_RUNBOOK.md": [
             "Plain client explanation",
             "Do not sound like a developer manual",
             "The client should understand the before and after",
         ],
-        "docs/CLIENT_DELIVERY_SUPPORT_RUNBOOK.ja.md": [
+        "docs/archive/CLIENT_DELIVERY_SUPPORT_RUNBOOK.ja.md": [
             "顧客に伝わる説明",
             "開発者向けマニュアルのように話さない",
             "顧客がbefore/afterを理解できる",
@@ -587,7 +588,7 @@ def test_readme_positions_project_as_ai_agent_skill_kit_not_cli_only():
     assert "The CLI is optional" in readme
     assert "not a requirement to use a CLI-based AI agent" in readme
     assert "AI Agent Grill Me Skill" in readme
-    assert "Ask the AI to read the skill document" in readme
+    assert "ask the AI to read the skill document" in readme
     assert "local Python CLI for turning public GitHub signals" not in readme
 
 
