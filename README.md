@@ -61,7 +61,7 @@ Key documents:
 | Choose your route | [初心者ルートマップ](docs/BEGINNER_ROUTE_MAP.ja.md) | [Beginner Route Map](docs/BEGINNER_ROUTE_MAP.md) |
 | Plain-language overview | [やさしい解説](docs/BEGINNER_GUIDE.ja.md) | [Beginner Guide](docs/BEGINNER_GUIDE.md) |
 | Operating manual | [使い方マニュアル](docs/USER_MANUAL.ja.md) | [User Manual](docs/USER_MANUAL.md) |
-| Browser manual (open the downloaded file by double-click; the GitHub link shows raw code) | ブラウザ版マニュアル: ダウンロード後に `docs/manual.ja.html` をダブルクリックで開く | Open `docs/manual.html` locally by double-click |
+| Browser manual (click to open as a web page) | [ブラウザ版マニュアル（クリックで開きます）](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.ja.html) | [Browser Manual](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.html) |
 | Selling automation responsibly | [提案ガイド](docs/SELLING_AUTOMATION_GUIDE.ja.md) | [Selling Automation Guide](docs/SELLING_AUTOMATION_GUIDE.md) |
 | Choosing what to sell | [副業ブループリント](docs/SIDE_HUSTLE_BLUEPRINTS.ja.md) | [Side Hustle Blueprints](docs/SIDE_HUSTLE_BLUEPRINTS.md) |
 | Running the client demo | [顧客デモ台本](docs/CLIENT_DEMO_SCRIPT.ja.md) | [Client Demo Script](docs/CLIENT_DEMO_SCRIPT.md) |

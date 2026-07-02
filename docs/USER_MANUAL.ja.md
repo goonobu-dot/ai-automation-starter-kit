@@ -502,6 +502,6 @@ status=ready
 - [中小企業への自動化提案チュートリアル](TUTORIAL_SME_PROPOSAL.ja.md)
 - [AI用プロンプト集](AI_PROMPTS.ja.md)
 - [ドキュメント索引（INDEX）](INDEX.md) / [アーカイブ](archive/README.md)
-- ブラウザ版マニュアル: パソコン内の `docs/manual.ja.html` をダブルクリックすると、このマニュアルの要約版が普通のWebページとして開きます（GitHub上でクリックするとコードが表示されてしまうので、必ず手元のファイルを開いてください）
+- [ブラウザ版マニュアル（クリックで開きます）](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.ja.html) — このマニュアルの要約版がWebページとして開きます。手元の `docs/manual.ja.html` をダブルクリックしても同じものが開きます
 
 > 注意: このキットは収益を保証するものではありません。本マニュアルの金額はすべて「相場の目安」です。

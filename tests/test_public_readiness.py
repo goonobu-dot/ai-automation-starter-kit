@@ -33,8 +33,8 @@ def test_readme_links_entrance_and_key_docs():
     readme = Path("README.md").read_text()
     assert "docs/GETTING_STARTED.ja.md" in readme
     assert "docs/INDEX.md" in readme
-    assert "docs/manual.html" in readme
-    assert "docs/manual.ja.html" in readme
+    assert "goonobu-dot.github.io/ai-automation-starter-kit/manual.html" in readme
+    assert "goonobu-dot.github.io/ai-automation-starter-kit/manual.ja.html" in readme
     assert "docs/USER_MANUAL.md" in readme
     assert "docs/BEGINNER_ROUTE_MAP.md" in readme
     assert "docs/BEGINNER_ROUTE_MAP.ja.md" in readme
