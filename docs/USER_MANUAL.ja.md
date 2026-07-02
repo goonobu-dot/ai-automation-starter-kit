@@ -263,6 +263,8 @@ ai-automation-kit flows diagram invoice-document-followup --output .tmp/diagram
 flow_diagram=.tmp/diagram/flow_diagram.html
 ```
 
+できあがった `flow_diagram.html` は、フォルダの中から探してダブルクリックすると、ブラウザで図として開きます。ネット接続は不要で、そのまま印刷してお客様に渡すこともできます。ターミナルから開く場合は `open .tmp/diagram/flow_diagram.html`（Windowsは `start`、Linuxは `xdg-open`）です。
+
 ### 5.4 flows validate — 検証
 
 必要なファイルが揃っているかを確認します。`run` の前に実行する習慣をつけてください。
@@ -500,6 +502,6 @@ status=ready
 - [中小企業への自動化提案チュートリアル](TUTORIAL_SME_PROPOSAL.ja.md)
 - [AI用プロンプト集](AI_PROMPTS.ja.md)
 - [ドキュメント索引（INDEX）](INDEX.md) / [アーカイブ](archive/README.md)
-- [HTMLマニュアル（ブラウザで読む）](manual.ja.html)
+- ブラウザ版マニュアル: パソコン内の `docs/manual.ja.html` をダブルクリックすると、このマニュアルの要約版が普通のWebページとして開きます（GitHub上でクリックするとコードが表示されてしまうので、必ず手元のファイルを開いてください）
 
 > 注意: このキットは収益を保証するものではありません。本マニュアルの金額はすべて「相場の目安」です。

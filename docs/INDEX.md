@@ -14,7 +14,7 @@
 | [初心者ルートマップ](BEGINNER_ROUTE_MAP.ja.md) | [Beginner Route Map](BEGINNER_ROUTE_MAP.md) | 自分に合う入口の選び方 / Choose your route |
 | [やさしい解説](BEGINNER_GUIDE.ja.md) | [Beginner Guide](BEGINNER_GUIDE.md) | このプロジェクトの目的 / What this project is |
 | [使い方マニュアル](USER_MANUAL.ja.md) | [User Manual](USER_MANUAL.md) | 全コマンドの操作説明書 / Full operating manual |
-| [HTMLマニュアル](manual.ja.html) | [HTML Manual](manual.html) | ブラウザで読める入門 / Browser-friendly manual |
+| ブラウザ版マニュアル（パソコン内の `docs/manual.ja.html` をダブルクリックで開く） | Browser manual: double-click `docs/manual.html` locally | ブラウザで読める入門。GitHub上でクリックするとコードが表示されるため、リンクにしていません / Browser-friendly manual; open the local file |
 | [FAQ](FAQ.ja.md) | [FAQ](FAQ.md) | よくある質問 / Frequently asked questions |
 
 ## 💼 営業・収益化 / Sales & Monetization

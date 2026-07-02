@@ -83,7 +83,7 @@ open .tmp/complete-accounting/client_command_center.html
 open .tmp/complete-accounting/FINAL_DELIVERY_GUIDE.md
 ```
 
-（Windowsは `open` を `start` に、Linuxは `xdg-open` に読み替えてください）
+（Windowsは `open` を `start` に、Linuxは `xdg-open` に読み替えてください。コマンドが難しければ、Finderやエクスプローラーで `.tmp/complete-accounting` フォルダを開き、ファイルをダブルクリックしても同じです）
 
 - `client_command_center.html` — ブラウザで開ける「生成物の案内板」。お客様に見せるデモ画面もここから辿れます。
 - `FINAL_DELIVERY_GUIDE.md` — 生成物をどの順で使うかの1枚ガイドです。
