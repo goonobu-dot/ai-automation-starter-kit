@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Beginner side-business overhaul (2026-07)
+
+- Added `beginner` command: a Japanese 5-stage navigator (environment setup, first demo, sales preparation, first client project, delivery and invoicing) so beginners always know the next step toward their first paid project.
+- Added `flows diagram <flow_id>` and automatic `flow_diagram.html` generation on `flows install`: a client-facing, single-file Japanese HTML diagram of the automation flow with step cards, human-approval badges, before/after comparison, and safety notes (no CDN, printable).
+- Strengthened `doctor` with a `package_installed` check and Japanese remediation guidance for failed checks.
+- Restructured documentation entrances: rewrote `README.md` around a 3-step start, added `docs/GETTING_STARTED.ja.md` (single entry point) and `docs/INDEX.md` (categorized index), and moved 28 legacy documents to `docs/archive/` with all internal links repaired.
+- Rewrote the Japanese sales templates in `beginner-sales` and `offer-pack` to real-negotiation quality: price range guidance, read-aloud hearing questions, and a fill-in proposal letter with scope, schedule, and disclaimer (API and file names unchanged).
+- Added `docs/TUTORIAL_SME_PROPOSAL.ja.md`: an end-to-end tutorial for the SME automation-proposal side business (finding clients, hearing, demo, proposal, execution, delivery, invoicing) with real command outputs.
+- Added `docs/AI_PROMPTS.ja.md`: copy-paste prompts for finishing generated assets with an AI assistant.
+- Rewrote `docs/USER_MANUAL.ja.md` / `docs/USER_MANUAL.md` and rebuilt `docs/manual.ja.html` / `docs/manual.html`: full command walkthroughs with real outputs and system-overview, 5-stage roadmap, and project-flow diagrams (Mermaid in Markdown, dependency-free CSS diagrams in HTML).
+
 - Added `flow-export` starters for `n8n`, `Activepieces`, and `Windmill` so a local dry-run workflow can move into a real execution tool without rebuilding the flow from scratch.
 - Added `deployment-pack` starters for `Coolify`, `Cloudflare Agents`, and `Supabase` so operators can generate practical deployment files after the cloud planning phase.
 - Added `runtime-safety`, `secrets-bootstrap`, `document-intake`, `observability-pack`, and `state-backend` so teams can generate approval policy, retry and rollback rules, secret ownership, document conversion paths, Langfuse-style tracing, and lightweight approval history storage.
