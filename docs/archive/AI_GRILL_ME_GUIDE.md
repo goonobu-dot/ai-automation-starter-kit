@@ -10,7 +10,7 @@ Experienced AI users know they can ask an AI agent for clarification. Beginners 
 
 This project uses `grill-me` to close that gap.
 
-You can use the skill without running the CLI. Open [AI Agent Grill Me Skill](AI_AGENT_GRILL_ME_SKILL.md), copy the skill text into ChatGPT, Claude, Gemini, Cursor, Codex, Claude Code, or another AI agent, and ask it to interview you one question at a time. The command below is only for users who want the same guidance saved as local files.
+You can use the skill without running the CLI. Open [AI Agent Grill Me Skill](../AI_AGENT_GRILL_ME_SKILL.md), copy the skill text into ChatGPT, Claude, Gemini, Cursor, Codex, Claude Code, or another AI agent, and ask it to interview you one question at a time. The command below is only for users who want the same guidance saved as local files.
 
 ```bash
 ai-automation-kit grill-me \

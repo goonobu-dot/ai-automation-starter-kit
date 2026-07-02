@@ -122,10 +122,10 @@ Use `python3 scripts/release_smoke.py --skip-github` when working offline.
 - `docs/CLOUD_TROUBLESHOOTING.md`
 - `docs/CLOUD_TROUBLESHOOTING.ja.md`
 - `docs/REAL_WORLD_SETUP_GUIDE.md`
-- `docs/AI_RECEPTION_EMPLOYEE_PACK.md`
-- `docs/AI_RECEPTION_EMPLOYEE_PACK.ja.md`
-- `docs/AI_EMPLOYEE_ROADMAP.md`
-- `docs/AI_EMPLOYEE_ROADMAP.ja.md`
+- `docs/archive/AI_RECEPTION_EMPLOYEE_PACK.md`
+- `docs/archive/AI_RECEPTION_EMPLOYEE_PACK.ja.md`
+- `docs/archive/AI_EMPLOYEE_ROADMAP.md`
+- `docs/archive/AI_EMPLOYEE_ROADMAP.ja.md`
 - `docs/FAQ.md`
 - `.tmp/release-smoke/complete-accounting/quickstart/flow_project/automation_output/run_log.json`
 - `.tmp/release-smoke/complete-accounting/connector_doctor/connector_doctor.md`

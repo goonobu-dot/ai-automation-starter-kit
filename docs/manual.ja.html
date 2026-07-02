@@ -1,510 +1,687 @@
 <!doctype html>
 <html lang="ja">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>人間向けHTMLマニュアル | AI Automation Starter Kit</title>
-    <style>
-      :root {
-        color-scheme: light;
-        --bg: #f7f6f1;
-        --ink: #18201b;
-        --muted: #59645e;
-        --line: #d9ddd4;
-        --surface: #ffffff;
-        --soft: #eef3ed;
-        --green: #0a7d68;
-        --blue: #315f9f;
-        --red: #a3423a;
-        --shadow: 0 18px 48px rgba(24, 32, 27, 0.11);
-      }
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>操作マニュアル | AI Automation Starter Kit</title>
+<style>
+  :root {
+    color-scheme: light;
+    --paper: #fafaf7;      /* 紙白 */
+    --ink: #22262e;        /* 墨 */
+    --muted: #646a75;      /* 鼠 */
+    --kon: #2c4f9e;        /* 紺: 案内・路線 */
+    --kon-soft: #e8edf8;
+    --shu: #bc4430;        /* 朱: 人間承認の印 */
+    --shu-soft: #f9ece8;
+    --moegi: #2f7d4f;      /* 萌黄: 安全・OK */
+    --line: #d8d9d4;
+    --card: #ffffff;
+    --code-bg: #21252d;
+    --code-ink: #dfe4ec;
+    --serif: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif;
+    --sans: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; }
+  }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.85;
+    font-size: 15.5px;
+  }
+  a { color: var(--kon); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover { text-decoration-thickness: 2px; }
+  :focus-visible { outline: 3px solid var(--kon); outline-offset: 2px; border-radius: 2px; }
 
-      * {
-        box-sizing: border-box;
-      }
+  /* ===== 版面 ===== */
+  .frame { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+  .layout { display: grid; grid-template-columns: 232px minmax(0, 1fr); gap: 44px; align-items: start; }
 
-      body {
-        margin: 0;
-        background: var(--bg);
-        color: var(--ink);
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        line-height: 1.72;
-      }
+  /* ===== 表紙 ===== */
+  header.cover {
+    border-bottom: 3px double var(--ink);
+    padding: 44px 0 30px;
+    margin-bottom: 34px;
+  }
+  .cover-kicker {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    margin: 0 0 10px;
+  }
+  .cover h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(26px, 4.6vw, 40px);
+    letter-spacing: 0.04em;
+    line-height: 1.35;
+    margin: 0 0 14px;
+  }
+  .cover h1 .en {
+    display: block;
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  .cover p.lede { max-width: 62ch; margin: 0 0 18px; color: var(--ink); }
+  .safety-strip {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border: 1.5px solid var(--ink);
+    font-family: var(--serif);
+    font-size: 14px;
+  }
+  .safety-strip span { padding: 7px 16px; }
+  .safety-strip span + span { border-left: 1.5px solid var(--ink); }
+  .safety-strip .human { background: var(--shu); color: #fff; }
 
-      a {
-        color: inherit;
-      }
+  /* ===== 目次（左） ===== */
+  nav.toc {
+    position: sticky;
+    top: 18px;
+    font-size: 13.5px;
+    border-left: 3px solid var(--ink);
+    padding-left: 16px;
+  }
+  nav.toc .toc-title {
+    font-family: var(--serif);
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    margin: 0 0 10px;
+    font-size: 13px;
+  }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; }
+  nav.toc li { margin: 0 0 2px; }
+  nav.toc a {
+    display: block;
+    padding: 4px 8px;
+    color: var(--ink);
+    text-decoration: none;
+    border-radius: 3px;
+  }
+  nav.toc a:hover { background: var(--kon-soft); }
+  nav.toc a.now { background: var(--kon); color: #fff; }
+  nav.toc .toc-no { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-right: 7px; }
+  nav.toc a.now .toc-no { color: #ccd8f0; }
 
-      .shell {
-        width: min(1120px, calc(100% - 36px));
-        margin: 0 auto;
-      }
+  /* ===== 本文 ===== */
+  main { min-width: 0; padding-bottom: 90px; }
+  section { margin-bottom: 58px; }
+  h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 24px;
+    letter-spacing: 0.05em;
+    margin: 0 0 6px;
+    padding-top: 10px;
+  }
+  h2 .sec-no {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--kon);
+    letter-spacing: 0.1em;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .h2-rule { border: 0; border-top: 1px solid var(--ink); margin: 10px 0 20px; }
+  h3 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 17.5px;
+    margin: 30px 0 8px;
+  }
+  h3 code { font-size: 15px; }
+  p { margin: 0 0 14px; }
+  .note { color: var(--muted); font-size: 13.5px; }
 
-      header {
-        position: sticky;
-        top: 0;
-        z-index: 20;
-        border-bottom: 1px solid var(--line);
-        background: rgba(247, 246, 241, 0.94);
-        backdrop-filter: blur(14px);
-      }
+  /* ===== コード ===== */
+  pre {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    font-family: var(--mono);
+    font-size: 12.8px;
+    line-height: 1.7;
+    padding: 14px 16px;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 10px 0 16px;
+  }
+  pre .out { color: #9aa6b8; }
+  code {
+    font-family: var(--mono);
+    font-size: 0.92em;
+    background: #ecedea;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  pre code { background: none; padding: 0; }
 
-      nav {
-        min-height: 64px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 18px;
-      }
+  /* ===== 表 ===== */
+  table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 10px 0 18px; }
+  th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { font-family: var(--serif); font-weight: 600; border-bottom: 1.5px solid var(--ink); white-space: nowrap; }
 
-      .brand {
-        font-weight: 800;
-        letter-spacing: 0;
-      }
+  /* ===== 注意書き ===== */
+  .callout {
+    border: 1.5px solid var(--shu);
+    background: var(--shu-soft);
+    padding: 14px 18px;
+    margin: 16px 0;
+    border-radius: 4px;
+  }
+  .callout strong:first-child { color: var(--shu); font-family: var(--serif); }
+  .callout-ok { border-color: var(--moegi); background: #ecf5ef; }
+  .callout-ok strong:first-child { color: var(--moegi); }
 
-      .nav-links {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 14px;
-        color: var(--muted);
-        font-size: 14px;
-      }
+  /* ===== 路線図（5段階ロードマップ）===== */
+  .route { list-style: none; margin: 26px 0 8px; padding: 0; }
+  .route li {
+    position: relative;
+    padding: 0 0 30px 58px;
+  }
+  .route li::before {           /* 路線 */
+    content: "";
+    position: absolute;
+    left: 17px; top: 8px; bottom: -8px;
+    width: 5px;
+    background: var(--kon);
+  }
+  .route li:last-child::before { bottom: auto; height: 14px; }
+  .route .station {             /* 駅 */
+    position: absolute;
+    left: 0; top: 0;
+    width: 39px; height: 39px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 3px solid var(--kon);
+    color: var(--kon);
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .route li.goal .station { background: var(--kon); color: #fff; }
+  .route .st-name {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 17px;
+    letter-spacing: 0.04em;
+  }
+  .route .st-goal { display: block; font-size: 14px; color: var(--muted); margin: 2px 0 6px; }
+  .route .st-cmd {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    background: var(--kon-soft);
+    color: var(--kon);
+    border-radius: 3px;
+    padding: 2px 8px;
+    margin: 2px 6px 2px 0;
+  }
+  .route .st-doc { font-size: 13px; }
 
-      .hero {
-        padding: 70px 0 36px;
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(340px, 0.72fr);
-        gap: 42px;
-        align-items: center;
-      }
+  /* ===== 商談8章のコンパクト表現 ===== */
+  .deal-steps { counter-reset: deal; list-style: none; margin: 14px 0; padding: 0; }
+  .deal-steps li {
+    counter-increment: deal;
+    border-top: 1px solid var(--line);
+    padding: 12px 4px 12px 44px;
+    position: relative;
+  }
+  .deal-steps li:last-child { border-bottom: 1px solid var(--line); }
+  .deal-steps li::before {
+    content: counter(deal);
+    position: absolute;
+    left: 4px; top: 12px;
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 18px;
+    color: var(--kon);
+    width: 28px;
+  }
+  .deal-steps .d-title { font-family: var(--serif); font-weight: 600; }
+  .deal-steps .d-body { font-size: 13.5px; color: var(--muted); display: block; }
+  .deal-steps code { font-size: 12px; }
 
-      .eyebrow {
-        margin: 0 0 16px;
-        color: var(--green);
-        font-weight: 800;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        font-size: 13px;
-      }
+  /* ===== 仕組み図（2レーン） ===== */
+  .sysdia { margin: 18px 0 6px; }
+  .lane {
+    border: 1.5px solid var(--kon);
+    border-radius: 6px;
+    padding: 12px 14px 14px;
+    background: #fff;
+  }
+  .lane.human { border-color: var(--shu); }
+  .lane-label {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--kon);
+    letter-spacing: 0.06em;
+    margin: 0 0 10px;
+  }
+  .lane.human .lane-label { color: var(--shu); }
+  .lane-steps { display: flex; align-items: stretch; gap: 0; flex-wrap: wrap; }
+  .lane-steps .box {
+    flex: 1 1 0;
+    min-width: 130px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--kon-soft);
+    padding: 8px 10px;
+    font-size: 12.5px;
+    line-height: 1.55;
+  }
+  .lane.human .lane-steps .box { background: var(--shu-soft); }
+  .lane-steps .box b { font-family: var(--serif); font-size: 13px; display: block; }
+  .lane-steps .box code { background: rgba(255,255,255,.75); font-size: 11px; }
+  .lane-steps .arw {
+    align-self: center;
+    padding: 0 8px;
+    color: var(--muted);
+    font-size: 16px;
+    flex: 0 0 auto;
+  }
+  .lane-joint {
+    text-align: center;
+    font-size: 13px;
+    color: var(--shu);
+    font-family: var(--serif);
+    padding: 6px 0;
+  }
+  .lane-joint::before { content: "▼ "; }
+  @media (max-width: 860px) {
+    .lane-steps { flex-direction: column; }
+    .lane-steps .arw { transform: rotate(90deg); padding: 2px 0; align-self: flex-start; margin-left: 18px; }
+    .safety-strip { flex-direction: column; }
+    .safety-strip span + span { border-left: 0; border-top: 1.5px solid var(--ink); }
+  }
 
-      h1 {
-        margin: 0;
-        font-size: clamp(38px, 5vw, 68px);
-        line-height: 1.08;
-        letter-spacing: 0;
-      }
+  /* ===== 8章チップフロー ===== */
+  .chipflow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 14px 0 6px; }
+  .chipflow .chip {
+    border: 1px solid var(--kon);
+    color: var(--kon);
+    border-radius: 999px;
+    padding: 3px 12px;
+    font-size: 13px;
+    font-family: var(--serif);
+    background: #fff;
+    white-space: nowrap;
+  }
+  .chipflow .chip .no { font-family: var(--mono); font-size: 11px; margin-right: 4px; }
+  .chipflow .carw { color: var(--muted); font-size: 13px; }
 
-      h2 {
-        margin: 0;
-        font-size: clamp(28px, 3vw, 42px);
-        line-height: 1.2;
-        letter-spacing: 0;
-      }
+  footer {
+    border-top: 3px double var(--ink);
+    padding: 22px 0 46px;
+    font-size: 13px;
+    color: var(--muted);
+  }
 
-      h3 {
-        margin: 0;
-        font-size: 20px;
-        line-height: 1.3;
-        letter-spacing: 0;
-      }
+  /* ===== モバイル ===== */
+  .toc-mobile { display: none; }
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: 1fr; gap: 0; }
+    nav.toc { display: none; }
+    .toc-mobile {
+      display: block;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+      margin: 0 -20px 24px;
+      padding: 0 20px;
+    }
+    .toc-mobile summary {
+      font-family: var(--serif);
+      font-weight: 600;
+      padding: 12px 0;
+      cursor: pointer;
+      list-style: none;
+    }
+    .toc-mobile summary::before { content: "☰ "; color: var(--kon); }
+    .toc-mobile ol { list-style: none; margin: 0 0 14px; padding: 0; columns: 2; column-gap: 20px; font-size: 14px; }
+    .toc-mobile li { margin-bottom: 6px; break-inside: avoid; }
+    .toc-mobile a { text-decoration: none; }
+    header.cover { padding-top: 26px; }
+    body { font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+<div class="frame">
 
-      p {
-        margin: 0;
-      }
+<header class="cover">
+  <p class="cover-kicker">AI AUTOMATION STARTER KIT — OPERATING MANUAL / v0.1.0</p>
+  <h1>操作マニュアル<span class="en">中小企業への業務自動化提案を、コマンドで支度する</span></h1>
+  <p class="lede">このページは、ブラウザで読める操作マニュアルです。AIエージェント（指示を受けて作業を進めてくれるAIのこと）を触り始めたばかりの方が、副業の最初の1案件を安全に完了するために必要なコマンドだけをまとめています。出力例はすべて実際に動かして得たものです。</p>
+  <div class="safety-strip" role="img" aria-label="安全設計: 生成、人間が確認・承認、人間が送る">
+    <span>生成する</span><span class="human">人間が確認・承認</span><span>人間が送る</span>
+  </div>
+  <p class="note" style="margin-top:12px">このキットは外部に何も送信しません。すべての出力はドライラン（本番実行しないお試し実行）の「下書き」です。収益を保証するものではなく、本ページの金額はすべて相場の目安です。</p>
+</header>
 
-      .lead {
-        margin-top: 22px;
-        color: var(--muted);
-        font-size: 19px;
-        max-width: 720px;
-      }
+<details class="toc-mobile">
+  <summary>目次</summary>
+  <ol>
+    <li><a href="#roadmap">5段階ロードマップ</a></li>
+    <li><a href="#install">インストールと診断</a></li>
+    <li><a href="#basics">基本コマンド</a></li>
+    <li><a href="#flows">flows — 案件実行</a></li>
+    <li><a href="#delivery">納品コマンド</a></li>
+    <li><a href="#sales">営業コマンド</a></li>
+    <li><a href="#deal">商談の流れ（要約）</a></li>
+    <li><a href="#trouble">困ったとき</a></li>
+    <li><a href="#docs">関連ドキュメント</a></li>
+  </ol>
+</details>
 
-      .language-switch {
-        margin-top: 24px;
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        border: 1px solid var(--line);
-        background: var(--surface);
-        border-radius: 999px;
-        padding: 8px 14px;
-        color: var(--muted);
-        text-decoration: none;
-      }
+<div class="layout">
 
-      .quick-box {
-        border: 1px solid var(--line);
-        background: var(--surface);
-        border-radius: 8px;
-        box-shadow: var(--shadow);
-        padding: 22px;
-      }
+<nav class="toc" aria-label="目次">
+  <p class="toc-title">目　次</p>
+  <ol>
+    <li><a href="#roadmap"><span class="toc-no">01</span>5段階ロードマップ</a></li>
+    <li><a href="#install"><span class="toc-no">02</span>インストールと診断</a></li>
+    <li><a href="#basics"><span class="toc-no">03</span>基本コマンド</a></li>
+    <li><a href="#flows"><span class="toc-no">04</span>flows — 案件実行</a></li>
+    <li><a href="#delivery"><span class="toc-no">05</span>納品コマンド</a></li>
+    <li><a href="#sales"><span class="toc-no">06</span>営業コマンド</a></li>
+    <li><a href="#deal"><span class="toc-no">07</span>商談の流れ（要約）</a></li>
+    <li><a href="#trouble"><span class="toc-no">08</span>困ったとき</a></li>
+    <li><a href="#docs"><span class="toc-no">09</span>関連ドキュメント</a></li>
+  </ol>
+</nav>
 
-      .quick-box h2 {
-        font-size: 24px;
-      }
+<main>
 
-      .quick-list {
-        margin: 18px 0 0;
-        padding: 0;
-        list-style: none;
-        display: grid;
-        gap: 12px;
-      }
+<section id="roadmap">
+  <h2><span class="sec-no">第 1 節</span>副業の5段階ロードマップ</h2>
+  <hr class="h2-rule" />
+  <p>このキットの案内役は <code>ai-automation-kit beginner</code> です。最初の1案件までの道のりを、5つの駅に分けて案内します。いまの駅を選ぶと「やること・コマンド・開くファイル・次の一歩」が表示されます。迷子になったら、いつでもこのコマンドに戻ってください。</p>
+  <ol class="route">
+    <li>
+      <span class="station" aria-hidden="true">1</span>
+      <span class="st-name">環境準備</span>
+      <span class="st-goal">キットを入れて、正しく動く状態にする</span>
+      <span class="st-cmd">pip install -e .</span><span class="st-cmd">doctor</span>
+      <span class="st-doc"><a href="GETTING_STARTED.ja.md">はじめかた</a> を読みながら約5分</span>
+    </li>
+    <li>
+      <span class="station" aria-hidden="true">2</span>
+      <span class="st-name">最初のデモ</span>
+      <span class="st-goal">お客様に見せられるデモ一式を自分のPCに作る</span>
+      <span class="st-cmd">complete-workspace</span>
+      <span class="st-doc">生成された <code>demo_site/index.html</code> をブラウザで開く</span>
+    </li>
+    <li>
+      <span class="station" aria-hidden="true">3</span>
+      <span class="st-name">営業準備</span>
+      <span class="st-goal">ヒアリングシート・提案書・価格メニューを用意する</span>
+      <span class="st-cmd">beginner-sales</span><span class="st-cmd">offer-pack</span>
+      <span class="st-doc"><a href="TUTORIAL_SME_PROPOSAL.ja.md">チュートリアル</a> 第1〜5章がこの駅です</span>
+    </li>
+    <li>
+      <span class="station" aria-hidden="true">4</span>
+      <span class="st-name">最初の案件実行</span>
+      <span class="st-goal">ドライラン → 目視確認 → 承認、まで動かす</span>
+      <span class="st-cmd">flows install</span><span class="st-cmd">flows run</span><span class="st-cmd">flows approve</span>
+      <span class="st-doc">送信は必ず人間の手で（第4節）</span>
+    </li>
+    <li class="goal">
+      <span class="station" aria-hidden="true">5</span>
+      <span class="st-name">納品と請求</span>
+      <span class="st-goal">報告書と納品ZIPを渡し、請求までつなげる</span>
+      <span class="st-cmd">client-report</span><span class="st-cmd">package-client-demo</span><span class="st-cmd">share-check</span>
+      <span class="st-doc">2件目はこの路線を駅3から繰り返します</span>
+    </li>
+  </ol>
+  <p class="note">この路線図は、副業で最初の1案件を完了するまでの5段階のロードマップです。<code>beginner</code> コマンドの5段階と同じ並びなので、いまの駅の番号を <code>--step</code> に入れれば次の一歩が分かります。1案件を終えたら、駅3（営業準備）に戻って2件目を繰り返します。</p>
+</section>
 
-      .quick-list li {
-        display: grid;
-        grid-template-columns: 34px 1fr;
-        gap: 12px;
-        align-items: start;
-      }
+<section id="install">
+  <h2><span class="sec-no">第 2 節</span>インストールと診断</h2>
+  <hr class="h2-rule" />
+  <h3>インストール</h3>
+  <pre><code>git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git
+cd ai-automation-starter-kit
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip setuptools
+python3 -m pip install -e .
+ai-automation-kit --version</code>
+<span class="out">ai-automation-kit 0.1.0</span></pre>
+  <p class="note"><code>venv</code> はこのプロジェクト専用の仮想環境（他の環境を汚さない作業部屋）です。Windows (PowerShell) では4行目を <code>.venv\Scripts\Activate.ps1</code> に読み替えてください。</p>
 
-      .num {
-        width: 34px;
-        height: 34px;
-        display: grid;
-        place-items: center;
-        border-radius: 50%;
-        background: var(--soft);
-        color: var(--green);
-        font-weight: 800;
-      }
+  <h3><code>doctor</code> — 環境診断</h3>
+  <p>Pythonのバージョン・書き込み権限・パッケージ導入状態などを診断し、NG項目には日本語の対処法を出します。エラーで困ったら、まずこれです。</p>
+  <pre><code>ai-automation-kit doctor --output .tmp/doctor</code>
+<span class="out">status=warning
+report=.tmp/doctor/doctor_report.md</span></pre>
+  <p class="note"><code>ready</code>＝問題なし、<code>warning</code>＝動くが注意あり（GITHUB_TOKEN未設定など。無視して構いません）、<code>blocked</code>＝レポートの対処法に従って直してから先へ。</p>
+</section>
 
-      section {
-        padding: 48px 0;
-      }
+<section id="basics">
+  <h2><span class="sec-no">第 3 節</span>基本コマンド</h2>
+  <hr class="h2-rule" />
+  <h3><code>beginner</code> — 初心者ナビ</h3>
+  <pre><code>ai-automation-kit beginner            # 5段階の全体ナビ
+ai-automation-kit beginner --step 3   # 段階3の詳細（やること・コマンド・次の一歩）</code></pre>
 
-      .section-head {
-        display: grid;
-        gap: 12px;
-        max-width: 780px;
-        margin-bottom: 24px;
-      }
+  <h3><code>complete-workspace</code> — デモ一式のワンコマンド生成</h3>
+  <p>デモサイト・提案資料・報告書・納品チェックリストまで、商談に必要な一式を1コマンドで生成します。</p>
+  <pre><code>ai-automation-kit complete-workspace --flow-id invoice-document-followup \
+  --client-type local-business --niche accounting --output .tmp/complete-accounting</code>
+<span class="out">final_delivery_guide=.tmp/complete-accounting/FINAL_DELIVERY_GUIDE.md
+completion_checklist=.tmp/complete-accounting/completion_checklist.md
+client_demo_package=.tmp/complete-accounting/client_demo_package/client_demo_package.zip
+status=ready_to_share</span></pre>
+  <table>
+    <tr><th>まず開くファイル</th><th>用途</th></tr>
+    <tr><td><code>client_command_center.html</code></td><td>生成物全体の案内板（ブラウザで開く）</td></tr>
+    <tr><td><code>demo_site/index.html</code></td><td>お客様に見せるデモ画面</td></tr>
+    <tr><td><code>FINAL_DELIVERY_GUIDE.md</code></td><td>生成物をどの順で使うかの1枚ガイド</td></tr>
+  </table>
+</section>
 
-      .muted {
-        color: var(--muted);
-      }
+<section id="flows">
+  <h2><span class="sec-no">第 4 節</span>flows — 案件実行</h2>
+  <hr class="h2-rule" />
+  <p>72種類の業務フロー（作業手順のセット）を「一覧 → 導入 → 検証 → ドライラン → 承認」の順に操作します。</p>
+  <div class="callout">
+    <strong>ここが安全設計の心臓部です。</strong> <code>run</code> は下書きと承認待ちリストを作るだけ、<code>approve</code> は「人間が確認した」記録を残すだけです。実際の送信は、承認後の下書きを<b>人間が本物のメールソフト等にコピーして</b>行います。自動送信の機能は存在しません（仕様です）。
+  </div>
 
-      .cards {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 16px;
-      }
-
-      .card {
-        border: 1px solid var(--line);
-        background: var(--surface);
-        border-radius: 8px;
-        padding: 20px;
-        min-height: 196px;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-      }
-
-      .tag {
-        width: fit-content;
-        border: 1px solid var(--line);
-        border-radius: 999px;
-        padding: 4px 10px;
-        color: var(--muted);
-        font-size: 13px;
-        background: #fbfcf9;
-      }
-
-      .flow-wrap {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: var(--surface);
-        box-shadow: var(--shadow);
-        padding: 24px;
-        overflow: auto;
-      }
-
-      .flow {
-        min-width: 920px;
-      }
-
-      .legend {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 16px;
-        margin-top: 18px;
-      }
-
-      .lane {
-        border: 1px solid var(--line);
-        border-left: 5px solid var(--green);
-        border-radius: 8px;
-        background: var(--surface);
-        padding: 18px;
-      }
-
-      .lane.ai {
-        border-left-color: var(--blue);
-      }
-
-      .lane.stop {
-        border-left-color: var(--red);
-      }
-
-      .links {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 16px;
-      }
-
-      .link-panel {
-        border: 1px solid var(--line);
-        border-radius: 8px;
-        background: var(--surface);
-        padding: 20px;
-      }
-
-      .link-panel ul {
-        margin: 14px 0 0;
-        padding-left: 20px;
-      }
-
-      .cta {
-        border: 1px solid #1a2a24;
-        background: #14201a;
-        color: #effff8;
-        border-radius: 8px;
-        padding: 26px;
-        display: grid;
-        gap: 12px;
-      }
-
-      .cta a {
-        color: #b7f2df;
-      }
-
-      footer {
-        padding: 34px 0 46px;
-        color: var(--muted);
-        border-top: 1px solid var(--line);
-      }
-
-      @media (max-width: 900px) {
-        .hero,
-        .cards,
-        .legend,
-        .links {
-          grid-template-columns: 1fr;
-        }
-
-        .hero {
-          padding-top: 44px;
-        }
-
-        .nav-links {
-          display: none;
-        }
-      }
-    </style>
-  </head>
-  <body>
-    <header>
-      <nav class="shell" aria-label="マニュアル内ナビゲーション">
-        <div class="brand">AI Automation Starter Kit</div>
-        <div class="nav-links">
-          <a href="#start">はじめに</a>
-          <a href="#routes">ルート</a>
-          <a href="#workflow">流れ</a>
-          <a href="#safety">安全</a>
-          <a href="#manuals">資料</a>
-        </div>
-      </nav>
-    </header>
-
-    <main>
-      <section class="hero shell" id="start">
-        <div>
-          <p class="eyebrow">人間向けHTMLマニュアル</p>
-          <h1>1つの小さな業務から始める。</h1>
-          <p class="lead">
-            このページは、AIで業務自動化を始めたい人が、最初の入口を選ぶための案内板です。
-            いきなり全部の資料を読む必要はありません。まず、1つの業務と1つの進め方を選びます。
-          </p>
-          <a class="language-switch" href="manual.html">English manual: manual.html</a>
-        </div>
-        <aside class="quick-box" aria-label="初日に決めること">
-          <h2>今日はここだけ決める</h2>
-          <ul class="quick-list">
-            <li><span class="num">1</span><span>繰り返し発生する仕事を1つ選ぶ。</span></li>
-            <li><span class="num">2</span><span>サンプルとして使う入力を1つ決める。</span></li>
-            <li><span class="num">3</span><span>AIに作らせる下書きを1つ決める。</span></li>
-            <li><span class="num">4</span><span>最後に確認する人を1人決める。</span></li>
-          </ul>
-        </aside>
-      </section>
-
-      <section class="shell" id="routes">
-        <div class="section-head">
-          <p class="eyebrow">ルートを選ぶ</p>
-          <h2>全部を読むのではなく、自分に合う入口を1つ選んでください。</h2>
-          <p class="muted">初日の目的は、すべてのコマンドを理解することではありません。安全な最初の一歩を選ぶことです。</p>
-        </div>
-        <div class="cards">
-          <article class="card">
-            <span class="tag">CLIなし</span>
-            <h3>ターミナルを使わずに始める</h3>
-            <p class="muted">ChatGPT、Claude、Cursor、Codexなどに、このプロジェクトを1問ずつ一緒に読んでもらいます。</p>
-            <p><a href="AI_AGENT_GRILL_ME_SKILL.ja.md">AIエージェント用の質問ガイドを開く</a></p>
-          </article>
-          <article class="card">
-            <span class="tag">CLI</span>
-            <h3>作業フォルダを生成する</h3>
-            <p class="muted">デモ、レポート、提案書、dry-run結果をまとめたフォルダを作りたい人向けです。</p>
-            <p><a href="USER_MANUAL.ja.md">使い方マニュアルを開く</a></p>
-          </article>
-          <article class="card">
-            <span class="tag">副業・受託</span>
-            <h3>小さな有料PoCとして提案する</h3>
-            <p class="muted">会社全体の自動化ではなく、1つの安全なdry-run業務を小さな商品として提案します。</p>
-            <p><a href="SELLING_AUTOMATION_GUIDE.ja.md">営業・提案ガイドを開く</a></p>
-          </article>
-          <article class="card">
-            <span class="tag">社内導入</span>
-            <h3>会社の繰り返し作業を楽にする</h3>
-            <p class="muted">問い合わせ整理、不足書類確認、FAQ振り分け、週次レポートなどから始めます。</p>
-            <p><a href="FLOW_SELECTION_GUIDE.ja.md">フロー選択ガイドを開く</a></p>
-          </article>
-          <article class="card">
-            <span class="tag">ホームページ案件</span>
-            <h3>サイト制作と業務改善を組み合わせる</h3>
-            <p class="muted">ホームページ制作に、問い合わせ・予約・裏側の業務フローをセットで提案します。</p>
-            <p><a href="WEBSITE_SIDE_HUSTLE_GUIDE.ja.md">ホームページ案件ガイドを開く</a></p>
-          </article>
-          <article class="card">
-            <span class="tag">クラウド・API</span>
-            <h3>実運用に近づける</h3>
-            <p class="muted">業務、入力、出力、承認者、停止ルールが決まってから進む場所です。</p>
-            <p><a href="CLOUD_BEGINNER_PLAYBOOK.ja.md">クラウド導入ガイドを開く</a></p>
-          </article>
-        </div>
-      </section>
-
-      <section class="shell" id="workflow">
-        <div class="section-head">
-          <p class="eyebrow">図で見る流れ</p>
-          <h2>安全な業務自動化は、小さな判断を順番に進めることです。</h2>
-          <p class="muted">本番アクセスから始めません。困りごとを聞き、サンプル入力でAI下書きを作り、人間が確認できるdry-runにします。</p>
-        </div>
-        <div class="flow-wrap" role="img" aria-label="相談から有料dry-run PoCまでの流れ">
-          <svg class="flow" viewBox="0 0 980 260" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-              <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
-                <path d="M0,0 L0,6 L9,3 z" fill="#59645e" />
-              </marker>
-              <style>
-                .box { fill: #ffffff; stroke: #d9ddd4; stroke-width: 2; rx: 8; }
-                .title { font: 700 17px system-ui, sans-serif; fill: #18201b; }
-                .body { font: 13px system-ui, sans-serif; fill: #59645e; }
-                .arrow { stroke: #59645e; stroke-width: 2; marker-end: url(#arrow); }
-              </style>
-            </defs>
-            <rect class="box" x="20" y="48" width="140" height="120" />
-            <text class="title" x="40" y="84">1. 相談</text>
-            <text class="body" x="40" y="112">困りごとを聞く</text>
-            <text class="body" x="40" y="136">業務は1つ</text>
-            <line class="arrow" x1="160" y1="108" x2="202" y2="108" />
-
-            <rect class="box" x="210" y="48" width="140" height="120" />
-            <text class="title" x="230" y="84">2. 入力</text>
-            <text class="body" x="230" y="112">サンプルデータ</text>
-            <text class="body" x="230" y="136">秘密情報なし</text>
-            <line class="arrow" x1="350" y1="108" x2="392" y2="108" />
-
-            <rect class="box" x="400" y="48" width="140" height="120" />
-            <text class="title" x="420" y="84">3. AIが下書き</text>
-            <text class="body" x="420" y="112">返信文やリスト</text>
-            <text class="body" x="420" y="136">確認できる形</text>
-            <line class="arrow" x1="540" y1="108" x2="582" y2="108" />
-
-            <rect class="box" x="590" y="48" width="150" height="120" />
-            <text class="title" x="610" y="84">4. 人間が承認</text>
-            <text class="body" x="610" y="112">危険操作を止める</text>
-            <text class="body" x="610" y="136">次へ進むか判断</text>
-            <line class="arrow" x1="740" y1="108" x2="782" y2="108" />
-
-            <rect class="box" x="790" y="48" width="170" height="120" />
-            <text class="title" x="810" y="84">5. 提案・PoC</text>
-            <text class="body" x="810" y="112">小さな有料検証</text>
-            <text class="body" x="810" y="136">効果を測る</text>
-
-            <path d="M90 188 C190 238, 790 238, 875 188" fill="none" stroke="#0a7d68" stroke-width="3" />
-            <text class="body" x="350" y="226">顧客が承認するまで、本番送信や本番更新は止めます。</text>
-          </svg>
-        </div>
-      </section>
-
-      <section class="shell" id="safety">
-        <div class="section-head">
-          <p class="eyebrow">安全境界</p>
-          <h2>AIはかなり手伝えます。ただし、現実の操作は人間が握ります。</h2>
-        </div>
-        <div class="legend">
-          <article class="lane">
-            <h3>人間が準備する</h3>
-            <p class="muted">業務、サンプル入力、出力目標、顧客ルール、承認者、続けるか止めるかを決めます。</p>
-          </article>
-          <article class="lane ai">
-            <h3>AIが下書き</h3>
-            <p class="muted">質問、業務フロー、返信文、不足情報リスト、顧客説明、PoC資料を作ります。</p>
-          </article>
-          <article class="lane stop">
-            <h3>人間が承認</h3>
-            <p class="muted">実在顧客への送信、予約、返金、価格変更、本番データ、secret、有料クラウド、重要判断を確認します。</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="shell" id="manuals">
-        <div class="section-head">
-          <p class="eyebrow">詳しい資料</p>
-          <h2>このページを入口にして、必要な資料だけ開いてください。</h2>
-        </div>
-        <div class="links">
-          <article class="link-panel">
-            <h3>最初に読む資料</h3>
-            <ul>
-              <li><a href="BEGINNER_ROUTE_MAP.ja.md">docs/BEGINNER_ROUTE_MAP.ja.md</a></li>
-              <li><a href="USER_MANUAL.ja.md">docs/USER_MANUAL.ja.md</a></li>
-              <li><a href="AI_BEGINNER_SUPPORT_MAP.ja.md">docs/AI_BEGINNER_SUPPORT_MAP.ja.md</a></li>
-              <li><a href="CLOUD_BEGINNER_PLAYBOOK.ja.md">docs/CLOUD_BEGINNER_PLAYBOOK.ja.md</a></li>
-            </ul>
-          </article>
-          <article class="link-panel">
-            <h3>次に使う資料</h3>
-            <ul>
-              <li><a href="AI_AGENT_GRILL_ME_SKILL.ja.md">AIに1問ずつ案内してもらう</a></li>
-              <li><a href="SELLING_AUTOMATION_GUIDE.ja.md">企業へ安全に提案する</a></li>
-              <li><a href="FLOW_SELECTION_GUIDE.ja.md">最初のフローを選ぶ</a></li>
-              <li><a href="manual.html">English manual</a></li>
-            </ul>
-          </article>
-        </div>
-      </section>
-
-      <section class="shell">
-        <div class="cta">
-          <h2>最初のおすすめ</h2>
-          <p>
-            まずこのHTMLをブラウザーで開き、1つのルートを選んでください。
-            そのあと、AIエージェントに「秘密情報を貼らずに、1つの業務を選ぶところから手伝って」と頼みます。
-            詳しい資料は、選んだルートに関係するものだけ読めば十分です。
-          </p>
-          <p>次に読む資料: <a href="BEGINNER_ROUTE_MAP.ja.md">初心者ルートマップ</a></p>
-        </div>
-      </section>
-    </main>
-
-    <footer>
-      <div class="shell">
-        AI Automation Starter Kit 人間向けマニュアル。静的HTML、外部スクリプトなし、秘密情報の入力なし。
+  <div class="sysdia" role="img" aria-label="仕組みの全体像: AIキットは下書き作りまで、確認・承認・送信は人間">
+    <div class="lane">
+      <p class="lane-label">AIキットが自動でやること（下書き作りまで）</p>
+      <div class="lane-steps">
+        <div class="box"><b>フローを選ぶ</b><code>flows list / show</code></div>
+        <span class="arw">→</span>
+        <div class="box"><b>導入</b><code>flows install</code></div>
+        <span class="arw">→</span>
+        <div class="box"><b>ドライラン実行</b><code>flows run</code></div>
+        <span class="arw">→</span>
+        <div class="box"><b>下書き・承認待ちリスト生成</b>draft_outputs.md / approval_queue.csv</div>
       </div>
-    </footer>
-  </body>
+    </div>
+    <p class="lane-joint">ここから先は、必ず人間の仕事です</p>
+    <div class="lane human">
+      <p class="lane-label">人間がやること（外に出すのは必ず人）</p>
+      <div class="lane-steps">
+        <div class="box"><b>下書きを目視確認</b>問題があれば直して再実行</div>
+        <span class="arw">→</span>
+        <div class="box"><b>承認を記録</b><code>flows approve</code></div>
+        <span class="arw">→</span>
+        <div class="box"><b>ローカル送信箱</b>local_outbox/（まだ未送信）</div>
+        <span class="arw">→</span>
+        <div class="box"><b>人間が送信</b>本物のメールソフト等にコピーして送る</div>
+      </div>
+    </div>
+  </div>
+  <p class="note">この図は自動化の仕組みの全体像です。上の枠（AIキット）が作るのは「下書きと確認リスト」までで、外部への送信機能はそもそも存在しません。下の枠のとおり、確認・承認して外に出すのは必ず人間です。だから初心者が試しても、勝手にメールが飛ぶ事故は起きません。</p>
+  <pre><code>ai-automation-kit flows list --industry finance   # 一覧（全部見るなら引数なし）</code>
+<span class="out">invoice-document-followup   finance  document  Invoice and Document Follow-up
+expense-policy-check        finance  approval  Expense Policy Check
+…
+count=7</span>
+<code>ai-automation-kit flows show invoice-document-followup      # 詳細と承認ポイント
+ai-automation-kit flows diagram invoice-document-followup --output .tmp/diagram</code>
+<span class="out">flow_diagram=.tmp/diagram/flow_diagram.html   # お客様向けのフロー図解HTML</span>
+<code>ai-automation-kit flows install invoice-document-followup --output .tmp/first-job
+ai-automation-kit flows validate .tmp/first-job              # 実行前の点検</code>
+<span class="out">status=ready</span>
+<code>ai-automation-kit flows run .tmp/first-job                  # ドライラン実行</code>
+<span class="out">automation_status=succeeded
+rows_processed=1
+draft_outputs=.tmp/first-job/automation_output/draft_outputs.md
+approval_queue=.tmp/first-job/automation_output/approval_queue.csv</span>
+<code># ↑ draft_outputs.md を必ず目で読んでから ↓
+ai-automation-kit flows approve .tmp/first-job --approver yamada@example.com</code>
+<span class="out">approval_status=approved
+approved_items=2
+outbox=.tmp/first-job/local_outbox/email_drafts.md</span></pre>
+  <p class="note"><code>--approver</code> は承認した人の名前かメールアドレス（誰が確認したかの記録）。案件では <code>sample_data/input.csv</code> をお客様のマスキング済みデータの形式に合わせてから回します。</p>
+</section>
+
+<section id="delivery">
+  <h2><span class="sec-no">第 5 節</span>納品コマンド</h2>
+  <hr class="h2-rule" />
+  <h3><code>client-report</code> — お客様向け報告書</h3>
+  <pre><code>ai-automation-kit client-report --flow-project .tmp/first-job --output .tmp/delivery</code>
+<span class="out">client_report=.tmp/delivery/client_report.md
+status=ready</span></pre>
+  <p class="note">実行結果の要約と「継続・修正・中止」の判断材料が入ります。日本語への仕上げは <a href="AI_PROMPTS.ja.md">AI用プロンプト集</a> の「納品報告書の文章化」で。</p>
+
+  <h3><code>package-client-demo</code> — 納品用ZIP</h3>
+  <pre><code>ai-automation-kit package-client-demo --source .tmp/first-job --output .tmp/delivery-package</code>
+<span class="out">client_demo_package=.tmp/delivery-package/client_demo_package.zip
+file_count=23</span></pre>
+
+  <h3><code>share-check</code> — 共有前の安全確認</h3>
+  <pre><code>ai-automation-kit share-check --source .tmp/delivery-package --output .tmp/share-check</code>
+<span class="out">share_check=.tmp/share-check/share_check.md
+status=ready</span></pre>
+  <div class="callout">
+    <strong>送る前に必ず実行。</strong> 秘密情報らしき文字列やローカルパスの混入を点検します。<code>status=blocked</code> のときは、直すまで絶対に共有しないでください。
+  </div>
+</section>
+
+<section id="sales">
+  <h2><span class="sec-no">第 6 節</span>営業コマンド</h2>
+  <hr class="h2-rule" />
+  <h3><code>beginner-sales</code> — 初心者向け営業パック</h3>
+  <pre><code>ai-automation-kit beginner-sales --flow-id invoice-document-followup \
+  --client-type local-business --niche accounting --output .tmp/beginner-sales</code>
+<span class="out">proposal=.tmp/beginner-sales/proposal_one_pager.md
+score=100</span></pre>
+  <table>
+    <tr><th>生成物</th><th>用途</th></tr>
+    <tr><td><code>client_questions.md</code></td><td>ヒアリングシート（読み上げるだけで使えます）</td></tr>
+    <tr><td><code>proposal_one_pager.md</code></td><td>1枚もの提案書のひな形</td></tr>
+    <tr><td><code>price_menu.md</code></td><td>価格メニューと決め方（相場の目安: お試し導入 5〜15万円、月次 1〜3万円/月）</td></tr>
+    <tr><td><code>outreach_messages.md</code></td><td>声かけ・フォローアップ・お礼メールの文例</td></tr>
+    <tr><td><code>client_delivery_checklist.md</code></td><td>納品チェックリスト</td></tr>
+  </table>
+
+  <h3><code>offer-pack</code> — 提案書・SOWの正式セット</h3>
+  <p>提案書・作業範囲記述書（SOW＝やること/やらないことの合意書）・価格モデル・リスク境界を生成します。</p>
+  <pre><code>ai-automation-kit offer-pack --business-area operations --client-type small-business \
+  --source-output .tmp/complete-accounting --output .tmp/offer-pack</code>
+<span class="out">proposal=.tmp/offer-pack/proposal.md
+statement_of_work=.tmp/offer-pack/statement_of_work.md
+status=ready</span></pre>
+
+  <h3><code>business-launch</code> — 開業スターターパック</h3>
+  <p>「何を売るか」から決めたい人向け。推奨フローの選定と最初のオファー定義を生成します。</p>
+  <pre><code>ai-automation-kit business-launch --industry finance --client-type local-business \
+  --niche accounting --output .tmp/business-launch</code>
+<span class="out">recommended_flow=invoice-document-followup
+status=ready</span></pre>
+</section>
+
+<section id="deal">
+  <h2><span class="sec-no">第 7 節</span>商談の流れ（チュートリアル要約）</h2>
+  <hr class="h2-rule" />
+  <p>営業から請求までの全工程は <a href="TUTORIAL_SME_PROPOSAL.ja.md">中小企業への自動化提案チュートリアル</a> に、各章「使うコマンド・実出力例・よくある失敗」つきでまとまっています。ここでは骨子だけ示します。</p>
+  <div class="chipflow" role="img" aria-label="1案件の流れ: 営業からヒアリング、デモ、提案、受注、実行、納品、請求まで">
+    <span class="chip"><span class="no">1</span>営業先探し</span><span class="carw">→</span>
+    <span class="chip"><span class="no">2</span>ヒアリング</span><span class="carw">→</span>
+    <span class="chip"><span class="no">3</span>無料デモ</span><span class="carw">→</span>
+    <span class="chip"><span class="no">4</span>提案・見積</span><span class="carw">→</span>
+    <span class="chip"><span class="no">5</span>受注・契約</span><span class="carw">→</span>
+    <span class="chip"><span class="no">6</span>案件実行</span><span class="carw">→</span>
+    <span class="chip"><span class="no">7</span>納品</span><span class="carw">→</span>
+    <span class="chip"><span class="no">8</span>請求・継続</span>
+  </div>
+  <p class="note">この図は1案件の流れです。1〜5が商談の前半（営業系コマンドの出番）、6〜8が後半（flows と納品コマンドの出番）です。断られたら1に戻り、継続が決まれば6〜8を毎月繰り返します。</p>
+  <ol class="deal-steps">
+    <li><span class="d-title">営業先探しと声かけ</span><span class="d-body">まず知人・接点のある会社から。<code>outreach_messages.md</code> の文例をそのまま使う</span></li>
+    <li><span class="d-title">ヒアリング</span><span class="d-body"><code>client_questions.md</code> を読み上げる。★印（月の件数・1件の時間・承認者・成功条件）は必ずメモ</span></li>
+    <li><span class="d-title">無料デモ</span><span class="d-body"><code>complete-workspace</code> で生成。見せるのは <code>demo_site</code> と before/after 比較の2〜3画面だけ</span></li>
+    <li><span class="d-title">提案書と見積もり</span><span class="d-body"><code>offer-pack</code>。価格は削減価値から逆算（お試し導入は価値の1〜2か月分が目安）</span></li>
+    <li><span class="d-title">受注と契約</span><span class="d-body">SOWで範囲・免責・秘密情報の扱いを書面合意。実データは預からず、マスキング済みサンプルで</span></li>
+    <li><span class="d-title">案件実行</span><span class="d-body"><code>flows install → run → 目視確認 → approve</code>。送信は人間の手で（第4節）</span></li>
+    <li><span class="d-title">納品</span><span class="d-body"><code>client-report</code> と納品ZIP。<code>share-check</code> を通してから渡し、30分の報告会をセットに</span></li>
+    <li><span class="d-title">請求と継続提案</span><span class="d-body">報告会後すぐ請求書を発行。効果が数字で見えたら、本格導入と月次サポートを別見積もりで提案</span></li>
+  </ol>
+</section>
+
+<section id="trouble">
+  <h2><span class="sec-no">第 8 節</span>困ったとき</h2>
+  <hr class="h2-rule" />
+  <table>
+    <tr><th>症状</th><th>対処</th></tr>
+    <tr><td><code>command not found</code></td><td>仮想環境を有効化（<code>source .venv/bin/activate</code>）。駄目ならリポジトリ直下で <code>pip install -e .</code> を再実行</td></tr>
+    <tr><td>コマンドがエラーで止まる</td><td><code>doctor --output .tmp/doctor</code> を実行し、レポートの「対処法（日本語）」に従う</td></tr>
+    <tr><td><code>flows run</code> が失敗する</td><td><code>flows validate</code> で不足ファイルを確認。壊れていたら <code>flows install</code> からやり直す</td></tr>
+    <tr><td>フローIDが分からない</td><td><code>flows list</code> で確認（IDはハイフン区切りの英語）</td></tr>
+    <tr><td>共有してよいか不安</td><td><code>share-check</code> を実行。<code>blocked</code> なら共有しない</td></tr>
+    <tr><td>次に何をすればいいか迷子</td><td><code>ai-automation-kit beginner</code> に戻る</td></tr>
+  </table>
+  <div class="callout callout-ok">
+    <strong>安全に関する約束。</strong> APIキー・パスワード・お客様の実データは、チャットにも生成ファイルにも書かないでください。生成物は「下書き」です。外部への送信・本番反映は、必ず人間が確認してから人間の手で行います。
+  </div>
+</section>
+
+<section id="docs">
+  <h2><span class="sec-no">第 9 節</span>関連ドキュメント</h2>
+  <hr class="h2-rule" />
+  <table>
+    <tr><th>ドキュメント</th><th>いつ読むか</th></tr>
+    <tr><td><a href="GETTING_STARTED.ja.md">はじめかた（唯一の入口）</a></td><td>最初の30分。インストール〜最初のデモまで</td></tr>
+    <tr><td><a href="TUTORIAL_SME_PROPOSAL.ja.md">中小企業への自動化提案チュートリアル</a></td><td>商談を始める前に通読（営業〜請求の全工程）</td></tr>
+    <tr><td><a href="USER_MANUAL.ja.md">使い方マニュアル（Markdown版）</a></td><td>各コマンドの詳細を引くとき。本ページの完全版</td></tr>
+    <tr><td><a href="AI_PROMPTS.ja.md">AI用プロンプト集</a></td><td>提案書・報告書をAIで仕上げるとき</td></tr>
+    <tr><td><a href="INDEX.md">ドキュメント索引</a></td><td>その他の文書を探すとき（最初は🔰入門以外読まない）</td></tr>
+    <tr><td><a href="archive/README.md">アーカイブ</a></td><td>旧世代・重複文書の保管庫。通常は開く必要なし</td></tr>
+  </table>
+</section>
+
+</main>
+</div>
+
+<footer>
+  <div class="frame">
+    AI Automation Starter Kit — 生成 → 人間が確認・承認 → 人間が送る。収益を保証するものではありません。English version: <a href="manual.html">manual.html</a>
+  </div>
+</footer>
+
+</body>
 </html>

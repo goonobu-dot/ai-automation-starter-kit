@@ -32,9 +32,9 @@ ai-automation-kit complete-workspace --flow-id invoice-document-followup --outpu
 
 ## 初心者はどのマニュアルから読めばいいですか？
 
-まず [まずここから](START_HERE.ja.md) を読み、次に [使い方マニュアル](USER_MANUAL.ja.md) を読みます。副業や受託として最初の1件を進めたい場合は [最初の顧客案件ウォークスルー](FIRST_CLIENT_WALKTHROUGH.ja.md) を読んでください。
+まず [はじめかた](GETTING_STARTED.ja.md) を読み、次に [使い方マニュアル](USER_MANUAL.ja.md) を読みます。副業や受託として最初の1件を進めたい場合は [最初の顧客案件ウォークスルー](FIRST_CLIENT_WALKTHROUGH.ja.md) を読んでください。
 
-クラウド、APIキー、受付フォルダ、承認者で不安がある場合は [AI初心者サポートマップ](AI_BEGINNER_SUPPORT_MAP.ja.md) をAIエージェントに読ませて、1問ずつ質問してもらうのがおすすめです。
+クラウド、APIキー、受付フォルダ、承認者で不安がある場合は [AI初心者サポートマップ](archive/AI_BEGINNER_SUPPORT_MAP.ja.md) をAIエージェントに読ませて、1問ずつ質問してもらうのがおすすめです。
 
 ## 企業に何を見せればいいですか？
 

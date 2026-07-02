@@ -1,93 +1,40 @@
 # AI Automation Starter Kit 使い方マニュアル
 
-このマニュアルは、AIやクラウドにまだ慣れていない人が、企業の業務自動化を安全に提案し、最初の dry-run まで進めるための手順書です。
+このマニュアルは、全コマンドの操作説明書です。読者として想定しているのは、「AIエージェント（指示を受けて作業を進めてくれるAIのこと）を触り始めたばかりで、副業として中小企業に業務自動化を提案したい」という方です。
 
-最初から全部を理解する必要はありません。まずは「1つの業務」「1つの入力」「1つの出力」「1人の承認者」に絞ります。
+各コマンドの出力例は、すべてこのキットを実際に動かして得たものです（バージョン 0.1.0 時点）。
 
-このプロジェクトが目指すのは、あいまいなAI自動化の話を、見えるフロー、必要な入力、提案資料、実行結果、承認ポイントつきの小さな案件に変えることです。収益や受注を保証するものではありませんが、企業へ説明しやすい形に整えるための道具として使えます。
+- はじめての方は、先に [はじめかた（GETTING_STARTED.ja.md）](GETTING_STARTED.ja.md) を読んでください。このマニュアルは「困ったときに該当コマンドの節だけ引く」使い方で十分です。
+- 商談の進め方（営業〜請求）は [中小企業への自動化提案チュートリアル](TUTORIAL_SME_PROPOSAL.ja.md) にまとまっています。
+- ほかのドキュメントを探すときは [ドキュメント索引（INDEX.md）](INDEX.md) を使ってください。旧世代の文書は [アーカイブ](archive/README.md) に保管されています。
 
-## 最初に安心してほしいこと
+## 大前提: 安全設計
 
-このプロジェクトは、いきなり本番送信や本番データ更新をするものではありません。
+このキットは**外部に何も送信しません**。メール送信・チャット投稿・本番システムの更新は行わず、すべて「下書き」と「承認待ちリスト」としてファイルに出力します（dry-run＝ドライラン、本番実行しないお試し実行）。実際の送信は、必ず人間が内容を確認してから、人間の手で本物のツールから行います。
 
-最初は dry-run です。dry-run とは、実際の送信、投稿、顧客データ更新をせずに、下書き、作業キュー、承認リスト、レポートだけを作る安全な試し方です。
-
-最初からチャットに貼らないもの:
-
-- 本物のAPIキー
-- password
-- 顧客の個人情報
-- 本番のWebhook URL
-- クラウドの管理者権限
-- 顧客の機密資料
-
-AIに相談してよいもの:
-
-- どの業務を自動化候補にするか
-- 顧客に何を聞くか
-- どの資料を見ればよいか
-- サンプルデータの形
-- dry-run の進め方
-- クラウドに進む前の確認事項
-- 提案文や説明文の下書き
-
-## 5分で分かる全体像
-
-1. 企業の困りごとを1つ選びます。
-2. このプロジェクトで近い業務フローを選びます。
-3. ローカルPCで見本フォルダを作ります。
-4. サンプルデータで dry-run します。
-5. 下書き、作業キュー、承認リスト、レポートを確認します。
-6. 顧客に「本番ではなく見本」として説明します。
-7. 価値がありそうなら、必要なAPI、フォルダ、クラウド、承認者を整理します。
-8. 有料PoCにする場合は、範囲、期間、費用、停止条件を明確にします。
-
-初心者が最初に目指すゴールは「全部自動化」ではありません。顧客が見て分かる形で、手作業がどう減るかを説明できる状態です。
-
-## 最初に読む3つの資料
-
-迷ったら、まずこの順番で読んでください。
-
-1. [初心者ルートマップ](BEGINNER_ROUTE_MAP.ja.md)
-2. [まずここから](START_HERE.ja.md)
-3. [AI初心者サポートマップ](AI_BEGINNER_SUPPORT_MAP.ja.md)
-4. [初心者向けクラウド挑戦プレイブック](CLOUD_BEGINNER_PLAYBOOK.ja.md)
-
-ルートマップは、このプロジェクトの機能が増えたことで初心者が迷わないようにするための入口です。最初に開くもの、最初は無視してよいもの、CLIを使わないルート、CLIを使うルート、副業・受託ルート、社内導入ルート、ホームページ案件ルート、クラウド・APIルートを整理しています。
-
-営業や副業として使いたい場合は、次に [最初の顧客案件ウォークスルー](FIRST_CLIENT_WALKTHROUGH.ja.md) を読んでください。
-
-クラウドやAPI設定で不安がある場合は、[クラウド導入ガイド](CLOUD_DEPLOYMENT_GUIDE.ja.md) と [連携設定ガイド](CONNECTOR_SETUP_GUIDE.ja.md) を読みます。
-
-## まずAIに読ませる依頼文
-
-ChatGPT、Claude、Gemini、Cursor、Codex、Claude Code などに、次の文章を貼ってください。
-
-```text
-この GitHub プロジェクト ai-automation-starter-kit を確認してください。
-私はAIやクラウドにまだ慣れていません。
-
-まず docs/BEGINNER_ROUTE_MAP.ja.md、docs/START_HERE.ja.md、docs/USER_MANUAL.ja.md、docs/AI_BEGINNER_SUPPORT_MAP.ja.md、docs/CLOUD_BEGINNER_PLAYBOOK.ja.md を読んでください。
-
-その後、私に1問ずつ質問してください。
-一度にたくさん聞かず、次の順番で確認してください。
-
-1. どの業務を自動化したいか
-2. 入力はどこから来るか
-3. 出力は何にしたいか
-4. 誰が確認・承認するか
-5. サンプルデータを用意できるか
-6. APIやクラウドが必要か
-7. まずローカル dry-run で見せられるか
-8. 顧客へ有料PoCとして提案できる範囲はどこか
-
-本物のAPIキー、password、secret、顧客の機密情報はチャットに書かせないでください。
-本番送信、本番更新、課金、クラウド公開の前には、必ず人間の承認を入れてください。
+```mermaid
+flowchart TD
+    subgraph KIT["AIキットが自動でやること（下書き作りまで）"]
+        A["フローを選ぶ<br><code>flows list</code> / <code>flows show</code>"] --> B["フローを導入<br><code>flows install</code>"]
+        B --> C["ドライラン実行<br><code>flows run</code>"]
+        C --> D["下書きと承認待ちリストを生成<br>draft_outputs.md / approval_queue.csv"]
+    end
+    subgraph HUMAN["人間がやること（外に出すのは必ず人）"]
+        E{"下書きを目視確認"} -->|OKのものだけ| F["承認を記録<br><code>flows approve</code>"]
+        F --> G["ローカル送信箱へ移動<br>local_outbox/（まだ送信されていません）"]
+        G --> H["本物のメールソフト等に<br>人間がコピーして送信"]
+    end
+    D --> E
+    E -->|修正が必要| C
 ```
 
-## インストール
+この図は、この自動化の仕組みの全体像です。上の枠（AIキット）が作るのは「下書きと確認リスト」までで、外部への送信機能はそもそも存在しません。下の枠のとおり、確認・承認して外に出すのは必ず人間です。だから初心者が試しても、お客様に迷惑をかける事故が起きません。
 
-ターミナルで次を実行します。
+生成物は基本的に `--output` で指定したフォルダに書き出されます。このマニュアルでは `.tmp/` 配下（Gitに入らない作業用フォルダ）を使います。
+
+---
+
+## 1. インストール
 
 ```bash
 git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git
@@ -96,261 +43,463 @@ python3 -m venv .venv
 source .venv/bin/activate
 python3 -m pip install --upgrade pip setuptools
 python3 -m pip install -e .
+```
+
+- `venv` は、このプロジェクト専用の仮想環境（他の環境を汚さない作業部屋）です。Windows (PowerShell) では4行目を `.venv\Scripts\Activate.ps1` に読み替えてください。
+- `pip install -e .` で `ai-automation-kit` コマンドが使えるようになります。
+
+確認:
+
+```bash
+ai-automation-kit --version
+```
+
+実行結果（実出力）:
+
+```text
+ai-automation-kit 0.1.0
+```
+
+---
+
+## 2. beginner — 初心者ナビ（5段階）
+
+いま自分がどの段階にいて、次に何をすべきかを日本語で表示します。**迷子になったら、いつでもこのコマンドに戻ってください。**
+
+```mermaid
+flowchart LR
+    S1["1. 環境準備<br><code>doctor</code>"] --> S2["2. 最初のデモ<br><code>complete-workspace</code>"]
+    S2 --> S3["3. 営業準備<br><code>beginner-sales</code>"]
+    S3 --> S4["4. 案件実行<br><code>flows run/approve</code>"]
+    S4 --> S5["5. 納品と請求<br><code>client-report</code>"]
+    S5 -.2件目は3から.-> S3
+```
+
+この図は、副業で最初の1案件を完了するまでの5段階のロードマップです。`beginner` コマンドの5段階と同じ並びです。1案件を終えたら、段階3（営業準備）に戻って2件目を繰り返します。
+
+```bash
+ai-automation-kit beginner
+```
+
+実行結果（実出力）:
+
+```text
+# 初心者ナビ（副業で最初の 1 案件を完了するまでの 5 段階）
+
+いまのあなたの段階を選んで、`ai-automation-kit beginner --step 番号` と入力してください。
+
+1. 環境準備 — パソコンにこのキットを入れて、正しく動く状態にします。
+2. 最初のデモ — お客様に見せられるデモ一式を、まず自分のパソコンで作ってみます。
+3. 営業準備 — 最初のお客様（中小企業）に見せる営業資料と提案書を用意します。
+4. 最初の案件実行 — 受注した案件の自動化フロー（作業手順のセット）を実際に動かします。
+5. 納品と請求 — 成果物をお客様に渡し、報告書を添えて請求までつなげます。
+```
+
+段階を指定すると、「やること・実行するコマンド・開くファイル・次の一歩」が表示されます。
+
+```bash
+ai-automation-kit beginner --step 3
+```
+
+| オプション | 意味 |
+|---|---|
+| `--step 1..5` | 表示する段階の番号。省略すると全体ナビを表示します |
+
+---
+
+## 3. doctor — 環境診断
+
+Pythonのバージョン・書き込み権限・gitの有無・パッケージの導入状態などを診断し、問題があれば**日本語の対処法つき**でレポートします。コマンドがうまく動かないときは、まずこれを実行してください。
+
+```bash
 ai-automation-kit doctor --output .tmp/doctor
 ```
 
-`doctor` は、ローカル環境が使える状態か確認するためのコマンドです。
-
-## いちばん簡単な始め方
-
-迷ったら、この1コマンドから始めます。
-
-```bash
-ai-automation-kit complete-workspace \
-  --flow-id invoice-document-followup \
-  --client-type local-business \
-  --niche accounting \
-  --output .tmp/complete-accounting
-```
-
-これは、請求書や不足書類のフォローを例にした見本フォルダを作ります。
-
-最初に見るファイルはこの5つだけで十分です。
-
-| ファイル | 何を見るためのものか |
-|---|---|
-| `.tmp/complete-accounting/FINAL_DELIVERY_GUIDE.md` | 全体の入口です。まずここを読みます。 |
-| `.tmp/complete-accounting/client_command_center.html` | ブラウザで資料の場所を確認できます。 |
-| `.tmp/complete-accounting/demo_site/index.html` | 顧客に見せる見本です。 |
-| `.tmp/complete-accounting/client_report/client_report.html` | dry-run の結果を説明するレポートです。 |
-| `.tmp/complete-accounting/business_launch/START_HERE_BUSINESS_LAUNCH.md` | 副業や受託提案に進む時の入口です。 |
-
-生成されるファイルは多いですが、最初から全部読む必要はありません。まず上の5つを開けば、何ができるかをつかめます。
-
-## 業務フローを選ぶ
-
-企業へ提案しやすいフローを探す場合は、次を使います。
-
-```bash
-ai-automation-kit flow-guide --industry finance --niche accounting --output .tmp/flow-guide
-```
-
-`recommended_flows.md` を見て、説明しやすいフローを1つ選びます。
-
-最初に選びやすい業務:
-
-- 問い合わせ返信の下書き
-- 請求書や不足書類のフォロー
-- 予約前の確認リスト
-- FAQ振り分け
-- 週次レポート作成
-- 顧客リスト整理
-- 日報や作業報告の要約
-
-最初は避けた方がよい業務:
-
-- 法律、医療、金融などの重要判断
-- 自動で契約、支払い、解約、値引きを行う業務
-- 失敗時に取り消しが難しい本番DB更新
-- 承認者が決まっていない業務
-- 顧客データの取り扱いルールが不明な業務
-
-## 顧客に見せる資料を作る
-
-AI初心者が企業へ説明したい場合は、`beginner-sales` を使います。
-
-```bash
-ai-automation-kit beginner-sales \
-  --flow-id invoice-document-followup \
-  --client-type local-business \
-  --niche accounting \
-  --output .tmp/beginner-sales
-```
-
-見る順番:
-
-1. `.tmp/beginner-sales/flow_gallery.html`
-2. `.tmp/beginner-sales/selected_flow_demo.html`
-3. `.tmp/beginner-sales/client_questions.md`
-4. `.tmp/beginner-sales/roi_simple_calculator.csv`
-5. `.tmp/beginner-sales/proposal_one_pager.md`
-6. `.tmp/beginner-sales/three_day_poc_plan.md`
-
-顧客には、次のように説明します。
+実行結果（実出力）:
 
 ```text
-まず本番送信はしません。
-サンプルデータで業務の流れを再現し、AIが下書きや作業キューを作り、人間が確認する形で見せます。
-価値が見えたら、API、フォルダ、クラウド、費用、停止手順を整理して、小さなPoCとして進めるか判断します。
+status=warning
+report=.tmp/doctor/doctor_report.md
 ```
 
-## dry-run を動かす
+`doctor_report.md` の中身（実出力・抜粋）:
 
-実際のフローをローカルで試す場合は、次を使います。
-
-```bash
-ai-automation-kit flows install invoice-document-followup --output .tmp/flow-project
-ai-automation-kit flows run .tmp/flow-project
-ai-automation-kit flows approve .tmp/flow-project --approver owner@example.com
+```text
+| Check | Status | Detail |
+|---|---|---|
+| `python_version` | `pass` | 3.9.6 |
+| `pip_available` | `pass` | pip or pip3 on PATH |
+| `output_writable` | `pass` | .tmp/doctor |
+| `git_available` | `pass` | git on PATH |
+| `github_token` | `warn` | GITHUB_TOKEN is not set; ... |
+| `package_installed` | `pass` | ai_automation_kit package is importable |
 ```
 
-生成される主な結果:
+- `status=ready` … 問題なし / `warning` … 動くが注意あり / `blocked` … 直すまで先に進まないでください。
+- `pass` 以外の項目には、レポート内の「対処法（日本語）」に直し方が書かれています。
+- `GITHUB_TOKEN` の警告は無視して構いません（GitHub検索を多用する場合だけ設定します）。
 
-| ファイル | 意味 |
+| オプション | 意味 |
 |---|---|
-| `automation_output/work_queue.csv` | AIが作った作業候補の一覧です。 |
-| `automation_output/draft_outputs.md` | 返信や処理内容の下書きです。 |
-| `automation_output/approval_queue.csv` | 人間が確認するための承認リストです。 |
-| `automation_output/status_report.md` | 実行結果のまとめです。 |
-| `local_outbox/email_drafts.md` | 実送信しないメール下書きです。 |
+| `--output`（必須） | レポートの出力先フォルダ |
+| `--check-github` | GitHub APIへの接続テストも行う |
 
-ここで重要なのは「AIが勝手に送らない」ことです。まず人間が見て、修正し、承認する形にします。
+---
 
-## 顧客向けレポートを作る
+## 4. complete-workspace — デモ一式のワンコマンド生成
 
-dry-run の結果を顧客へ説明する資料に変えます。
+お客様に見せるデモサイト・提案資料・報告書・納品チェックリストまで、商談に必要な一式をまとめて生成します。**最初のデモはこのコマンド1つで作れます。**
 
 ```bash
-ai-automation-kit client-report --flow-project .tmp/flow-project --output .tmp/client-report
+ai-automation-kit complete-workspace --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/complete-accounting
 ```
 
-`client_report.md` と `client_report.html` が作られます。
+実行結果（実出力）:
 
-顧客に伝えること:
+```text
+final_delivery_guide=.tmp/complete-accounting/FINAL_DELIVERY_GUIDE.md
+completion_checklist=.tmp/complete-accounting/completion_checklist.md
+client_demo_package=.tmp/complete-accounting/client_demo_package/client_demo_package.zip
+status=ready_to_share
+```
 
-- 何件を処理したか
-- AIが何を下書きしたか
-- 人間が確認すべきものは何か
-- 本番化する前に何が足りないか
-- 続ける、直す、止めるのどれがよいか
+30以上のファイルが生成されますが、まず開くのは次の3つです。
 
-## 共有前に安全確認する
+| ファイル | 用途 |
+|---|---|
+| `client_command_center.html` | 生成物全体の案内板（ブラウザで開く） |
+| `demo_site/index.html` | お客様に見せるデモ画面 |
+| `FINAL_DELIVERY_GUIDE.md` | どの生成物をどの順で使うかの1枚ガイド |
 
-顧客へ送る前に、秘密情報らしい文字列が混ざっていないか確認します。
+| オプション | 意味 |
+|---|---|
+| `--flow-id` | 対象フローのID（`flows list` で確認。省略時は `--industry` から推定） |
+| `--industry` | 業種（既定: finance） |
+| `--client-type` | 顧客タイプ（既定: local-business） |
+| `--niche` | 業種の細分野（既定: accounting） |
+| `--approver` | 承認者名（既定: local-operator） |
+| `--output`（必須） | 出力先フォルダ |
+
+---
+
+## 5. flows — 業務フローの導入と実行
+
+72種類の業務自動化フロー（作業手順のセット）を、一覧表示 → 導入 → 検証 → ドライラン実行 → 承認、の順で操作します。
+
+### 5.1 flows list — 一覧
 
 ```bash
-ai-automation-kit share-check --source .tmp/complete-accounting --output .tmp/share-check
+ai-automation-kit flows list                    # 全72フロー
+ai-automation-kit flows list --industry finance # 業種で絞り込み
 ```
 
-`share_check.md` が `blocked` の場合は、共有せずに該当箇所を消してください。
+`--industry finance` の実行結果（実出力）:
 
-共有用のzipを作る場合:
+```text
+invoice-document-followup	finance	document	Invoice and Document Follow-up
+expense-policy-check	finance	approval	Expense Policy Check
+accounts-payable-invoice-capture	finance	document	Accounts Payable Invoice Capture
+invoice-approval-reminder	finance	approval	Invoice Approval Reminder
+cashflow-weekly-forecast	finance	reporting	Cashflow Weekly Forecast
+receipt-missing-followup	finance	communication	Receipt Missing Follow-up
+budget-variance-explanation	finance	reporting	Budget Variance Explanation
+count=7
+```
+
+列は左から「フローID・業種・ジャンル・名前」です。`--genre` でジャンル絞り込みもできます。
+
+### 5.2 flows show — 詳細表示
 
 ```bash
-ai-automation-kit package-client-demo --source .tmp/complete-accounting --output .tmp/client-demo-package
+ai-automation-kit flows show invoice-document-followup
 ```
 
-## クラウドやAPIに進む前に
+実行結果（実出力・抜粋）:
 
-クラウドは、ローカル dry-run で価値が見えた後に進めます。
+```json
+{
+  "id": "invoice-document-followup",
+  "name": "Invoice and Document Follow-up",
+  "industry": "finance",
+  "summary": "Track missing invoices or documents, draft follow-up messages, and create a weekly status report.",
+  "tools": ["Google Sheets", "Gmail / Outlook", "Slack / Teams"],
+  "sample_columns": ["client", "missing_document", "due_date", "owner", "status"]
+}
+```
 
-まず必要情報を集めます。
+`steps` には各手順と、どこに人間の承認が必要か（approval point）が書かれています。
+
+### 5.3 flows install — 導入
+
+フロー一式（設定・サンプルデータ・操作画面・手順書）を作業フォルダに展開します。
 
 ```bash
-ai-automation-kit guided-setup \
-  --flow-id invoice-document-followup \
-  --mode beginner \
-  --deployment undecided \
-  --connectors gmail,google-sheets \
-  --output .tmp/guided-setup
+ai-automation-kit flows install invoice-document-followup --output .tmp/first-job
 ```
 
-回答内容を確認します。
+実行結果（実出力）:
+
+```text
+flow_project=.tmp/first-job
+flow_id=invoice-document-followup
+workflow_map=.tmp/first-job/workflow_map.mmd
+flow_yaml=.tmp/first-job/flow.yaml
+flow_diagram=.tmp/first-job/flow_diagram.html
+```
+
+案件で使うときは、`sample_data/input.csv` をお客様のマスキング済みデータ（氏名などを伏せたデータ）の形式に合わせて編集します。
+
+#### flows diagram — お客様向けのフロー図解
+
+フローの仕組みをお客様向けに図解した1枚のHTMLを単独で生成できます。承認ポイント（人間が確認する場所）の説明に便利です。
 
 ```bash
-ai-automation-kit guided-review \
-  --answers .tmp/guided-setup/guided_setup_answers.example.json \
-  --output .tmp/guided-review
+ai-automation-kit flows diagram invoice-document-followup --output .tmp/diagram
 ```
 
-クラウド導入資料を作ります。
+実行結果（実出力）:
+
+```text
+flow_diagram=.tmp/diagram/flow_diagram.html
+```
+
+### 5.4 flows validate — 検証
+
+必要なファイルが揃っているかを確認します。`run` の前に実行する習慣をつけてください。
 
 ```bash
-ai-automation-kit cloud-plan \
-  --flow-id invoice-document-followup \
-  --provider aws \
-  --workload scheduled-job \
-  --connectors gmail,google-sheets \
-  --output .tmp/cloud-plan
+ai-automation-kit flows validate .tmp/first-job
 ```
 
-初心者向けの考え方:
+実行結果（実出力）:
 
-- Gmail、Google Sheets、Slack、LINEなどは connector です。
-- APIキーは外部サービスを使うための秘密の値です。
-- 本物のsecretはチャットに貼りません。
-- クラウドの課金、権限、公開URL、本番Webhookは人間が承認します。
-- 最初は本番送信ではなく、下書き、テストフォルダ、テストチャンネルで進めます。
+```text
+status=ready
+```
 
-## 実行基盤へ渡す
+`status=missing_files` の場合は、続く `missing=` 行に不足ファイルが表示されます。
 
-ローカルで価値が見えた後、実行基盤へ渡すための starter を作れます。
+### 5.5 flows run — ドライラン実行
+
+サンプルデータを処理し、下書き・作業キュー・承認待ちリストを生成します。**外部には何も送信されません。**
 
 ```bash
-ai-automation-kit flow-export --flow-id invoice-document-followup --target n8n --output .tmp/flow-export-n8n
-ai-automation-kit deployment-pack --flow-id invoice-document-followup --provider coolify --connectors gmail,google-sheets --output .tmp/deployment-coolify
-ai-automation-kit runtime-safety --flow-id invoice-document-followup --output .tmp/runtime-safety
-ai-automation-kit secrets-bootstrap --flow-id invoice-document-followup --provider infisical --connectors gmail,google-sheets --output .tmp/secrets-bootstrap
-ai-automation-kit document-intake --flow-id invoice-document-followup --mode advanced --output .tmp/document-intake
-ai-automation-kit observability-pack --flow-id invoice-document-followup --output .tmp/observability-pack
-ai-automation-kit state-backend --flow-id invoice-document-followup --backend supabase --output .tmp/state-backend
+ai-automation-kit flows run .tmp/first-job
 ```
 
-この段階の目的は、いきなり本番化することではありません。実行ファイル、secret の置き場所、承認ルール、履歴保管、ログ、rollback を先に揃えることです。
+実行結果（実出力）:
 
-## 副業・受託にする時の考え方
+```text
+automation_status=succeeded
+rows_processed=1
+work_queue=.tmp/first-job/automation_output/work_queue.csv
+draft_outputs=.tmp/first-job/automation_output/draft_outputs.md
+approval_queue=.tmp/first-job/automation_output/approval_queue.csv
+status_report=.tmp/first-job/automation_output/status_report.md
+```
 
-最初に売るものは「完全自動化」ではなく、「業務自動化診断 + dry-run PoC」が向いています。
+- `draft_outputs.md` … 生成された下書き。**必ず自分の目で読んでください。**
+- `approval_queue.csv` … 外部送信に相当するステップの承認待ち一覧。
+- `--mode` オプションは `dry-run` のみです（本番送信モードは存在しません。これは仕様です）。
 
-提案しやすい形:
+### 5.6 flows approve — 人間承認
 
-- 3日から2週間の小さなPoC
-- サンプルデータだけで実施
-- 本番送信なし
-- 人間承認あり
-- before/after の説明あり
-- 続けるか止めるかを最後に判断
+下書きを目視確認したうえで、承認の記録を残します。承認されたものはローカルの送信箱（`local_outbox/`）に移動しますが、**自動送信はされません**。
 
-売り込み前に確認すること:
+```bash
+ai-automation-kit flows approve .tmp/first-job --approver yamada@example.com
+```
 
-- 顧客の困りごとは本当にあるか
-- 月に何件くらい発生しているか
-- 手作業にどれくらい時間がかかっているか
-- サンプルデータを出せるか
-- 承認者は誰か
-- 本番化しない範囲を説明できるか
-- 失敗した時に止める手順があるか
+実行結果（実出力）:
 
-## よくある不安
+```text
+approval_status=approved
+approved_items=2
+outbox=.tmp/first-job/local_outbox/email_drafts.md
+outbox=.tmp/first-job/local_outbox/slack_messages.md
+```
 
-「クラウドが分からない」
+- `--approver` には、承認した人の名前かメールアドレスを入れます（誰が確認したかの記録になります）。
+- 最後の工程は人間です: `local_outbox/` の下書きを最終確認し、本物のメールソフト等に**人間がコピー＆ペーストして送信**します。
 
-最初は分からなくて大丈夫です。ローカル dry-run で見せてから、`guided-setup`、`guided-review`、`cloud-plan` の順番で整理します。
+> フロー実行の流れ全体（受注〜納品の文脈つき）は [チュートリアル第6章](TUTORIAL_SME_PROPOSAL.ja.md) を見てください。
 
-「APIキーが分からない」
+---
 
-AIに「どのサービスの、どの値が必要か」を説明してもらいます。ただし、本物の値はチャットに貼りません。
+## 6. client-report / package-client-demo — 納品
 
-「企業に売ってよいレベルか不安」
+### 6.1 client-report — お客様向け報告書
 
-最初から本番導入として売らず、業務診断と dry-run PoC として提案します。成果、リスク、続ける条件を見える化してから次に進みます。
+実行済みのフロープロジェクトから、お客様向けの実施報告書を生成します。
 
-「コマンドが多すぎる」
+```bash
+ai-automation-kit client-report --flow-project .tmp/first-job --output .tmp/delivery
+```
 
-最初は `complete-workspace`、`beginner-sales`、`guided-setup`、`cloud-plan` だけで十分です。
+実行結果（実出力）:
 
-## 最後のチェックリスト
+```text
+client_report=.tmp/delivery/client_report.md
+status=ready
+```
 
-企業へ見せる前に確認してください。
+報告書には、実行結果の要約・証跡ファイルの一覧・お客様に確認してもらう質問（継続/修正/中止の判断）が含まれます。英語見出しで生成されるので、[AI用プロンプト集](AI_PROMPTS.ja.md) の「納品報告書の文章化」で日本語に仕上げてください。
 
-- 本番送信していない
-- 本物のsecretを共有資料に入れていない
-- 顧客データは伏せ字またはサンプルである
-- 何を自動化するか1文で説明できる
-- 入力、出力、承認者が決まっている
-- dry-run の結果を見せられる
-- 顧客に聞く質問がある
-- 有料PoCの範囲、期間、停止条件がある
-- クラウドに進む前の不足情報が見えている
+### 6.2 package-client-demo — 納品用ZIP
 
-ここまでできていれば、AI初心者でも企業へ無理なく説明できます。
+納品物一式を1つのZIP（圧縮ファイル）にまとめます。
+
+```bash
+ai-automation-kit package-client-demo --source .tmp/first-job --output .tmp/delivery-package
+```
+
+実行結果（実出力）:
+
+```text
+client_demo_package=.tmp/delivery-package/client_demo_package.zip
+file_count=23
+```
+
+### 6.3 share-check — 共有前の安全確認
+
+ZIPを送る前に、秘密情報らしき文字列やローカルパスが混ざっていないかを確認します。
+
+```bash
+ai-automation-kit share-check --source .tmp/delivery-package --output .tmp/share-check
+```
+
+実行結果（実出力）:
+
+```text
+share_check=.tmp/share-check/share_check.md
+status=ready
+```
+
+`status=blocked` の場合は、**直すまで絶対に共有しないでください。**
+
+---
+
+## 7. 営業系コマンド
+
+営業から請求までの1案件の流れと、各場面で使うコマンドの対応は次のとおりです。
+
+```mermaid
+flowchart TD
+    P1["営業先探し・声かけ<br><code>beginner-sales</code> / <code>flows list</code>"] --> P2["ヒアリング<br>（client_questions.md）"]
+    P2 --> P3["無料デモ<br><code>complete-workspace</code>"]
+    P3 --> P4["提案書と見積もり<br><code>offer-pack</code>"]
+    P4 --> P5["受注・契約<br>（SOW・リスク境界）"]
+    P5 --> P6["案件実行<br><code>flows install/run/approve</code>"]
+    P6 --> P7["納品<br><code>client-report</code> / <code>share-check</code>"]
+    P7 --> P8["請求と継続提案"]
+    P8 -.継続・2件目.-> P6
+```
+
+この図は、1案件の商談の流れです。前半（営業〜契約）で使うのがこの節の営業系コマンド、後半（実行〜納品）は第5〜6節のコマンドです。実践手順の詳細は [チュートリアル](TUTORIAL_SME_PROPOSAL.ja.md) にあります。
+
+### 7.1 beginner-sales — 初心者向け営業パック
+
+ヒアリングシート・1枚提案書・価格メニュー・声かけ文例・納品チェックリストなど、営業に必要な資料一式を生成します。
+
+```bash
+ai-automation-kit beginner-sales --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/beginner-sales
+```
+
+実行結果（実出力）:
+
+```text
+beginner_sales=.tmp/beginner-sales/README.md
+flow_gallery=.tmp/beginner-sales/flow_gallery.html
+selected_demo=.tmp/beginner-sales/selected_flow_demo.html
+proposal=.tmp/beginner-sales/proposal_one_pager.md
+score=100
+```
+
+主な生成物:
+
+| ファイル | 用途 |
+|---|---|
+| `client_questions.md` | ヒアリングシート（読み上げるだけで使えます） |
+| `proposal_one_pager.md` | 1枚もの提案書のひな形 |
+| `price_menu.md` | 価格メニュー（相場の目安: PoC 5〜15万円、月次 1〜3万円/月 ほか）と価格の決め方 |
+| `outreach_messages.md` | 声かけ・フォローアップ・お礼メールの文例 |
+| `roi_simple_calculator.csv` | 削減効果の簡易計算シート |
+| `client_delivery_checklist.md` | 納品チェックリスト |
+
+### 7.2 offer-pack — 提案書・SOWの正式セット
+
+提案書・作業範囲記述書（SOW＝やること/やらないことの合意書）・価格モデル・リスク境界を生成します。受注前の正式な提案に使います。
+
+```bash
+ai-automation-kit offer-pack --business-area operations --client-type small-business --source-output .tmp/complete-accounting --output .tmp/offer-pack
+```
+
+実行結果（実出力）:
+
+```text
+offer_pack=.tmp/offer-pack/README.md
+proposal=.tmp/offer-pack/proposal.md
+statement_of_work=.tmp/offer-pack/statement_of_work.md
+status=ready
+```
+
+- `--source-output` には、`complete-workspace` や `onboard` の出力フォルダを指定します（その内容を提案の根拠として参照します）。
+- `risk_boundaries.md`（保証しないこと・禁止事項）は契約前に必ずお客様と共有してください。
+
+### 7.3 business-launch — 開業スターターパック
+
+「何を売るか」から決めたい人向けに、推奨フローの選定と最初のオファー（売り物の定義）を生成します。
+
+```bash
+ai-automation-kit business-launch --industry finance --client-type local-business --niche accounting --output .tmp/business-launch
+```
+
+実行結果（実出力）:
+
+```text
+business_launch=.tmp/business-launch/START_HERE_BUSINESS_LAUNCH.md
+first_client_offer=.tmp/business-launch/first_client_offer.md
+recommended_flow=invoice-document-followup
+status=ready
+```
+
+---
+
+## 8. その他のコマンド
+
+上記以外にも多くのコマンドがあります（`ai-automation-kit --help` で一覧表示）。最初の1案件には不要なので、必要になってから開いてください。
+
+| 分類 | 主なコマンド | 参考ドキュメント |
+|---|---|---|
+| クイックスタート | `quickstart`, `install-bundle`, `demo-site` | [はじめかた](GETTING_STARTED.ja.md) |
+| セットアップ相談 | `guided-setup`, `guided-review`, `grill-me`, `connector-doctor` | [連携設定ガイド](CONNECTOR_SETUP_GUIDE.ja.md) |
+| 実運用への橋渡し | `flow-export`, `deployment-pack`, `runtime-safety` ほか | [実運用セットアップガイド](REAL_WORLD_SETUP_GUIDE.ja.md), [実行ブリッジ](EXECUTION_BRIDGES.ja.md) |
+| クラウド | `cloud-plan` | [クラウド導入ガイド](CLOUD_DEPLOYMENT_GUIDE.ja.md) |
+| 応用パック | `command-center`, `skill-pack`, `approval-gate` ほか | [拡充機能ガイド](AUTOMATION_EXPANSION_GUIDE.ja.md) |
+| GitHub調査 | `github-discover`, `onboard`, `research-agent` | [GitHub Data](GITHUB_DATA.md) |
+
+---
+
+## 9. トラブルシューティング
+
+| 症状 | 対処 |
+|---|---|
+| `ai-automation-kit: command not found` | 仮想環境が有効か確認（`source .venv/bin/activate`）。それでも駄目ならリポジトリ直下で `pip install -e .` を再実行 |
+| コマンドがエラーで止まる | まず `ai-automation-kit doctor --output .tmp/doctor` を実行し、レポートの「対処法（日本語）」に従う |
+| `flows run` が失敗する | `flows validate <フォルダ>` で不足ファイルを確認。フォルダを壊した場合は `flows install` からやり直すのが早いです |
+| `flows show` でエラーになる | `flows list` でIDの綴りを確認（IDはハイフン区切りの英語です） |
+| 生成物に社内情報が混ざっていないか不安 | 共有前に必ず `share-check` を実行。`blocked` なら共有しない |
+| 何をすればいいか分からない | `ai-automation-kit beginner` に戻る。読み物なら [はじめかた](GETTING_STARTED.ja.md) へ |
+| GitHub検索系が失敗する | ネット接続を確認。頻繁に使うなら `export GITHUB_TOKEN=...`（GitHubの認証キー）を設定 |
+
+それでも解決しないときは [FAQ](FAQ.ja.md) を確認するか、GitHubのIssueで質問してください。
+
+## 関連ドキュメント
+
+- [はじめかた（唯一の入口）](GETTING_STARTED.ja.md)
+- [中小企業への自動化提案チュートリアル](TUTORIAL_SME_PROPOSAL.ja.md)
+- [AI用プロンプト集](AI_PROMPTS.ja.md)
+- [ドキュメント索引（INDEX）](INDEX.md) / [アーカイブ](archive/README.md)
+- [HTMLマニュアル（ブラウザで読む）](manual.ja.html)
+
+> 注意: このキットは収益を保証するものではありません。本マニュアルの金額はすべて「相場の目安」です。

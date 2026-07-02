@@ -32,9 +32,9 @@ This creates the final delivery guide, checklist, client report, demo site, shar
 
 ## Which guide should a beginner read first?
 
-Start with [Start Here](START_HERE.md), then read [User Manual](USER_MANUAL.md). If you want to use this for your first freelance or consulting automation client, read [First Client Walkthrough](FIRST_CLIENT_WALKTHROUGH.md).
+Start with the [Documentation Index](INDEX.md) (or the Japanese entrance, [Getting Started](GETTING_STARTED.ja.md)), then read [User Manual](USER_MANUAL.md). If you want to use this for your first freelance or consulting automation client, read [First Client Walkthrough](FIRST_CLIENT_WALKTHROUGH.md).
 
-If cloud, API keys, intake folders, or approval owners feel confusing, ask an AI agent to read [AI Beginner Support Map](AI_BEGINNER_SUPPORT_MAP.md) with you and guide you one question at a time.
+If cloud, API keys, intake folders, or approval owners feel confusing, ask an AI agent to read [AI Beginner Support Map](archive/AI_BEGINNER_SUPPORT_MAP.md) with you and guide you one question at a time.
 
 ## What should I show a company?
 

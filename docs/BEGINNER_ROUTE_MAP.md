@@ -59,17 +59,17 @@ What AI can help with:
 
 If you are lost, read only this order:
 
-1. This page
-2. Start Here
-3. AI Beginner Support Map
+1. Getting Started (Japanese, the single entrance)
+2. This page
+3. Documentation Index
 4. AI Agent Grill Me Skill
 5. User Manual
 
 File names:
 
+- `docs/GETTING_STARTED.ja.md`
 - `docs/BEGINNER_ROUTE_MAP.md`
-- `docs/START_HERE.md`
-- `docs/AI_BEGINNER_SUPPORT_MAP.md`
+- `docs/INDEX.md`
 - `docs/AI_AGENT_GRILL_ME_SKILL.md`
 - `docs/USER_MANUAL.md`
 

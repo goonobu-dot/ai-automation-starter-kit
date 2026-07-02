@@ -68,11 +68,11 @@ Important files include:
 
 ## How to use it
 
-If you are new, first read [Start Here](START_HERE.md).
+If you are new, first read [Getting Started](GETTING_STARTED.ja.md) (Japanese) or the [Documentation Index](INDEX.md).
 
 If you want to use this for a first freelance or consulting client, read [First Client Walkthrough](FIRST_CLIENT_WALKTHROUGH.md).
 
-If cloud, API keys, intake folders, or approval owners feel confusing, ask an AI agent to read [AI Beginner Support Map](AI_BEGINNER_SUPPORT_MAP.md) with you and guide you one question at a time.
+If cloud, API keys, intake folders, or approval owners feel confusing, ask an AI agent to read [AI Beginner Support Map](archive/AI_BEGINNER_SUPPORT_MAP.md) with you and guide you one question at a time.
 
 Then download the project:
 
