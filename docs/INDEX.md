@@ -26,6 +26,7 @@
 | [最初の顧客案件ウォークスルー](FIRST_CLIENT_WALKTHROUGH.ja.md) | [First Client Walkthrough](FIRST_CLIENT_WALKTHROUGH.md) | 最初の1件の進め方 / Your first client project |
 | [顧客デモ台本](CLIENT_DEMO_SCRIPT.ja.md) | [Client Demo Script](CLIENT_DEMO_SCRIPT.md) | デモの見せ方 / How to run the demo |
 | [副業ブループリントガイド](SIDE_HUSTLE_BLUEPRINTS.ja.md) | [Side Hustle Blueprints](SIDE_HUSTLE_BLUEPRINTS.md) | 何を売るかの選び方 / Choosing what to sell |
+| [副業向けGitHub市場アップデート 2026](SIDE_HUSTLE_MARKET_UPDATE_2026.ja.md) | – | 最新GitHub動向を売れる小さなPoCへ変換 / Turn current GitHub signals into sellable small PoCs |
 | [AI用プロンプト集](AI_PROMPTS.ja.md) | – | 生成物をAIで仕上げるプロンプト / Prompts for polishing outputs |
 
 ## ⚙️ 実行・運用 / Execution & Operations

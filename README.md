@@ -64,6 +64,7 @@ Key documents:
 | Browser manual (click to open as a web page) | [ブラウザ版マニュアル（クリックで開きます）](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.ja.html) | [Browser Manual](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.html) |
 | Selling automation responsibly | [提案ガイド](docs/SELLING_AUTOMATION_GUIDE.ja.md) | [Selling Automation Guide](docs/SELLING_AUTOMATION_GUIDE.md) |
 | Choosing what to sell | [副業ブループリント](docs/SIDE_HUSTLE_BLUEPRINTS.ja.md) | [Side Hustle Blueprints](docs/SIDE_HUSTLE_BLUEPRINTS.md) |
+| 2026 side-hustle market update | [副業向けGitHub市場アップデート](docs/SIDE_HUSTLE_MARKET_UPDATE_2026.ja.md) | – |
 | Running the client demo | [顧客デモ台本](docs/CLIENT_DEMO_SCRIPT.ja.md) | [Client Demo Script](docs/CLIENT_DEMO_SCRIPT.md) |
 | Choosing a flow | [フロー選択ガイド](docs/FLOW_SELECTION_GUIDE.ja.md) | [Flow Selection Guide](docs/FLOW_SELECTION_GUIDE.md) |
 | Moving toward real operations | [実運用セットアップ](docs/REAL_WORLD_SETUP_GUIDE.ja.md) | [Real-World Setup Guide](docs/REAL_WORLD_SETUP_GUIDE.md) |

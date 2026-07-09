@@ -37,6 +37,7 @@
 - Added AI reception employee flows and setup artifacts so beginners can see required API keys, reception folders, sample data, operator UI, approval ownership, and paid dry-run PoC boundaries before client delivery.
 - Added AI employee roadmap, AI action procedures, internal FAQ/admin flows, and sales research flows based on the report's recommended expansion order.
 - Added side-business starter 10 and before/after demo outputs to the complete workspace.
+- Added `docs/SIDE_HUSTLE_MARKET_UPDATE_2026.ja.md`: a research-backed Japanese market update that turns current GitHub signals from n8n, Dify, browser-use, Activepieces, Skyvern, MCP servers, and GitHub MCP Server into five sellable beginner-safe side-hustle offers.
 - Updated CI to use minimal read permissions and Node 24-compatible GitHub Actions.
 - Added Dependabot coverage for non-major GitHub Actions and Python packaging updates.
 - Removed local absolute paths from checked-in research examples.

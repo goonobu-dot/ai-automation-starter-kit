@@ -57,6 +57,7 @@ def test_readme_links_entrance_and_key_docs():
     assert "docs/AUTOMATION_EXPANSION_GUIDE.ja.md" in readme
     assert "docs/SIDE_HUSTLE_BLUEPRINTS.md" in readme
     assert "docs/SIDE_HUSTLE_BLUEPRINTS.ja.md" in readme
+    assert "docs/SIDE_HUSTLE_MARKET_UPDATE_2026.ja.md" in readme
     # Archived docs must no longer be part of the README entrance.
     assert "docs/START_HERE.md" not in readme
     assert "docs/AI_BEGINNER_SUPPORT_MAP.md" not in readme
@@ -79,8 +80,34 @@ def test_getting_started_index_and_archive_form_the_single_entrance():
     assert "GETTING_STARTED.ja.md" in index
     assert "💼" in index and "⚙️" in index and "☁️" in index and "📚" in index
     assert "archive/README.md" in index
+    assert "SIDE_HUSTLE_MARKET_UPDATE_2026.ja.md" in index
     assert "歴史的資料" in archive
     assert "INDEX.md" in archive
+
+
+def test_side_hustle_market_update_turns_github_signals_into_sellable_offers():
+    text = Path("docs/SIDE_HUSTLE_MARKET_UPDATE_2026.ja.md").read_text()
+    expected = [
+        "副業向けGitHub市場アップデート",
+        "2026-07-09",
+        "n8n-io/n8n",
+        "langgenius/dify",
+        "browser-use/browser-use",
+        "activepieces/activepieces",
+        "Skyvern-AI/skyvern",
+        "modelcontextprotocol/servers",
+        "github/github-mcp-server",
+        "売るべきもの",
+        "売らないもの",
+        "人間承認",
+        "dry-run PoC",
+        "5つの商品メニュー",
+        "提案トーク",
+        "このキットに反映する判断",
+    ]
+    assert len(text) > 5000
+    for snippet in expected:
+        assert snippet in text, f"docs/SIDE_HUSTLE_MARKET_UPDATE_2026.ja.md missing {snippet}"
 
 
 def test_start_here_and_use_cases_docs_are_archived_but_intact():
