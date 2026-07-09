@@ -283,7 +283,8 @@ def _jpeg_dimensions(data: bytes) -> Tuple[Optional[int], Optional[int]]:
         segment_length = struct.unpack(">H", data[offset:offset + 2])[0]
         if marker in range(0xC0, 0xC4) or marker in range(0xC5, 0xC8) or marker in range(0xC9, 0xCC) or marker in range(0xCD, 0xD0):
             if segment_length >= 7 and offset + 7 <= len(data):
-                return struct.unpack(">HH", data[offset + 3:offset + 7])
+                height, width = struct.unpack(">HH", data[offset + 3:offset + 7])
+                return width, height
         offset += segment_length
     return None, None
 

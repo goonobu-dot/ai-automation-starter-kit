@@ -346,6 +346,10 @@ def test_images_return_metadata_without_claiming_ocr(tmp_path):
     write_jpeg(paths[1])
     write_webp(paths[2])
 
+    jpeg_result = extract_text(paths[1])
+    assert jpeg_result["metadata"]["width"] == 7
+    assert jpeg_result["metadata"]["height"] == 11
+
     for path in paths:
         result = extract_text(path)
         assert result["extraction_status"] == "metadata_only"
