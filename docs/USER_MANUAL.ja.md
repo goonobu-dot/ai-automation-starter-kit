@@ -465,6 +465,31 @@ recommended_flow=invoice-document-followup
 status=ready
 ```
 
+### 7.4 report-automation — 日報・月報AI下書き自動化
+
+過去の完成物と今回の資料フォルダを用意し、AIに日報・週報・月報の下書きを作らせるための作業フォルダを生成します。
+
+AIが判断できない部分は、勝手に埋めずに GrillMe 方式で1問ずつ質問します。最後は人間が承認して提出します。
+
+```bash
+ai-automation-kit report-automation --report-type monthly --client-type local-business --niche construction --output .tmp/monthly-report-pack
+```
+
+実行結果:
+
+```text
+report_automation=.tmp/monthly-report-pack/START_HERE_REPORT_AUTOMATION.md
+ai_agent_prompt=.tmp/monthly-report-pack/ai_agent_prompt.md
+grill_me_questions=.tmp/monthly-report-pack/05_grill_me_questions/questions.md
+approval_checklist=.tmp/monthly-report-pack/07_approval/approval_checklist.md
+status=ready
+```
+
+- `01_past_outputs/` に過去の日報・月報を入れます。
+- `02_current_materials/` に今回のCSV、議事録、写真、添付資料、作業ログを入れます。
+- `scripts/run_report_dry_run.py` を実行すると、資料数、足りない情報、質問、下書きが更新されます。
+- 詳細は [日報・月報AI下書き自動化ガイド](REPORT_AUTOMATION_GUIDE.ja.md) を読んでください。
+
 ---
 
 ## 8. その他のコマンド
@@ -475,6 +500,7 @@ status=ready
 |---|---|---|
 | クイックスタート | `quickstart`, `install-bundle`, `demo-site` | [はじめかた](GETTING_STARTED.ja.md) |
 | セットアップ相談 | `guided-setup`, `guided-review`, `grill-me`, `connector-doctor` | [連携設定ガイド](CONNECTOR_SETUP_GUIDE.ja.md) |
+| 日報・月報案件 | `report-automation`, `flows install daily-monthly-report-automation` | [日報・月報AI下書き自動化ガイド](REPORT_AUTOMATION_GUIDE.ja.md) |
 | 実運用への橋渡し | `flow-export`, `deployment-pack`, `runtime-safety` ほか | [実運用セットアップガイド](REAL_WORLD_SETUP_GUIDE.ja.md), [実行ブリッジ](EXECUTION_BRIDGES.ja.md) |
 | クラウド | `cloud-plan` | [クラウド導入ガイド](CLOUD_DEPLOYMENT_GUIDE.ja.md) |
 | 応用パック | `command-center`, `skill-pack`, `approval-gate` ほか | [拡充機能ガイド](AUTOMATION_EXPANSION_GUIDE.ja.md) |

@@ -58,6 +58,8 @@ def test_readme_links_entrance_and_key_docs():
     assert "docs/SIDE_HUSTLE_BLUEPRINTS.md" in readme
     assert "docs/SIDE_HUSTLE_BLUEPRINTS.ja.md" in readme
     assert "docs/SIDE_HUSTLE_MARKET_UPDATE_2026.ja.md" in readme
+    assert "docs/REPORT_AUTOMATION_GUIDE.md" in readme
+    assert "docs/REPORT_AUTOMATION_GUIDE.ja.md" in readme
     # Archived docs must no longer be part of the README entrance.
     assert "docs/START_HERE.md" not in readme
     assert "docs/AI_BEGINNER_SUPPORT_MAP.md" not in readme
@@ -81,8 +83,43 @@ def test_getting_started_index_and_archive_form_the_single_entrance():
     assert "💼" in index and "⚙️" in index and "☁️" in index and "📚" in index
     assert "archive/README.md" in index
     assert "SIDE_HUSTLE_MARKET_UPDATE_2026.ja.md" in index
+    assert "REPORT_AUTOMATION_GUIDE.ja.md" in index
     assert "歴史的資料" in archive
     assert "INDEX.md" in archive
+
+
+def test_report_automation_guides_explain_folder_based_grill_me_workflow():
+    expected_docs = {
+        "docs/REPORT_AUTOMATION_GUIDE.ja.md": [
+            "日報・月報AI下書き自動化ガイド",
+            "過去の完成物",
+            "今回の資料",
+            "GrillMe",
+            "1問ずつ",
+            "人間が承認",
+            "ai-automation-kit report-automation",
+            "01_past_outputs",
+            "02_current_materials",
+            "売らない方がよい言い方",
+        ],
+        "docs/REPORT_AUTOMATION_GUIDE.md": [
+            "Report Automation Guide",
+            "past completed reports",
+            "current materials",
+            "GrillMe-style",
+            "one question at a time",
+            "human approval",
+            "ai-automation-kit report-automation",
+            "01_past_outputs",
+            "02_current_materials",
+            "Do Not Promise",
+        ],
+    }
+    for path, snippets in expected_docs.items():
+        text = Path(path).read_text()
+        assert len(text) > 1500, path
+        for snippet in snippets:
+            assert snippet in text, f"{path} missing {snippet}"
 
 
 def test_side_hustle_market_update_turns_github_signals_into_sellable_offers():
@@ -666,6 +703,7 @@ def test_public_release_audit_script_checks_publish_prerequisites():
     assert "README.md::ai-automation-kit guided-review" in result.stdout
     assert "README.md::ai-automation-kit cloud-plan" in result.stdout
     assert "README.md::ai-automation-kit grill-me" in result.stdout
+    assert "README.md::ai-automation-kit report-automation" in result.stdout
     assert "README.md::ai-automation-kit flows list" in result.stdout
     assert "README.md::ai-automation-kit flows install" in result.stdout
     assert "README.md::ai-automation-kit github-discover --business-area operations" in result.stdout
@@ -819,6 +857,10 @@ def test_public_release_audit_script_checks_final_release_evidence():
     assert "scripts/release_smoke.py::START_HERE_GRILL_ME.md" in result.stdout
     assert "scripts/release_smoke.py::questions_to_answer.md" in result.stdout
     assert "scripts/release_smoke.py::ai_agent_prompt.md" in result.stdout
+    assert "scripts/release_smoke.py::report-automation" in result.stdout
+    assert "scripts/release_smoke.py::START_HERE_REPORT_AUTOMATION.md" in result.stdout
+    assert "scripts/release_smoke.py::grill_me_report_questions.md" in result.stdout
+    assert "scripts/release_smoke.py::demo_report_automation.html" in result.stdout
     assert "scripts/release_smoke.py::FINAL_DELIVERY_GUIDE.md" in result.stdout
     assert "scripts/release_smoke.py::completion_checklist.md" in result.stdout
     assert "scripts/release_smoke.py::roi_calculator.csv" in result.stdout
@@ -831,6 +873,7 @@ def test_public_release_audit_script_checks_final_release_evidence():
     assert "scripts/release_smoke.py::flow.yaml" in result.stdout
     assert "scripts/release_smoke.py::workflow_map.mmd" in result.stdout
     assert "scripts/release_smoke.py::ai-reception-line-inquiry" in result.stdout
+    assert "scripts/release_smoke.py::daily-monthly-report-automation" in result.stdout
     assert "scripts/release_smoke.py::setup_requirements.md" in result.stdout
     assert "scripts/release_smoke.py::ai_action_procedure.md" in result.stdout
     assert "scripts/release_smoke.py::operator_ui/index.html" in result.stdout

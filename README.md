@@ -65,6 +65,7 @@ Key documents:
 | Selling automation responsibly | [提案ガイド](docs/SELLING_AUTOMATION_GUIDE.ja.md) | [Selling Automation Guide](docs/SELLING_AUTOMATION_GUIDE.md) |
 | Choosing what to sell | [副業ブループリント](docs/SIDE_HUSTLE_BLUEPRINTS.ja.md) | [Side Hustle Blueprints](docs/SIDE_HUSTLE_BLUEPRINTS.md) |
 | 2026 side-hustle market update | [副業向けGitHub市場アップデート](docs/SIDE_HUSTLE_MARKET_UPDATE_2026.ja.md) | – |
+| Folder-based report automation | [日報・月報AI下書き自動化ガイド](docs/REPORT_AUTOMATION_GUIDE.ja.md) | [Report Automation Guide](docs/REPORT_AUTOMATION_GUIDE.md) |
 | Running the client demo | [顧客デモ台本](docs/CLIENT_DEMO_SCRIPT.ja.md) | [Client Demo Script](docs/CLIENT_DEMO_SCRIPT.md) |
 | Choosing a flow | [フロー選択ガイド](docs/FLOW_SELECTION_GUIDE.ja.md) | [Flow Selection Guide](docs/FLOW_SELECTION_GUIDE.md) |
 | Moving toward real operations | [実運用セットアップ](docs/REAL_WORLD_SETUP_GUIDE.ja.md) | [Real-World Setup Guide](docs/REAL_WORLD_SETUP_GUIDE.md) |
@@ -82,6 +83,7 @@ The fastest path is `complete-workspace`: one command creates a full local deliv
 
 - **Sales assets** — `beginner-sales` writes `START_HERE_FOR_SIDE_BUSINESS.md`, `flow_gallery.html`, `selected_flow_demo.html`, `proposal_one_pager.md`, `three_day_poc_plan.md`, discovery questions, a price menu, and `roi_simple_calculator.csv`. `offer-pack` writes `proposal.md`, `statement_of_work.md`, `pricing_model.md`, and risk boundaries under `offer_pack/`. `client-ready/` adds `roi_calculator.csv`, `implementation_readiness_score.json`, and `maintenance_plan.md`.
 - **Runnable flows** — `flows` installs one of 60+ dry-run automation projects with `flow.yaml`, `workflow_map.mmd`, `operator_ui/index.html`, `.env.example`, `SYSTEM_RUNBOOK.md`, and scripts that generate `automation_output` work queues, approval queues, and `local_outbox` drafts. Nothing is sent externally.
+- **Folder-based report automation** — `report-automation` creates a daily, weekly, or monthly report workspace with past-output folders, current-material folders, `START_HERE_REPORT_AUTOMATION.md`, AI prompts, `grill_me_report_questions.md`, drafts, approval checklists, and a client-facing `demo_report_automation.html`.
 - **Delivery evidence** — `FINAL_DELIVERY_GUIDE.md`, `completion_checklist.md`, `client_report.md`, `client_demo_package.zip`, `revenue_readiness_scorecard.md`, `paid_poc_scope.md`, and `share_check.md` (scan before sharing).
 - **Setup and cloud planning** — `guided-setup`, `guided-review`, and `cloud-plan` write question lists, readiness reports, and provider-specific runbooks such as `workload_architecture.md`, `deploy_runbook.md`, and `human_approval_required.md`.
 - **GitHub discovery** — `github-discover` and `onboard` turn public GitHub research into `run_summary.md`, `executive_decision_brief.md`, `pilot_scorecard.csv`, `value_realization_plan.md`, `value_measurement_report.md`, `stakeholder_rollout_map.md`, `risk_exception_register.md`, `operational_audit_plan.md`, `enterprise_readiness.md`, `artifact_index.md`, and an `adapter_starter/` dry-run skeleton.
@@ -118,6 +120,7 @@ ai-automation-kit flows list --industry sales-research
 ai-automation-kit flows show invoice-document-followup
 ai-automation-kit flows install invoice-document-followup --output .tmp/flow-invoice-document-followup
 ai-automation-kit flows install ai-reception-line-inquiry --output .tmp/ai-reception-line-inquiry
+ai-automation-kit flows install daily-monthly-report-automation --output .tmp/daily-monthly-report-automation
 ai-automation-kit flows validate .tmp/flow-invoice-document-followup
 ai-automation-kit flows run .tmp/flow-invoice-document-followup
 ai-automation-kit flows approve .tmp/flow-invoice-document-followup --approver owner@example.com
@@ -130,6 +133,7 @@ ai-automation-kit offer-pack --business-area operations --client-type small-busi
 ai-automation-kit client-ready --business-area operations --client-type local-business --niche accounting --source-output .tmp/onboarding --output .tmp/client-ready
 ai-automation-kit business-launch --industry finance --client-type local-business --niche accounting --output .tmp/business-launch
 ai-automation-kit side-hustle-blueprints --industry local-business --operator-level beginner --output .tmp/side-hustle-blueprints
+ai-automation-kit report-automation --report-type monthly --client-type local-business --niche construction --output .tmp/monthly-report-pack
 ai-automation-kit opportunity-catalog --industry finance --output .tmp/opportunity-catalog
 ai-automation-kit recommend-flow --industry finance --pain "missing invoice follow up" --tools "Google Sheets Gmail" --output .tmp/recommend-flow
 ai-automation-kit flow-guide --industry finance --niche accounting --output .tmp/flow-guide

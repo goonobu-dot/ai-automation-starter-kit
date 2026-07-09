@@ -48,6 +48,7 @@ def _run_flow_smoke(output: Path, env: dict[str, str]) -> None:
     reception_output = output / "flow-ai-reception-line-inquiry"
     admin_output = output / "flow-ai-admin-faq-routing"
     sales_research_output = output / "flow-ai-sales-research-brief"
+    report_output = output / "flow-daily-monthly-report-automation"
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "list"], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "list", "--industry", "reception"], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "list", "--industry", "admin"], env=env)
@@ -56,6 +57,7 @@ def _run_flow_smoke(output: Path, env: dict[str, str]) -> None:
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "show", "ai-reception-line-inquiry"], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "show", "ai-admin-faq-routing"], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "show", "ai-sales-research-brief"], env=env)
+    _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "show", "daily-monthly-report-automation"], env=env)
     _run(
         [
             sys.executable,
@@ -66,6 +68,19 @@ def _run_flow_smoke(output: Path, env: dict[str, str]) -> None:
             "invoice-document-followup",
             "--output",
             str(flow_output),
+        ],
+        env=env,
+    )
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "flows",
+            "install",
+            "daily-monthly-report-automation",
+            "--output",
+            str(report_output),
         ],
         env=env,
     )
@@ -112,6 +127,7 @@ def _run_flow_smoke(output: Path, env: dict[str, str]) -> None:
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "validate", str(reception_output)], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "validate", str(admin_output)], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "validate", str(sales_research_output)], env=env)
+    _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "validate", str(report_output)], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "run", str(flow_output)], env=env)
     _run([sys.executable, "-m", "ai_automation_kit.cli", "flows", "approve", str(flow_output), "--approver", "release@example.com"], env=env)
     _run([sys.executable, "scripts/run_dry_run.py"], cwd=flow_output, env=env)
@@ -150,6 +166,9 @@ def _run_flow_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(sales_research_output / "ai_action_procedure.md")
     _require_file(sales_research_output / "setup_requirements.md")
     _require_file(sales_research_output / "operator_ui" / "index.html")
+    _require_file(report_output / "ai_action_procedure.md")
+    _require_file(report_output / "setup_requirements.md")
+    _require_file(report_output / "operator_ui" / "index.html")
 
 
 def _run_beginner_sales_smoke(output: Path, env: dict[str, str]) -> None:
@@ -700,6 +719,33 @@ def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
     _require_file(grill_me_output / "proposal_grill.md")
     _require_file(grill_me_output / "ai_agent_prompt.md")
     _require_file(grill_me_output / "grill_me.json")
+
+    report_automation_output = output / "report-automation-monthly"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "report-automation",
+            "--report-type",
+            "monthly",
+            "--client-type",
+            "local-business",
+            "--niche",
+            "construction",
+            "--output",
+            str(report_automation_output),
+        ],
+        env=env,
+    )
+    _require_file(report_automation_output / "START_HERE_REPORT_AUTOMATION.md")
+    _require_file(report_automation_output / "workspace_map.md")
+    _require_file(report_automation_output / "ai_agent_prompt.md")
+    _require_file(report_automation_output / "grill_me_report_questions.md")
+    _require_file(report_automation_output / "demo_report_automation.html")
+    _require_file(report_automation_output / "05_grill_me_questions" / "questions.md")
+    _require_file(report_automation_output / "06_drafts" / "monthly_report_draft.md")
+    _require_file(report_automation_output / "07_approval" / "approval_checklist.md")
 
     connector_output = output / "connector-doctor"
     _run(

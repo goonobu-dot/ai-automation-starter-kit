@@ -614,6 +614,16 @@ status=ready</span></pre>
   --niche accounting --output .tmp/business-launch</code>
 <span class="out">recommended_flow=invoice-document-followup
 status=ready</span></pre>
+
+  <h3><code>report-automation</code> — 日報・月報AI下書き自動化</h3>
+  <p>過去の完成物と今回資料をフォルダに入れ、AIが下書きを作り、不明点だけGrillMe方式で1問ずつ確認します。最後の提出は人間が承認します。</p>
+  <pre><code>ai-automation-kit report-automation --report-type monthly \
+  --client-type local-business --niche construction --output .tmp/monthly-report-pack</code>
+<span class="out">report_automation=.tmp/monthly-report-pack/START_HERE_REPORT_AUTOMATION.md
+grill_me_questions=.tmp/monthly-report-pack/05_grill_me_questions/questions.md
+approval_checklist=.tmp/monthly-report-pack/07_approval/approval_checklist.md
+status=ready</span></pre>
+  <p class="note">詳しくは <a href="REPORT_AUTOMATION_GUIDE.ja.md">日報・月報AI下書き自動化ガイド</a> を開いてください。</p>
 </section>
 
 <section id="deal">
@@ -669,6 +679,7 @@ status=ready</span></pre>
     <tr><td><a href="TUTORIAL_SME_PROPOSAL.ja.md">中小企業への自動化提案チュートリアル</a></td><td>商談を始める前に通読（営業〜請求の全工程）</td></tr>
     <tr><td><a href="USER_MANUAL.ja.md">使い方マニュアル（Markdown版）</a></td><td>各コマンドの詳細を引くとき。本ページの完全版</td></tr>
     <tr><td><a href="AI_PROMPTS.ja.md">AI用プロンプト集</a></td><td>提案書・報告書をAIで仕上げるとき</td></tr>
+    <tr><td><a href="REPORT_AUTOMATION_GUIDE.ja.md">日報・月報AI下書き自動化ガイド</a></td><td>過去完成物と資料フォルダから報告書下書きを作るとき</td></tr>
     <tr><td><a href="INDEX.md">ドキュメント索引</a></td><td>その他の文書を探すとき（最初は🔰入門以外読まない）</td></tr>
     <tr><td><a href="archive/README.md">アーカイブ</a></td><td>旧世代・重複文書の保管庫。通常は開く必要なし</td></tr>
   </table>

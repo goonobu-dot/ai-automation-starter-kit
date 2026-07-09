@@ -83,6 +83,16 @@ def test_catalog_includes_next_priority_ai_employee_flows_from_report():
     assert expected <= flow_ids
 
 
+def test_catalog_includes_folder_based_report_automation_flow():
+    flow = get_flow("daily-monthly-report-automation")
+
+    assert flow["industry"] == "operations"
+    assert flow["genre"] == "reporting"
+    assert "past completed reports" in flow["summary"]
+    assert any(step["id"] == "grill" and step["human_approval"] for step in flow["steps"])
+    assert "draft_acceptance_rate" in flow["success_metrics"]
+
+
 def test_get_flow_returns_structured_steps():
     flow = get_flow("invoice-document-followup")
 

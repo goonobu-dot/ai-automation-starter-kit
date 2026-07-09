@@ -125,13 +125,20 @@ ai-automation-kit offer-pack --business-area operations --client-type small-busi
 ai-automation-kit business-launch --industry finance --client-type local-business \
   --niche accounting --output .tmp/business-launch
 #   -> START_HERE_BUSINESS_LAUNCH.md, first_client_offer.md, recommended flow
+
+ai-automation-kit report-automation --report-type monthly --client-type local-business \
+  --niche construction --output .tmp/monthly-report-pack
+#   -> START_HERE_REPORT_AUTOMATION.md, ai_agent_prompt.md,
+#      05_grill_me_questions/questions.md, 07_approval/approval_checklist.md
 ```
 
 Price figures in the generated templates are market guidelines for Japan (for example, a first paid PoC at 50k–150k JPY; monthly support 10k–30k JPY), not guarantees. No income is guaranteed. Keep the paid PoC scope small: one workflow, one sample input, one human approver.
 
+`report-automation` is a concrete side-business offer: the client places past completed reports in `01_past_outputs/`, current materials in `02_current_materials/`, and the AI drafts a daily, weekly, or monthly report. If facts are unclear, it asks one GrillMe-style question at a time. Final submission stays behind human approval. See [Report Automation Guide](REPORT_AUTOMATION_GUIDE.md).
+
 ## 8. Other commands
 
-Run `ai-automation-kit --help` for the full list (quickstart, guided-setup, cloud-plan, flow-export, github-discover, and more). See the [Documentation Index](INDEX.md) for the matching guides: [Real-World Setup](REAL_WORLD_SETUP_GUIDE.md), [Connector Setup](CONNECTOR_SETUP_GUIDE.md), [Execution Bridges](EXECUTION_BRIDGES.md), [Automation Expansion](AUTOMATION_EXPANSION_GUIDE.md), [Cloud Deployment](CLOUD_DEPLOYMENT_GUIDE.md).
+Run `ai-automation-kit --help` for the full list (quickstart, guided-setup, cloud-plan, flow-export, github-discover, and more). See the [Documentation Index](INDEX.md) for the matching guides: [Report Automation Guide](REPORT_AUTOMATION_GUIDE.md), [Real-World Setup](REAL_WORLD_SETUP_GUIDE.md), [Connector Setup](CONNECTOR_SETUP_GUIDE.md), [Execution Bridges](EXECUTION_BRIDGES.md), [Automation Expansion](AUTOMATION_EXPANSION_GUIDE.md), [Cloud Deployment](CLOUD_DEPLOYMENT_GUIDE.md).
 
 ## 9. Troubleshooting
 

@@ -1,6 +1,8 @@
 from ai_automation_kit.cli import build_parser
 from ai_automation_kit.cli import main
 import json
+import subprocess
+import sys
 
 
 def test_parser_accepts_research_agent_command():
@@ -159,6 +161,34 @@ def test_parser_accepts_website_side_hustle_command():
     assert args.client_type == "local-business"
     assert args.niche == "tourism-hotel"
     assert args.output == "website-pack"
+
+
+def test_parser_accepts_report_automation_command():
+    parser = build_parser()
+    args = parser.parse_args(
+        [
+            "report-automation",
+            "--report-type",
+            "monthly",
+            "--past-outputs",
+            "past",
+            "--materials",
+            "materials",
+            "--client-type",
+            "local-business",
+            "--niche",
+            "construction",
+            "--output",
+            "report-pack",
+        ]
+    )
+    assert args.command == "report-automation"
+    assert args.report_type == "monthly"
+    assert args.past_outputs == "past"
+    assert args.materials == "materials"
+    assert args.client_type == "local-business"
+    assert args.niche == "construction"
+    assert args.output == "report-pack"
 
 
 def test_parser_accepts_public_pattern_expansion_commands():
@@ -758,6 +788,64 @@ def test_main_runs_grill_me_for_beginner_flow_review(tmp_path):
     assert "Do not ask for real API keys or secrets in chat" in prompt
     assert "What business pain" in questions
     assert "human approval" in questions
+
+
+def test_main_runs_report_automation_with_grill_me_questions(tmp_path):
+    output = tmp_path / "report-automation"
+
+    exit_code = main(
+        [
+            "report-automation",
+            "--report-type",
+            "monthly",
+            "--client-type",
+            "local-business",
+            "--niche",
+            "construction",
+            "--output",
+            str(output),
+        ]
+    )
+
+    assert exit_code == 0
+    expected_files = [
+        "START_HERE_REPORT_AUTOMATION.md",
+        "workspace_map.md",
+        "ai_agent_prompt.md",
+        "grill_me_report_questions.md",
+        "missing_info_policy.md",
+        "proposal_one_pager.md",
+        "demo_report_automation.html",
+        "report_automation.json",
+        "03_templates/monthly_report_template.md",
+        "04_ai_analysis/required_fields.json",
+        "05_grill_me_questions/questions.md",
+        "06_drafts/monthly_report_draft.md",
+        "07_approval/approval_checklist.md",
+        "scripts/run_report_dry_run.py",
+    ]
+    for relative_path in expected_files:
+        assert (output / relative_path).exists(), relative_path
+
+    (output / "01_past_outputs/monthly_reports/last_month.md").write_text("# Last Month\n\n売上は安定しました。\n", encoding="utf-8")
+    (output / "02_current_materials/sales_csv/current.csv").write_text("metric,value\nsales,120\n", encoding="utf-8")
+    completed = subprocess.run(
+        [sys.executable, "scripts/run_report_dry_run.py"],
+        cwd=output,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    assert "past_files=1" in completed.stdout
+    assert "material_files=1" in completed.stdout
+    questions = (output / "05_grill_me_questions/questions.md").read_text()
+    draft = (output / "06_drafts/monthly_report_draft.md").read_text()
+    prompt = (output / "ai_agent_prompt.md").read_text()
+    payload = json.loads((output / "report_automation.json").read_text())
+    assert payload["report_type"] == "monthly"
+    assert "one GrillMe question at a time" in prompt
+    assert "Which reporting period" in questions
+    assert "current.csv" in draft
 
 
 def test_main_runs_github_discover_without_config(tmp_path, monkeypatch):

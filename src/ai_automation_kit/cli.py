@@ -57,6 +57,7 @@ from ai_automation_kit.core.operator_console import generate_recommended_flow_fr
 from ai_automation_kit.core.operator_console import generate_share_check
 from ai_automation_kit.core.operator_console import generate_website_side_hustle_pack
 from ai_automation_kit.core.operator_console import package_client_demo
+from ai_automation_kit.core.report_automation import generate_report_automation_pack
 from ai_automation_kit.core.side_hustle_blueprints import generate_side_hustle_blueprints
 from ai_automation_kit.templates.docs_rag import run_docs_rag
 from ai_automation_kit.templates.delivery_pipeline import run_delivery_pipeline
@@ -286,6 +287,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     grill_me.add_argument("--connectors", default="local-folder")
     grill_me.add_argument("--output", required=True)
+
+    report_automation = subparsers.add_parser("report-automation")
+    report_automation.add_argument("--report-type", default="monthly", choices=["daily", "weekly", "monthly"])
+    report_automation.add_argument("--past-outputs")
+    report_automation.add_argument("--materials")
+    report_automation.add_argument("--client-type", default="local-business")
+    report_automation.add_argument("--niche", default="operations")
+    report_automation.add_argument("--output", required=True)
 
     flow_export = subparsers.add_parser("flow-export")
     flow_export.add_argument("--flow-id", required=True)
@@ -719,6 +728,21 @@ def main(argv: list[str] | None = None) -> int:
         print(f"questions={args.output}/questions_to_answer.md")
         print(f"ai_agent_prompt={args.output}/ai_agent_prompt.md")
         print(f"flow_id={payload['flow_id']}")
+        print(f"status={payload['status']}")
+        return 0
+    if args.command == "report-automation":
+        payload = generate_report_automation_pack(
+            report_type=args.report_type,
+            past_outputs=Path(args.past_outputs) if args.past_outputs else None,
+            materials=Path(args.materials) if args.materials else None,
+            client_type=args.client_type,
+            niche=args.niche,
+            output=Path(args.output),
+        )
+        print(f"report_automation={args.output}/START_HERE_REPORT_AUTOMATION.md")
+        print(f"ai_agent_prompt={args.output}/ai_agent_prompt.md")
+        print(f"grill_me_questions={args.output}/05_grill_me_questions/questions.md")
+        print(f"approval_checklist={args.output}/07_approval/approval_checklist.md")
         print(f"status={payload['status']}")
         return 0
     if args.command == "flow-export":
