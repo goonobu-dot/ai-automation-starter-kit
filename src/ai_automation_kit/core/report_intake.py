@@ -18,6 +18,10 @@ from xml.etree import ElementTree
 
 MAX_FILE_BYTES = 10 * 1024 * 1024
 MAX_FILES = 200
+MAX_CONTAINER_MEMBERS = 256
+MAX_CONTAINER_MEMBER_BYTES_MULTIPLIER = 4
+MAX_CONTAINER_TOTAL_BYTES_MULTIPLIER = 8
+MAX_CONTAINER_TEXT_BYTES_MULTIPLIER = 2
 
 TEXT_EXTENSIONS = {".md", ".txt", ".csv", ".json"}
 DOCUMENT_EXTENSIONS = {".docx", ".xlsx", ".pdf"}
@@ -37,6 +41,12 @@ SCRIPT_EXTENSIONS = {
     ".ts",
 }
 SUPPORTED_EXTENSIONS = TEXT_EXTENSIONS | DOCUMENT_EXTENSIONS | IMAGE_EXTENSIONS
+
+
+class _ContainerLimitError(ValueError):
+    def __init__(self, warning: str):
+        super().__init__(warning)
+        self.warning = warning
 
 
 def _extension(path: Path) -> str:
@@ -321,25 +331,61 @@ def _xml_local_name(tag: str) -> str:
     return tag.rsplit("}", 1)[-1]
 
 
-def _zip_member(archive: zipfile.ZipFile, name: str, max_file_bytes: int) -> bytes:
-    info = archive.getinfo(name)
-    if info.file_size > max_file_bytes * 4:
-        raise ValueError("zip_member_too_large")
+def _zip_limits(max_file_bytes: int) -> Tuple[int, int, int, int]:
+    return (
+        MAX_CONTAINER_MEMBERS,
+        max_file_bytes * MAX_CONTAINER_MEMBER_BYTES_MULTIPLIER,
+        max_file_bytes * MAX_CONTAINER_TOTAL_BYTES_MULTIPLIER,
+        max_file_bytes * MAX_CONTAINER_TEXT_BYTES_MULTIPLIER,
+    )
+
+
+def _zip_preflight(archive: zipfile.ZipFile, max_file_bytes: int) -> Dict[str, object]:
+    max_members, max_member_bytes, max_total_bytes, _ = _zip_limits(max_file_bytes)
+    infos = archive.infolist()
+    if len(infos) > max_members:
+        raise _ContainerLimitError("zip_member_count_limit")
+    total_bytes = 0
+    by_name = {}
+    for info in infos:
+        try:
+            member_bytes = int(info.file_size)
+        except (AttributeError, TypeError, ValueError):
+            raise ValueError("invalid_container")
+        if member_bytes < 0 or member_bytes > max_member_bytes:
+            raise _ContainerLimitError("zip_member_size_limit")
+        total_bytes += member_bytes
+        if total_bytes > max_total_bytes:
+            raise _ContainerLimitError("zip_total_size_limit")
+        by_name[info.filename] = info
+    return by_name
+
+
+def _zip_member(archive: zipfile.ZipFile, info: object, max_file_bytes: int) -> bytes:
+    _, max_member_bytes, _, _ = _zip_limits(max_file_bytes)
     with archive.open(info, "r") as member:
-        data = member.read(max_file_bytes * 4 + 1)
-    if len(data) > max_file_bytes * 4:
-        raise ValueError("zip_member_too_large")
+        data = member.read(max_member_bytes + 1)
+    if len(data) > max_member_bytes:
+        raise _ContainerLimitError("zip_member_size_limit")
     return data
 
 
 def _extract_docx(data: bytes, max_file_bytes: int) -> str:
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
-        xml = ElementTree.fromstring(_zip_member(archive, "word/document.xml", max_file_bytes))
+        members = _zip_preflight(archive, max_file_bytes)
+        if "word/document.xml" not in members:
+            raise ValueError("invalid_container")
+        xml = ElementTree.fromstring(_zip_member(archive, members["word/document.xml"], max_file_bytes))
     paragraphs = []
     current = []
+    _, _, _, max_text_bytes = _zip_limits(max_file_bytes)
+    text_bytes = 0
     for element in xml.iter():
         local_name = _xml_local_name(element.tag)
         if local_name == "t" and element.text:
+            text_bytes += len(element.text.encode("utf-8"))
+            if text_bytes > max_text_bytes:
+                raise _ContainerLimitError("extracted_text_size_limit")
             current.append(element.text)
         elif local_name == "p" and current:
             paragraphs.append("".join(current))
@@ -351,16 +397,21 @@ def _extract_docx(data: bytes, max_file_bytes: int) -> str:
 
 def _extract_xlsx(data: bytes, max_file_bytes: int) -> str:
     with zipfile.ZipFile(io.BytesIO(data)) as archive:
+        members = _zip_preflight(archive, max_file_bytes)
         shared_strings = []
-        if "xl/sharedStrings.xml" in archive.namelist():
-            root = ElementTree.fromstring(_zip_member(archive, "xl/sharedStrings.xml", max_file_bytes))
+        if "xl/sharedStrings.xml" in members:
+            root = ElementTree.fromstring(_zip_member(archive, members["xl/sharedStrings.xml"], max_file_bytes))
             for item in root.iter():
                 if _xml_local_name(item.tag) == "si":
                     shared_strings.append("".join(part.text or "" for part in item.iter() if _xml_local_name(part.tag) == "t"))
         lines = []
-        sheet_names = sorted(name for name in archive.namelist() if name.startswith("xl/worksheets/") and name.endswith(".xml"))
+        sheet_names = sorted(name for name in members if name.startswith("xl/worksheets/") and name.endswith(".xml"))
+        if not sheet_names:
+            raise ValueError("invalid_container")
+        _, _, _, max_text_bytes = _zip_limits(max_file_bytes)
+        text_bytes = 0
         for sheet_name in sheet_names:
-            root = ElementTree.fromstring(_zip_member(archive, sheet_name, max_file_bytes))
+            root = ElementTree.fromstring(_zip_member(archive, members[sheet_name], max_file_bytes))
             for row in (element for element in root.iter() if _xml_local_name(element.tag) == "row"):
                 values = []
                 for cell in (element for element in row if _xml_local_name(element.tag) == "c"):
@@ -373,6 +424,9 @@ def _extract_xlsx(data: bytes, max_file_bytes: int) -> str:
                             pass
                     elif cell_type == "inlineStr":
                         value = "".join(part.text or "" for part in cell.iter() if _xml_local_name(part.tag) == "t")
+                    text_bytes += len((value or "").encode("utf-8")) + 1
+                    if text_bytes > max_text_bytes:
+                        raise _ContainerLimitError("extracted_text_size_limit")
                     values.append(value or "")
                 if values:
                     lines.append("\t".join(values))
@@ -459,6 +513,10 @@ def extract_text(path: Path, *, max_file_bytes: int = MAX_FILE_BYTES) -> Dict:
     except UnicodeDecodeError:
         base["reason"] = "invalid_utf8"
         return base
+    except _ContainerLimitError as error:
+        base["reason"] = "expanded_content_too_large"
+        base["warnings"] = [error.warning]
+        return base
     except (KeyError, ValueError, zipfile.BadZipFile, ElementTree.ParseError):
         base["reason"] = "invalid_container"
         return base
@@ -467,6 +525,8 @@ def extract_text(path: Path, *, max_file_bytes: int = MAX_FILE_BYTES) -> Dict:
         base["reason"] = "extraction_error"
         base["warnings"] = warnings
         return base
+    if extension in {".docx", ".xlsx"} and not text:
+        warnings.append("empty_extracted_text")
 
     base["status"] = "accepted"
     base["extraction_status"] = extraction_status
@@ -598,6 +658,22 @@ def _copy_rejected(record: Dict, reason: str) -> Dict:
     }
 
 
+def _path_is_within(path: Path, workspace: Path) -> bool:
+    try:
+        return os.path.commonpath([str(_absolute_path(path)), str(_absolute_path(workspace))]) == str(_absolute_path(workspace))
+    except ValueError:
+        return False
+
+
+def _destination_directory_is_unchanged(path: Path, workspace: Path, expected_identity: Tuple[int, int]) -> bool:
+    if not _path_is_within(path, workspace):
+        return False
+    observed, error = _safe_lstat(path)
+    if error or observed is None or not stat.S_ISDIR(observed.st_mode):
+        return False
+    return (observed.st_dev, observed.st_ino) == expected_identity
+
+
 def copy_approved_files(records: List[Dict], workspace: Path) -> List[Dict]:
     """Copy only accepted records into a collision-safe, role-separated intake area."""
     workspace = Path(workspace)
@@ -652,6 +728,13 @@ def copy_approved_files(records: List[Dict], workspace: Path) -> List[Dict]:
         except OSError:
             outcomes.append(_copy_rejected(record, "unsafe_destination_path"))
             continue
+        try:
+            opened_destination_stat = os.fstat(directory_descriptor)
+            opened_destination_identity = (opened_destination_stat.st_dev, opened_destination_stat.st_ino)
+        except OSError:
+            os.close(directory_descriptor)
+            outcomes.append(_copy_rejected(record, "unsafe_destination_path"))
+            continue
         number = 1
         try:
             while True:
@@ -682,6 +765,14 @@ def copy_approved_files(records: List[Dict], workspace: Path) -> List[Dict]:
                                 byte_count += len(chunk)
                                 destination_file.write(chunk)
                     actual_hash = digest.hexdigest()
+                    # The dir_fd anchors the write and cleanup; this postcheck detects rename or replacement races without claiming an OS-wide guarantee against every concurrent mutation.
+                    if not _destination_directory_is_unchanged(destination_directory, workspace, opened_destination_identity):
+                        try:
+                            _unlink_at(directory_descriptor, candidate_name)
+                        except OSError:
+                            pass
+                        outcomes.append(_copy_rejected(record, "destination_changed_during_copy"))
+                        break
                     if expected_hash and actual_hash != expected_hash:
                         _unlink_at(directory_descriptor, candidate_name)
                         outcomes.append(_copy_rejected(record, "source_hash_mismatch"))

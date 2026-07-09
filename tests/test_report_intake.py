@@ -1,5 +1,6 @@
 import builtins
 import hashlib
+import io
 import struct
 import sys
 import types
@@ -203,6 +204,140 @@ def test_docx_and_xlsx_are_extracted_with_stdlib_zip_xml(tmp_path):
     assert "第一段" in docx_result["text"] and "Second paragraph" in docx_result["text"]
     assert xlsx_result["extraction_status"] == "extracted"
     assert "Revenue" in xlsx_result["text"] and "100" in xlsx_result["text"]
+
+
+def test_empty_or_unrelated_zip_files_are_not_documents(tmp_path):
+    cases = {
+        "empty.docx": {},
+        "unrelated.docx": {"other/file.txt": "text"},
+        "empty.xlsx": {},
+        "unrelated.xlsx": {"other/file.txt": "text"},
+    }
+
+    for name, members in cases.items():
+        path = tmp_path / name
+        write_zip(path, members)
+
+        result = extract_text(path)
+
+        assert result["status"] == "rejected"
+        assert result["reason"] == "invalid_container"
+
+
+def test_valid_empty_documents_are_accepted_with_warning(tmp_path):
+    docx = tmp_path / "empty.docx"
+    write_zip(
+        docx,
+        {
+            "word/document.xml": (
+                '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+                "<w:body/></w:document>"
+            )
+        },
+    )
+    xlsx = tmp_path / "empty.xlsx"
+    write_zip(
+        xlsx,
+        {
+            "xl/worksheets/sheet1.xml": (
+                '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+                "<sheetData/></worksheet>"
+            )
+        },
+    )
+
+    for path in (docx, xlsx):
+        result = extract_text(path)
+        assert result["status"] == "accepted"
+        assert result["text"] == ""
+        assert "empty_extracted_text" in result["warnings"]
+
+
+def test_zip_declared_member_and_aggregate_limits_fail_without_large_allocations(tmp_path, monkeypatch):
+    path = tmp_path / "declared.docx"
+    path.write_bytes(b"small")
+
+    class FakeArchive:
+        def __init__(self, infos):
+            self.infos = infos
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            return False
+
+        def infolist(self):
+            return self.infos
+
+        def getinfo(self, name):
+            return next(info for info in self.infos if info.filename == name)
+
+        def open(self, info, mode):
+            return io.BytesIO(b"not reached")
+
+    declared_large = types.SimpleNamespace(
+        filename="word/document.xml",
+        file_size=MAX_FILE_BYTES * report_intake.MAX_CONTAINER_MEMBER_BYTES_MULTIPLIER + 1,
+    )
+    monkeypatch.setattr(report_intake.zipfile, "ZipFile", lambda *args, **kwargs: FakeArchive([declared_large]))
+    result = extract_text(path)
+    assert result["reason"] == "expanded_content_too_large"
+    assert "zip_member_size_limit" in result["warnings"]
+
+    aggregate_infos = [
+        types.SimpleNamespace(filename="word/document.xml", file_size=MAX_FILE_BYTES * 3),
+        types.SimpleNamespace(filename="word/header.xml", file_size=MAX_FILE_BYTES * 3),
+        types.SimpleNamespace(filename="word/footer.xml", file_size=MAX_FILE_BYTES * 3),
+    ]
+    monkeypatch.setattr(report_intake.zipfile, "ZipFile", lambda *args, **kwargs: FakeArchive(aggregate_infos))
+    result = extract_text(path)
+    assert result["reason"] == "expanded_content_too_large"
+    assert "zip_total_size_limit" in result["warnings"]
+
+
+def test_zip_member_count_and_extracted_text_limits_fail_boundedly(tmp_path, monkeypatch):
+    path = tmp_path / "many.docx"
+    path.write_bytes(b"small")
+
+    class FakeArchive:
+        def __init__(self, infos, contents=None):
+            self.infos = infos
+            self.contents = contents or {}
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc_value, traceback):
+            return False
+
+        def infolist(self):
+            return self.infos
+
+        def getinfo(self, name):
+            return next(info for info in self.infos if info.filename == name)
+
+        def open(self, info, mode):
+            return io.BytesIO(self.contents[info.filename])
+
+    many = [types.SimpleNamespace(filename="word/{:03d}.xml".format(index), file_size=1) for index in range(report_intake.MAX_CONTAINER_MEMBERS + 1)]
+    monkeypatch.setattr(report_intake.zipfile, "ZipFile", lambda *args, **kwargs: FakeArchive(many))
+    result = extract_text(path)
+    assert result["reason"] == "expanded_content_too_large"
+    assert "zip_member_count_limit" in result["warnings"]
+
+    text_path = tmp_path / "long.docx"
+    text_path.write_bytes(b"small")
+    text = "x" * (100 * report_intake.MAX_CONTAINER_TEXT_BYTES_MULTIPLIER + 1)
+    xml = (
+        '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+        "<w:body><w:p><w:r><w:t>{}</w:t></w:r></w:p></w:body></w:document>".format(text)
+    ).encode("utf-8")
+    info = types.SimpleNamespace(filename="word/document.xml", file_size=len(xml))
+    monkeypatch.setattr(report_intake.zipfile, "ZipFile", lambda *args, **kwargs: FakeArchive([info], {info.filename: xml}))
+    result = extract_text(text_path, max_file_bytes=100)
+    assert result["reason"] == "expanded_content_too_large"
+    assert "extracted_text_size_limit" in result["warnings"]
 
 
 def test_images_return_metadata_without_claiming_ocr(tmp_path):
@@ -441,6 +576,39 @@ def test_copy_fails_closed_when_destination_parent_changes_to_symlink(tmp_path, 
     assert outcomes[0]["status"] == "copy_rejected"
     assert outcomes[0]["reason"] == "unsafe_destination_path"
     assert not (moved_parent / "source.txt").exists()
+
+
+def test_copy_rejects_and_cleans_when_destination_directory_is_renamed_after_open(tmp_path, monkeypatch):
+    source = tmp_path / "source.txt"
+    source.write_text("content", encoding="utf-8")
+    workspace = tmp_path / "workspace"
+    destination_parent = workspace / "00_intake" / "past"
+    moved_parent = tmp_path / "moved-destination-parent"
+    original_open_directory = report_intake._open_directory_fd
+    opened_and_renamed = False
+
+    def rename_after_open(path, create=False):
+        nonlocal opened_and_renamed
+        descriptor = original_open_directory(path, create=create)
+        if Path(path) == destination_parent and not create and not opened_and_renamed:
+            opened_and_renamed = True
+            destination_parent.rename(moved_parent)
+            destination_parent.symlink_to(moved_parent, target_is_directory=True)
+        return descriptor
+
+    monkeypatch.setattr(report_intake, "_open_directory_fd", rename_after_open)
+    try:
+        outcomes = copy_approved_files(
+            [{"status": "accepted", "source_role": "past_output", "original_path": str(source), "name": "source.txt"}],
+            workspace,
+        )
+    finally:
+        destination_parent.unlink()
+        moved_parent.rename(destination_parent)
+
+    assert outcomes[0]["status"] == "copy_rejected"
+    assert outcomes[0]["reason"] == "destination_changed_during_copy"
+    assert not (destination_parent / "source.txt").exists()
 
 
 def test_copy_does_not_overwrite_existing_collision(tmp_path):
