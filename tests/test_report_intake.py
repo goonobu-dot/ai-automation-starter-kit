@@ -6,6 +6,7 @@ import types
 import zipfile
 from pathlib import Path
 
+from ai_automation_kit.core import report_intake
 from ai_automation_kit.core.report_intake import (
     MAX_FILE_BYTES,
     MAX_FILES,
@@ -70,6 +71,7 @@ def test_public_limits_are_bounded_and_text_input_is_hashed_and_classified(tmp_p
     assert record["bytes"] == len(source.read_bytes())
     assert record["report_period"] == "2024-Q1"
     assert record["content_role"] == "sales"
+    assert record["reason"] is None
     assert source.stat().st_mtime_ns == before_mtime
     assert hashlib.sha256(source.read_bytes()).hexdigest() == before_hash
 
@@ -87,7 +89,6 @@ def test_recursive_discovery_rejects_symlinks_hidden_scripts_archives_and_unknow
 
     payload = inspect_sources([tmp_path], [])
     reasons = {record["reason"] for record in rejected_records(payload)}
-
     assert len(accepted_records(payload)) == 1
     assert {"symlink", "hidden_file", "script_or_executable", "archive", "unknown_binary"} <= reasons
 
@@ -116,10 +117,8 @@ def test_size_count_and_missing_path_limits_are_explicit(tmp_path):
         max_file_bytes=1,
         max_files=1,
     )
-    reasons = {record["reason"] for record in rejected_records(payload)}
-
     assert len(accepted_records(payload)) == 1
-    assert "max_files_exceeded" in reasons
+    assert payload["truncated"] is True
 
     missing_payload = inspect_sources([missing], [], max_files=10)
     assert rejected_records(missing_payload)[0]["reason"] == "missing_path"
@@ -128,6 +127,31 @@ def test_size_count_and_missing_path_limits_are_explicit(tmp_path):
     oversized.write_text("too large", encoding="utf-8")
     oversized_payload = inspect_sources([oversized], [], max_file_bytes=3)
     assert rejected_records(oversized_payload)[0]["reason"] == "file_too_large"
+
+
+def test_max_file_count_is_bounded_and_reports_truncation_as_metadata(tmp_path):
+    for index in range(3):
+        (tmp_path / "{}.txt".format(index)).write_text(str(index), encoding="utf-8")
+
+    payload = inspect_sources([tmp_path], [], max_files=2)
+
+    assert len(payload["records"]) == 2
+    assert payload["truncated"] is True
+    assert payload["counts"]["inspected"] == 2
+    assert all(record.get("reason") != "max_files_exceeded" for record in payload["records"])
+
+
+def test_hidden_directories_are_skipped_without_recursing(tmp_path):
+    hidden = tmp_path / ".private"
+    hidden.mkdir()
+    (hidden / "secret.txt").write_text("secret", encoding="utf-8")
+    (tmp_path / "visible.txt").write_text("visible", encoding="utf-8")
+
+    payload = inspect_sources([tmp_path], [])
+
+    assert [record["name"] for record in accepted_records(payload)] == ["visible.txt"]
+    assert {item["reason"] for item in payload["skipped"]} == {"hidden_directory"}
+    assert str(hidden) in {item["path"] for item in payload["skipped"]}
 
 
 def test_accepted_content_is_deduplicated_across_source_roles(tmp_path):
@@ -196,9 +220,47 @@ def test_images_return_metadata_without_claiming_ocr(tmp_path):
         assert any("ocr" in warning.lower() for warning in result["warnings"])
 
 
+def test_malformed_binary_signatures_are_rejected(tmp_path):
+    for extension in (".png", ".jpg", ".webp", ".pdf"):
+        path = tmp_path / ("bad" + extension)
+        path.write_bytes(b"not a valid binary file")
+
+        result = extract_text(path)
+
+        assert result["status"] == "rejected"
+        assert result["reason"] == "invalid_format"
+
+
+def test_invalid_utf8_and_executable_text_are_rejected(tmp_path):
+    invalid_utf8 = tmp_path / "invalid.txt"
+    invalid_utf8.write_bytes(b"\xff\xfe")
+    executable = tmp_path / "executable.txt"
+    executable.write_text("safe-looking", encoding="utf-8")
+    executable.chmod(0o755)
+
+    assert extract_text(invalid_utf8)["reason"] == "invalid_utf8"
+    assert extract_text(executable)["reason"] == "script_or_executable"
+
+
+def test_unreadable_and_malformed_containers_have_explicit_reasons(tmp_path, monkeypatch):
+    unreadable = tmp_path / "unreadable.txt"
+    unreadable.write_text("content", encoding="utf-8")
+    malformed_docx = tmp_path / "broken.docx"
+    malformed_docx.write_bytes(b"not a zip")
+    malformed_xlsx = tmp_path / "broken.xlsx"
+    malformed_xlsx.write_bytes(b"also not a zip")
+
+    monkeypatch.setattr(report_intake, "_read_limited", lambda path, limit: (None, "unreadable"))
+    assert extract_text(unreadable)["reason"] == "unreadable"
+    monkeypatch.undo()
+
+    assert extract_text(malformed_docx)["reason"] == "invalid_container"
+    assert extract_text(malformed_xlsx)["reason"] == "invalid_container"
+
+
 def test_pdf_reader_is_optional_and_does_not_add_a_dependency(tmp_path, monkeypatch):
     pdf = tmp_path / "report.pdf"
-    pdf.write_bytes(b"%PDF-1.4\nnot a complete document")
+    pdf.write_bytes(b"%PDF-1.4\nnot a complete document\n%%EOF")
     real_import = builtins.__import__
 
     def missing_pypdf(name, *args, **kwargs):
@@ -215,7 +277,7 @@ def test_pdf_reader_is_optional_and_does_not_add_a_dependency(tmp_path, monkeypa
 
 def test_pdf_reader_returns_extracted_page_text_without_a_real_dependency(tmp_path, monkeypatch):
     pdf = tmp_path / "report.pdf"
-    pdf.write_bytes(b"%PDF-1.4\nfake")
+    pdf.write_bytes(b"%PDF-1.4\nfake\n%%EOF")
 
     class FakePage:
         def __init__(self, text):
@@ -248,6 +310,24 @@ def test_copy_creates_nested_workspace_parents(tmp_path):
 
     assert [item["status"] for item in outcomes] == ["copied"]
     assert (workspace / "00_intake" / "past" / "nested.txt").read_text(encoding="utf-8") == "nested"
+
+
+def test_copy_requires_explicit_accepted_status(tmp_path):
+    source = tmp_path / "source.txt"
+    source.write_text("content", encoding="utf-8")
+
+    outcomes = copy_approved_files(
+        [{"source_role": "past_output", "original_path": str(source), "name": "source.txt"}],
+        tmp_path / "workspace",
+    )
+
+    assert outcomes == [{
+        "status": "copy_rejected",
+        "source_role": "past_output",
+        "original_path": str(source),
+        "name": "source.txt",
+        "reason": "missing_status",
+    }]
 
 
 def test_copy_sanitizes_names_prevents_collisions_and_rejects_symlink_sources(tmp_path):
@@ -298,6 +378,71 @@ def test_copy_reports_missing_and_hash_mismatched_accepted_records(tmp_path):
     ]
 
 
+def test_copy_fails_closed_when_source_parent_changes_to_symlink(tmp_path, monkeypatch):
+    source_parent = tmp_path / "source-parent"
+    source_parent.mkdir()
+    source = source_parent / "source.txt"
+    source.write_text("content", encoding="utf-8")
+    moved_parent = tmp_path / "moved-source-parent"
+    workspace = tmp_path / "workspace"
+    original_open = report_intake._open_file_no_follow
+    swapped = False
+
+    def swap_parent_before_open(path):
+        nonlocal swapped
+        if Path(path) == source and not swapped:
+            swapped = True
+            source_parent.rename(moved_parent)
+            source_parent.symlink_to(moved_parent, target_is_directory=True)
+        return original_open(path)
+
+    monkeypatch.setattr(report_intake, "_open_file_no_follow", swap_parent_before_open)
+    try:
+        outcomes = copy_approved_files(
+            [{"status": "accepted", "source_role": "past_output", "original_path": str(source), "name": "source.txt"}],
+            workspace,
+        )
+    finally:
+        source_parent.unlink()
+        moved_parent.rename(source_parent)
+
+    assert outcomes[0]["status"] == "copy_rejected"
+    assert outcomes[0]["reason"] == "unsafe_source_path"
+    assert not (workspace / "00_intake" / "past" / "source.txt").exists()
+
+
+def test_copy_fails_closed_when_destination_parent_changes_to_symlink(tmp_path, monkeypatch):
+    source = tmp_path / "source.txt"
+    source.write_text("content", encoding="utf-8")
+    workspace = tmp_path / "workspace"
+    destination_parent = workspace / "00_intake" / "past"
+    moved_parent = tmp_path / "moved-destination-parent"
+    original_open_directory = report_intake._open_directory_fd
+    swapped = False
+
+    def swap_destination_parent(path, create=False):
+        nonlocal swapped
+        if Path(path) == destination_parent and not create and not swapped:
+            swapped = True
+            destination_parent.rename(moved_parent)
+            destination_parent.symlink_to(moved_parent, target_is_directory=True)
+        return original_open_directory(path, create=create)
+
+    monkeypatch.setattr(report_intake, "_open_directory_fd", swap_destination_parent)
+    try:
+        outcomes = copy_approved_files(
+            [{"status": "accepted", "source_role": "past_output", "original_path": str(source), "name": "source.txt"}],
+            workspace,
+        )
+    finally:
+        destination_parent.unlink()
+        moved_parent.rename(destination_parent)
+
+    assert outcomes[0]["status"] == "copy_rejected"
+    assert outcomes[0]["reason"] == "unsafe_destination_path"
+    assert not (moved_parent / "source.txt").exists()
+
+
 def test_copy_does_not_overwrite_existing_collision(tmp_path):
     source = tmp_path / "source.txt"
     source.write_text("new", encoding="utf-8")
@@ -307,7 +452,7 @@ def test_copy_does_not_overwrite_existing_collision(tmp_path):
     (destination / "report.txt").write_text("existing", encoding="utf-8")
 
     outcomes = copy_approved_files(
-        [{"source_role": "current_material", "original_path": str(source), "name": "report.txt"}],
+        [{"status": "accepted", "source_role": "current_material", "original_path": str(source), "name": "report.txt"}],
         workspace,
     )
     copied = [item for item in outcomes if item["status"] == "copied"]

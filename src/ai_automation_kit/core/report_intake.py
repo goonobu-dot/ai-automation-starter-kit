@@ -6,7 +6,6 @@ import errno
 import hashlib
 import importlib
 import io
-import itertools
 import os
 import re
 import stat
@@ -97,6 +96,7 @@ def _record_base(path: Path, source_role: str) -> Dict:
         "extraction_status": "not_attempted",
         "text": None,
         "warnings": [],
+        "reason": None,
         "classification": classification,
         "report_period": classification["report_period"],
         "content_role": classification["content_role"],
@@ -143,19 +143,64 @@ def _looks_binary(data: bytes) -> bool:
     return False
 
 
-def _open_no_follow(path: Path, flags: int):
-    no_follow = getattr(os, "O_NOFOLLOW", 0)
-    return os.open(str(path), flags | no_follow)
+def _no_follow_flag() -> int:
+    flag = getattr(os, "O_NOFOLLOW", None)
+    if flag is None:
+        raise OSError(errno.ENOTSUP, "O_NOFOLLOW is required for safe local intake")
+    return flag
+
+
+def _absolute_path(path: Path) -> Path:
+    return Path(os.path.abspath(os.fspath(path)))
+
+
+def _open_directory_fd(path: Path, create: bool = False) -> int:
+    path = _absolute_path(Path(path))
+    directory_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | _no_follow_flag()
+    descriptor = os.open(path.anchor, directory_flags)
+    try:
+        for component in path.parts:
+            if component == path.anchor:
+                continue
+            try:
+                next_descriptor = os.open(component, directory_flags, dir_fd=descriptor)
+            except FileNotFoundError:
+                if not create:
+                    raise
+                os.mkdir(component, mode=0o700, dir_fd=descriptor)
+                next_descriptor = os.open(component, directory_flags, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = next_descriptor
+        return descriptor
+    except Exception:
+        try:
+            os.close(descriptor)
+        except OSError:
+            pass
+        raise
+
+
+def _open_file_no_follow(path: Path) -> int:
+    path = _absolute_path(Path(path))
+    parent_descriptor = _open_directory_fd(path.parent)
+    try:
+        return os.open(path.name, os.O_RDONLY | _no_follow_flag(), dir_fd=parent_descriptor)
+    finally:
+        os.close(parent_descriptor)
+
+
+def _unlink_at(directory_descriptor: int, name: str) -> None:
+    os.unlink(name, dir_fd=directory_descriptor)
 
 
 def _read_limited(path: Path, max_file_bytes: int) -> Tuple[Optional[bytes], Optional[str]]:
     try:
-        descriptor = _open_no_follow(path, os.O_RDONLY)
+        descriptor = _open_file_no_follow(path)
     except FileNotFoundError:
         return None, "missing_path"
     except (PermissionError, OSError) as error:
         if getattr(error, "errno", None) == errno.ELOOP:
-            return None, "symlink"
+            return None, "unsafe_path"
         return None, "unreadable"
     try:
         with os.fdopen(descriptor, "rb") as source:
@@ -168,19 +213,28 @@ def _read_limited(path: Path, max_file_bytes: int) -> Tuple[Optional[bytes], Opt
 
 
 def _safe_lstat(path: Path):
+    path = _absolute_path(Path(path))
+    parent_descriptor = None
     try:
-        return path.lstat(), None
+        parent_descriptor = _open_directory_fd(path.parent)
+        return os.stat(path.name, dir_fd=parent_descriptor, follow_symlinks=False), None
     except FileNotFoundError:
         return None, "missing_path"
-    except (PermissionError, OSError):
+    except (PermissionError, OSError) as error:
+        if getattr(error, "errno", None) == errno.ELOOP:
+            return None, "unsafe_path"
         return None, "unreadable"
+    finally:
+        if parent_descriptor is not None:
+            os.close(parent_descriptor)
 
 
 def _image_metadata(path: Path, data: bytes) -> Dict[str, object]:
     extension = _extension(path)
     metadata: Dict[str, object] = {"format": extension.lstrip(".").upper()}
-    if extension == ".png" and data.startswith(b"\x89PNG\r\n\x1a\n") and len(data) >= 24:
-        metadata["width"], metadata["height"] = struct.unpack(">II", data[16:24])
+    if extension == ".png":
+        dimensions = _png_dimensions(data)
+        metadata["width"], metadata["height"] = dimensions
     elif extension in {".jpg", ".jpeg"}:
         width, height = _jpeg_dimensions(data)
         metadata["width"], metadata["height"] = width, height
@@ -191,6 +245,15 @@ def _image_metadata(path: Path, data: bytes) -> Dict[str, object]:
         metadata["width"] = None
         metadata["height"] = None
     return metadata
+
+
+def _png_dimensions(data: bytes) -> Tuple[Optional[int], Optional[int]]:
+    if len(data) < 24 or not data.startswith(b"\x89PNG\r\n\x1a\n") or struct.unpack(">I", data[8:12])[0] != 13 or data[12:16] != b"IHDR":
+        return None, None
+    width, height = struct.unpack(">II", data[16:24])
+    if width == 0 or height == 0:
+        return None, None
+    return width, height
 
 
 def _jpeg_dimensions(data: bytes) -> Tuple[Optional[int], Optional[int]]:
@@ -216,14 +279,42 @@ def _jpeg_dimensions(data: bytes) -> Tuple[Optional[int], Optional[int]]:
 
 
 def _webp_dimensions(data: bytes) -> Tuple[Optional[int], Optional[int]]:
-    if len(data) < 30 or data[:4] != b"RIFF" or data[8:12] != b"WEBP":
+    if len(data) < 20 or data[:4] != b"RIFF" or data[8:12] != b"WEBP":
+        return None, None
+    riff_size = struct.unpack("<I", data[4:8])[0]
+    if riff_size + 8 > len(data):
         return None, None
     chunk = data[12:16]
-    if chunk == b"VP8X" and len(data) >= 30:
+    chunk_size = struct.unpack("<I", data[16:20])[0]
+    if chunk == b"VP8X" and chunk_size >= 10 and len(data) >= 30:
         width = 1 + int.from_bytes(data[24:27], "little")
         height = 1 + int.from_bytes(data[27:30], "little")
         return width, height
+    if chunk == b"VP8L" and chunk_size >= 5 and len(data) >= 25 and data[20] == 0x2F:
+        width = 1 + (data[21] | ((data[22] & 0x3F) << 8))
+        height = 1 + ((data[22] >> 6) | (data[23] << 2) | ((data[24] & 0x0F) << 10))
+        return width, height
+    if chunk == b"VP8 " and chunk_size >= 10:
+        frame = data[20:]
+        signature = frame.find(b"\x9d\x01\x2a")
+        if signature >= 0 and len(frame) >= signature + 7:
+            width, height = struct.unpack("<HH", frame[signature + 3:signature + 7])
+            return width & 0x3FFF, height & 0x3FFF
     return None, None
+
+
+def _valid_binary_format(path: Path, data: bytes) -> bool:
+    extension = _extension(path)
+    if extension == ".png":
+        return _png_dimensions(data) != (None, None)
+    if extension in {".jpg", ".jpeg"}:
+        width, height = _jpeg_dimensions(data)
+        return bool(width and height) and b"\xff\xd9" in data
+    if extension == ".webp":
+        return _webp_dimensions(data) != (None, None)
+    if extension == ".pdf":
+        return data.startswith(b"%PDF-") and b"%%EOF" in data
+    return True
 
 
 def _xml_local_name(tag: str) -> str:
@@ -343,6 +434,9 @@ def extract_text(path: Path, *, max_file_bytes: int = MAX_FILE_BYTES) -> Dict:
     if extension not in SUPPORTED_EXTENSIONS:
         base["reason"] = "unknown_binary" if _looks_binary(data[:4096]) else "unsupported_extension"
         return base
+    if extension in IMAGE_EXTENSIONS | {".pdf"} and not _valid_binary_format(path, data):
+        base["reason"] = "invalid_format"
+        return base
 
     warnings = []
     try:
@@ -378,30 +472,39 @@ def extract_text(path: Path, *, max_file_bytes: int = MAX_FILE_BYTES) -> Dict:
     base["extraction_status"] = extraction_status
     base["text"] = text
     base["warnings"] = warnings
-    base.pop("reason", None)
+    base["reason"] = None
     return base
 
 
-def _iter_source_paths(paths: Iterable[Path]) -> Iterator[Path]:
+def _iter_source_paths(paths: Iterable[Path]) -> Iterator[Tuple[Path, Optional[str]]]:
     for raw_path in paths:
         path = Path(raw_path)
         file_stat, stat_error = _safe_lstat(path)
         if stat_error or file_stat is None or stat.S_ISLNK(file_stat.st_mode) or not stat.S_ISDIR(file_stat.st_mode):
-            yield path
+            yield path, None
+            continue
+        if _is_hidden(path):
+            yield path, "hidden_directory"
             continue
         for root, directories, filenames in os.walk(str(path), topdown=True, followlinks=False):
             directories.sort()
             filenames.sort()
+            hidden_directories = []
             symlink_directories = []
             for directory in list(directories):
                 candidate = Path(root) / directory
-                if candidate.is_symlink():
+                if _is_hidden(candidate):
+                    directories.remove(directory)
+                    hidden_directories.append(candidate)
+                elif candidate.is_symlink():
                     directories.remove(directory)
                     symlink_directories.append(candidate)
+            for candidate in hidden_directories:
+                yield candidate, "hidden_directory"
             for candidate in symlink_directories:
-                yield candidate
+                yield candidate, None
             for filename in filenames:
-                yield Path(root) / filename
+                yield Path(root) / filename, None
 
 
 def inspect_sources(
@@ -418,27 +521,34 @@ def inspect_sources(
         raise ValueError("max_files must be positive")
 
     records = []
+    skipped = []
     seen_hashes = set()
-    # Stop the filesystem walk after one overflow candidate so discovery stays bounded.
-    candidates = itertools.chain(
-        ((path, "past_output") for path in _iter_source_paths(past_paths)),
-        ((path, "current_material") for path in _iter_source_paths(material_paths)),
-    )
-    for index, (path, source_role) in enumerate(candidates):
-        if index >= max_files:
-            records.append(_rejected(path, source_role, "max_files_exceeded"))
+    inspected = 0
+    truncated = False
+    stop = False
+    for paths, source_role in ((past_paths, "past_output"), (material_paths, "current_material")):
+        if stop:
             break
-        result = extract_text(path, max_file_bytes=max_file_bytes)
-        result["source_role"] = source_role
-        if result.get("status") != "accepted":
+        for path, skip_reason in _iter_source_paths(paths):
+            if skip_reason:
+                skipped.append({"path": str(path), "reason": skip_reason})
+                continue
+            if inspected >= max_files:
+                truncated = True
+                stop = True
+                break
+            inspected += 1
+            result = extract_text(path, max_file_bytes=max_file_bytes)
+            result["source_role"] = source_role
+            if result.get("status") != "accepted":
+                records.append(result)
+                continue
+            digest = result.get("sha256")
+            if digest in seen_hashes:
+                records.append(_rejected(path, source_role, "duplicate_content", size=result.get("bytes"), sha256=digest))
+                continue
+            seen_hashes.add(digest)
             records.append(result)
-            continue
-        digest = result.get("sha256")
-        if digest in seen_hashes:
-            records.append(_rejected(path, source_role, "duplicate_content", size=result.get("bytes"), sha256=digest))
-            continue
-        seen_hashes.add(digest)
-        records.append(result)
 
     accepted = [record for record in records if record.get("status") == "accepted"]
     rejected = [record for record in records if record.get("status") == "rejected"]
@@ -446,36 +556,22 @@ def inspect_sources(
         "records": records,
         "accepted": accepted,
         "rejected": rejected,
-        "counts": {"accepted": len(accepted), "rejected": len(rejected), "total": len(records)},
+        "skipped": skipped,
+        "truncated": truncated,
+        "counts": {"accepted": len(accepted), "rejected": len(rejected), "inspected": inspected, "total": len(records)},
     }
 
 
 def _ensure_directory(path: Path) -> bool:
-    path = Path(path)
-
-    def validate_components() -> bool:
-        current = Path(path.anchor) if path.anchor else Path(".")
-        for part in path.parts:
-            if part == path.anchor:
-                continue
-            current = current / part
-            try:
-                component_stat = current.lstat()
-            except FileNotFoundError:
-                return True
-            except OSError:
-                return False
-            if stat.S_ISLNK(component_stat.st_mode) or not stat.S_ISDIR(component_stat.st_mode):
-                return False
-        return True
-
+    descriptor = None
     try:
-        if not validate_components():
-            return False
-        path.mkdir(parents=True, exist_ok=True)
-        return validate_components() and path.is_dir() and not path.is_symlink()
+        descriptor = _open_directory_fd(path, create=True)
+        return True
     except OSError:
         return False
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
 
 
 def _sanitized_name(value: str) -> str:
@@ -505,21 +601,26 @@ def _copy_rejected(record: Dict, reason: str) -> Dict:
 def copy_approved_files(records: List[Dict], workspace: Path) -> List[Dict]:
     """Copy only accepted records into a collision-safe, role-separated intake area."""
     workspace = Path(workspace)
-    accepted_records = [record for record in records if record.get("status", "accepted") == "accepted"]
+    outcomes = []
+    accepted_records = []
+    for record in records:
+        if "status" not in record:
+            outcomes.append(_copy_rejected(record, "missing_status"))
+        elif record["status"] == "accepted":
+            accepted_records.append(record)
     if not _ensure_directory(workspace):
-        return [_copy_rejected(record, "workspace_unavailable") for record in accepted_records]
+        return outcomes + [_copy_rejected(record, "workspace_unavailable") for record in accepted_records]
     intake = workspace / "00_intake"
     if not _ensure_directory(intake):
-        return [_copy_rejected(record, "workspace_unavailable") for record in accepted_records]
+        return outcomes + [_copy_rejected(record, "workspace_unavailable") for record in accepted_records]
     role_directories = {}
     for role in ("past_output", "current_material"):
         directory_name = "past" if role == "past_output" else "current"
         directory = intake / directory_name
         if not _ensure_directory(directory):
-            return [_copy_rejected(record, "workspace_unavailable") for record in accepted_records]
+            return outcomes + [_copy_rejected(record, "workspace_unavailable") for record in accepted_records]
         role_directories[role] = directory
 
-    outcomes = []
     for record in accepted_records:
         role = record.get("source_role")
         destination_directory = role_directories.get(role)
@@ -533,7 +634,8 @@ def copy_approved_files(records: List[Dict], workspace: Path) -> List[Dict]:
         source = Path(str(original_value))
         file_stat, stat_error = _safe_lstat(source)
         if stat_error:
-            outcomes.append(_copy_rejected(record, stat_error))
+            reason = "unsafe_source_path" if stat_error == "unsafe_path" else stat_error
+            outcomes.append(_copy_rejected(record, reason))
             continue
         if file_stat is None or stat.S_ISLNK(file_stat.st_mode):
             outcomes.append(_copy_rejected(record, "symlink"))
@@ -544,63 +646,72 @@ def copy_approved_files(records: List[Dict], workspace: Path) -> List[Dict]:
         name = _sanitized_name(record.get("name", source.name))
         expected_hash = record.get("sha256")
         expected_bytes = record.get("bytes")
+        directory_descriptor = None
+        try:
+            directory_descriptor = _open_directory_fd(destination_directory)
+        except OSError:
+            outcomes.append(_copy_rejected(record, "unsafe_destination_path"))
+            continue
         number = 1
-        while True:
-            candidate_name = name if number == 1 else _collision_name(name, number)
-            destination = destination_directory / candidate_name
-            try:
-                descriptor = os.open(str(destination), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-            except FileExistsError:
-                number += 1
-                continue
-            except OSError:
-                outcomes.append(_copy_rejected(record, "copy_failed"))
-                descriptor = None
-            if descriptor is None:
-                break
-            digest = hashlib.sha256()
-            byte_count = 0
-            try:
-                with os.fdopen(descriptor, "wb") as destination_file:
-                    descriptor = None
-                    source_descriptor = _open_no_follow(source, os.O_RDONLY)
-                    with os.fdopen(source_descriptor, "rb") as source_file:
-                        for chunk in iter(lambda: source_file.read(1024 * 1024), b""):
-                            digest.update(chunk)
-                            byte_count += len(chunk)
-                            destination_file.write(chunk)
-                actual_hash = digest.hexdigest()
-                if expected_hash and actual_hash != expected_hash:
-                    destination.unlink(missing_ok=True)
-                    outcomes.append(_copy_rejected(record, "source_hash_mismatch"))
+        try:
+            while True:
+                candidate_name = name if number == 1 else _collision_name(name, number)
+                try:
+                    descriptor = os.open(
+                        candidate_name,
+                        os.O_WRONLY | os.O_CREAT | os.O_EXCL | _no_follow_flag(),
+                        0o600,
+                        dir_fd=directory_descriptor,
+                    )
+                except FileExistsError:
+                    number += 1
+                    continue
+                except OSError as error:
+                    reason = "unsafe_destination_path" if error.errno == errno.ELOOP else "copy_failed"
+                    outcomes.append(_copy_rejected(record, reason))
                     break
-                if expected_bytes is not None and byte_count != expected_bytes:
-                    destination.unlink(missing_ok=True)
-                    outcomes.append(_copy_rejected(record, "source_size_mismatch"))
-                    break
-            except (OSError, ValueError):
-                if descriptor is not None:
+
+                digest = hashlib.sha256()
+                byte_count = 0
+                try:
+                    with os.fdopen(descriptor, "wb") as destination_file:
+                        source_descriptor = _open_file_no_follow(source)
+                        with os.fdopen(source_descriptor, "rb") as source_file:
+                            for chunk in iter(lambda: source_file.read(1024 * 1024), b""):
+                                digest.update(chunk)
+                                byte_count += len(chunk)
+                                destination_file.write(chunk)
+                    actual_hash = digest.hexdigest()
+                    if expected_hash and actual_hash != expected_hash:
+                        _unlink_at(directory_descriptor, candidate_name)
+                        outcomes.append(_copy_rejected(record, "source_hash_mismatch"))
+                        break
+                    if expected_bytes is not None and byte_count != expected_bytes:
+                        _unlink_at(directory_descriptor, candidate_name)
+                        outcomes.append(_copy_rejected(record, "source_size_mismatch"))
+                        break
+                except OSError as error:
                     try:
-                        os.close(descriptor)
+                        _unlink_at(directory_descriptor, candidate_name)
                     except OSError:
                         pass
-                try:
-                    destination.unlink()
-                except OSError:
-                    pass
-                outcomes.append(_copy_rejected(record, "copy_failed"))
+                    unsafe_errors = {errno.ELOOP, errno.ENOTDIR, errno.ENOTSUP}
+                    reason = "unsafe_source_path" if error.errno in unsafe_errors else "copy_failed"
+                    outcomes.append(_copy_rejected(record, reason))
+                    break
+                outcomes.append(
+                    {
+                        "status": "copied",
+                        "source_role": role,
+                        "original_path": str(source),
+                        "copied_path": str(destination_directory / candidate_name),
+                        "destination_path": str(destination_directory / candidate_name),
+                        "name": candidate_name,
+                        "bytes": byte_count,
+                        "sha256": actual_hash,
+                    }
+                )
                 break
-            outcomes.append(
-                {
-                    "status": "copied",
-                    "source_role": role,
-                    "original_path": str(source),
-                    "copied_path": str(destination),
-                    "destination_path": str(destination),
-                    "name": candidate_name,
-                    "bytes": byte_count,
-                    "sha256": actual_hash,
-                }
-            )
-            break
+        finally:
+            os.close(directory_descriptor)
     return outcomes
