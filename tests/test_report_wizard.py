@@ -269,6 +269,19 @@ def test_load_rejects_invalid_minimum_state_fields(tmp_path, field, bad_value):
         load_session(workspace)
 
 
+@pytest.mark.parametrize("missing_field", ["skipped_inputs", "copy_outcomes"])
+def test_load_rejects_missing_state_fields_with_actionable_error(tmp_path, missing_field):
+    workspace = tmp_path / "missing-{}".format(missing_field)
+    create_session(workspace, "daily")
+    state_path = workspace / "report_wizard_state.json"
+    payload = json.loads(state_path.read_text(encoding="utf-8"))
+    del payload[missing_field]
+    state_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="invalid state field.*{}".format(missing_field)):
+        load_session(workspace)
+
+
 def test_load_rejects_non_object_state_root_with_actionable_value_error(tmp_path):
     workspace = tmp_path / "workspace"
     create_session(workspace, "daily")

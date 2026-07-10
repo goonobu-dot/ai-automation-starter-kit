@@ -118,6 +118,8 @@ def _validate_state(state: Dict, workspace: Path) -> Dict:
         "updated_at",
         "accepted",
         "rejected",
+        "skipped_inputs",
+        "copy_outcomes",
         "folder_plan",
         "schema_proposal",
         "question_queue",
