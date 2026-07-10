@@ -614,17 +614,12 @@ def _safe_output_name(value: str) -> str:
 
 def _safe_destination_directory(workspace: Path, destination: str) -> Path:
     _validate_destination(destination)
-    current = _workspace_path(workspace)
-    for part in PurePosixPath(destination).parts:
-        current = current / part
-        try:
-            observed = current.lstat()
-        except FileNotFoundError:
-            current.mkdir()
-            observed = current.lstat()
-        if stat.S_ISLNK(observed.st_mode) or not stat.S_ISDIR(observed.st_mode):
-            raise ValueError("unsafe destination path contains a symlink or non-directory")
-    return current
+    chain = _open_destination_chain(workspace, destination)
+    try:
+        return chain["final_path"]
+    finally:
+        os.close(chain["final_fd"])
+        os.close(chain["root_fd"])
 
 
 def _hash_file(path: Path) -> Tuple[str, int]:
@@ -663,18 +658,102 @@ def _verify_directory_identity(path: Path, directory_fd: int, expected_identity:
         return False
 
 
-def _open_verified_directory(path: Path) -> Tuple[int, Tuple[int, int], str]:
-    observed = os.lstat(str(path))
+def _open_directory_child(parent_fd: int, child_name: str, logical_path: Path, create: bool) -> Tuple[int, Tuple[int, int], str]:
+    if os.path.realpath(str(logical_path)) != str(logical_path):
+        raise ValueError("destination_changed_during_copy")
+    try:
+        observed = os.stat(child_name, dir_fd=parent_fd, follow_symlinks=False)
+    except FileNotFoundError:
+        if not create:
+            raise ValueError("destination component is missing")
+        os.mkdir(child_name, 0o700, dir_fd=parent_fd)
+        observed = os.stat(child_name, dir_fd=parent_fd, follow_symlinks=False)
     if stat.S_ISLNK(observed.st_mode) or not stat.S_ISDIR(observed.st_mode):
         raise ValueError("unsafe destination path contains a symlink or non-directory")
     identity = (observed.st_dev, observed.st_ino)
-    realpath = os.path.realpath(str(path))
-    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
-    directory_fd = os.open(str(path), flags)
-    if not _verify_directory_identity(path, directory_fd, identity, realpath, "after_open"):
-        os.close(directory_fd)
+    realpath = os.path.realpath(str(logical_path))
+    if realpath != str(logical_path):
         raise ValueError("destination_changed_during_copy")
-    return directory_fd, identity, realpath
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
+    child_fd = os.open(child_name, flags, dir_fd=parent_fd)
+    try:
+        child_stat = os.fstat(child_fd)
+        after = os.stat(child_name, dir_fd=parent_fd, follow_symlinks=False)
+        if (child_stat.st_dev, child_stat.st_ino) != identity or (after.st_dev, after.st_ino) != identity:
+            raise ValueError("destination_changed_during_copy")
+    except Exception:
+        os.close(child_fd)
+        raise
+    return child_fd, identity, realpath
+
+
+def _open_destination_chain(workspace: Path, destination: str) -> Dict:
+    _validate_destination(destination)
+    root_path = _workspace_path(workspace)
+    root_observed = os.lstat(str(root_path))
+    if stat.S_ISLNK(root_observed.st_mode) or not stat.S_ISDIR(root_observed.st_mode):
+        raise ValueError("unsafe workspace root")
+    root_identity = (root_observed.st_dev, root_observed.st_ino)
+    root_realpath = os.path.realpath(str(root_path))
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
+    root_fd = os.open(str(root_path), flags)
+    current_fd = root_fd
+    try:
+        root_fd_stat = os.fstat(root_fd)
+        if (root_fd_stat.st_dev, root_fd_stat.st_ino) != root_identity or not _verify_directory_identity(root_path, root_fd, root_identity, root_realpath, "after_open"):
+            raise ValueError("destination_changed_during_copy")
+        logical_path = root_path
+        parts = list(PurePosixPath(destination).parts)
+        final_identity = root_identity
+        final_realpath = root_realpath
+        for part in parts:
+            logical_path = logical_path / part
+            child_fd, final_identity, final_realpath = _open_directory_child(current_fd, part, logical_path, create=True)
+            if current_fd != root_fd:
+                os.close(current_fd)
+            current_fd = child_fd
+        return {
+            "root_fd": root_fd,
+            "root_path": root_path,
+            "root_identity": root_identity,
+            "root_realpath": root_realpath,
+            "final_fd": current_fd,
+            "final_path": logical_path,
+            "final_identity": final_identity,
+            "final_realpath": final_realpath,
+            "parts": parts,
+        }
+    except Exception:
+        if current_fd != root_fd:
+            os.close(current_fd)
+        os.close(root_fd)
+        raise
+
+
+def _retrace_destination(chain: Dict) -> bool:
+    root_fd = chain["root_fd"]
+    if not _verify_directory_identity(chain["root_path"], root_fd, chain["root_identity"], chain["root_realpath"], "after_publish"):
+        return False
+    current_fd = os.dup(root_fd)
+    try:
+        logical_path = chain["root_path"]
+        for part in chain["parts"]:
+            logical_path = logical_path / part
+            child_fd, identity, realpath = _open_directory_child(current_fd, part, logical_path, create=False)
+            if current_fd != root_fd:
+                os.close(current_fd)
+            current_fd = child_fd
+            if (identity != chain["final_identity"] and part == chain["parts"][-1]) or (realpath != str(logical_path) and part == chain["parts"][-1]):
+                return False
+        final_stat = os.fstat(current_fd)
+        return (
+            (final_stat.st_dev, final_stat.st_ino) == chain["final_identity"]
+            and os.path.realpath(str(logical_path)) == chain["final_realpath"]
+        )
+    except (OSError, ValueError):
+        return False
+    finally:
+        os.close(current_fd)
 
 
 def _hash_at_dirfd(directory_fd: int, name: str) -> Tuple[str, int, os.stat_result]:
@@ -758,8 +837,9 @@ def _unlink_staged(staged: Path) -> None:
     staged.unlink()
 
 
-def _publish_staged_file(staged: Path, destination_directory: Path, name: str, expected_hash: str, expected_bytes: int) -> Tuple[Path, bool, bool]:
-    directory_fd, expected_identity, expected_realpath = _open_verified_directory(destination_directory)
+def _publish_staged_file(staged: Path, destination_directory: Path, name: str, expected_hash: str, expected_bytes: int, workspace: Path) -> Tuple[Path, bool, bool]:
+    chain = _open_destination_chain(workspace, str(destination_directory.relative_to(_workspace_path(workspace))))
+    directory_fd = chain["final_fd"]
     temp_name = None
     try:
         candidate_name = name
@@ -790,7 +870,7 @@ def _publish_staged_file(staged: Path, destination_directory: Path, name: str, e
             candidate_name = _collision_name(name, number)
 
         temp_name = _copy_staged_to_dirfd(staged, directory_fd, expected_hash, expected_bytes)
-        if not _verify_directory_identity(destination_directory, directory_fd, expected_identity, expected_realpath, "before_publish"):
+        if not _verify_directory_identity(destination_directory, directory_fd, chain["final_identity"], chain["final_realpath"], "before_publish") or not _verify_directory_identity(chain["root_path"], chain["root_fd"], chain["root_identity"], chain["root_realpath"], "before_publish"):
             raise ValueError("destination_changed_during_copy")
         if repair_identity is not None:
             current = os.stat(candidate_name, dir_fd=directory_fd, follow_symlinks=False)
@@ -809,7 +889,7 @@ def _publish_staged_file(staged: Path, destination_directory: Path, name: str, e
             except OSError:
                 pass
             raise ValueError("destination_changed_after_publish") from error
-        if not _verify_directory_identity(destination_directory, directory_fd, expected_identity, expected_realpath, "after_publish"):
+        if not _verify_directory_identity(destination_directory, directory_fd, chain["final_identity"], chain["final_realpath"], "after_publish") or not _retrace_destination(chain):
             try:
                 current = os.stat(candidate_name, dir_fd=directory_fd, follow_symlinks=False)
                 if (current.st_dev, current.st_ino) == (published_identity.st_dev, published_identity.st_ino):
@@ -828,6 +908,7 @@ def _publish_staged_file(staged: Path, destination_directory: Path, name: str, e
             except OSError:
                 pass
         os.close(directory_fd)
+        os.close(chain["root_fd"])
 
 
 def _plan_items_by_source(state: Dict) -> Dict[str, Dict]:
@@ -874,6 +955,7 @@ def _organize_copy_outcomes(outcomes: Sequence[Dict], state: Dict, workspace: Pa
                 name,
                 expected_hash,
                 expected_bytes,
+                _workspace_path(workspace),
             )
             organized.append(
                 {

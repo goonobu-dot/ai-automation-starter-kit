@@ -1,5 +1,6 @@
 import hashlib
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -348,6 +349,64 @@ def test_final_destination_symlink_is_rejected_without_writing_outside_workspace
 
     assert any(item["status"] == "copy_rejected" for item in state["copy_outcomes"])
     assert not (outside / current.name).exists()
+
+
+def test_ancestor_symlink_swap_before_child_creation_is_rejected(tmp_path, monkeypatch):
+    past, current = make_inputs(tmp_path)
+    workspace = tmp_path / "workspace"
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    create_session(workspace, "daily")
+    inspect_session(workspace, [past], [current])
+    destination_root = workspace / "02_current_materials"
+    destination_root.mkdir()
+    original_mkdir = os.mkdir
+    triggered = {"value": False}
+
+    def swap_before_metrics_creation(path, mode=0o777, *, dir_fd=None):
+        if Path(str(path)).name == "metrics" and dir_fd is not None and not triggered["value"]:
+            triggered["value"] = True
+            backup = workspace / "02_current_materials.backup"
+            destination_root.rename(backup)
+            destination_root.symlink_to(outside, target_is_directory=True)
+        return original_mkdir(path, mode, dir_fd=dir_fd)
+
+    monkeypatch.setattr(os, "mkdir", swap_before_metrics_creation)
+    state = confirm_folder_plan(workspace)
+
+    assert any(item["status"] == "copy_rejected" for item in state["copy_outcomes"])
+    assert not (outside / current.name).exists()
+
+
+def test_ancestor_symlink_swap_after_traversal_is_rejected(tmp_path, monkeypatch):
+    past, current = make_inputs(tmp_path)
+    workspace = tmp_path / "workspace"
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "metrics").mkdir()
+    create_session(workspace, "daily")
+    inspect_session(workspace, [past], [current])
+    original_chain = getattr(report_wizard, "_open_destination_chain", None)
+    destination_root = workspace / "02_current_materials"
+    destination = destination_root / "metrics"
+    triggered = {"value": False}
+
+    def swap_after_traversal(workspace_arg, destination_arg, *args, **kwargs):
+        if original_chain is None:
+            return None
+        chain = original_chain(workspace_arg, destination_arg, *args, **kwargs)
+        if Path(workspace_arg) / destination_arg == destination and not triggered["value"]:
+            triggered["value"] = True
+            backup = workspace / "02_current_materials.backup"
+            destination_root.rename(backup)
+            destination_root.symlink_to(outside, target_is_directory=True)
+        return chain
+
+    monkeypatch.setattr(report_wizard, "_open_destination_chain", swap_after_traversal, raising=False)
+    state = confirm_folder_plan(workspace)
+
+    assert any(item["status"] == "copy_rejected" for item in state["copy_outcomes"])
+    assert not (outside / "metrics" / current.name).exists()
 
 
 def test_post_publish_identity_race_removes_publication_and_records_rejection(tmp_path, monkeypatch):
