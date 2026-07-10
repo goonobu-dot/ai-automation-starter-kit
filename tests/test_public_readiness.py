@@ -1,3 +1,4 @@
+from html.parser import HTMLParser
 from pathlib import Path
 import re
 import subprocess
@@ -21,6 +22,78 @@ def _assert_no_broken_local_hrefs(path: str, text: str) -> None:
         if not target:
             continue
         assert (doc.parent / target).exists(), f"{path} has broken local href {href}"
+
+
+class _VisibleTextParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self._skip_tags = {"style", "script", "pre", "code"}
+        self._skip_depth = 0
+        self.parts: list[str] = []
+
+    def handle_starttag(self, tag: str, attrs) -> None:
+        if tag in self._skip_tags:
+            self._skip_depth += 1
+            return
+        if self._skip_depth:
+            return
+        attr_map = dict(attrs)
+        for key in ("aria-label", "title"):
+            value = attr_map.get(key)
+            if value:
+                self.parts.append(value)
+
+    def handle_endtag(self, tag: str) -> None:
+        if tag in self._skip_tags and self._skip_depth:
+            self._skip_depth -= 1
+
+    def handle_data(self, data: str) -> None:
+        if self._skip_depth:
+            return
+        if data and data.strip():
+            self.parts.append(data)
+
+
+def _extract_visible_text(html: str) -> str:
+    parser = _VisibleTextParser()
+    parser.feed(html)
+    text = " ".join(parser.parts)
+    text = re.sub(r"\s+", " ", text)
+    allowlist = [
+        "AI Automation Starter Kit",
+        "GitHub Pages",
+        "HTML",
+        "CSS",
+        "CLI",
+        "AI",
+        "PoC",
+        "OCR",
+        "PDF",
+        "DOCX",
+        "XLSX",
+        "CSV",
+        "JSON",
+        "PNG",
+        "JPEG",
+        "WebP",
+        "Word",
+        "Mermaid",
+        "Markdown",
+        "report-automation-wizard-flow.mmd",
+        "REPORT_AUTOMATION_GUIDE.ja.md",
+        "AI_AGENT_GRILL_ME_SKILL.ja.md",
+        "CLOUD_BEGINNER_PLAYBOOK.ja.md",
+        "INDEX.md",
+        "manual.ja.html",
+        "Codex",
+        "ChatGPT",
+        "Claude",
+        "Gemini",
+        "Cursor",
+    ]
+    for value in allowlist:
+        text = text.replace(value, "")
+    return text
 
 
 def test_cli_prints_version(capsys):
@@ -426,6 +499,32 @@ def test_report_wizard_html_manuals_are_bilingual_self_contained_and_actionable(
         for snippet in rules["forbidden"]:
             assert snippet not in text, f"{path} should not mix language with {snippet}"
         _assert_no_broken_local_hrefs(path, text)
+
+
+def test_report_wizard_japanese_manual_visible_text_stays_localized():
+    text = Path("docs/report-automation-wizard.ja.html").read_text(encoding="utf-8")
+    visible = _extract_visible_text(text)
+    forbidden = [
+        "Report wizard manual",
+        "Local-only workflow",
+        "Step 1:",
+        "Step 2:",
+        "Step 3:",
+        "Step 4:",
+        "Step 5:",
+        "Step 6:",
+        "Step 7:",
+        "metadata-only",
+        "plain text",
+        "Generated wording requiring review",
+        "ready_for_human_review",
+        "schema",
+        "provenance",
+        "conflicts",
+        "local-only",
+    ]
+    for snippet in forbidden:
+        assert snippet not in visible, f"docs/report-automation-wizard.ja.html leaks English visible text: {snippet}"
 
 
 def test_report_wizard_mermaid_source_matches_the_documented_loop():
