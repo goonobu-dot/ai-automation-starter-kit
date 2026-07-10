@@ -15,6 +15,7 @@
 | [やさしい解説](BEGINNER_GUIDE.ja.md) | [Beginner Guide](BEGINNER_GUIDE.md) | このプロジェクトの目的 / What this project is |
 | [使い方マニュアル](USER_MANUAL.ja.md) | [User Manual](USER_MANUAL.md) | 全コマンドの操作説明書 / Full operating manual |
 | [ブラウザ版マニュアル（クリックで開きます）](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.ja.html) | [Browser Manual](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.html) | ブラウザで読める入門。手元の `docs/manual.ja.html` をダブルクリックしても同じものが開きます / Browser-friendly manual (or double-click the local file) |
+| [レポートウィザード手順書](report-automation-wizard.ja.html) | [Report Wizard Manual](report-automation-wizard.html) | `report-wizard` の `init → inspect → confirm → answer → status → build → approve → serve` を追う手順書 / Step-by-step guide for the resumable report wizard |
 | [FAQ](FAQ.ja.md) | [FAQ](FAQ.md) | よくある質問 / Frequently asked questions |
 
 ## 💼 営業・収益化 / Sales & Monetization

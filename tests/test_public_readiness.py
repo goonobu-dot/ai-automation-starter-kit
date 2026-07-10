@@ -155,6 +155,48 @@ def test_readme_links_entrance_and_key_docs():
     assert "docs/GRILL_ME_PROMPTS.md" not in readme
 
 
+def test_report_wizard_navigation_is_linked_from_public_entry_docs():
+    readme = Path("README.md").read_text(encoding="utf-8")
+    index = Path("docs/INDEX.md").read_text(encoding="utf-8")
+    manual_en = Path("docs/USER_MANUAL.md").read_text(encoding="utf-8")
+    manual_ja = Path("docs/USER_MANUAL.ja.md").read_text(encoding="utf-8")
+    browser_manual_en = Path("docs/manual.html").read_text(encoding="utf-8")
+    browser_manual_ja = Path("docs/manual.ja.html").read_text(encoding="utf-8")
+    report_guide_en = Path("docs/REPORT_AUTOMATION_GUIDE.md").read_text(encoding="utf-8")
+    report_guide_ja = Path("docs/REPORT_AUTOMATION_GUIDE.ja.md").read_text(encoding="utf-8")
+
+    for snippet in [
+        "docs/report-automation-wizard.ja.html",
+        "docs/report-automation-wizard.html",
+        "ai-automation-kit report-wizard init",
+        "ai-automation-kit report-wizard serve",
+    ]:
+        assert snippet in readme, f"README.md missing report wizard navigation: {snippet}"
+
+    getting_started_index = index.split("## 💼", 1)[0]
+    sales_index = index.split("## 💼", 1)[1]
+    assert "report-automation-wizard.ja.html" in getting_started_index
+    assert "report-automation-wizard.html" in getting_started_index
+    assert "REPORT_AUTOMATION_GUIDE.ja.md" not in getting_started_index
+    assert "REPORT_AUTOMATION_GUIDE.ja.md" in sales_index
+    assert "REPORT_AUTOMATION_GUIDE.md" in sales_index
+
+    for text, manual_path in [
+        (manual_en, "report-automation-wizard.html"),
+        (manual_ja, "report-automation-wizard.ja.html"),
+    ]:
+        assert "report-wizard" in text
+        assert manual_path in text
+
+    assert 'href="report-automation-wizard.html"' in browser_manual_en
+    assert 'href="report-automation-wizard.ja.html"' in browser_manual_ja
+    assert "Report wizard manual" in browser_manual_en
+    assert "レポートウィザード" in browser_manual_ja
+
+    assert "use report-wizard when" in report_guide_en
+    assert "report-wizard を使ってください" in report_guide_ja
+
+
 def test_getting_started_index_and_archive_form_the_single_entrance():
     getting = Path("docs/GETTING_STARTED.ja.md").read_text()
     index = Path("docs/INDEX.md").read_text()
@@ -991,6 +1033,27 @@ def test_public_release_audit_script_checks_publish_prerequisites():
     assert "README.md::docs/demo.html" in result.stdout
 
 
+def test_public_release_audit_script_checks_report_wizard_public_navigation():
+    result = subprocess.run(
+        [sys.executable, "scripts/public_release_audit.py"],
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    for snippet in [
+        "docs/report-automation-wizard.html",
+        "docs/report-automation-wizard.ja.html",
+        "docs/report-automation-wizard-flow.mmd",
+        "README.md::docs/report-automation-wizard.html",
+        "README.md::docs/report-automation-wizard.ja.html",
+        "README.md::ai-automation-kit report-wizard serve",
+        "docs/manual.html::report-automation-wizard.html",
+        "docs/manual.ja.html::report-automation-wizard.ja.html",
+    ]:
+        assert snippet in result.stdout
+
+
 def test_public_release_audit_script_exposes_loop_quality_checks():
     text = Path("scripts/public_release_audit.py").read_text()
 
@@ -1020,6 +1083,30 @@ def test_public_release_audit_script_exposes_loop_quality_checks():
     assert "REQUIRED_RELEASE_SMOKE_SNIPPETS" in text
     assert "REQUIRED_RELEASE_EVIDENCE_SNIPPETS" in text
     assert "REQUIRED_GITHUB_SMOKE_SNIPPETS" in text
+
+
+def test_public_release_audit_script_checks_report_wizard_release_smoke_snippets():
+    result = subprocess.run(
+        [sys.executable, "scripts/public_release_audit.py"],
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    for snippet in [
+        "scripts/release_smoke.py::report-wizard session",
+        "scripts/release_smoke.py::report_wizard_state.json",
+        "scripts/release_smoke.py::source_manifest.json",
+        "scripts/release_smoke.py::schema_proposal.json",
+        "scripts/release_smoke.py::provenance.json",
+        "scripts/release_smoke.py::weekly_report_draft.md",
+        "scripts/release_smoke.py::approval.json",
+        "scripts/release_smoke.py::report_sha256",
+        "scripts/release_smoke.py::report-wizard serve",
+        "scripts/release_smoke.py::/api/state",
+        "scripts/release_smoke.py::server_close",
+    ]:
+        assert snippet in result.stdout
 
 
 def test_public_release_audit_script_checks_examples_templates_and_packaging():

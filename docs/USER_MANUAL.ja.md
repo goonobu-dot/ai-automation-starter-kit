@@ -490,6 +490,8 @@ status=ready
 - `scripts/run_report_dry_run.py` を実行すると、資料数、足りない情報、質問、下書きが更新されます。
 - 詳細は [日報・月報AI下書き自動化ガイド](REPORT_AUTOMATION_GUIDE.ja.md) を読んでください。
 
+`report-wizard` は、その次の実務導線です。承認済みファイルを点検し、質問を1問ずつ返し、`init -> inspect -> confirm -> answer -> status -> build -> approve` の順で下書き作業場を作れます。`serve` を使えば同じ状態をローカルのブラウザで開けます。手順は [レポートウィザード手順書](report-automation-wizard.ja.html) を参照してください。
+
 ---
 
 ## 8. その他のコマンド
@@ -529,5 +531,6 @@ status=ready
 - [AI用プロンプト集](AI_PROMPTS.ja.md)
 - [ドキュメント索引（INDEX）](INDEX.md) / [アーカイブ](archive/README.md)
 - [ブラウザ版マニュアル（クリックで開きます）](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.ja.html) — このマニュアルの要約版がWebページとして開きます。手元の `docs/manual.ja.html` をダブルクリックしても同じものが開きます
+- [レポートウィザード手順書](report-automation-wizard.ja.html) — `report-wizard` の `init → inspect → confirm → answer → status → build → approve → serve` をまとめて確認できます
 
 > 注意: このキットは収益を保証するものではありません。本マニュアルの金額はすべて「相場の目安」です。

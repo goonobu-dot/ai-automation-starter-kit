@@ -136,6 +136,8 @@ Price figures in the generated templates are market guidelines for Japan (for ex
 
 `report-automation` is a concrete side-business offer: the client places past completed reports in `01_past_outputs/`, current materials in `02_current_materials/`, and the AI drafts a daily, weekly, or monthly report. If facts are unclear, it asks one GrillMe-style question at a time. Final submission stays behind human approval. See [Report Automation Guide](REPORT_AUTOMATION_GUIDE.md).
 
+`report-wizard` is the resumable follow-up when you want the kit to inspect approved files, ask the setup questions one at a time, build a reviewable draft workspace, and reopen the session later without losing state. The shortest path is `init -> inspect -> confirm -> answer -> status -> build -> approve`, and `serve` opens the same local session in a localhost browser view. Use [Report Wizard Manual](report-automation-wizard.html) for the browser guide and command-by-command examples.
+
 ## 8. Other commands
 
 Run `ai-automation-kit --help` for the full list (quickstart, guided-setup, cloud-plan, flow-export, github-discover, and more). See the [Documentation Index](INDEX.md) for the matching guides: [Report Automation Guide](REPORT_AUTOMATION_GUIDE.md), [Real-World Setup](REAL_WORLD_SETUP_GUIDE.md), [Connector Setup](CONNECTOR_SETUP_GUIDE.md), [Execution Bridges](EXECUTION_BRIDGES.md), [Automation Expansion](AUTOMATION_EXPANSION_GUIDE.md), [Cloud Deployment](CLOUD_DEPLOYMENT_GUIDE.md).
@@ -151,4 +153,4 @@ Run `ai-automation-kit --help` for the full list (quickstart, guided-setup, clou
 | Unsure if output is safe to share | Run `share-check`; never share on `blocked` |
 | Lost | Run `ai-automation-kit beginner` |
 
-See also the [FAQ](FAQ.md). Related: [Beginner Route Map](BEGINNER_ROUTE_MAP.md), [Selling Automation Guide](SELLING_AUTOMATION_GUIDE.md), [Client Demo Script](CLIENT_DEMO_SCRIPT.md), [HTML manual](manual.html), [archive](archive/README.md).
+See also the [FAQ](FAQ.md). Related: [Beginner Route Map](BEGINNER_ROUTE_MAP.md), [Selling Automation Guide](SELLING_AUTOMATION_GUIDE.md), [Client Demo Script](CLIENT_DEMO_SCRIPT.md), [HTML manual](manual.html), [Report Wizard Manual](report-automation-wizard.html), [archive](archive/README.md).

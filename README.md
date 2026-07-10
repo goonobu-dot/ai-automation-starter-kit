@@ -62,6 +62,7 @@ Key documents:
 | Plain-language overview | [やさしい解説](docs/BEGINNER_GUIDE.ja.md) | [Beginner Guide](docs/BEGINNER_GUIDE.md) |
 | Operating manual | [使い方マニュアル](docs/USER_MANUAL.ja.md) | [User Manual](docs/USER_MANUAL.md) |
 | Browser manual (click to open as a web page) | [ブラウザ版マニュアル（クリックで開きます）](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.ja.html) | [Browser Manual](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.html) |
+| Report wizard manual | [レポートウィザード手順書](docs/report-automation-wizard.ja.html) | [Report Wizard Manual](docs/report-automation-wizard.html) |
 | Selling automation responsibly | [提案ガイド](docs/SELLING_AUTOMATION_GUIDE.ja.md) | [Selling Automation Guide](docs/SELLING_AUTOMATION_GUIDE.md) |
 | Choosing what to sell | [副業ブループリント](docs/SIDE_HUSTLE_BLUEPRINTS.ja.md) | [Side Hustle Blueprints](docs/SIDE_HUSTLE_BLUEPRINTS.md) |
 | 2026 side-hustle market update | [副業向けGitHub市場アップデート](docs/SIDE_HUSTLE_MARKET_UPDATE_2026.ja.md) | – |
@@ -84,6 +85,7 @@ The fastest path is `complete-workspace`: one command creates a full local deliv
 - **Sales assets** — `beginner-sales` writes `START_HERE_FOR_SIDE_BUSINESS.md`, `flow_gallery.html`, `selected_flow_demo.html`, `proposal_one_pager.md`, `three_day_poc_plan.md`, discovery questions, a price menu, and `roi_simple_calculator.csv`. `offer-pack` writes `proposal.md`, `statement_of_work.md`, `pricing_model.md`, and risk boundaries under `offer_pack/`. `client-ready/` adds `roi_calculator.csv`, `implementation_readiness_score.json`, and `maintenance_plan.md`.
 - **Runnable flows** — `flows` installs one of 60+ dry-run automation projects with `flow.yaml`, `workflow_map.mmd`, `operator_ui/index.html`, `.env.example`, `SYSTEM_RUNBOOK.md`, and scripts that generate `automation_output` work queues, approval queues, and `local_outbox` drafts. Nothing is sent externally.
 - **Folder-based report automation** — `report-automation` creates a daily, weekly, or monthly report workspace with past-output folders, current-material folders, `START_HERE_REPORT_AUTOMATION.md`, AI prompts, `grill_me_report_questions.md`, drafts, approval checklists, and a client-facing `demo_report_automation.html`.
+- **Resumable report wizard** — `report-wizard` adds `report_wizard_state.json`, `03_templates/*_report_template.md`, `04_ai_analysis/{source_manifest.json,schema_proposal.json,provenance.json,ai_agent_review_instructions.md}`, `05_grill_me_questions/session.json`, `06_drafts/*_report_draft.md`, and `07_approval/approval.json` so a human can inspect, answer, build, approve, and resume a local reporting session.
 - **Delivery evidence** — `FINAL_DELIVERY_GUIDE.md`, `completion_checklist.md`, `client_report.md`, `client_demo_package.zip`, `revenue_readiness_scorecard.md`, `paid_poc_scope.md`, and `share_check.md` (scan before sharing).
 - **Setup and cloud planning** — `guided-setup`, `guided-review`, and `cloud-plan` write question lists, readiness reports, and provider-specific runbooks such as `workload_architecture.md`, `deploy_runbook.md`, and `human_approval_required.md`.
 - **GitHub discovery** — `github-discover` and `onboard` turn public GitHub research into `run_summary.md`, `executive_decision_brief.md`, `pilot_scorecard.csv`, `value_realization_plan.md`, `value_measurement_report.md`, `stakeholder_rollout_map.md`, `risk_exception_register.md`, `operational_audit_plan.md`, `enterprise_readiness.md`, `artifact_index.md`, and an `adapter_starter/` dry-run skeleton.
@@ -134,6 +136,14 @@ ai-automation-kit client-ready --business-area operations --client-type local-bu
 ai-automation-kit business-launch --industry finance --client-type local-business --niche accounting --output .tmp/business-launch
 ai-automation-kit side-hustle-blueprints --industry local-business --operator-level beginner --output .tmp/side-hustle-blueprints
 ai-automation-kit report-automation --report-type monthly --client-type local-business --niche construction --output .tmp/monthly-report-pack
+ai-automation-kit report-wizard init --workspace .tmp/report-wizard-weekly --report-type weekly --language en
+ai-automation-kit report-wizard inspect --workspace .tmp/report-wizard-weekly --past-outputs .tmp/past.md --materials .tmp/current.csv
+ai-automation-kit report-wizard confirm --workspace .tmp/report-wizard-weekly
+ai-automation-kit report-wizard answer --workspace .tmp/report-wizard-weekly --answer "Operations manager"
+ai-automation-kit report-wizard status --workspace .tmp/report-wizard-weekly --json
+ai-automation-kit report-wizard build --workspace .tmp/report-wizard-weekly
+ai-automation-kit report-wizard approve --workspace .tmp/report-wizard-weekly --approver owner@example.com
+ai-automation-kit report-wizard serve --workspace .tmp/report-wizard-weekly --language en --no-open
 ai-automation-kit opportunity-catalog --industry finance --output .tmp/opportunity-catalog
 ai-automation-kit recommend-flow --industry finance --pain "missing invoice follow up" --tools "Google Sheets Gmail" --output .tmp/recommend-flow
 ai-automation-kit flow-guide --industry finance --niche accounting --output .tmp/flow-guide
@@ -144,6 +154,8 @@ ai-automation-kit client-report --flow-project .tmp/quickstart-accounting/flow_p
 ai-automation-kit package-client-demo --source .tmp/quickstart-accounting --output .tmp/client-demo-package
 ai-automation-kit share-check --source .tmp/complete-accounting --output .tmp/share-check
 ```
+
+For the step-by-step local review flow, open [docs/report-automation-wizard.html](docs/report-automation-wizard.html) / [docs/report-automation-wizard.ja.html](docs/report-automation-wizard.ja.html). GitHub Pages hosts the same manual at [English](https://goonobu-dot.github.io/ai-automation-starter-kit/report-automation-wizard.html) / [日本語](https://goonobu-dot.github.io/ai-automation-starter-kit/report-automation-wizard.ja.html), alongside the general browser manuals at [manual.html](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.html) and [manual.ja.html](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.ja.html).
 
 Setup intake, review, and cloud planning:
 

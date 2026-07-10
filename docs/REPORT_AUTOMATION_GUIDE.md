@@ -33,6 +33,8 @@ Open these files first:
 .tmp/monthly-report-pack/ai_agent_prompt.md
 ```
 
+In short: use report-wizard when you want a resumable local setup assistant that inspects approved files, asks one question at a time, and serves the same session in a localhost browser view. Start with `ai-automation-kit report-wizard init --workspace .tmp/report-wizard-weekly --report-type weekly --language en` and follow the [Report Wizard Manual](report-automation-wizard.html).
+
 ## Workspace
 
 | Folder | Purpose |

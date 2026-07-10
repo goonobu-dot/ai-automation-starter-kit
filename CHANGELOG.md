@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Report wizard public release integration (2026-07)
+
+- Added public navigation for the resumable `report-wizard` workflow across `README.md`, `docs/INDEX.md`, `docs/USER_MANUAL.md`, `docs/USER_MANUAL.ja.md`, `docs/manual.html`, and `docs/manual.ja.html`, with language-separated links to `docs/report-automation-wizard.html` and `docs/report-automation-wizard.ja.html`.
+- Added short `report-wizard` handoff pointers to `docs/REPORT_AUTOMATION_GUIDE.md` and `docs/REPORT_AUTOMATION_GUIDE.ja.md` so the conceptual folder-based offer and the step-by-step local review flow stay separate.
+- Expanded public release audit and release smoke coverage for the report wizard state, source manifest, schema proposal, provenance, AI review instructions, question session, draft, approval hash, and localhost server lifecycle.
+
 ### Beginner side-business overhaul (2026-07)
 
 - Added `beginner` command: a Japanese 5-stage navigator (environment setup, first demo, sales preparation, first client project, delivery and invoicing) so beginners always know the next step toward their first paid project.

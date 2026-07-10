@@ -38,6 +38,8 @@ ai-automation-kit report-automation \
 .tmp/monthly-report-pack/ai_agent_prompt.md
 ```
 
+承認済みファイルの点検から質問、下書き、承認までを再開可能な形で進めたいときは report-wizard を使ってください。`ai-automation-kit report-wizard init --workspace .tmp/report-wizard-weekly --report-type weekly --language ja` から始めて、手順は [レポートウィザード手順書](report-automation-wizard.ja.html) を参照します。
+
 ## フォルダの意味
 
 | フォルダ | 入れるもの |

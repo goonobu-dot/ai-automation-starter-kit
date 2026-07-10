@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import os
 import shutil
 import subprocess
@@ -1231,6 +1233,7 @@ def _verify_wheel_install(wheelhouse: Path, output: Path) -> None:
     cli_bin = _venv_console_script(venv_dir, "ai-automation-kit")
     _run([str(cli_bin), "--version"], env=os.environ.copy())
     _run([str(cli_bin), "doctor", "--output", str(output / "installed-doctor")], env=os.environ.copy())
+    _run_report_wizard_installed_smoke(cli_bin, python_bin, output)
 
 
 def _venv_python(venv_dir: Path) -> Path:
@@ -1245,6 +1248,158 @@ def _venv_console_script(venv_dir: Path, name: str) -> Path:
     if posix_script.exists():
         return posix_script
     return venv_dir / "Scripts" / f"{name}.exe"
+
+
+def _run_report_wizard_installed_smoke(cli_bin: Path, python_bin: Path, output: Path) -> None:
+    _require_file(ROOT / "docs" / "report-automation-wizard.html")
+    _require_file(ROOT / "docs" / "report-automation-wizard.ja.html")
+    _require_file(ROOT / "docs" / "report-automation-wizard-flow.mmd")
+
+    report_wizard_output = output / "report-wizard-weekly"
+    report_wizard_output.mkdir(parents=True, exist_ok=True)
+    past = output / "report-wizard-past.md"
+    current = output / "report-wizard-current.csv"
+    past.write_text(
+        "# Executive Summary\n"
+        "Weekly revenue stayed on plan.\n"
+        "\n"
+        "# Risks\n"
+        "- Waiting on one vendor response.\n",
+        encoding="utf-8",
+    )
+    current.write_text(
+        "metric,value\n"
+        "revenue,128000\n"
+        "open_issues,2\n"
+        "site_visits,43\n",
+        encoding="utf-8",
+    )
+
+    env = os.environ.copy()
+    _run(
+        [
+            str(cli_bin),
+            "report-wizard",
+            "init",
+            "--workspace",
+            str(report_wizard_output),
+            "--report-type",
+            "weekly",
+            "--language",
+            "en",
+        ],
+        env=env,
+    )
+    _run(
+        [
+            str(cli_bin),
+            "report-wizard",
+            "inspect",
+            "--workspace",
+            str(report_wizard_output),
+            "--past-outputs",
+            str(past),
+            "--materials",
+            str(current),
+        ],
+        env=env,
+    )
+    _run([str(cli_bin), "report-wizard", "confirm", "--workspace", str(report_wizard_output)], env=env)
+    for answer in [
+        "Operations manager",
+        "report-wizard-past.md",
+        "Executive Summary, Risks, Next Actions",
+        "2026-W27",
+        "Finance director",
+        "01_past_outputs/weekly_reports",
+    ]:
+        _run(
+            [str(cli_bin), "report-wizard", "answer", "--workspace", str(report_wizard_output), "--answer", answer],
+            env=env,
+        )
+    _run([str(cli_bin), "report-wizard", "build", "--workspace", str(report_wizard_output)], env=env)
+    status = _run_capture(
+        [str(cli_bin), "report-wizard", "status", "--workspace", str(report_wizard_output), "--json"],
+        env=env,
+    )
+    payload = json.loads(status.stdout)
+    if payload["stage"] != "ready_for_human_review":
+        raise RuntimeError(f"unexpected report wizard stage before approval: {payload['stage']}")
+
+    state_path = report_wizard_output / "report_wizard_state.json"
+    template_path = report_wizard_output / "03_templates" / "weekly_report_template.md"
+    source_manifest_path = report_wizard_output / "04_ai_analysis" / "source_manifest.json"
+    schema_proposal_path = report_wizard_output / "04_ai_analysis" / "schema_proposal.json"
+    provenance_path = report_wizard_output / "04_ai_analysis" / "provenance.json"
+    instructions_path = report_wizard_output / "04_ai_analysis" / "ai_agent_review_instructions.md"
+    question_session_path = report_wizard_output / "05_grill_me_questions" / "session.json"
+    draft_path = report_wizard_output / "06_drafts" / "weekly_report_draft.md"
+    approval_path = report_wizard_output / "07_approval" / "approval.json"
+    for required in [
+        state_path,
+        template_path,
+        source_manifest_path,
+        schema_proposal_path,
+        provenance_path,
+        instructions_path,
+        question_session_path,
+        draft_path,
+        approval_path,
+    ]:
+        _require_file(required)
+
+    pending_approval = json.loads(approval_path.read_text(encoding="utf-8"))
+    if pending_approval.get("status") != "pending":
+        raise RuntimeError(f"unexpected pre-approval status: {pending_approval}")
+
+    _run(
+        [str(cli_bin), "report-wizard", "approve", "--workspace", str(report_wizard_output), "--approver", "Release QA"],
+        env=env,
+    )
+    approved = json.loads(approval_path.read_text(encoding="utf-8"))
+    state_after_approval = json.loads(
+        _run_capture([str(cli_bin), "report-wizard", "status", "--workspace", str(report_wizard_output), "--json"], env=env).stdout
+    )
+    expected_hash = hashlib.sha256(draft_path.read_bytes()).hexdigest()
+    if approved.get("status") != "approved":
+        raise RuntimeError(f"unexpected report wizard approval status: {approved}")
+    if approved.get("report_sha256") != expected_hash:
+        raise RuntimeError("report wizard approval hash did not match the built draft")
+    if state_after_approval["stage"] != "approved":
+        raise RuntimeError(f"unexpected report wizard stage after approval: {state_after_approval['stage']}")
+
+    # Equivalent to `ai-automation-kit report-wizard serve`, but bounded so smoke never blocks.
+    _run(
+        [
+            str(python_bin),
+            "-c",
+            (
+                "import json, threading, urllib.request;"
+                "from pathlib import Path;"
+                "from ai_automation_kit.core.report_wizard_server import TOKEN_HEADER, create_report_wizard_server;"
+                f"workspace = Path({str(report_wizard_output)!r});"
+                "server = create_report_wizard_server(workspace, language='en', port=0);"
+                "thread = threading.Thread(target=server.serve_forever, daemon=True);"
+                "thread.start();"
+                "port = server.server_address[1];"
+                "token = server.session_token;"
+                "root = urllib.request.urlopen(f'http://127.0.0.1:{port}/?token={token}', timeout=5);"
+                "assert root.status == 200;"
+                "request = urllib.request.Request(f'http://127.0.0.1:{port}/api/state', headers={TOKEN_HEADER: token});"
+                "payload = json.loads(urllib.request.urlopen(request, timeout=5).read().decode('utf-8'));"
+                "assert payload['ok'] is True and payload['stage'] == 'approved';"
+                "server.shutdown();"
+                "thread.join(timeout=5);"
+                "server.server_close();"
+            ),
+        ],
+        env=env,
+    )
+
+
+def _run_capture(command: list[str], env: dict[str, str], cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
+    print("$ " + " ".join(command))
+    return subprocess.run(command, cwd=cwd or ROOT, env=env, check=True, text=True, capture_output=True)
 
 
 def _run(command: list[str], env: dict[str, str], cwd: Path | None = None) -> None:
