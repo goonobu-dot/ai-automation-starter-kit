@@ -770,7 +770,7 @@ def test_original_sources_remain_unchanged_and_status_is_actionable(tmp_path):
 
 def test_state_transition_misuse_has_actionable_errors(tmp_path):
     workspace = tmp_path / "workspace"
-    with pytest.raises(ValueError, match="create_session"):
+    with pytest.raises(ValueError, match=r"report-wizard init"):
         load_session(workspace)
     create_session(workspace, "daily")
     with pytest.raises(ValueError, match="inspection"):
