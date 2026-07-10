@@ -1,0 +1,18 @@
+flowchart TD
+    goal["Set report goal"]
+    past["Approved past completed reports"]
+    current["Approved current-period materials"]
+    review["Review schema and folder plan"]
+    missing{"Missing required information?"}
+    question["Ask one question"]
+    draft["Build draft workspace"]
+    approval["Human approval"]
+
+    goal --> past
+    past --> current
+    current --> review
+    review --> missing
+    missing -- "Yes" --> question
+    question --> review
+    missing -- "No" --> draft
+    draft --> approval

@@ -7,6 +7,22 @@ from ai_automation_kit import __version__
 from ai_automation_kit.cli import main
 
 
+def _local_hrefs(text: str) -> list[str]:
+    return re.findall(r'href="([^"]+)"', text)
+
+
+def _assert_no_broken_local_hrefs(path: str, text: str) -> None:
+    doc = Path(path)
+    for href in _local_hrefs(text):
+        if not href or href.startswith(("#", "mailto:", "tel:", "data:")):
+            continue
+        assert "://" not in href, f"{path} must use relative links only: {href}"
+        target = href.split("#", 1)[0]
+        if not target:
+            continue
+        assert (doc.parent / target).exists(), f"{path} has broken local href {href}"
+
+
 def test_cli_prints_version(capsys):
     exit_code = main(["--version"])
 
@@ -280,6 +296,163 @@ def test_html_manuals_are_language_separated_visual_entrypoints():
         assert snippet in english, f"docs/manual.html missing {snippet}"
     for snippet in japanese_snippets:
         assert snippet in japanese, f"docs/manual.ja.html missing {snippet}"
+
+
+def test_report_wizard_html_manuals_are_bilingual_self_contained_and_actionable():
+    expected = {
+        "docs/report-automation-wizard.html": {
+            "lang": "en",
+            "required": [
+                "<!doctype html>",
+                '<html lang="en">',
+                'id="report-wizard"',
+                'id="flow-diagram"',
+                'id="human-approval"',
+                'id="troubleshooting"',
+                "Outcome and honest limits",
+                "Files to prepare",
+                "Full extraction support",
+                "Metadata-only intake",
+                "Seven-step flow",
+                "Text alternative",
+                "AI can decide",
+                "Human must decide",
+                "Privacy and local processing",
+                "Exact CLI commands",
+                "Exact AI-agent prompt",
+                "First paid PoC example",
+                "No income guarantee",
+                "Related manuals",
+                "Original files stay unchanged",
+                "Approved copies only",
+                "Images are metadata-only, with no OCR",
+                "PDF intake is optional and should stay isolated",
+                "Never send automatically",
+                "Construction monthly report",
+                "Codex, ChatGPT, Claude, Gemini, Cursor",
+                "ai-automation-kit report-wizard init",
+                "ai-automation-kit report-wizard inspect",
+                "ai-automation-kit report-wizard confirm",
+                "ai-automation-kit report-wizard answer",
+                "ai-automation-kit report-wizard status --workspace",
+                "ai-automation-kit report-wizard build",
+                "ai-automation-kit report-wizard approve",
+                "ai-automation-kit report-wizard serve",
+                "report-automation-wizard-flow.mmd",
+                "REPORT_AUTOMATION_GUIDE.md",
+                "AI_AGENT_GRILL_ME_SKILL.md",
+                "CLOUD_BEGINNER_PLAYBOOK.md",
+            ],
+            "forbidden": [
+                "目的と正直な限界",
+                "用意するファイル",
+                "人間承認",
+            ],
+        },
+        "docs/report-automation-wizard.ja.html": {
+            "lang": "ja",
+            "required": [
+                "<!doctype html>",
+                '<html lang="ja">',
+                'id="report-wizard"',
+                'id="flow-diagram"',
+                'id="human-approval"',
+                'id="troubleshooting"',
+                "目的と正直な限界",
+                "用意するファイル",
+                "全文を扱える形式",
+                "メタデータのみ扱う形式",
+                "7段階フロー",
+                "テキスト版",
+                "AIが判断できること",
+                "人間が判断すること",
+                "プライバシーとローカル処理",
+                "CLIコマンド",
+                "AIエージェント向けプロンプト",
+                "最初の有料PoC例",
+                "収入保証はありません",
+                "関連マニュアル",
+                "原本ファイルは変更しません",
+                "承認したコピーだけを使います",
+                "画像はOCRせずメタデータのみ扱います",
+                "PDFは任意で分離して扱います",
+                "自動送信はしません",
+                "建設会社の月報",
+                "ai-automation-kit report-wizard init",
+                "ai-automation-kit report-wizard inspect",
+                "ai-automation-kit report-wizard confirm",
+                "ai-automation-kit report-wizard answer",
+                "ai-automation-kit report-wizard status --workspace",
+                "ai-automation-kit report-wizard build",
+                "ai-automation-kit report-wizard approve",
+                "ai-automation-kit report-wizard serve",
+                "report-automation-wizard-flow.mmd",
+                "REPORT_AUTOMATION_GUIDE.ja.md",
+                "AI_AGENT_GRILL_ME_SKILL.ja.md",
+                "CLOUD_BEGINNER_PLAYBOOK.ja.md",
+            ],
+            "forbidden": [
+                "Outcome and honest limits",
+                "Files to prepare",
+                "Human approval",
+            ],
+        },
+    }
+    for path, rules in expected.items():
+        text = Path(path).read_text(encoding="utf-8")
+        assert len(text) > 12000, path
+        assert '<meta name="viewport" content="width=device-width, initial-scale=1"' in text
+        assert "<header" in text and "<nav" in text and "<main" in text and "<section" in text and "<footer" in text
+        assert 'class="skip-link"' in text
+        assert "prefers-reduced-motion" in text
+        assert "@media print" in text
+        assert ":focus-visible" in text
+        assert 'href="#main"' in text
+        assert text.count('data-flow-step="') == 7, f"{path} must render exactly seven visual flow steps"
+        assert 'class="flow-text-alt"' in text
+        assert "linear-gradient" not in text
+        assert "radial-gradient" not in text
+        assert "innerHTML" not in text
+        assert "<script" not in text.lower()
+        assert re.search(r"border-radius:\s*[1-8]px", text), f"{path} should keep radii quiet"
+        assert not re.search(r"font-size\s*:\s*[^;]*vw", text), f"{path} must not use viewport font scaling"
+        assert "fonts.googleapis.com" not in text
+        assert "@import" not in text
+        assert "src=" not in text.lower()
+        if rules["lang"] == "en":
+            assert not re.search(r"[\u3040-\u30ff\u4e00-\u9fff]", text), path
+        for snippet in rules["required"]:
+            assert snippet in text, f"{path} missing {snippet}"
+        for snippet in rules["forbidden"]:
+            assert snippet not in text, f"{path} should not mix language with {snippet}"
+        _assert_no_broken_local_hrefs(path, text)
+
+
+def test_report_wizard_mermaid_source_matches_the_documented_loop():
+    path = Path("docs/report-automation-wizard-flow.mmd")
+    text = path.read_text(encoding="utf-8")
+    required = [
+        "flowchart TD",
+        'goal["Set report goal"]',
+        'past["Approved past completed reports"]',
+        'current["Approved current-period materials"]',
+        'review["Review schema and folder plan"]',
+        'missing{"Missing required information?"}',
+        'question["Ask one question"]',
+        'draft["Build draft workspace"]',
+        'approval["Human approval"]',
+        "goal --> past",
+        "past --> current",
+        "current --> review",
+        "review --> missing",
+        'missing -- "Yes" --> question',
+        "question --> review",
+        'missing -- "No" --> draft',
+        "draft --> approval",
+    ]
+    assert path.exists()
+    for snippet in required:
+        assert snippet in text, f"{path} missing {snippet}"
 
 
 def test_ai_reception_employee_docs_explain_setup_and_monetization_path():
