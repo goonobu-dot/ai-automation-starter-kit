@@ -3,6 +3,10 @@ from ai_automation_kit.cli import main
 import json
 import subprocess
 import sys
+import types
+from pathlib import Path
+
+import pytest
 
 
 def test_parser_accepts_research_agent_command():
@@ -189,6 +193,108 @@ def test_parser_accepts_report_automation_command():
     assert args.client_type == "local-business"
     assert args.niche == "construction"
     assert args.output == "report-pack"
+
+
+def test_parser_accepts_report_wizard_init_defaults():
+    parser = build_parser()
+    args = parser.parse_args(["report-wizard", "init", "--workspace", "workspace"])
+
+    assert args.command == "report-wizard"
+    assert args.report_wizard_command == "init"
+    assert args.workspace == "workspace"
+    assert args.report_type == "monthly"
+    assert args.language == "ja"
+
+
+def test_parser_accepts_report_wizard_nested_commands():
+    parser = build_parser()
+
+    inspect_args = parser.parse_args(
+        [
+            "report-wizard",
+            "inspect",
+            "--workspace",
+            "workspace",
+            "--past-outputs",
+            "past-a.md",
+            "past-b.md",
+            "--materials",
+            "notes.md",
+            "metrics.csv",
+        ]
+    )
+    assert inspect_args.report_wizard_command == "inspect"
+    assert inspect_args.past_outputs == ["past-a.md", "past-b.md"]
+    assert inspect_args.materials == ["notes.md", "metrics.csv"]
+
+    confirm_args = parser.parse_args(
+        [
+            "report-wizard",
+            "confirm",
+            "--workspace",
+            "workspace",
+            "--correction",
+            "a=b=c",
+            "--correction",
+            "notes=02_current_materials/notes",
+        ]
+    )
+    assert confirm_args.report_wizard_command == "confirm"
+    assert confirm_args.correction == ["a=b=c", "notes=02_current_materials/notes"]
+
+    answer_args = parser.parse_args(["report-wizard", "answer", "--workspace", "workspace", "--answer", "done"])
+    assert answer_args.report_wizard_command == "answer"
+    assert answer_args.answer == "done"
+    assert answer_args.skip is False
+
+    skip_args = parser.parse_args(["report-wizard", "answer", "--workspace", "workspace", "--skip"])
+    assert skip_args.skip is True
+
+    status_args = parser.parse_args(["report-wizard", "status", "--workspace", "workspace", "--json"])
+    assert status_args.report_wizard_command == "status"
+    assert status_args.json is True
+
+    build_args = parser.parse_args(["report-wizard", "build", "--workspace", "workspace"])
+    assert build_args.report_wizard_command == "build"
+
+    approve_args = parser.parse_args(["report-wizard", "approve", "--workspace", "workspace", "--approver", "Owner"])
+    assert approve_args.report_wizard_command == "approve"
+    assert approve_args.approver == "Owner"
+
+    serve_args = parser.parse_args(
+        ["report-wizard", "serve", "--workspace", "workspace", "--language", "en", "--port", "8080", "--no-open"]
+    )
+    assert serve_args.report_wizard_command == "serve"
+    assert serve_args.language == "en"
+    assert serve_args.port == 8080
+    assert serve_args.no_open is True
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [
+        ["report-wizard", "init", "--workspace", "workspace", "--report-type", "quarterly"],
+        ["report-wizard", "init", "--workspace", "workspace", "--language", "fr"],
+        ["report-wizard", "serve", "--workspace", "workspace", "--language", "fr"],
+    ],
+)
+def test_parser_rejects_invalid_report_wizard_choice_values(argv):
+    parser = build_parser()
+
+    with pytest.raises(SystemExit) as exc:
+        parser.parse_args(argv)
+
+    assert exc.value.code == 2
+
+
+def test_parser_keeps_report_automation_compatibility_alongside_report_wizard():
+    parser = build_parser()
+
+    automation = parser.parse_args(["report-automation", "--output", "automation-pack"])
+    wizard = parser.parse_args(["report-wizard", "status", "--workspace", "workspace"])
+
+    assert automation.command == "report-automation"
+    assert wizard.command == "report-wizard"
 
 
 def test_parser_accepts_public_pattern_expansion_commands():
@@ -846,6 +952,271 @@ def test_main_runs_report_automation_with_grill_me_questions(tmp_path):
     assert "one GrillMe question at a time" in prompt
     assert "Which reporting period" in questions
     assert "current.csv" in draft
+
+
+def test_main_report_wizard_rejects_malformed_correction_without_traceback(tmp_path, capsys):
+    workspace = tmp_path / "workspace"
+
+    exit_code = main(["report-wizard", "init", "--workspace", str(workspace)])
+    assert exit_code == 0
+    capsys.readouterr()
+
+    exit_code = main(
+        [
+            "report-wizard",
+            "confirm",
+            "--workspace",
+            str(workspace),
+            "--correction",
+            "missing-equals",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert "SOURCE=DEST" in captured.err
+    assert "Traceback" not in captured.err
+    assert captured.out == ""
+
+
+def test_main_report_wizard_answer_requires_text_unless_skip(tmp_path, capsys):
+    workspace = tmp_path / "workspace"
+    past = tmp_path / "past.md"
+    material = tmp_path / "material.csv"
+    past.write_text("# Summary\n", encoding="utf-8")
+    material.write_text("metric,value\nsales,10\n", encoding="utf-8")
+
+    assert main(["report-wizard", "init", "--workspace", str(workspace)]) == 0
+    capsys.readouterr()
+    assert (
+        main(
+            [
+                "report-wizard",
+                "inspect",
+                "--workspace",
+                str(workspace),
+                "--past-outputs",
+                str(past),
+                "--materials",
+                str(material),
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+    assert main(["report-wizard", "confirm", "--workspace", str(workspace)]) == 0
+    capsys.readouterr()
+
+    exit_code = main(["report-wizard", "answer", "--workspace", str(workspace)])
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert "provide --answer TEXT or use --skip" in captured.err
+    assert "Traceback" not in captured.err
+
+    exit_code = main(["report-wizard", "answer", "--workspace", str(workspace), "--skip"])
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "stage=questioning" in captured.out
+    assert captured.err == ""
+
+
+def test_main_report_wizard_full_loop_build_status_json_and_approve(tmp_path, capsys):
+    workspace = tmp_path / "workspace"
+    past = tmp_path / "past.md"
+    material = tmp_path / "material.csv"
+    past.write_text("# Executive Summary\n# Metrics\n", encoding="utf-8")
+    material.write_text("metric,value\nsales,120\n", encoding="utf-8")
+
+    assert (
+        main(
+            [
+                "report-wizard",
+                "init",
+                "--workspace",
+                str(workspace),
+                "--report-type",
+                "weekly",
+                "--language",
+                "en",
+            ]
+        )
+        == 0
+    )
+    captured = capsys.readouterr()
+    assert "stage=created" in captured.out
+    assert "next_action=Inspect approved past reports and current materials" in captured.out
+
+    assert (
+        main(
+            [
+                "report-wizard",
+                "inspect",
+                "--workspace",
+                str(workspace),
+                "--past-outputs",
+                str(past),
+                "--materials",
+                str(material),
+            ]
+        )
+        == 0
+    )
+    captured = capsys.readouterr()
+    assert "stage=inspection_ready" in captured.out
+    assert "current_question_id=report_audience" in captured.out
+
+    assert main(["report-wizard", "confirm", "--workspace", str(workspace)]) == 0
+    captured = capsys.readouterr()
+    assert "stage=questioning" in captured.out
+
+    question_ids = [
+        "report_audience",
+        "best_style_reference",
+        "mandatory_sections",
+        "reporting_period",
+        "final_approver",
+        "save_destination",
+    ]
+    for question_id in question_ids:
+        exit_code = main(
+            [
+                "report-wizard",
+                "answer",
+                "--workspace",
+                str(workspace),
+                "--answer",
+                f"answer for {question_id}",
+            ]
+        )
+        captured = capsys.readouterr()
+        assert exit_code == 0
+        if question_id != question_ids[-1]:
+            assert "stage=questioning" in captured.out
+        else:
+            assert "stage=ready_for_draft" in captured.out
+
+    exit_code = main(["report-wizard", "build", "--workspace", str(workspace)])
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "stage=ready_for_human_review" in captured.out
+    assert f"artifact_draft={workspace / '06_drafts/weekly_report_draft.md'}" in captured.out
+    assert f"artifact_template={workspace / '03_templates/weekly_report_template.md'}" in captured.out
+    assert captured.err == ""
+
+    exit_code = main(["report-wizard", "status", "--workspace", str(workspace), "--json"])
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    payload = json.loads(captured.out)
+    assert payload["stage"] == "ready_for_human_review"
+    assert payload["report_type"] == "weekly"
+    assert payload["language"] == "en"
+    assert captured.err == ""
+
+    exit_code = main(["report-wizard", "approve", "--workspace", str(workspace), "--approver", "Owner"])
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "stage=approved" in captured.out
+    assert f"artifact_approval={workspace / '07_approval/approval.json'}" in captured.out
+
+
+def test_main_report_wizard_build_and_status_exit_contract(tmp_path, capsys):
+    workspace = tmp_path / "workspace"
+    past = tmp_path / "past.md"
+    material = tmp_path / "material.csv"
+    past.write_text("# Summary\n", encoding="utf-8")
+    material.write_text("metric,value\nsales,10\n", encoding="utf-8")
+
+    assert main(["report-wizard", "init", "--workspace", str(workspace)]) == 0
+    capsys.readouterr()
+    assert (
+        main(
+            [
+                "report-wizard",
+                "inspect",
+                "--workspace",
+                str(workspace),
+                "--past-outputs",
+                str(past),
+                "--materials",
+                str(material),
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+    assert main(["report-wizard", "confirm", "--workspace", str(workspace)]) == 0
+    capsys.readouterr()
+
+    exit_code = main(["report-wizard", "build", "--workspace", str(workspace)])
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "stage=questioning" in captured.out
+    assert "next_action=Resolve unresolved items before approval" in captured.out
+    assert captured.err == ""
+
+    exit_code = main(["report-wizard", "status", "--workspace", str(workspace)])
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "stage=questioning" in captured.out
+
+    exit_code = main(["report-wizard", "approve", "--workspace", str(workspace), "--approver", "Owner"])
+    captured = capsys.readouterr()
+    assert exit_code == 1
+    assert "ready_for_human_review" in captured.err or "unresolved" in captured.err
+    assert "Traceback" not in captured.err
+
+
+def test_main_report_wizard_serve_lazy_imports_server_only_when_needed(tmp_path, monkeypatch, capsys):
+    workspace = tmp_path / "workspace"
+    imported = {"names": []}
+    called = {}
+
+    def fake_import_module(name):
+        imported["names"].append(name)
+        return types.SimpleNamespace(
+            run_report_wizard_server=lambda workspace, language, port, open_browser: called.update(
+                {
+                    "workspace": workspace,
+                    "language": language,
+                    "port": port,
+                    "open_browser": open_browser,
+                }
+            )
+        )
+
+    monkeypatch.setattr("ai_automation_kit.cli.importlib.import_module", fake_import_module)
+
+    exit_code = main(["report-wizard", "init", "--workspace", str(workspace)])
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert imported["names"] == []
+    assert "stage=created" in captured.out
+
+    exit_code = main(
+        [
+            "report-wizard",
+            "serve",
+            "--workspace",
+            str(workspace),
+            "--language",
+            "en",
+            "--port",
+            "4310",
+            "--no-open",
+        ]
+    )
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert imported["names"] == ["ai_automation_kit.report_wizard_server"]
+    assert called == {
+        "workspace": Path(workspace),
+        "language": "en",
+        "port": 4310,
+        "open_browser": False,
+    }
+    assert captured.out == ""
+    assert captured.err == ""
 
 
 def test_main_runs_github_discover_without_config(tmp_path, monkeypatch):

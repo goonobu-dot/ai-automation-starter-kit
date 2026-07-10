@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import os
 import shutil
@@ -58,6 +59,13 @@ from ai_automation_kit.core.operator_console import generate_share_check
 from ai_automation_kit.core.operator_console import generate_website_side_hustle_pack
 from ai_automation_kit.core.operator_console import package_client_demo
 from ai_automation_kit.core.report_automation import generate_report_automation_pack
+from ai_automation_kit.core.report_wizard import answer_current_question
+from ai_automation_kit.core.report_wizard import approve_report
+from ai_automation_kit.core.report_wizard import build_report_workspace
+from ai_automation_kit.core.report_wizard import confirm_folder_plan
+from ai_automation_kit.core.report_wizard import create_session
+from ai_automation_kit.core.report_wizard import inspect_session
+from ai_automation_kit.core.report_wizard import session_status
 from ai_automation_kit.core.side_hustle_blueprints import generate_side_hustle_blueprints
 from ai_automation_kit.templates.docs_rag import run_docs_rag
 from ai_automation_kit.templates.delivery_pipeline import run_delivery_pipeline
@@ -296,6 +304,45 @@ def build_parser() -> argparse.ArgumentParser:
     report_automation.add_argument("--niche", default="operations")
     report_automation.add_argument("--output", required=True)
 
+    report_wizard = subparsers.add_parser("report-wizard")
+    report_wizard_subparsers = report_wizard.add_subparsers(dest="report_wizard_command", required=True)
+
+    report_wizard_init = report_wizard_subparsers.add_parser("init")
+    report_wizard_init.add_argument("--workspace", required=True)
+    report_wizard_init.add_argument("--report-type", default="monthly", choices=["daily", "weekly", "monthly"])
+    report_wizard_init.add_argument("--language", default="ja", choices=["ja", "en"])
+
+    report_wizard_inspect = report_wizard_subparsers.add_parser("inspect")
+    report_wizard_inspect.add_argument("--workspace", required=True)
+    report_wizard_inspect.add_argument("--past-outputs", nargs="+", default=[])
+    report_wizard_inspect.add_argument("--materials", nargs="+", default=[])
+
+    report_wizard_confirm = report_wizard_subparsers.add_parser("confirm")
+    report_wizard_confirm.add_argument("--workspace", required=True)
+    report_wizard_confirm.add_argument("--correction", action="append", default=[])
+
+    report_wizard_answer = report_wizard_subparsers.add_parser("answer")
+    report_wizard_answer.add_argument("--workspace", required=True)
+    report_wizard_answer.add_argument("--answer")
+    report_wizard_answer.add_argument("--skip", action="store_true")
+
+    report_wizard_status = report_wizard_subparsers.add_parser("status")
+    report_wizard_status.add_argument("--workspace", required=True)
+    report_wizard_status.add_argument("--json", action="store_true")
+
+    report_wizard_build = report_wizard_subparsers.add_parser("build")
+    report_wizard_build.add_argument("--workspace", required=True)
+
+    report_wizard_approve = report_wizard_subparsers.add_parser("approve")
+    report_wizard_approve.add_argument("--workspace", required=True)
+    report_wizard_approve.add_argument("--approver", required=True)
+
+    report_wizard_serve = report_wizard_subparsers.add_parser("serve")
+    report_wizard_serve.add_argument("--workspace", required=True)
+    report_wizard_serve.add_argument("--language", default="ja", choices=["ja", "en"])
+    report_wizard_serve.add_argument("--port", type=int, default=0)
+    report_wizard_serve.add_argument("--no-open", action="store_true")
+
     flow_export = subparsers.add_parser("flow-export")
     flow_export.add_argument("--flow-id", required=True)
     flow_export.add_argument("--target", required=True, choices=["n8n", "activepieces", "windmill"])
@@ -386,6 +433,94 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _parse_report_wizard_corrections(values: list[str]) -> dict[str, str]:
+    corrections = {}
+    for value in values:
+        if "=" not in value:
+            raise ValueError("each --correction must use SOURCE=DEST")
+        source, destination = value.split("=", 1)
+        if not source or not destination:
+            raise ValueError("each --correction must use SOURCE=DEST")
+        corrections[source] = destination
+    return corrections
+
+
+def _print_report_wizard_state(state: dict, *, as_json: bool = False) -> None:
+    if as_json:
+        print(json.dumps(state, ensure_ascii=False, indent=2))
+        return
+    print(f"stage={state['stage']}")
+    print(f"next_action={state['next_action']}")
+    current_question = state.get("current_question")
+    print("current_question_id={}".format(current_question["id"] if current_question else ""))
+    for name, path in sorted(state.get("artifacts", {}).items()):
+        print(f"artifact_{name}={path}")
+
+
+def _run_report_wizard_command(args: argparse.Namespace) -> int:
+    workspace = Path(args.workspace)
+    command = args.report_wizard_command
+
+    try:
+        if command == "init":
+            state = create_session(workspace, args.report_type, args.language)
+            _print_report_wizard_state(state)
+            return 0
+        if command == "inspect":
+            state = inspect_session(
+                workspace,
+                [Path(path) for path in args.past_outputs],
+                [Path(path) for path in args.materials],
+            )
+            _print_report_wizard_state(state)
+            return 0
+        if command == "confirm":
+            corrections = _parse_report_wizard_corrections(args.correction)
+            state = confirm_folder_plan(workspace, corrections or None)
+            _print_report_wizard_state(state)
+            return 0
+        if command == "answer":
+            if not args.skip and args.answer is None:
+                print("provide --answer TEXT or use --skip", file=sys.stderr)
+                return 2
+            state = answer_current_question(workspace, args.answer or "", skipped=args.skip)
+            _print_report_wizard_state(state)
+            return 0
+        if command == "status":
+            state = session_status(workspace)
+            _print_report_wizard_state(state, as_json=args.json)
+            return 0
+        if command == "build":
+            state = build_report_workspace(workspace)
+            _print_report_wizard_state(state)
+            return 0 if state["stage"] == "ready_for_human_review" else 1
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+
+    if command == "approve":
+        try:
+            state = approve_report(workspace, args.approver)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        _print_report_wizard_state(state)
+        return 0 if state["stage"] == "approved" else 1
+
+    if command == "serve":
+        try:
+            module = importlib.import_module("ai_automation_kit.report_wizard_server")
+            run_server = getattr(module, "run_report_wizard_server")
+        except (ImportError, AttributeError) as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        run_server(workspace, args.language, args.port, open_browser=not args.no_open)
+        return 0
+
+    print("unknown report-wizard command", file=sys.stderr)
+    return 2
+
+
 def main(argv: list[str] | None = None) -> int:
     if argv is None:
         argv = sys.argv[1:]
@@ -394,6 +529,8 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.command == "report-wizard":
+        return _run_report_wizard_command(args)
     if args.command == "research-agent":
         run = run_research_agent(config_path=args.config, output_dir=args.output)
         print(f"run_id={run.run_id}")
