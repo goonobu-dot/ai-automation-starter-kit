@@ -8,6 +8,7 @@ import importlib
 import io
 import os
 import re
+import secrets
 import stat
 import struct
 import zipfile
@@ -22,6 +23,8 @@ MAX_CONTAINER_MEMBERS = 256
 MAX_CONTAINER_MEMBER_BYTES_MULTIPLIER = 4
 MAX_CONTAINER_TOTAL_BYTES_MULTIPLIER = 8
 MAX_CONTAINER_TEXT_BYTES_MULTIPLIER = 2
+MAX_PDF_PAGES = 128
+MAX_PDF_TEXT_CHARS_MULTIPLIER = 2
 
 TEXT_EXTENSIONS = {".md", ".txt", ".csv", ".json"}
 DOCUMENT_EXTENSIONS = {".docx", ".xlsx", ".pdf"}
@@ -47,6 +50,10 @@ class _ContainerLimitError(ValueError):
     def __init__(self, warning: str):
         super().__init__(warning)
         self.warning = warning
+
+
+class _UnsafeXmlError(ValueError):
+    pass
 
 
 def _extension(path: Path) -> str:
@@ -164,8 +171,18 @@ def _absolute_path(path: Path) -> Path:
     return Path(os.path.abspath(os.fspath(path)))
 
 
+def _canonical_path_suggestion(path: Path) -> Optional[Path]:
+    absolute = _absolute_path(path)
+    canonical_parent = Path(os.path.realpath(str(absolute.parent)))
+    if canonical_parent != absolute.parent:
+        return Path(os.path.realpath(str(absolute)))
+    return None
+
+
 def _open_directory_fd(path: Path, create: bool = False) -> int:
     path = _absolute_path(Path(path))
+    if _canonical_path_suggestion(path) is not None:
+        raise OSError(errno.ELOOP, "non-canonical ancestor path")
     directory_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | _no_follow_flag()
     descriptor = os.open(path.anchor, directory_flags)
     try:
@@ -224,6 +241,8 @@ def _read_limited(path: Path, max_file_bytes: int) -> Tuple[Optional[bytes], Opt
 
 def _safe_lstat(path: Path):
     path = _absolute_path(Path(path))
+    if _canonical_path_suggestion(path) is not None:
+        return None, "non_canonical_path"
     parent_descriptor = None
     try:
         parent_descriptor = _open_directory_fd(path.parent)
@@ -332,6 +351,11 @@ def _xml_local_name(tag: str) -> str:
     return tag.rsplit("}", 1)[-1]
 
 
+def _ensure_safe_xml(data: bytes) -> None:
+    if re.search(br"<!\s*(?:DOCTYPE|ENTITY|ELEMENT|ATTLIST|NOTATION|\[)", data, re.IGNORECASE):
+        raise _UnsafeXmlError("unsafe_xml")
+
+
 def _zip_limits(max_file_bytes: int) -> Tuple[int, int, int, int]:
     return (
         MAX_CONTAINER_MEMBERS,
@@ -376,7 +400,9 @@ def _extract_docx(data: bytes, max_file_bytes: int) -> str:
         members = _zip_preflight(archive, max_file_bytes)
         if "word/document.xml" not in members:
             raise ValueError("invalid_container")
-        xml = ElementTree.fromstring(_zip_member(archive, members["word/document.xml"], max_file_bytes))
+        xml_data = _zip_member(archive, members["word/document.xml"], max_file_bytes)
+        _ensure_safe_xml(xml_data)
+        xml = ElementTree.fromstring(xml_data)
     paragraphs = []
     current = []
     _, _, _, max_text_bytes = _zip_limits(max_file_bytes)
@@ -401,7 +427,9 @@ def _extract_xlsx(data: bytes, max_file_bytes: int) -> str:
         members = _zip_preflight(archive, max_file_bytes)
         shared_strings = []
         if "xl/sharedStrings.xml" in members:
-            root = ElementTree.fromstring(_zip_member(archive, members["xl/sharedStrings.xml"], max_file_bytes))
+            xml_data = _zip_member(archive, members["xl/sharedStrings.xml"], max_file_bytes)
+            _ensure_safe_xml(xml_data)
+            root = ElementTree.fromstring(xml_data)
             for item in root.iter():
                 if _xml_local_name(item.tag) == "si":
                     shared_strings.append("".join(part.text or "" for part in item.iter() if _xml_local_name(part.tag) == "t"))
@@ -412,7 +440,9 @@ def _extract_xlsx(data: bytes, max_file_bytes: int) -> str:
         _, _, _, max_text_bytes = _zip_limits(max_file_bytes)
         text_bytes = 0
         for sheet_name in sheet_names:
-            root = ElementTree.fromstring(_zip_member(archive, members[sheet_name], max_file_bytes))
+            xml_data = _zip_member(archive, members[sheet_name], max_file_bytes)
+            _ensure_safe_xml(xml_data)
+            root = ElementTree.fromstring(xml_data)
             for row in (element for element in root.iter() if _xml_local_name(element.tag) == "row"):
                 values = []
                 for cell in (element for element in row if _xml_local_name(element.tag) == "c"):
@@ -434,14 +464,27 @@ def _extract_xlsx(data: bytes, max_file_bytes: int) -> str:
     return "\n".join(lines)
 
 
-def _extract_pdf(data: bytes) -> Tuple[str, Optional[str], List[str]]:
+def _extract_pdf(data: bytes, max_file_bytes: int) -> Tuple[str, Optional[str], List[str]]:
+    # pypdf remains optional; this reader is bounded here but is not sandboxed.
     try:
         reader_module = importlib.import_module("pypdf")
     except ImportError:
         return "optional_reader_missing", None, ["pypdf_not_installed"]
     try:
         reader = reader_module.PdfReader(io.BytesIO(data), strict=False)
-        text = "\n".join((page.extract_text() or "") for page in reader.pages).strip()
+        pages = reader.pages
+        if len(pages) > MAX_PDF_PAGES:
+            return "extraction_limit", None, ["pdf_page_count_limit"]
+        max_text_chars = max_file_bytes * MAX_PDF_TEXT_CHARS_MULTIPLIER
+        text_parts = []
+        text_chars = 0
+        for page in pages:
+            page_text = page.extract_text() or ""
+            text_chars += len(page_text)
+            if text_chars > max_text_chars:
+                return "extraction_limit", None, ["pdf_text_size_limit"]
+            text_parts.append(page_text)
+        text = "\n".join(text_parts).strip()
         return "extracted", text, [] if text else ["pdf_text_empty"]
     except Exception as error:
         return "extraction_error", None, ["pdf_reader_error:{}".format(type(error).__name__)]
@@ -457,6 +500,8 @@ def extract_text(path: Path, *, max_file_bytes: int = MAX_FILE_BYTES) -> Dict:
     file_stat, stat_error = _safe_lstat(path)
     if stat_error:
         base["reason"] = stat_error
+        if stat_error == "non_canonical_path":
+            base["canonical_path"] = str(_canonical_path_suggestion(path))
         return base
     base["bytes"] = file_stat.st_size
     if stat.S_ISLNK(file_stat.st_mode):
@@ -505,7 +550,7 @@ def extract_text(path: Path, *, max_file_bytes: int = MAX_FILE_BYTES) -> Dict:
             text = _extract_xlsx(data, max_file_bytes)
             extraction_status = "extracted"
         elif extension == ".pdf":
-            extraction_status, text, warnings = _extract_pdf(data)
+            extraction_status, text, warnings = _extract_pdf(data, max_file_bytes)
         else:
             text = None
             extraction_status = "metadata_only"
@@ -513,6 +558,10 @@ def extract_text(path: Path, *, max_file_bytes: int = MAX_FILE_BYTES) -> Dict:
             warnings.append("ocr_not_attempted")
     except UnicodeDecodeError:
         base["reason"] = "invalid_utf8"
+        return base
+    except _UnsafeXmlError as error:
+        base["reason"] = "unsafe_xml"
+        base["warnings"] = [str(error)]
         return base
     except _ContainerLimitError as error:
         base["reason"] = "expanded_content_too_large"
@@ -524,6 +573,10 @@ def extract_text(path: Path, *, max_file_bytes: int = MAX_FILE_BYTES) -> Dict:
 
     if extraction_status == "extraction_error":
         base["reason"] = "extraction_error"
+        base["warnings"] = warnings
+        return base
+    if extraction_status == "extraction_limit":
+        base["reason"] = "extraction_limit"
         base["warnings"] = warnings
         return base
     if extension in {".docx", ".xlsx"} and not text:
@@ -649,14 +702,27 @@ def _collision_name(name: str, number: int) -> str:
     return "{}__{}{}".format(stem, number, suffix)
 
 
-def _copy_rejected(record: Dict, reason: str) -> Dict:
-    return {
+def _copy_rejected(record: Dict, reason: str, canonical_path: Optional[Path] = None) -> Dict:
+    outcome = {
         "status": "copy_rejected",
         "source_role": record.get("source_role"),
         "original_path": record.get("original_path"),
         "name": record.get("name"),
         "reason": reason,
     }
+    if canonical_path is not None:
+        outcome["canonical_path"] = str(canonical_path)
+    return outcome
+
+
+def _integrity_metadata(record: Dict) -> Optional[Tuple[str, int]]:
+    expected_hash = record.get("sha256")
+    expected_bytes = record.get("bytes")
+    if not isinstance(expected_hash, str) or not re.fullmatch(r"[0-9a-fA-F]{64}", expected_hash):
+        return None
+    if isinstance(expected_bytes, bool) or not isinstance(expected_bytes, int) or expected_bytes < 0:
+        return None
+    return expected_hash, expected_bytes
 
 
 def _path_is_within(path: Path, workspace: Path) -> bool:
@@ -685,6 +751,9 @@ def copy_approved_files(records: List[Dict], workspace: Path) -> List[Dict]:
             outcomes.append(_copy_rejected(record, "missing_status"))
         elif record["status"] == "accepted":
             accepted_records.append(record)
+    workspace_canonical = _canonical_path_suggestion(workspace)
+    if workspace_canonical is not None:
+        return outcomes + [_copy_rejected(record, "non_canonical_path", workspace_canonical) for record in accepted_records]
     if not _ensure_directory(workspace):
         return outcomes + [_copy_rejected(record, "workspace_unavailable") for record in accepted_records]
     intake = workspace / "00_intake"
@@ -699,6 +768,14 @@ def copy_approved_files(records: List[Dict], workspace: Path) -> List[Dict]:
         role_directories[role] = directory
 
     for record in accepted_records:
+        integrity = _integrity_metadata(record)
+        if integrity is None:
+            outcomes.append(_copy_rejected(record, "missing_integrity_metadata"))
+            continue
+        expected_hash, expected_bytes = integrity
+        if expected_bytes > MAX_FILE_BYTES:
+            outcomes.append(_copy_rejected(record, "source_size_mismatch"))
+            continue
         role = record.get("source_role")
         destination_directory = role_directories.get(role)
         original_value = record.get("original_path")
@@ -712,7 +789,10 @@ def copy_approved_files(records: List[Dict], workspace: Path) -> List[Dict]:
         file_stat, stat_error = _safe_lstat(source)
         if stat_error:
             reason = "unsafe_source_path" if stat_error == "unsafe_path" else stat_error
-            outcomes.append(_copy_rejected(record, reason))
+            canonical_source = _canonical_path_suggestion(source) if stat_error == "non_canonical_path" else None
+            if stat_error == "non_canonical_path":
+                reason = "non_canonical_path"
+            outcomes.append(_copy_rejected(record, reason, canonical_source))
             continue
         if file_stat is None or stat.S_ISLNK(file_stat.st_mode):
             outcomes.append(_copy_rejected(record, "symlink"))
@@ -721,8 +801,6 @@ def copy_approved_files(records: List[Dict], workspace: Path) -> List[Dict]:
             outcomes.append(_copy_rejected(record, "not_a_regular_file"))
             continue
         name = _sanitized_name(record.get("name", source.name))
-        expected_hash = record.get("sha256")
-        expected_bytes = record.get("bytes")
         directory_descriptor = None
         try:
             directory_descriptor = _open_directory_fd(destination_directory)
@@ -736,17 +814,83 @@ def copy_approved_files(records: List[Dict], workspace: Path) -> List[Dict]:
             os.close(directory_descriptor)
             outcomes.append(_copy_rejected(record, "unsafe_destination_path"))
             continue
-        number = 1
+        temp_name = None
+        descriptor = None
+        published_name = None
         try:
-            while True:
-                candidate_name = name if number == 1 else _collision_name(name, number)
+            for _ in range(32):
+                temp_name = ".report-intake-{}".format(secrets.token_hex(16))
                 try:
                     descriptor = os.open(
-                        candidate_name,
+                        temp_name,
                         os.O_WRONLY | os.O_CREAT | os.O_EXCL | _no_follow_flag(),
                         0o600,
                         dir_fd=directory_descriptor,
                     )
+                    break
+                except FileExistsError:
+                    temp_name = None
+            if descriptor is None or temp_name is None:
+                outcomes.append(_copy_rejected(record, "copy_failed"))
+                continue
+
+            digest = hashlib.sha256()
+            byte_count = 0
+            oversized = False
+            try:
+                with os.fdopen(descriptor, "wb") as destination_file:
+                    descriptor = None
+                    source_descriptor = _open_file_no_follow(source)
+                    with os.fdopen(source_descriptor, "rb") as source_file:
+                        remaining = expected_bytes + 1
+                        while remaining:
+                            chunk = source_file.read(min(1024 * 1024, remaining))
+                            if not chunk:
+                                break
+                            remaining -= len(chunk)
+                            writable = min(len(chunk), expected_bytes - byte_count)
+                            if writable:
+                                payload = chunk[:writable]
+                                digest.update(payload)
+                                byte_count += writable
+                                destination_file.write(payload)
+                            if len(chunk) > writable:
+                                oversized = True
+                                break
+            except OSError as error:
+                unsafe_errors = {errno.ELOOP, errno.ENOTDIR, errno.ENOTSUP}
+                reason = "unsafe_source_path" if error.errno in unsafe_errors else "copy_failed"
+                outcomes.append(_copy_rejected(record, reason))
+                continue
+
+            actual_hash = digest.hexdigest()
+            if oversized or byte_count != expected_bytes:
+                outcomes.append(_copy_rejected(record, "source_size_mismatch"))
+                continue
+            if actual_hash.lower() != expected_hash.lower():
+                outcomes.append(_copy_rejected(record, "source_hash_mismatch"))
+                continue
+
+            # The dir_fd anchors temp cleanup and publication; the postcheck detects rename or replacement races without claiming an OS-wide guarantee against every concurrent mutation.
+            if not _destination_directory_is_unchanged(destination_directory, workspace, opened_destination_identity):
+                outcomes.append(_copy_rejected(record, "destination_changed_during_copy"))
+                continue
+
+            number = 1
+            published = False
+            while True:
+                candidate_name = name if number == 1 else _collision_name(name, number)
+                try:
+                    os.link(
+                        temp_name,
+                        candidate_name,
+                        src_dir_fd=directory_descriptor,
+                        dst_dir_fd=directory_descriptor,
+                        follow_symlinks=False,
+                    )
+                    published = True
+                    published_name = candidate_name
+                    break
                 except FileExistsError:
                     number += 1
                     continue
@@ -754,43 +898,7 @@ def copy_approved_files(records: List[Dict], workspace: Path) -> List[Dict]:
                     reason = "unsafe_destination_path" if error.errno == errno.ELOOP else "copy_failed"
                     outcomes.append(_copy_rejected(record, reason))
                     break
-
-                digest = hashlib.sha256()
-                byte_count = 0
-                try:
-                    with os.fdopen(descriptor, "wb") as destination_file:
-                        source_descriptor = _open_file_no_follow(source)
-                        with os.fdopen(source_descriptor, "rb") as source_file:
-                            for chunk in iter(lambda: source_file.read(1024 * 1024), b""):
-                                digest.update(chunk)
-                                byte_count += len(chunk)
-                                destination_file.write(chunk)
-                    actual_hash = digest.hexdigest()
-                    # The dir_fd anchors the write and cleanup; this postcheck detects rename or replacement races without claiming an OS-wide guarantee against every concurrent mutation.
-                    if not _destination_directory_is_unchanged(destination_directory, workspace, opened_destination_identity):
-                        try:
-                            _unlink_at(directory_descriptor, candidate_name)
-                        except OSError:
-                            pass
-                        outcomes.append(_copy_rejected(record, "destination_changed_during_copy"))
-                        break
-                    if expected_hash and actual_hash != expected_hash:
-                        _unlink_at(directory_descriptor, candidate_name)
-                        outcomes.append(_copy_rejected(record, "source_hash_mismatch"))
-                        break
-                    if expected_bytes is not None and byte_count != expected_bytes:
-                        _unlink_at(directory_descriptor, candidate_name)
-                        outcomes.append(_copy_rejected(record, "source_size_mismatch"))
-                        break
-                except OSError as error:
-                    try:
-                        _unlink_at(directory_descriptor, candidate_name)
-                    except OSError:
-                        pass
-                    unsafe_errors = {errno.ELOOP, errno.ENOTDIR, errno.ENOTSUP}
-                    reason = "unsafe_source_path" if error.errno in unsafe_errors else "copy_failed"
-                    outcomes.append(_copy_rejected(record, reason))
-                    break
+            if published:
                 outcomes.append(
                     {
                         "status": "copied",
@@ -803,7 +911,23 @@ def copy_approved_files(records: List[Dict], workspace: Path) -> List[Dict]:
                         "sha256": actual_hash,
                     }
                 )
-                break
         finally:
+            if descriptor is not None:
+                os.close(descriptor)
+            cleanup_failed = False
+            if temp_name is not None:
+                try:
+                    _unlink_at(directory_descriptor, temp_name)
+                except OSError:
+                    cleanup_failed = True
+            if cleanup_failed:
+                if published_name is not None:
+                    try:
+                        _unlink_at(directory_descriptor, published_name)
+                    except OSError:
+                        pass
+                if outcomes and outcomes[-1].get("original_path") == str(source):
+                    outcomes.pop()
+                outcomes.append(_copy_rejected(record, "cleanup_failed"))
             os.close(directory_descriptor)
     return outcomes

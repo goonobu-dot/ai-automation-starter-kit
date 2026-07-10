@@ -1,11 +1,14 @@
 import builtins
 import hashlib
 import io
+import os
 import struct
 import sys
 import types
 import zipfile
 from pathlib import Path
+
+import pytest
 
 from ai_automation_kit.core import report_intake
 from ai_automation_kit.core.report_intake import (
@@ -52,6 +55,18 @@ def write_jpeg(path, width=7, height=11):
 def write_webp(path, width=13, height=17):
     payload = b"VP8X" + struct.pack("<I", 10) + b"\x00" * 4 + (width - 1).to_bytes(3, "little") + (height - 1).to_bytes(3, "little")
     path.write_bytes(b"RIFF" + struct.pack("<I", len(payload) + 4) + b"WEBP" + payload)
+
+
+def approved_record(source, source_role, name=None):
+    data = source.read_bytes()
+    return {
+        "status": "accepted",
+        "source_role": source_role,
+        "original_path": str(source),
+        "name": name or source.name,
+        "sha256": hashlib.sha256(data).hexdigest(),
+        "bytes": len(data),
+    }
 
 
 def test_public_limits_are_bounded_and_text_input_is_hashed_and_classified(tmp_path):
@@ -204,6 +219,37 @@ def test_docx_and_xlsx_are_extracted_with_stdlib_zip_xml(tmp_path):
     assert "第一段" in docx_result["text"] and "Second paragraph" in docx_result["text"]
     assert xlsx_result["extraction_status"] == "extracted"
     assert "Revenue" in xlsx_result["text"] and "100" in xlsx_result["text"]
+
+
+def test_docx_and_xlsx_dtd_xml_is_rejected_before_elementtree(tmp_path):
+    docx = tmp_path / "unsafe.docx"
+    write_zip(
+        docx,
+        {
+            "word/document.xml": (
+                '<!DOCTYPE w:document [<!ENTITY secret "expanded">]>'
+                '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">'
+                "<w:body><w:p><w:r><w:t>&secret;</w:t></w:r></w:p></w:body></w:document>"
+            )
+        },
+    )
+    xlsx = tmp_path / "unsafe.xlsx"
+    write_zip(
+        xlsx,
+        {
+            "xl/worksheets/sheet1.xml": (
+                '<!doctype worksheet [<!ENTITY secret "expanded">]>'
+                '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+                "<sheetData><row><c><v>&secret;</v></c></row></sheetData></worksheet>"
+            )
+        },
+    )
+
+    for path in (docx, xlsx):
+        result = extract_text(path)
+        assert result["reason"] == "unsafe_xml"
+        assert result["text"] is None
+        assert "unsafe_xml" in result["warnings"]
 
 
 def test_empty_or_unrelated_zip_files_are_not_documents(tmp_path):
@@ -437,13 +483,51 @@ def test_pdf_reader_returns_extracted_page_text_without_a_real_dependency(tmp_pa
     assert result["text"] == "page one\npage two"
 
 
+def test_pdf_page_count_is_bounded(tmp_path, monkeypatch):
+    pdf = tmp_path / "many-pages.pdf"
+    pdf.write_bytes(b"%PDF-1.4\n%%EOF")
+
+    class FakePage:
+        def extract_text(self):
+            raise AssertionError("page text should not be read after page-count limit")
+
+    class FakeReader:
+        def __init__(self, stream, strict=False):
+            self.pages = [FakePage() for _ in range(report_intake.MAX_PDF_PAGES + 1)]
+
+    monkeypatch.setitem(sys.modules, "pypdf", types.SimpleNamespace(PdfReader=FakeReader))
+    result = extract_text(pdf)
+
+    assert result["reason"] == "extraction_limit"
+    assert "pdf_page_count_limit" in result["warnings"]
+
+
+def test_pdf_cumulative_text_is_bounded_by_input_limit(tmp_path, monkeypatch):
+    pdf = tmp_path / "long-page.pdf"
+    pdf.write_bytes(b"%PDF-1.4\n%%EOF")
+
+    class FakePage:
+        def extract_text(self):
+            return "x" * (100 * report_intake.MAX_PDF_TEXT_CHARS_MULTIPLIER + 1)
+
+    class FakeReader:
+        def __init__(self, stream, strict=False):
+            self.pages = [FakePage()]
+
+    monkeypatch.setitem(sys.modules, "pypdf", types.SimpleNamespace(PdfReader=FakeReader))
+    result = extract_text(pdf, max_file_bytes=100)
+
+    assert result["reason"] == "extraction_limit"
+    assert "pdf_text_size_limit" in result["warnings"]
+
+
 def test_copy_creates_nested_workspace_parents(tmp_path):
     source = tmp_path / "source.txt"
     source.write_text("nested", encoding="utf-8")
     workspace = tmp_path / "one" / "two" / "workspace"
 
     outcomes = copy_approved_files(
-        [{"status": "accepted", "source_role": "past_output", "original_path": str(source), "name": "nested.txt"}],
+        [approved_record(source, "past_output", "nested.txt")],
         workspace,
     )
 
@@ -505,8 +589,8 @@ def test_copy_reports_missing_and_hash_mismatched_accepted_records(tmp_path):
 
     outcomes = copy_approved_files(
         [
-            {"status": "accepted", "source_role": "past_output"},
-            {"status": "accepted", "source_role": "past_output", "original_path": str(source), "name": "bad.txt", "sha256": "0" * 64},
+            {"status": "accepted", "source_role": "past_output", "sha256": hashlib.sha256(b"").hexdigest(), "bytes": 0},
+            {"status": "accepted", "source_role": "past_output", "original_path": str(source), "name": "bad.txt", "sha256": "0" * 64, "bytes": len(b"actual")},
         ],
         workspace,
     )
@@ -515,6 +599,61 @@ def test_copy_reports_missing_and_hash_mismatched_accepted_records(tmp_path):
         "missing_original_path",
         "source_hash_mismatch",
     ]
+
+
+def test_copy_requires_integrity_metadata(tmp_path):
+    source = tmp_path / "source.txt"
+    source.write_text("content", encoding="utf-8")
+
+    outcomes = copy_approved_files(
+        [{"status": "accepted", "source_role": "past_output", "original_path": str(source), "name": "source.txt"}],
+        tmp_path / "workspace",
+    )
+
+    assert outcomes[0]["status"] == "copy_rejected"
+    assert outcomes[0]["reason"] == "missing_integrity_metadata"
+
+
+def test_copy_bounds_write_when_source_is_replaced_with_oversized_content(tmp_path, monkeypatch):
+    source = tmp_path / "source.txt"
+    source.write_text("abc", encoding="utf-8")
+    workspace = tmp_path / "workspace"
+    original_open = report_intake._open_file_no_follow
+    replaced = False
+
+    def replace_source(path):
+        nonlocal replaced
+        if Path(path) == source and not replaced:
+            replaced = True
+            source.write_bytes(b"oversized replacement content")
+        return original_open(path)
+
+    monkeypatch.setattr(report_intake, "_open_file_no_follow", replace_source)
+    outcomes = copy_approved_files([approved_record(source, "past_output")], workspace)
+
+    assert outcomes[0]["status"] == "copy_rejected"
+    assert outcomes[0]["reason"] == "source_size_mismatch"
+    destination = workspace / "00_intake" / "past"
+    assert list(destination.iterdir()) == []
+
+
+def test_copy_reports_temp_cleanup_failure_and_removes_published_output(tmp_path, monkeypatch):
+    source = tmp_path / "source.txt"
+    source.write_text("content", encoding="utf-8")
+    workspace = tmp_path / "workspace"
+    original_unlink = report_intake._unlink_at
+
+    def fail_temp_cleanup(directory_descriptor, name):
+        if name.startswith(".report-intake-"):
+            raise OSError("simulated cleanup failure")
+        return original_unlink(directory_descriptor, name)
+
+    monkeypatch.setattr(report_intake, "_unlink_at", fail_temp_cleanup)
+    outcomes = copy_approved_files([approved_record(source, "past_output")], workspace)
+
+    assert outcomes[-1]["status"] == "copy_rejected"
+    assert outcomes[-1]["reason"] == "cleanup_failed"
+    assert not (workspace / "00_intake" / "past" / "source.txt").exists()
 
 
 def test_copy_fails_closed_when_source_parent_changes_to_symlink(tmp_path, monkeypatch):
@@ -538,7 +677,7 @@ def test_copy_fails_closed_when_source_parent_changes_to_symlink(tmp_path, monke
     monkeypatch.setattr(report_intake, "_open_file_no_follow", swap_parent_before_open)
     try:
         outcomes = copy_approved_files(
-            [{"status": "accepted", "source_role": "past_output", "original_path": str(source), "name": "source.txt"}],
+            [approved_record(source, "past_output", "source.txt")],
             workspace,
         )
     finally:
@@ -570,7 +709,7 @@ def test_copy_fails_closed_when_destination_parent_changes_to_symlink(tmp_path, 
     monkeypatch.setattr(report_intake, "_open_directory_fd", swap_destination_parent)
     try:
         outcomes = copy_approved_files(
-            [{"status": "accepted", "source_role": "past_output", "original_path": str(source), "name": "source.txt"}],
+            [approved_record(source, "past_output", "source.txt")],
             workspace,
         )
     finally:
@@ -603,7 +742,7 @@ def test_copy_rejects_and_cleans_when_destination_directory_is_renamed_after_ope
     monkeypatch.setattr(report_intake, "_open_directory_fd", rename_after_open)
     try:
         outcomes = copy_approved_files(
-            [{"status": "accepted", "source_role": "past_output", "original_path": str(source), "name": "source.txt"}],
+            [approved_record(source, "past_output", "source.txt")],
             workspace,
         )
     finally:
@@ -624,7 +763,7 @@ def test_copy_does_not_overwrite_existing_collision(tmp_path):
     (destination / "report.txt").write_text("existing", encoding="utf-8")
 
     outcomes = copy_approved_files(
-        [{"status": "accepted", "source_role": "current_material", "original_path": str(source), "name": "report.txt"}],
+        [approved_record(source, "current_material", "report.txt")],
         workspace,
     )
     copied = [item for item in outcomes if item["status"] == "copied"]
@@ -632,3 +771,21 @@ def test_copy_does_not_overwrite_existing_collision(tmp_path):
     assert len(copied) == 1
     assert (destination / "report.txt").read_text(encoding="utf-8") == "existing"
     assert (destination / "report__2.txt").read_text(encoding="utf-8") == "new"
+
+
+def test_non_canonical_var_alias_is_rejected_with_canonical_suggestion(tmp_path):
+    if os.path.realpath("/var") == "/var":
+        pytest.skip("/var is not an alias on this platform")
+    private_var = Path("/private/var")
+    try:
+        relative = tmp_path.relative_to(private_var)
+    except ValueError:
+        pytest.skip("pytest temp path is not under /private/var")
+    canonical = tmp_path / "canonical.txt"
+    canonical.write_text("content", encoding="utf-8")
+    alias = Path("/var") / relative / "canonical.txt"
+
+    result = extract_text(alias)
+
+    assert result["reason"] == "non_canonical_path"
+    assert result["canonical_path"] == str(canonical)
