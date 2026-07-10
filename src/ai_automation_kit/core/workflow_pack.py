@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
+import string
 from importlib import resources
 from pathlib import Path
 from typing import Any, Dict
@@ -34,6 +35,7 @@ PROHIBITED_REQUIRED = {
 }
 RISK_TIERS = {"low", "medium", "high"}
 OUTPUT_SCHEMA_KEYS = {"missing_questions", "draft_markdown"}
+PROMPT_TEMPLATE_KEYS = {"template_id", "allowed_variables", "template"}
 
 
 def load_bundled_pack(pack_id: str) -> dict:
@@ -52,6 +54,33 @@ def load_bundled_output_schema(pack_id: str) -> dict:
     if schema.get("additionalProperties") is not False:
         raise ValueError("workflow output schema must disable additional properties")
     return copy.deepcopy(schema)
+
+
+def load_bundled_prompt_template(pack_id: str) -> dict:
+    pack = load_bundled_pack(pack_id)
+    prompt = _load_trusted_json(pack_id=pack_id, kind="prompt_template")
+    if set(prompt) != PROMPT_TEMPLATE_KEYS:
+        raise ValueError("workflow prompt template fields are invalid")
+    if prompt["template_id"] != pack["prompt_template_id"]:
+        raise ValueError("workflow prompt template id does not match the pack")
+    if prompt["allowed_variables"] != pack["allowed_prompt_variables"]:
+        raise ValueError("workflow prompt template variables do not match the pack")
+    template = prompt["template"]
+    _require_non_empty_string(template, "workflow prompt template")
+    placeholders = []
+    try:
+        parsed = string.Formatter().parse(template)
+        for _, field_name, format_spec, conversion in parsed:
+            if field_name is None:
+                continue
+            if format_spec or conversion or not field_name:
+                raise ValueError("workflow prompt template placeholder is invalid")
+            placeholders.append(field_name)
+    except (ValueError, KeyError, IndexError) as exc:
+        raise ValueError("workflow prompt template placeholder is invalid") from exc
+    if set(placeholders) != set(prompt["allowed_variables"]):
+        raise ValueError("workflow prompt template contains an undeclared placeholder")
+    return copy.deepcopy(prompt)
 
 
 def validate_pack(payload: dict) -> dict:
@@ -87,6 +116,9 @@ def _load_trusted_json(pack_id: str, kind: str) -> dict:
     elif kind == "output_schema":
         file_key = "output_schema_file"
         hash_key = "output_schema_sha256"
+    elif kind == "prompt_template":
+        file_key = "prompt_template_file"
+        hash_key = "prompt_template_sha256"
     else:
         raise ValueError(f"unsupported workflow pack resource kind: {kind}")
 
