@@ -861,6 +861,12 @@ def _publish_staged_file(staged: Path, destination_directory: Path, name: str, e
             if stat.S_ISREG(observed.st_mode):
                 existing_hash, existing_bytes, existing_identity = _hash_at_dirfd(directory_fd, candidate_name)
                 if existing_hash.lower() == expected_hash.lower() and existing_bytes == expected_bytes:
+                    if (
+                        not _verify_directory_identity(destination_directory, directory_fd, chain["final_identity"], chain["final_realpath"], "after_reuse_hash")
+                        or not _verify_directory_identity(chain["root_path"], chain["root_fd"], chain["root_identity"], chain["root_realpath"], "after_reuse_hash")
+                        or not _retrace_destination(chain)
+                    ):
+                        raise ValueError("destination_changed_during_copy")
                     _unlink_staged(staged)
                     return destination_directory / candidate_name, True, False
                 if number == 1 and existing_bytes < expected_bytes:
@@ -1064,6 +1070,7 @@ def confirm_folder_plan(workspace: Path, corrections: Optional[Dict[str, str]] =
         _save(state, workspace)
     journal = state["operation_journal"]
     completed = set(journal.get("completed_items", []))
+    retry_item = None
     for record in state["accepted"]:
         source_path = record.get("original_path")
         if source_path in completed and _journal_valid_outcome(state, source_path):
@@ -1072,7 +1079,7 @@ def confirm_folder_plan(workspace: Path, corrections: Optional[Dict[str, str]] =
         if source_path in completed:
             completed.remove(source_path)
             journal["completed_items"] = [item for item in journal["completed_items"] if item != source_path]
-            journal["outcomes"] = [item for item in journal["outcomes"] if item.get("original_path") != source_path]
+        journal["outcomes"] = [item for item in journal["outcomes"] if item.get("original_path") != source_path]
         journal["current_item"] = source_path
         state["operation_journal"] = journal
         state["copy_outcomes"] = list(journal["outcomes"])
@@ -1081,17 +1088,36 @@ def confirm_folder_plan(workspace: Path, corrections: Optional[Dict[str, str]] =
         outcomes = copy_approved_files([record], _workspace_path(workspace))
         organized = _organize_copy_outcomes(outcomes, state, _workspace_path(workspace))
         journal["outcomes"].extend(organized)
-        journal["completed_items"].append(source_path)
-        journal["current_item"] = None
+        retryable = any(
+            item.get("status") == "copy_rejected" and str(item.get("reason", "")).startswith("destination_changed")
+            for item in organized
+        )
+        if retryable:
+            retry_item = source_path
+            journal["current_item"] = source_path
+        else:
+            journal["completed_items"].append(source_path)
+            journal["current_item"] = None
         state = _load(workspace)
         state["operation_journal"] = journal
         state["copy_outcomes"] = list(journal["outcomes"])
         _refresh_copy_unresolved(state)
         _refresh_unresolved(state)
         _save(state, workspace)
+        if retryable:
+            break
 
     state = _load(workspace)
     journal = state["operation_journal"]
+    if retry_item is not None:
+        journal["status"] = "in_progress"
+        journal["current_item"] = retry_item
+        state["operation_journal"] = journal
+        state["stage"] = "folder_plan_confirmed"
+        state["next_action"] = "Retry confirmation after destination_changed_during_copy"
+        _refresh_copy_unresolved(state)
+        _refresh_unresolved(state)
+        return _save(state, workspace)
     journal["status"] = "complete"
     journal["current_item"] = None
     state["operation_journal"] = journal

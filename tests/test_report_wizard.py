@@ -430,6 +430,61 @@ def test_post_publish_identity_race_removes_publication_and_records_rejection(tm
     assert not (workspace / "02_current_materials/metrics" / current.name).exists()
 
 
+def test_reused_hash_rechecks_ancestor_identity_and_recovers_on_retry(tmp_path, monkeypatch):
+    past, current = make_inputs(tmp_path)
+    workspace = tmp_path / "workspace"
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "metrics").mkdir()
+    create_session(workspace, "daily")
+    inspect_session(workspace, [past], [current])
+    destination_root = workspace / "02_current_materials"
+    destination = destination_root / "metrics"
+    destination.mkdir(parents=True)
+    final_path = destination / current.name
+    final_path.write_bytes(current.read_bytes())
+    state = load_session(workspace)
+    state["stage"] = "folder_plan_confirmed"
+    state["operation_journal"] = {
+        "operation_id": "retry-test",
+        "operation": "confirm_copy",
+        "status": "in_progress",
+        "current_item": None,
+        "completed_items": [],
+        "outcomes": [],
+    }
+    (workspace / "report_wizard_state.json").write_text(json.dumps(state), encoding="utf-8")
+    original_hash = report_wizard._hash_at_dirfd
+    triggered = {"value": False}
+
+    def swap_after_matching_hash(directory_fd, name):
+        result = original_hash(directory_fd, name)
+        if name == current.name and not triggered["value"]:
+            triggered["value"] = True
+            backup = workspace / "02_current_materials.backup"
+            destination_root.rename(backup)
+            destination_root.symlink_to(outside, target_is_directory=True)
+        return result
+
+    monkeypatch.setattr(report_wizard, "_hash_at_dirfd", swap_after_matching_hash)
+    first = confirm_folder_plan(workspace)
+    assert first["stage"] == "folder_plan_confirmed"
+    assert any(item["status"] == "copy_rejected" for item in first["copy_outcomes"])
+    assert any(item["id"].startswith("source_copy_") for item in first["unresolved_items"])
+    assert (workspace / "00_intake/current" / current.name).exists()
+    assert not (outside / "metrics" / current.name).exists()
+
+    destination_root.unlink()
+    (workspace / "02_current_materials.backup").rename(destination_root)
+    monkeypatch.setattr(report_wizard, "_hash_at_dirfd", original_hash)
+    recovered = confirm_folder_plan(workspace)
+
+    assert recovered["stage"] == "questioning"
+    assert final_path.read_bytes() == current.read_bytes()
+    assert not any(item["id"].startswith("source_copy_") for item in recovered["unresolved_items"])
+    assert not list((workspace / "00_intake/current").glob("metrics*.csv"))
+
+
 def test_skipped_required_question_is_represented_and_can_recover_to_approval(tmp_path):
     past, current = make_inputs(tmp_path)
     workspace = tmp_path / "workspace"
