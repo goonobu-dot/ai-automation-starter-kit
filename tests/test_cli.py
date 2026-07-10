@@ -954,6 +954,60 @@ def test_main_runs_report_automation_with_grill_me_questions(tmp_path):
     assert "current.csv" in draft
 
 
+def test_main_runs_report_automation_weekly_with_type_specific_artifacts(tmp_path):
+    output = tmp_path / "report-automation-weekly"
+
+    exit_code = main(
+        [
+            "report-automation",
+            "--report-type",
+            "weekly",
+            "--client-type",
+            "local-business",
+            "--niche",
+            "construction",
+            "--output",
+            str(output),
+        ]
+    )
+
+    assert exit_code == 0
+    expected_files = [
+        "03_templates/daily_report_template.md",
+        "03_templates/weekly_report_template.md",
+        "03_templates/monthly_report_template.md",
+        "06_drafts/daily_report_draft.md",
+        "06_drafts/weekly_report_draft.md",
+        "06_drafts/monthly_report_draft.md",
+        "scripts/run_report_dry_run.py",
+    ]
+    for relative_path in expected_files:
+        assert (output / relative_path).exists(), relative_path
+
+    (output / "01_past_outputs/weekly_reports/last_week.md").write_text("# Last Week\n\n案件は順調でした。\n", encoding="utf-8")
+    (output / "02_current_materials/sales_csv/current.csv").write_text("metric,value\nsales,120\n", encoding="utf-8")
+    completed = subprocess.run(
+        [sys.executable, "scripts/run_report_dry_run.py"],
+        cwd=output,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+
+    weekly_template = (output / "03_templates/weekly_report_template.md").read_text(encoding="utf-8")
+    weekly_draft = (output / "06_drafts/weekly_report_draft.md").read_text(encoding="utf-8")
+    prompt = (output / "ai_agent_prompt.md").read_text(encoding="utf-8")
+    payload = json.loads((output / "report_automation.json").read_text(encoding="utf-8"))
+
+    assert payload["report_type"] == "weekly"
+    assert "weekly business reports" in prompt
+    assert "06_drafts/weekly_report_draft.md" in prompt
+    assert "# Weekly Report" in weekly_template
+    assert "# Weekly Report Draft" in weekly_draft
+    assert "current.csv" in weekly_draft
+    assert "draft=06_drafts/weekly_report_draft.md" in completed.stdout
+
+
 def test_main_report_wizard_rejects_malformed_correction_without_traceback(tmp_path, capsys):
     workspace = tmp_path / "workspace"
 
@@ -1208,7 +1262,7 @@ def test_main_report_wizard_serve_lazy_imports_server_only_when_needed(tmp_path,
     )
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert imported["names"] == ["ai_automation_kit.report_wizard_server"]
+    assert imported["names"] == ["ai_automation_kit.core.report_wizard_server"]
     assert called == {
         "workspace": Path(workspace),
         "language": "en",

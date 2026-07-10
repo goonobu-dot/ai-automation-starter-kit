@@ -61,6 +61,7 @@ def generate_report_automation_pack(
     (output / "demo_report_automation.html").write_text(_render_demo_html(payload), encoding="utf-8")
     (output / "source_reference_paths.md").write_text(_render_source_reference_paths(payload), encoding="utf-8")
     (output / "03_templates/daily_report_template.md").write_text(_render_daily_template(), encoding="utf-8")
+    (output / "03_templates/weekly_report_template.md").write_text(_render_weekly_template(), encoding="utf-8")
     (output / "03_templates/monthly_report_template.md").write_text(_render_monthly_template(), encoding="utf-8")
     (output / "04_ai_analysis/writing_style_profile.md").write_text(_render_style_profile(), encoding="utf-8")
     (output / "04_ai_analysis/required_fields.json").write_text(_render_required_fields(), encoding="utf-8")
@@ -70,10 +71,11 @@ def generate_report_automation_pack(
     (output / "05_grill_me_questions/answers.md").write_text(_render_answers_file(), encoding="utf-8")
     (output / "05_grill_me_questions/unresolved_items.md").write_text(_render_unresolved_items(), encoding="utf-8")
     (output / "06_drafts/daily_report_draft.md").write_text(_render_daily_draft(), encoding="utf-8")
+    (output / "06_drafts/weekly_report_draft.md").write_text(_render_weekly_draft(), encoding="utf-8")
     (output / "06_drafts/monthly_report_draft.md").write_text(_render_monthly_draft(), encoding="utf-8")
     (output / "07_approval/approval_checklist.md").write_text(_render_approval_checklist(payload), encoding="utf-8")
     (output / "07_approval/final_report.md").write_text(_render_final_report_placeholder(), encoding="utf-8")
-    (output / "scripts/run_report_dry_run.py").write_text(_render_dry_run_script(), encoding="utf-8")
+    (output / "scripts/run_report_dry_run.py").write_text(_render_dry_run_script(report_type), encoding="utf-8")
     return payload
 
 
@@ -131,6 +133,8 @@ def _render_workspace_map(payload: dict) -> str:
 
 
 def _render_ai_agent_prompt(payload: dict) -> str:
+    selected_draft = "06_drafts/{}_report_draft.md".format(payload["report_type"])
+    selected_report_phrase = "{} business reports".format(payload["report_type"])
     return "\n".join(
         [
             "# AI Agent Prompt For Report Automation",
@@ -139,6 +143,7 @@ def _render_ai_agent_prompt(payload: dict) -> str:
             "",
             "```text",
             "You are helping prepare a safe local dry-run for daily, weekly, or monthly business reports.",
+            "The selected report type for this workspace is {}.".format(selected_report_phrase),
             "Read the folder structure first.",
             "Use past completed reports only as style, section, and required-field evidence.",
             "Use current materials only as factual evidence for the new report.",
@@ -146,7 +151,7 @@ def _render_ai_agent_prompt(payload: dict) -> str:
             "Instead, write one GrillMe question at a time in 05_grill_me_questions/questions.md.",
             "Keep all final submission, external sharing, and client-facing claims behind human approval.",
             "Never ask the user to paste API keys, passwords, or private customer data into chat.",
-            "Produce these files: 04_ai_analysis/writing_style_profile.md, 04_ai_analysis/missing_facts.md, 06_drafts/monthly_report_draft.md or daily_report_draft.md, and 07_approval/approval_checklist.md.",
+            "Produce these files: 04_ai_analysis/writing_style_profile.md, 04_ai_analysis/missing_facts.md, {}, and 07_approval/approval_checklist.md.".format(selected_draft),
             "```",
             "",
             "## GrillMe Behavior",
@@ -311,6 +316,10 @@ def _render_monthly_template() -> str:
     return "\n".join(["# Monthly Report", "", "- Month:", "- Summary:", "- KPI changes:", "- Main achievements:", "- Issues and causes:", "- Next month actions:", "- Human confirmation needed:", ""])
 
 
+def _render_weekly_template() -> str:
+    return "\n".join(["# Weekly Report", "", "- Week:", "- Summary:", "- KPI changes:", "- Main achievements:", "- Issues and causes:", "- Next week actions:", "- Human confirmation needed:", ""])
+
+
 def _render_style_profile() -> str:
     return "\n".join(["# Writing Style Profile", "", "Run `python3 scripts/run_report_dry_run.py` after adding approved sample files. The AI should update this file with section structure, tone, repeated phrases, and required fields found in past completed reports.", ""])
 
@@ -319,6 +328,7 @@ def _render_required_fields() -> str:
     return json.dumps(
         {
             "daily": ["date", "work_completed", "metrics", "issues", "next_actions", "human_confirmation_needed"],
+            "weekly": ["week", "summary", "kpi_changes", "achievements", "issues_and_causes", "next_week_actions", "human_confirmation_needed"],
             "monthly": ["month", "summary", "kpi_changes", "achievements", "issues_and_causes", "next_month_actions", "human_confirmation_needed"],
         },
         ensure_ascii=False,
@@ -354,6 +364,10 @@ def _render_monthly_draft() -> str:
     return "# Monthly Report Draft\n\n未確認: `02_current_materials/` に資料を入れて dry-run を実行してください。\n"
 
 
+def _render_weekly_draft() -> str:
+    return "# Weekly Report Draft\n\n未確認: `02_current_materials/` に資料を入れて dry-run を実行してください。\n"
+
+
 def _render_approval_checklist(payload: dict) -> str:
     return "\n".join(["# Approval Checklist", "", "- [ ] Period is correct.", "- [ ] Required source files were reviewed.", "- [ ] Numbers are supported by source files.", "- [ ] Causes and explanations were confirmed by a human.", "- [ ] No unsupported promises, prices, legal claims, or customer-facing statements remain.", "- [ ] Final approver reviewed the draft.", "- [ ] Final report can be saved or submitted manually.", ""])
 
@@ -362,7 +376,14 @@ def _render_final_report_placeholder() -> str:
     return "# Final Report\n\nDo not use this as final until the approval checklist is complete.\n"
 
 
-def _render_dry_run_script() -> str:
+def _render_dry_run_script(report_type: str) -> str:
+    draft_path = "06_drafts/{}_report_draft.md".format(report_type)
+    report_heading = {
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "monthly": "Monthly",
+    }.get(report_type, "Report")
+    json_report_type = json.dumps(report_type)
     return r'''from __future__ import annotations
 
 import json
@@ -370,6 +391,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 TEXT_EXTENSIONS = {".md", ".txt", ".csv", ".json"}
+REPORT_TYPE = ''' + json_report_type + r'''
+DRAFT_PATH = ROOT / ''' + json.dumps(draft_path) + r'''
+REPORT_HEADING = ''' + json.dumps(report_heading) + r'''
 
 
 def collect_files(base: Path) -> list[Path]:
@@ -391,6 +415,7 @@ def main() -> int:
     past_files = collect_files(ROOT / "01_past_outputs")
     material_files = collect_files(ROOT / "02_current_materials")
     manifest = {
+        "report_type": REPORT_TYPE,
         "past_file_count": len(past_files),
         "material_file_count": len(material_files),
         "past_files": [str(path.relative_to(ROOT)) for path in past_files],
@@ -440,7 +465,7 @@ def main() -> int:
         material_summary = "- 未確認: Current materials are not available yet."
     draft = "\n".join(
         [
-            "# Monthly Report Draft",
+            f"# {REPORT_HEADING} Report Draft",
             "",
             "## Source Summary",
             "",
@@ -459,12 +484,12 @@ def main() -> int:
             "",
         ]
     )
-    (ROOT / "06_drafts" / "monthly_report_draft.md").write_text(draft, encoding="utf-8")
-    (ROOT / "06_drafts" / "daily_report_draft.md").write_text(draft.replace("Monthly", "Daily"), encoding="utf-8")
+    DRAFT_PATH.write_text(draft, encoding="utf-8")
     print(f"past_files={len(past_files)}")
     print(f"material_files={len(material_files)}")
+    print(f"report_type={REPORT_TYPE}")
     print("questions=05_grill_me_questions/questions.md")
-    print("draft=06_drafts/monthly_report_draft.md")
+    print(f"draft={DRAFT_PATH.relative_to(ROOT)}")
     return 0
 
 

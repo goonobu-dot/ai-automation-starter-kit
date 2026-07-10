@@ -509,7 +509,7 @@ def _run_report_wizard_command(args: argparse.Namespace) -> int:
 
     if command == "serve":
         try:
-            module = importlib.import_module("ai_automation_kit.report_wizard_server")
+            module = importlib.import_module("ai_automation_kit.core.report_wizard_server")
             run_server = getattr(module, "run_report_wizard_server")
         except (ImportError, AttributeError) as exc:
             print(str(exc), file=sys.stderr)
