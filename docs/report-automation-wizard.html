@@ -148,6 +148,12 @@
   }
   nav a:hover { background: var(--slate-soft); }
   main { min-width: 0; }
+  main#main:focus-visible,
+  main#main:target {
+    outline: 3px solid var(--blue);
+    outline-offset: 6px;
+    border-radius: 6px;
+  }
   section {
     padding: 22px 0 28px;
     border-bottom: 1px solid var(--line);
@@ -487,7 +493,7 @@
     </ol>
   </nav>
 
-  <main id="main">
+  <main id="main" tabindex="-1">
     <section id="report-wizard">
       <h2>1. Outcome and honest limits</h2>
       <p>The report wizard is a local setup assistant for recurring daily, weekly, or monthly reports. It reads approved examples of past completed reports and approved current-period materials, proposes a working structure, asks one question when evidence is missing, and produces a draft workspace for review.</p>

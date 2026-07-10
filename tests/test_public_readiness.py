@@ -481,6 +481,9 @@ def test_report_wizard_html_manuals_are_bilingual_self_contained_and_actionable(
         assert "@media print" in text
         assert ":focus-visible" in text
         assert 'href="#main"' in text
+        assert re.search(r'<main[^>]*id="main"[^>]*tabindex="-1"', text), f"{path} must make main focusable for skip links"
+        assert "main:focus-visible" in text or "main#main:focus-visible" in text
+        assert "main:target" in text or "main#main:target" in text
         assert text.count('data-flow-step="') == 7, f"{path} must render exactly seven visual flow steps"
         assert 'class="flow-text-alt"' in text
         assert "linear-gradient" not in text

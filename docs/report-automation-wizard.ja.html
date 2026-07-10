@@ -148,6 +148,12 @@
   }
   nav a:hover { background: var(--slate-soft); }
   main { min-width: 0; }
+  main#main:focus-visible,
+  main#main:target {
+    outline: 3px solid var(--blue);
+    outline-offset: 6px;
+    border-radius: 6px;
+  }
   section {
     padding: 22px 0 28px;
     border-bottom: 1px solid var(--line);
@@ -486,7 +492,7 @@
     </ol>
   </nav>
 
-  <main id="main">
+  <main id="main" tabindex="-1">
     <section id="report-wizard">
       <h2>1. 目的と正直な限界</h2>
       <p>このウィザードは、日報・週報・月報の準備をローカルで整えるための設定補助です。承認済みの過去完成レポートと、今回分の承認済み資料を読み込み、作業用の構成案を出し、不足している情報だけを1問ずつ確認し、レビュー可能な下書き作業場所を作ります。</p>
