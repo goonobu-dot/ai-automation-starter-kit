@@ -6,6 +6,7 @@ import errno
 import hashlib
 import importlib
 import io
+import multiprocessing
 import os
 import re
 import secrets
@@ -25,6 +26,9 @@ MAX_CONTAINER_TOTAL_BYTES_MULTIPLIER = 8
 MAX_CONTAINER_TEXT_BYTES_MULTIPLIER = 2
 MAX_PDF_PAGES = 128
 MAX_PDF_TEXT_CHARS_MULTIPLIER = 2
+PDF_TIMEOUT_SECONDS = 2.0
+PDF_CPU_SECONDS = 2
+PDF_MEMORY_BYTES_MULTIPLIER = 16
 
 TEXT_EXTENSIONS = {".md", ".txt", ".csv", ".json"}
 DOCUMENT_EXTENSIONS = {".docx", ".xlsx", ".pdf"}
@@ -464,8 +468,18 @@ def _extract_xlsx(data: bytes, max_file_bytes: int) -> str:
     return "\n".join(lines)
 
 
-def _extract_pdf(data: bytes, max_file_bytes: int) -> Tuple[str, Optional[str], List[str]]:
-    # pypdf remains optional; this reader is bounded here but is not sandboxed.
+def _pdf_isolation_supported() -> bool:
+    try:
+        import resource
+
+        return "fork" in multiprocessing.get_all_start_methods() and all(
+            hasattr(resource, name) for name in ("RLIMIT_CPU", "setrlimit")
+        )
+    except (ImportError, AttributeError, OSError):
+        return False
+
+
+def _extract_pdf_in_process(data: bytes, max_file_bytes: int) -> Tuple[str, Optional[str], List[str]]:
     try:
         reader_module = importlib.import_module("pypdf")
     except ImportError:
@@ -488,6 +502,66 @@ def _extract_pdf(data: bytes, max_file_bytes: int) -> Tuple[str, Optional[str], 
         return "extracted", text, [] if text else ["pdf_text_empty"]
     except Exception as error:
         return "extraction_error", None, ["pdf_reader_error:{}".format(type(error).__name__)]
+
+
+def _pdf_worker(data: bytes, max_file_bytes: int, connection) -> None:
+    try:
+        import resource
+
+        resource.setrlimit(resource.RLIMIT_CPU, (PDF_CPU_SECONDS, PDF_CPU_SECONDS))
+    except Exception:
+        try:
+            connection.send(("optional_isolation_unavailable", None, ["optional_isolation_unavailable"]))
+        finally:
+            connection.close()
+        return
+    try:
+        memory_limit = max(64 * 1024 * 1024, max_file_bytes * PDF_MEMORY_BYTES_MULTIPLIER)
+        resource.setrlimit(resource.RLIMIT_AS, (memory_limit, memory_limit))
+    except (AttributeError, OSError, ValueError):
+        # macOS may reject lowering RLIMIT_AS below the inherited address space; CPU and timeout isolation still apply.
+        pass
+    try:
+        result = _extract_pdf_in_process(data, max_file_bytes)
+    except BaseException as error:
+        result = ("extraction_error", None, ["pdf_reader_error:{}".format(type(error).__name__)])
+    try:
+        connection.send(result)
+    finally:
+        connection.close()
+
+
+def _extract_pdf(data: bytes, max_file_bytes: int) -> Tuple[str, Optional[str], List[str]]:
+    """Run optional pypdf parsing in a bounded child; it is not a sandbox."""
+    if not _pdf_isolation_supported():
+        return "optional_isolation_unavailable", None, ["optional_isolation_unavailable"]
+    receiver = sender = process = None
+    try:
+        context = multiprocessing.get_context("fork")
+        receiver, sender = context.Pipe(False)
+        process = context.Process(target=_pdf_worker, args=(data, max_file_bytes, sender))
+        process.daemon = True
+        process.start()
+        sender.close()
+        sender = None
+        process.join(PDF_TIMEOUT_SECONDS)
+        if process.is_alive():
+            process.terminate()
+            process.join(1.0)
+            return "extraction_limit", None, ["pdf_timeout"]
+        if receiver.poll(0.1):
+            return receiver.recv()
+        return "extraction_error", None, ["pdf_child_no_result"]
+    except (OSError, EOFError, AttributeError, ValueError):
+        return "optional_isolation_unavailable", None, ["optional_isolation_unavailable"]
+    finally:
+        if sender is not None:
+            sender.close()
+        if receiver is not None:
+            receiver.close()
+        if process is not None and process.is_alive():
+            process.terminate()
+            process.join(1.0)
 
 
 def extract_text(path: Path, *, max_file_bytes: int = MAX_FILE_BYTES) -> Dict:
@@ -579,6 +653,8 @@ def extract_text(path: Path, *, max_file_bytes: int = MAX_FILE_BYTES) -> Dict:
         base["reason"] = "extraction_limit"
         base["warnings"] = warnings
         return base
+    if extraction_status in {"optional_isolation_unavailable", "optional_reader_missing"}:
+        base["metadata"] = {"format": "PDF"}
     if extension in {".docx", ".xlsx"} and not text:
         warnings.append("empty_extracted_text")
 
@@ -888,6 +964,13 @@ def copy_approved_files(records: List[Dict], workspace: Path) -> List[Dict]:
                         dst_dir_fd=directory_descriptor,
                         follow_symlinks=False,
                     )
+                    if not _destination_directory_is_unchanged(destination_directory, workspace, opened_destination_identity):
+                        try:
+                            _unlink_at(directory_descriptor, candidate_name)
+                        except OSError:
+                            pass
+                        outcomes.append(_copy_rejected(record, "destination_changed_during_copy"))
+                        break
                     published = True
                     published_name = candidate_name
                     break

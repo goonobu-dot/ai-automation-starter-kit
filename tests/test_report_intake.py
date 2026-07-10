@@ -4,6 +4,7 @@ import io
 import os
 import struct
 import sys
+import time
 import types
 import zipfile
 from pathlib import Path
@@ -521,6 +522,65 @@ def test_pdf_cumulative_text_is_bounded_by_input_limit(tmp_path, monkeypatch):
     assert "pdf_text_size_limit" in result["warnings"]
 
 
+def test_pdf_parser_is_not_invoked_in_the_parent_process(tmp_path, monkeypatch):
+    pdf = tmp_path / "hostile.pdf"
+    pdf.write_bytes(b"%PDF-1.4\n%%EOF")
+    parent_pid = os.getpid()
+
+    class FakePage:
+        def extract_text(self):
+            return "child text"
+
+    class FakeReader:
+        def __init__(self, stream, strict=False):
+            self.pages = [FakePage()]
+
+    real_import = report_intake.importlib.import_module
+
+    def import_only_in_child(name):
+        if os.getpid() == parent_pid:
+            raise AssertionError("pypdf import happened in the parent")
+        return types.SimpleNamespace(PdfReader=FakeReader) if name == "pypdf" else real_import(name)
+
+    monkeypatch.setattr(report_intake.importlib, "import_module", import_only_in_child)
+    result = extract_text(pdf)
+
+    assert result["extraction_status"] in {"extracted", "optional_isolation_unavailable"}
+    assert result["text"] in {"child text", None}
+
+
+def test_pdf_child_timeout_is_terminated_safely(tmp_path, monkeypatch):
+    pdf = tmp_path / "timeout.pdf"
+    pdf.write_bytes(b"%PDF-1.4\n%%EOF")
+
+    def hang_in_child(data, max_file_bytes):
+        time.sleep(5)
+        return "extracted", "late", []
+
+    monkeypatch.setattr(report_intake, "_extract_pdf_in_process", hang_in_child, raising=False)
+    monkeypatch.setattr(report_intake, "PDF_TIMEOUT_SECONDS", 0.05, raising=False)
+    result = extract_text(pdf)
+
+    if report_intake._pdf_isolation_supported():
+        assert result["reason"] == "extraction_limit"
+        assert "pdf_timeout" in result["warnings"]
+    else:
+        assert result["extraction_status"] == "optional_isolation_unavailable"
+
+
+def test_pdf_isolation_unavailable_is_metadata_only(tmp_path, monkeypatch):
+    pdf = tmp_path / "unavailable.pdf"
+    pdf.write_bytes(b"%PDF-1.4\n%%EOF")
+    monkeypatch.setattr(report_intake, "_pdf_isolation_supported", lambda: False, raising=False)
+
+    result = extract_text(pdf)
+
+    assert result["status"] == "accepted"
+    assert result["extraction_status"] == "optional_isolation_unavailable"
+    assert result["text"] is None
+    assert "optional_isolation_unavailable" in result["warnings"]
+
+
 def test_copy_creates_nested_workspace_parents(tmp_path):
     source = tmp_path / "source.txt"
     source.write_text("nested", encoding="utf-8")
@@ -752,6 +812,37 @@ def test_copy_rejects_and_cleans_when_destination_directory_is_renamed_after_ope
     assert outcomes[0]["status"] == "copy_rejected"
     assert outcomes[0]["reason"] == "destination_changed_during_copy"
     assert not (destination_parent / "source.txt").exists()
+
+
+def test_copy_rejects_when_destination_changes_after_publication(tmp_path, monkeypatch):
+    source = tmp_path / "source.txt"
+    source.write_text("content", encoding="utf-8")
+    workspace = tmp_path / "workspace"
+    destination_parent = workspace / "00_intake" / "past"
+    moved_parent = tmp_path / "published-moved-destination"
+    original_link = report_intake.os.link
+    swapped = False
+
+    def publish_then_swap(*args, **kwargs):
+        nonlocal swapped
+        result = original_link(*args, **kwargs)
+        if not swapped:
+            swapped = True
+            destination_parent.rename(moved_parent)
+            destination_parent.symlink_to(moved_parent, target_is_directory=True)
+        return result
+
+    monkeypatch.setattr(report_intake.os, "link", publish_then_swap)
+    try:
+        outcomes = copy_approved_files([approved_record(source, "past_output")], workspace)
+    finally:
+        destination_parent.unlink()
+        moved_parent.rename(destination_parent)
+
+    assert outcomes[0]["status"] == "copy_rejected"
+    assert outcomes[0]["reason"] == "destination_changed_during_copy"
+    assert not (destination_parent / "source.txt").exists()
+    assert not (moved_parent / "source.txt").exists()
 
 
 def test_copy_does_not_overwrite_existing_collision(tmp_path):
