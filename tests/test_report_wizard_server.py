@@ -2,6 +2,7 @@ import json
 import re
 import socket
 import threading
+import time
 from http.client import HTTPConnection
 from pathlib import Path
 
@@ -125,6 +126,26 @@ def _parse_http_json(response_bytes):
     status_line = header_bytes.splitlines()[0].decode("iso-8859-1")
     status_code = int(status_line.split()[1])
     return status_code, json.loads(body.decode("utf-8"))
+
+
+def _multipart_request_bytes(server, role, body, boundary="BOUNDARY"):
+    request = (
+        "POST /api/upload?role={role} HTTP/1.1\r\n"
+        "Host: 127.0.0.1:{port}\r\n"
+        "Accept: application/json\r\n"
+        "Origin: http://127.0.0.1:{port}\r\n"
+        "Content-Type: multipart/form-data; boundary={boundary}\r\n"
+        "X-Report-Wizard-Token: {token}\r\n"
+        "Content-Length: {length}\r\n"
+        "\r\n"
+    ).format(
+        role=role,
+        port=server.server_address[1],
+        boundary=boundary,
+        token=server.session_token,
+        length=len(body),
+    ).encode("utf-8")
+    return request
 
 
 def test_create_report_wizard_server_binds_localhost_and_creates_session(tmp_path):
@@ -300,6 +321,125 @@ def test_server_rejects_short_body_when_declared_content_length_is_longer(tmp_pa
         assert body["ok"] is False
         assert "ended early" in body["error"]["message"]
         assert "Traceback" not in json.dumps(body)
+    finally:
+        _stop_server(server, thread)
+
+
+def test_slow_upload_completion_serializes_inspect_and_is_included(tmp_path):
+    server, thread = _start_server(tmp_path / "workspace")
+    try:
+        multipart_body, boundary = _multipart_body([{"filename": "past.md", "content": b"# Summary\n"}], boundary="SLOWBOUNDARY")
+        request_head = _multipart_request_bytes(server, "past", multipart_body, boundary=boundary)
+        split_at = max(1, len(multipart_body) // 2)
+        upload_started = threading.Event()
+        inspect_done = threading.Event()
+        results = {}
+
+        def upload_worker():
+            with socket.create_connection(server.server_address, timeout=2) as client:
+                client.settimeout(2)
+                client.sendall(request_head + multipart_body[:split_at])
+                upload_started.set()
+                time.sleep(0.25)
+                client.sendall(multipart_body[split_at:])
+                client.shutdown(socket.SHUT_WR)
+                results["upload"] = _parse_http_json(b"".join(iter(lambda: client.recv(65536), b"")))
+
+        def inspect_worker():
+            try:
+                results["inspect"] = _json_request(
+                    server,
+                    "POST",
+                    "/api/inspect",
+                    body=b"{}",
+                    headers={
+                        "Content-Type": "application/json",
+                        "Content-Length": "2",
+                        "Origin": "http://127.0.0.1:{}".format(server.server_address[1]),
+                    },
+                )
+            finally:
+                inspect_done.set()
+
+        upload_thread = threading.Thread(target=upload_worker)
+        inspect_thread = threading.Thread(target=inspect_worker)
+        upload_thread.start()
+        assert upload_started.wait(timeout=1)
+        inspect_thread.start()
+        time.sleep(0.1)
+        assert inspect_done.is_set() is False
+        upload_thread.join(timeout=3)
+        inspect_thread.join(timeout=3)
+
+        assert not upload_thread.is_alive()
+        assert not inspect_thread.is_alive()
+        upload_status, upload_payload = results["upload"]
+        inspect_status, _, inspect_payload = results["inspect"]
+        assert upload_status == 200
+        assert inspect_status == 200
+        saved_path = upload_payload["data"]["saved"][0]["path"]
+        accepted = inspect_payload["data"]["state"]["accepted"]
+        assert any(item["original_path"] == saved_path for item in accepted)
+    finally:
+        _stop_server(server, thread)
+
+
+def test_partial_upload_disconnect_releases_lock_and_leaves_no_leftover_before_inspect(tmp_path):
+    workspace = tmp_path / "workspace"
+    server, thread = _start_server(workspace)
+    try:
+        multipart_body, boundary = _multipart_body([{"filename": "past.md", "content": b"# Summary\n"}], boundary="BROKENBOUNDARY")
+        request_head = _multipart_request_bytes(server, "past", multipart_body, boundary=boundary)
+        split_at = max(1, len(multipart_body) // 2)
+        upload_started = threading.Event()
+        inspect_done = threading.Event()
+        results = {}
+
+        def broken_upload_worker():
+            with socket.create_connection(server.server_address, timeout=2) as client:
+                client.settimeout(2)
+                client.sendall(request_head + multipart_body[:split_at])
+                upload_started.set()
+                time.sleep(0.2)
+                client.shutdown(socket.SHUT_WR)
+                results["upload"] = _parse_http_json(b"".join(iter(lambda: client.recv(65536), b"")))
+
+        def inspect_worker():
+            try:
+                results["inspect"] = _json_request(
+                    server,
+                    "POST",
+                    "/api/inspect",
+                    body=b"{}",
+                    headers={
+                        "Content-Type": "application/json",
+                        "Content-Length": "2",
+                        "Origin": "http://127.0.0.1:{}".format(server.server_address[1]),
+                    },
+                )
+            finally:
+                inspect_done.set()
+
+        upload_thread = threading.Thread(target=broken_upload_worker)
+        inspect_thread = threading.Thread(target=inspect_worker)
+        upload_thread.start()
+        assert upload_started.wait(timeout=1)
+        inspect_thread.start()
+        time.sleep(0.1)
+        assert inspect_done.is_set() is False
+        upload_thread.join(timeout=3)
+        inspect_thread.join(timeout=3)
+
+        assert not upload_thread.is_alive()
+        assert not inspect_thread.is_alive()
+        upload_status, upload_payload = results["upload"]
+        inspect_status, _, inspect_payload = results["inspect"]
+        assert upload_status == 400
+        assert inspect_status == 200
+        assert inspect_payload["data"]["state"]["accepted"] == []
+        leftovers = list((workspace / "00_uploads").rglob("*")) if (workspace / "00_uploads").exists() else []
+        assert [path for path in leftovers if path.is_file()] == []
+        assert upload_payload["ok"] is False
     finally:
         _stop_server(server, thread)
 

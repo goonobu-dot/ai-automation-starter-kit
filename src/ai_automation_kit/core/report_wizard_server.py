@@ -8,6 +8,7 @@ import json
 import os
 import secrets
 import socket
+import threading
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -308,10 +309,10 @@ def create_report_wizard_server(workspace: Path, language: str = "ja", port: int
             if provided != self.server.session_token:
                 raise _RequestError(403, "report wizard token is invalid", "bad_token")
 
-        def _read_body(self) -> bytes:
+        def _validated_content_length(self) -> int:
             content_length_header = self.headers.get("Content-Length")
             if not content_length_header:
-                return b""
+                return 0
             try:
                 content_length = int(content_length_header)
             except ValueError as error:
@@ -320,6 +321,11 @@ def create_report_wizard_server(workspace: Path, language: str = "ja", port: int
                 raise _RequestError(400, "Content-Length must be non-negative", "bad_content_length")
             if content_length > MAX_REQUEST_BYTES:
                 raise OverflowError("request exceeds the 12 MiB body limit")
+            return content_length
+
+        def _read_body(self, content_length: int) -> bytes:
+            if content_length <= 0:
+                return b""
             try:
                 body = self.rfile.read(content_length)
             except socket.timeout as error:
@@ -362,23 +368,22 @@ def create_report_wizard_server(workspace: Path, language: str = "ja", port: int
             if self.command != "POST":
                 self._json_error(405, "unsupported method for this endpoint", code="method_not_allowed")
                 return
-            if any(_staged_upload_paths(self.server.workspace).values()):
-                raise _RequestError(409, "goal can only be changed before uploads are added", "stage_conflict")
-            payload = _read_json(self._read_body())
-            state = set_session_goal(
-                self.server.workspace,
-                payload.get("report_type", ""),
-                payload.get("language", ""),
-            )
+            content_length = self._validated_content_length()
+            with self.server.state_change_lock:
+                payload = _read_json(self._read_body(content_length))
+                if any(_staged_upload_paths(self.server.workspace).values()):
+                    raise _RequestError(409, "goal can only be changed before uploads are added", "stage_conflict")
+                state = set_session_goal(
+                    self.server.workspace,
+                    payload.get("report_type", ""),
+                    payload.get("language", ""),
+                )
             self._send_json(200, _response_payload(state, {"state": state, "uploads": _staged_upload_payload(self.server.workspace)}))
 
         def _serve_upload(self) -> None:
             if self.command != "POST":
                 self._json_error(405, "unsupported method for this endpoint", code="method_not_allowed")
                 return
-            state = load_session(self.server.workspace)
-            if state["stage"] != "created":
-                raise _RequestError(409, "uploads are only allowed before inspection begins", "stage_conflict")
             query = parse_qs(self._parsed_url.query, keep_blank_values=False)
             role = query.get("role", [None])[0]
             if role not in {"past", "current"}:
@@ -386,31 +391,36 @@ def create_report_wizard_server(workspace: Path, language: str = "ja", port: int
             content_type = self.headers.get("Content-Type", "")
             if "multipart/form-data" not in content_type:
                 raise _RequestError(400, "upload requires multipart/form-data", "bad_content_type")
-            body = self._read_body()
-            environ = {
-                "REQUEST_METHOD": "POST",
-                "CONTENT_TYPE": content_type,
-                "CONTENT_LENGTH": str(len(body)),
-            }
-            form = cgi.FieldStorage(
-                fp=io.BytesIO(body),
-                headers=self.headers,
-                environ=environ,
-                keep_blank_values=False,
-            )
-            fields = form.list or []
-            parts = []
-            for field in fields:
-                if field.name != "files" or not getattr(field, "filename", None):
-                    continue
-                content = field.file.read(MAX_FILE_BYTES + 1)
-                if len(content) > MAX_FILE_BYTES:
-                    raise OverflowError("uploaded file exceeds the 10 MiB intake limit")
-                parts.append((field.filename, content))
-            if not parts:
-                raise _RequestError(400, "at least one file upload is required", "missing_files")
-            saved = _save_uploaded_files(self.server.workspace, role, parts)
-            state = load_session(self.server.workspace)
+            content_length = self._validated_content_length()
+            with self.server.state_change_lock:
+                body = self._read_body(content_length)
+                state = load_session(self.server.workspace)
+                if state["stage"] != "created":
+                    raise _RequestError(409, "uploads are only allowed before inspection begins", "stage_conflict")
+                environ = {
+                    "REQUEST_METHOD": "POST",
+                    "CONTENT_TYPE": content_type,
+                    "CONTENT_LENGTH": str(len(body)),
+                }
+                form = cgi.FieldStorage(
+                    fp=io.BytesIO(body),
+                    headers=self.headers,
+                    environ=environ,
+                    keep_blank_values=False,
+                )
+                fields = form.list or []
+                parts = []
+                for field in fields:
+                    if field.name != "files" or not getattr(field, "filename", None):
+                        continue
+                    content = field.file.read(MAX_FILE_BYTES + 1)
+                    if len(content) > MAX_FILE_BYTES:
+                        raise OverflowError("uploaded file exceeds the 10 MiB intake limit")
+                    parts.append((field.filename, content))
+                if not parts:
+                    raise _RequestError(400, "at least one file upload is required", "missing_files")
+                saved = _save_uploaded_files(self.server.workspace, role, parts)
+                state = load_session(self.server.workspace)
             self._send_json(
                 200,
                 _response_payload(state, {"saved": saved, "uploads": _staged_upload_payload(self.server.workspace), "state": state}),
@@ -420,54 +430,65 @@ def create_report_wizard_server(workspace: Path, language: str = "ja", port: int
             if self.command != "POST":
                 self._json_error(405, "unsupported method for this endpoint", code="method_not_allowed")
                 return
-            self._read_body()
-            uploads = _staged_upload_paths(self.server.workspace)
-            state = inspect_session(self.server.workspace, uploads["past"], uploads["current"])
+            content_length = self._validated_content_length()
+            with self.server.state_change_lock:
+                self._read_body(content_length)
+                uploads = _staged_upload_paths(self.server.workspace)
+                state = inspect_session(self.server.workspace, uploads["past"], uploads["current"])
             self._send_json(200, _response_payload(state, {"state": state, "uploads": _staged_upload_payload(self.server.workspace)}))
 
         def _serve_confirm(self) -> None:
             if self.command != "POST":
                 self._json_error(405, "unsupported method for this endpoint", code="method_not_allowed")
                 return
-            payload = _read_json(self._read_body())
-            corrections = payload.get("corrections")
-            if corrections is None:
-                corrections = {}
-            if not isinstance(corrections, dict):
-                raise _RequestError(400, "corrections must be a JSON object", "bad_corrections")
-            state = confirm_folder_plan(self.server.workspace, corrections)
+            content_length = self._validated_content_length()
+            with self.server.state_change_lock:
+                payload = _read_json(self._read_body(content_length))
+                corrections = payload.get("corrections")
+                if corrections is None:
+                    corrections = {}
+                if not isinstance(corrections, dict):
+                    raise _RequestError(400, "corrections must be a JSON object", "bad_corrections")
+                state = confirm_folder_plan(self.server.workspace, corrections)
             self._send_json(200, _response_payload(state, {"state": state, "uploads": _staged_upload_payload(self.server.workspace)}))
 
         def _serve_answer(self) -> None:
             if self.command != "POST":
                 self._json_error(405, "unsupported method for this endpoint", code="method_not_allowed")
                 return
-            payload = _read_json(self._read_body())
-            skipped = bool(payload.get("skipped"))
-            answer = payload.get("answer", "")
-            state = answer_current_question(self.server.workspace, answer, skipped=skipped)
+            content_length = self._validated_content_length()
+            with self.server.state_change_lock:
+                payload = _read_json(self._read_body(content_length))
+                skipped = bool(payload.get("skipped"))
+                answer = payload.get("answer", "")
+                state = answer_current_question(self.server.workspace, answer, skipped=skipped)
             self._send_json(200, _response_payload(state, {"state": state, "uploads": _staged_upload_payload(self.server.workspace)}))
 
         def _serve_build(self) -> None:
             if self.command != "POST":
                 self._json_error(405, "unsupported method for this endpoint", code="method_not_allowed")
                 return
-            self._read_body()
-            state = build_report_workspace(self.server.workspace)
+            content_length = self._validated_content_length()
+            with self.server.state_change_lock:
+                self._read_body(content_length)
+                state = build_report_workspace(self.server.workspace)
             self._send_json(200, _response_payload(state, {"state": state, "uploads": _staged_upload_payload(self.server.workspace)}))
 
         def _serve_approve(self) -> None:
             if self.command != "POST":
                 self._json_error(405, "unsupported method for this endpoint", code="method_not_allowed")
                 return
-            payload = _read_json(self._read_body())
-            state = approve_report(self.server.workspace, payload.get("approver", ""))
+            content_length = self._validated_content_length()
+            with self.server.state_change_lock:
+                payload = _read_json(self._read_body(content_length))
+                state = approve_report(self.server.workspace, payload.get("approver", ""))
             self._send_json(200, _response_payload(state, {"state": state, "uploads": _staged_upload_payload(self.server.workspace)}))
 
     server = ReportWizardHTTPServer(("127.0.0.1", port), Handler)
     server.workspace = workspace
     server.session_token = secrets.token_urlsafe(24)
     server.language = language
+    server.state_change_lock = threading.RLock()
     return server
 
 
