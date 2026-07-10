@@ -8,6 +8,7 @@ import json
 import os
 import secrets
 import socket
+import stat
 import threading
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -71,6 +72,67 @@ def _upload_dir(workspace: Path, role: str) -> Path:
     return _workspace_path(workspace) / "00_uploads" / role
 
 
+def _open_upload_directory(workspace: Path, role: str, *, create: bool = True) -> Tuple[int, Path, Tuple[int, int]]:
+    if role not in {"past", "current"}:
+        raise ValueError("upload role must be 'past' or 'current'")
+    root = _workspace_path(workspace)
+    directory = _upload_dir(root, role)
+    directory_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
+    root_fd = os.open(str(root), directory_flags)
+    current_fd = root_fd
+    try:
+        for part in ("00_uploads", role):
+            try:
+                child_fd = os.open(part, directory_flags, dir_fd=current_fd)
+            except FileNotFoundError:
+                if not create:
+                    raise
+                try:
+                    os.mkdir(part, 0o700, dir_fd=current_fd)
+                except FileExistsError:
+                    pass
+                child_fd = os.open(part, directory_flags, dir_fd=current_fd)
+            if current_fd != root_fd:
+                os.close(current_fd)
+            current_fd = child_fd
+        observed = os.fstat(current_fd)
+        logical = os.lstat(str(directory))
+        if (
+            not stat.S_ISDIR(observed.st_mode)
+            or stat.S_ISLNK(logical.st_mode)
+            or (observed.st_dev, observed.st_ino) != (logical.st_dev, logical.st_ino)
+            or os.path.realpath(str(directory)) != str(directory)
+        ):
+            raise ValueError("upload directory is unsafe or changed")
+        identity = (observed.st_dev, observed.st_ino)
+        result_fd = current_fd
+        current_fd = -1
+        return result_fd, directory, identity
+    except FileNotFoundError:
+        raise
+    except OSError as error:
+        raise ValueError("upload directory is unsafe or changed") from error
+    finally:
+        if current_fd not in {-1, root_fd}:
+            os.close(current_fd)
+        os.close(root_fd)
+
+
+def _upload_directory_matches(directory: Path, directory_fd: int, identity: Tuple[int, int]) -> bool:
+    try:
+        logical = os.lstat(str(directory))
+        observed = os.fstat(directory_fd)
+    except OSError:
+        return False
+    return (
+        stat.S_ISDIR(observed.st_mode)
+        and not stat.S_ISLNK(logical.st_mode)
+        and (observed.st_dev, observed.st_ino) == identity
+        and (logical.st_dev, logical.st_ino) == identity
+        and os.path.realpath(str(directory)) == str(directory)
+    )
+
+
 def _sanitize_filename(filename: str) -> str:
     raw_name = Path(filename or "file").name
     stem = Path(raw_name).stem or "file"
@@ -91,10 +153,21 @@ def _validate_uploaded_filename(filename: str) -> str:
 def _staged_upload_paths(workspace: Path) -> Dict[str, List[Path]]:
     uploads = {"past": [], "current": []}
     for role in uploads:
-        directory = _upload_dir(workspace, role)
-        if not directory.exists():
+        try:
+            directory_fd, directory, identity = _open_upload_directory(workspace, role, create=False)
+        except FileNotFoundError:
             continue
-        uploads[role] = sorted(path for path in directory.iterdir() if path.is_file())
+        try:
+            paths = []
+            for name in os.listdir(directory_fd):
+                observed = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
+                if stat.S_ISREG(observed.st_mode):
+                    paths.append(directory / name)
+            if not _upload_directory_matches(directory, directory_fd, identity):
+                raise ValueError("upload directory changed while listing files")
+            uploads[role] = sorted(paths)
+        finally:
+            os.close(directory_fd)
     return uploads
 
 
@@ -107,37 +180,51 @@ def _staged_upload_payload(workspace: Path) -> Dict[str, List[Dict]]:
 
 
 def _save_uploaded_files(workspace: Path, role: str, parts: List[Tuple[str, bytes]]) -> List[Dict]:
-    directory = _upload_dir(workspace, role)
-    directory.mkdir(parents=True, exist_ok=True)
+    directory_fd, directory, directory_identity = _open_upload_directory(workspace, role)
     saved = []
-    for filename, content in parts:
-        sanitized = _validate_uploaded_filename(filename)
-        if len(content) > MAX_FILE_BYTES:
-            raise OverflowError("uploaded file exceeds the 10 MiB intake limit")
-        final_path = None
-        for _ in range(32):
-            candidate = "{}-{}".format(secrets.token_hex(UPLOAD_PREFIX_BYTES), sanitized)
-            path = directory / candidate
-            flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL
-            descriptor = None
-            try:
-                descriptor = os.open(str(path), flags, 0o600)
-                with os.fdopen(descriptor, "wb") as handle:
-                    descriptor = None
-                    handle.write(content)
-                    handle.flush()
-                    os.fsync(handle.fileno())
-                final_path = path
-                break
-            except FileExistsError:
-                continue
-            finally:
-                if descriptor is not None:
-                    os.close(descriptor)
-        if final_path is None:
-            raise ValueError("could not allocate a unique upload filename")
-        saved.append({"name": final_path.name, "path": str(final_path), "bytes": len(content), "role": role})
-    return saved
+    try:
+        for filename, content in parts:
+            sanitized = _validate_uploaded_filename(filename)
+            if len(content) > MAX_FILE_BYTES:
+                raise OverflowError("uploaded file exceeds the 10 MiB intake limit")
+            final_path = None
+            for _ in range(32):
+                candidate = "{}-{}".format(secrets.token_hex(UPLOAD_PREFIX_BYTES), sanitized)
+                flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+                descriptor = None
+                created = False
+                try:
+                    descriptor = os.open(candidate, flags, 0o600, dir_fd=directory_fd)
+                    created = True
+                    with os.fdopen(descriptor, "wb") as handle:
+                        descriptor = None
+                        handle.write(content)
+                        handle.flush()
+                        os.fsync(handle.fileno())
+                    if not _upload_directory_matches(directory, directory_fd, directory_identity):
+                        os.unlink(candidate, dir_fd=directory_fd)
+                        created = False
+                        raise ValueError("upload directory changed while saving the file")
+                    final_path = directory / candidate
+                    break
+                except FileExistsError:
+                    continue
+                except Exception:
+                    if created:
+                        try:
+                            os.unlink(candidate, dir_fd=directory_fd)
+                        except OSError:
+                            pass
+                    raise
+                finally:
+                    if descriptor is not None:
+                        os.close(descriptor)
+            if final_path is None:
+                raise ValueError("could not allocate a unique upload filename")
+            saved.append({"name": final_path.name, "path": str(final_path), "bytes": len(content), "role": role})
+        return saved
+    finally:
+        os.close(directory_fd)
 
 
 def _read_json(body: bytes) -> Dict:

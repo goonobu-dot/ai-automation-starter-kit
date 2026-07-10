@@ -861,7 +861,6 @@ def _publish_staged_file(staged: Path, destination_directory: Path, name: str, e
     try:
         candidate_name = name
         number = 1
-        repair_identity = None
         while True:
             try:
                 observed = os.stat(candidate_name, dir_fd=directory_fd, follow_symlinks=False)
@@ -876,7 +875,7 @@ def _publish_staged_file(staged: Path, destination_directory: Path, name: str, e
                 candidate_name = _collision_name(name, number)
                 continue
             if stat.S_ISREG(observed.st_mode):
-                existing_hash, existing_bytes, existing_identity = _hash_at_dirfd(directory_fd, candidate_name)
+                existing_hash, existing_bytes, _ = _hash_at_dirfd(directory_fd, candidate_name)
                 if existing_hash.lower() == expected_hash.lower() and existing_bytes == expected_bytes:
                     if (
                         not _verify_directory_identity(destination_directory, directory_fd, chain["final_identity"], chain["final_realpath"], "after_reuse_hash")
@@ -886,20 +885,12 @@ def _publish_staged_file(staged: Path, destination_directory: Path, name: str, e
                         raise ValueError("destination_changed_during_copy")
                     _unlink_staged(staged)
                     return destination_directory / candidate_name, True, False
-                if number == 1 and existing_bytes < expected_bytes:
-                    repair_identity = existing_identity
-                    break
             number += 1
             candidate_name = _collision_name(name, number)
 
         temp_name = _copy_staged_to_dirfd(staged, directory_fd, expected_hash, expected_bytes)
         if not _verify_directory_identity(destination_directory, directory_fd, chain["final_identity"], chain["final_realpath"], "before_publish") or not _verify_directory_identity(chain["root_path"], chain["root_fd"], chain["root_identity"], chain["root_realpath"], "before_publish"):
             raise ValueError("destination_changed_during_copy")
-        if repair_identity is not None:
-            current = os.stat(candidate_name, dir_fd=directory_fd, follow_symlinks=False)
-            if (current.st_dev, current.st_ino) != (repair_identity.st_dev, repair_identity.st_ino):
-                raise ValueError("destination_changed_during_copy")
-            os.unlink(candidate_name, dir_fd=directory_fd)
         try:
             os.link(temp_name, candidate_name, src_dir_fd=directory_fd, dst_dir_fd=directory_fd, follow_symlinks=False)
         except FileExistsError as error:
@@ -923,7 +914,7 @@ def _publish_staged_file(staged: Path, destination_directory: Path, name: str, e
         os.unlink(temp_name, dir_fd=directory_fd)
         temp_name = None
         _unlink_staged(staged)
-        return destination_directory / candidate_name, False, repair_identity is not None
+        return destination_directory / candidate_name, False, False
     finally:
         if temp_name is not None:
             try:

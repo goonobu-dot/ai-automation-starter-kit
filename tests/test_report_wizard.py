@@ -195,7 +195,7 @@ def test_valid_folder_correction_controls_final_copy_destination_and_preserves_s
     assert current.stat().st_mtime_ns == before_mtime
 
 
-def test_confirmation_resumes_partial_and_existing_destination_without_duplicates(tmp_path):
+def test_confirmation_preserves_untrusted_existing_destination_and_reuses_collision_copy(tmp_path):
     past, current = make_inputs(tmp_path)
     workspace = tmp_path / "workspace"
     create_session(workspace, "daily")
@@ -204,21 +204,24 @@ def test_confirmation_resumes_partial_and_existing_destination_without_duplicate
     destination = workspace / "02_current_materials/metrics"
     final_path = destination / current.name
     destination.mkdir(parents=True)
-    final_path.write_bytes(b"partial")
+    existing_bytes = b"user"
+    final_path.write_bytes(existing_bytes)
     state["stage"] = "folder_plan_confirmed"
     (workspace / "report_wizard_state.json").write_text(json.dumps(state), encoding="utf-8")
 
     resumed = confirm_folder_plan(workspace)
     assert resumed["stage"] == "questioning"
-    assert final_path.read_bytes() == current.read_bytes()
+    copied_path = destination / "metrics__2.csv"
+    assert final_path.read_bytes() == existing_bytes
+    assert copied_path.read_bytes() == current.read_bytes()
 
     resumed["stage"] = "folder_plan_confirmed"
     (workspace / "report_wizard_state.json").write_text(json.dumps(resumed), encoding="utf-8")
     rerun = confirm_folder_plan(workspace)
     assert rerun["stage"] == "questioning"
-    assert final_path.read_bytes() == current.read_bytes()
-    assert not (destination / "metrics__2" / current.name).exists()
-    assert len(list(destination.glob("metrics.csv*"))) == 1
+    assert final_path.read_bytes() == existing_bytes
+    assert copied_path.read_bytes() == current.read_bytes()
+    assert len(list(destination.glob("metrics*.csv"))) == 2
 
 
 @pytest.mark.parametrize("role", ["past", "current"])

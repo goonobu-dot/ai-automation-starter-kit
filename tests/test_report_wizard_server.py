@@ -8,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+from ai_automation_kit.core import report_wizard_server
 from ai_automation_kit.core.report_intake import MAX_FILE_BYTES
 from ai_automation_kit.core.report_wizard import load_session
 from ai_automation_kit.core.report_wizard_server import (
@@ -469,6 +470,53 @@ def test_upload_sanitizes_paths_randomizes_names_and_rejects_size_and_extension(
         assert payload["ok"] is False
 
         assert all(str(path.resolve()).startswith(str(workspace.resolve())) for path in (workspace / "00_uploads").rglob("*") if path.is_file())
+    finally:
+        _stop_server(server, thread)
+
+
+def test_upload_rejects_symlinked_role_directory_without_writing_outside_workspace(tmp_path):
+    workspace = tmp_path / "workspace"
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    server, thread = _start_server(workspace)
+    try:
+        uploads = workspace / "00_uploads"
+        uploads.mkdir()
+        (uploads / "current").symlink_to(outside, target_is_directory=True)
+
+        status, _, payload = _upload(server, "current", "metrics.csv", b"metric,value\nsales,120\n")
+
+        assert status == 400
+        assert payload["ok"] is False
+        assert not list(outside.iterdir())
+    finally:
+        _stop_server(server, thread)
+
+
+def test_upload_detects_role_directory_swap_and_removes_the_new_file(tmp_path, monkeypatch):
+    workspace = tmp_path / "workspace"
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    server, thread = _start_server(workspace)
+    original_matches = report_wizard_server._upload_directory_matches
+    triggered = {"value": False}
+
+    def swap_before_identity_check(directory, directory_fd, identity):
+        if not triggered["value"]:
+            triggered["value"] = True
+            backup = workspace / "current-upload.backup"
+            directory.rename(backup)
+            directory.symlink_to(outside, target_is_directory=True)
+        return original_matches(directory, directory_fd, identity)
+
+    monkeypatch.setattr(report_wizard_server, "_upload_directory_matches", swap_before_identity_check)
+    try:
+        status, _, payload = _upload(server, "current", "metrics.csv", b"metric,value\nsales,120\n")
+
+        assert status == 400
+        assert payload["ok"] is False
+        assert not list(outside.iterdir())
+        assert not list((workspace / "current-upload.backup").iterdir())
     finally:
         _stop_server(server, thread)
 
