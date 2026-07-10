@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import stat
 import re
 import tempfile
 from datetime import datetime, timezone
@@ -417,11 +418,187 @@ def _validate_destination(destination: str) -> str:
     return destination
 
 
-def confirm_folder_plan(workspace: Path, corrections: Optional[Dict[str, str]] = None) -> Dict:
-    state = _load(workspace)
-    if state["stage"] != "inspection_ready":
-        raise ValueError("folder confirmation requires inspection_ready state; inspect sources first")
-    corrections = corrections or {}
+def _safe_output_name(value: str) -> str:
+    candidate = Path(str(value)).name
+    if candidate != str(value) or candidate in {"", ".", ".."}:
+        raise ValueError("unsafe destination filename")
+    candidate = re.sub(r"[^A-Za-z0-9._-]", "_", candidate).lstrip(".")
+    return candidate or "file"
+
+
+def _safe_destination_directory(workspace: Path, destination: str) -> Path:
+    _validate_destination(destination)
+    current = _workspace_path(workspace)
+    for part in PurePosixPath(destination).parts:
+        current = current / part
+        try:
+            observed = current.lstat()
+        except FileNotFoundError:
+            current.mkdir()
+            observed = current.lstat()
+        if stat.S_ISLNK(observed.st_mode) or not stat.S_ISDIR(observed.st_mode):
+            raise ValueError("unsafe destination path contains a symlink or non-directory")
+    return current
+
+
+def _hash_file(path: Path) -> Tuple[str, int]:
+    observed = path.lstat()
+    if stat.S_ISLNK(observed.st_mode) or not stat.S_ISREG(observed.st_mode):
+        raise ValueError("unsafe staged file")
+    digest = hashlib.sha256()
+    byte_count = 0
+    with path.open("rb") as source:
+        while True:
+            chunk = source.read(1024 * 1024)
+            if not chunk:
+                break
+            digest.update(chunk)
+            byte_count += len(chunk)
+    return digest.hexdigest(), byte_count
+
+
+def _atomic_copy_file(source: Path, destination: Path) -> None:
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="wb",
+            dir=str(destination.parent),
+            prefix=".report-wizard-",
+            suffix=".tmp",
+            delete=False,
+        ) as handle:
+            temporary = Path(handle.name)
+            with source.open("rb") as source_file:
+                while True:
+                    chunk = source_file.read(1024 * 1024)
+                    if not chunk:
+                        break
+                    handle.write(chunk)
+            handle.flush()
+            os.fsync(handle.fileno())
+        temporary.replace(destination)
+    finally:
+        if temporary is not None and temporary.exists():
+            temporary.unlink()
+
+
+def _collision_name(name: str, number: int) -> str:
+    path = Path(name)
+    suffix = path.suffix
+    stem = path.name[:-len(suffix)] if suffix else path.name
+    return "{}__{}{}".format(stem, number, suffix)
+
+
+def _publish_staged_file(staged: Path, destination_directory: Path, name: str, expected_hash: str, expected_bytes: int) -> Tuple[Path, bool, bool]:
+    staged_hash, staged_bytes = _hash_file(staged)
+    if staged_hash.lower() != expected_hash.lower() or staged_bytes != expected_bytes:
+        raise ValueError("staged source integrity mismatch")
+
+    candidate_name = name
+    number = 1
+    while True:
+        candidate = destination_directory / candidate_name
+        try:
+            observed = candidate.lstat()
+        except FileNotFoundError:
+            _atomic_copy_file(staged, candidate)
+            staged.unlink()
+            return candidate, False, False
+        if stat.S_ISLNK(observed.st_mode):
+            if number == 1:
+                raise ValueError("unsafe destination path contains a symlink")
+            number += 1
+            candidate_name = _collision_name(name, number)
+            continue
+        if stat.S_ISREG(observed.st_mode):
+            existing_hash, existing_bytes = _hash_file(candidate)
+            if existing_hash.lower() == expected_hash.lower() and existing_bytes == expected_bytes:
+                staged.unlink()
+                return candidate, True, False
+            if number == 1 and existing_bytes < expected_bytes:
+                _atomic_copy_file(staged, candidate)
+                staged.unlink()
+                return candidate, False, True
+        number += 1
+        candidate_name = _collision_name(name, number)
+
+
+def _plan_items_by_source(state: Dict) -> Dict[str, Dict]:
+    items = {}
+    for group in ("past_completed_reports", "current_materials"):
+        for item in state["folder_plan"].get(group, []):
+            if item.get("source_path"):
+                items[item["source_path"]] = item
+    return items
+
+
+def _organize_copy_outcomes(outcomes: Sequence[Dict], state: Dict, workspace: Path) -> List[Dict]:
+    plan_items = _plan_items_by_source(state)
+    organized = []
+    for outcome in outcomes:
+        if outcome.get("status") != "copied":
+            organized.append(outcome)
+            continue
+        source_path = outcome.get("original_path")
+        item = plan_items.get(source_path)
+        staged_value = outcome.get("copied_path")
+        if item is None or not staged_value:
+            organized.append({
+                "status": "copy_rejected",
+                "source_role": outcome.get("source_role"),
+                "original_path": source_path,
+                "reason": "missing_confirmed_destination",
+            })
+            continue
+        try:
+            destination = _validate_destination(item.get("destination"))
+            destination_directory = _safe_destination_directory(workspace, destination)
+            staged = Path(staged_value)
+            if not str(staged.resolve(strict=False)).startswith(str(_workspace_path(workspace)) + os.sep):
+                raise ValueError("staged source is outside the workspace")
+            name = _safe_output_name(item.get("name") or outcome.get("name") or Path(source_path).name)
+            expected_hash = outcome.get("sha256")
+            expected_bytes = outcome.get("bytes")
+            if not isinstance(expected_hash, str) or not isinstance(expected_bytes, int):
+                raise ValueError("missing staged integrity metadata")
+            final_path, reused, repaired = _publish_staged_file(
+                staged,
+                destination_directory,
+                name,
+                expected_hash,
+                expected_bytes,
+            )
+            organized.append(
+                {
+                    "status": "copied",
+                    "source_role": outcome.get("source_role"),
+                    "original_path": source_path,
+                    "staged_path": staged_value,
+                    "copied_path": str(final_path),
+                    "destination_path": str(final_path),
+                    "name": final_path.name,
+                    "bytes": expected_bytes,
+                    "sha256": expected_hash,
+                    "reused": reused,
+                    "repaired": repaired,
+                }
+            )
+        except (OSError, ValueError) as error:
+            organized.append(
+                {
+                    "status": "copy_rejected",
+                    "source_role": outcome.get("source_role"),
+                    "original_path": source_path,
+                    "name": outcome.get("name"),
+                    "reason": str(error),
+                }
+            )
+    return organized
+
+
+def _apply_folder_corrections(state: Dict, corrections: Dict[str, str]) -> None:
+    if not isinstance(corrections, dict):
+        raise ValueError("folder corrections must be a mapping of source path to destination")
     by_key = {}
     for items in (state["folder_plan"].get("past_completed_reports", []), state["folder_plan"].get("current_materials", [])):
         for item in items:
@@ -435,11 +612,21 @@ def confirm_folder_plan(workspace: Path, corrections: Optional[Dict[str, str]] =
         item["destination"] = destination
         item["corrected"] = True
 
-    state["stage"] = "folder_plan_confirmed"
-    _save(state, workspace)
-    outcomes = copy_approved_files(state["accepted"], _workspace_path(workspace))
+
+def confirm_folder_plan(workspace: Path, corrections: Optional[Dict[str, str]] = None) -> Dict:
     state = _load(workspace)
-    state["copy_outcomes"] = outcomes
+    if state["stage"] == "questioning" and not corrections:
+        return state
+    if state["stage"] not in {"inspection_ready", "folder_plan_confirmed"}:
+        raise ValueError("folder confirmation requires inspection_ready state; inspect sources first")
+    _apply_folder_corrections(state, corrections or {})
+    if state["stage"] == "inspection_ready":
+        state["stage"] = "folder_plan_confirmed"
+        _save(state, workspace)
+    outcomes = copy_approved_files(state["accepted"], _workspace_path(workspace))
+    organized = _organize_copy_outcomes(outcomes, state, _workspace_path(workspace))
+    state = _load(workspace)
+    state["copy_outcomes"] = organized
     state["stage"] = "questioning"
     _refresh_unresolved(state)
     state["next_action"] = "Answer the current question: {}".format(state["current_question"]["id"]) if state["current_question"] else "Build the report workspace"
@@ -497,19 +684,70 @@ def _json_artifact(path: Path, payload: Dict) -> None:
     _write_artifact(path, json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
 
 
+def _schema_evidence(item: Dict) -> str:
+    kind = "required" if item.get("required") else "optional"
+    references = item.get("source_references", [])
+    source_paths = [str(reference.get("path")) for reference in references if reference.get("path")]
+    evidence = "evidence: {} source(s), confidence: {}".format(item.get("occurrences", 0), item.get("confidence", 0.0))
+    if source_paths:
+        evidence += "; sources: {}".format(", ".join(source_paths))
+    return "[{}; {}]".format(kind, evidence)
+
+
+def _schema_structure_lines(state: Dict) -> List[str]:
+    lines = ["## Proposed report structure", ""]
+    sections = state["schema_proposal"].get("sections", [])
+    fields = state["schema_proposal"].get("fields", [])
+    if not sections:
+        lines.append("- No recurring sections were inferred from readable past reports.")
+    for section in sections:
+        lines.extend(["## {} {}".format(section["name"], _schema_evidence(section)), ""])
+    if fields:
+        lines.append("### Field labels")
+        lines.append("")
+        for field in fields:
+            lines.append("- **{}:** {}".format(field["name"], _schema_evidence(field)))
+        lines.append("")
+    return lines
+
+
+def _final_copy_paths(state: Dict) -> Dict[str, str]:
+    return {
+        outcome.get("original_path"): outcome.get("copied_path")
+        for outcome in state.get("copy_outcomes", [])
+        if outcome.get("status") == "copied" and outcome.get("original_path") and outcome.get("copied_path")
+    }
+
+
+def _provenance_reference(reference: Dict, copied_paths: Dict[str, str]) -> Dict:
+    result = dict(reference)
+    copied_path = copied_paths.get(reference.get("path"))
+    if copied_path:
+        result["copied_path"] = copied_path
+    return result
+
+
 def _build_draft(state: Dict, current_records: Sequence[Dict]) -> str:
     english, japanese = _report_names(state["report_type"])
     lines = [
         "# {}".format(english),
         "## {}".format(japanese),
         "",
-        "## Source-backed evidence",
-        "",
     ]
+    lines.extend(_schema_structure_lines(state))
+    lines.extend(
+        [
+            "## Source-backed evidence",
+            "",
+        ]
+    )
+    copied_paths = _final_copy_paths(state)
     if current_records:
         for record in current_records:
+            original_path = record.get("original_path")
+            display_path = copied_paths.get(original_path, original_path)
             lines.append(
-                "- {} (sha256: {})".format(record.get("original_path"), record.get("sha256"))
+                "- {} (source: {}; sha256: {})".format(display_path, original_path, record.get("sha256"))
             )
     else:
         lines.append("- No accepted current-period source was available.")
@@ -565,17 +803,23 @@ def build_report_workspace(workspace: Path) -> Dict:
     template_path = root / "03_templates" / "{}_report_template.md".format(report_type)
     draft_path = root / "06_drafts" / "{}_report_draft.md".format(report_type)
     current_records = [record for record in state["accepted"] if record.get("source_role") == "current_material"]
+    copied_paths = _final_copy_paths(state)
     provenance = {
         "sections": [
             {
                 "section": section["name"],
-                "sources": section.get("source_references", []),
+                "sources": [_provenance_reference(reference, copied_paths) for reference in section.get("source_references", [])],
             }
             for section in state["schema_proposal"].get("sections", [])
         ],
         "claims": [],
         "current_facts": [
-            {"path": record.get("original_path"), "sha256": record.get("sha256")} for record in current_records
+            {
+                "path": record.get("original_path"),
+                "copied_path": copied_paths.get(record.get("original_path")),
+                "sha256": record.get("sha256"),
+            }
+            for record in current_records
         ],
     }
     source_manifest = {
@@ -584,7 +828,10 @@ def build_report_workspace(workspace: Path) -> Dict:
         "skipped": state.get("skipped_inputs", []),
         "copy_outcomes": state.get("copy_outcomes", []),
     }
-    _write_artifact(template_path, "# {}\n## {}\n\n## Source-backed evidence\n\n## User answers\n\n## Generated wording requiring review\n\n## Unresolved items\n".format(english, japanese))
+    template_lines = ["# {}".format(english), "## {}".format(japanese), ""]
+    template_lines.extend(_schema_structure_lines(state))
+    template_lines.extend(["## Source-backed evidence", "", "## User answers", "", "## Generated wording requiring review", "", "## Unresolved items", ""])
+    _write_artifact(template_path, "\n".join(template_lines))
     _json_artifact(root / "04_ai_analysis" / "source_manifest.json", source_manifest)
     _json_artifact(root / "04_ai_analysis" / "schema_proposal.json", state["schema_proposal"])
     _json_artifact(root / "04_ai_analysis" / "provenance.json", provenance)

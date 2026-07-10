@@ -168,6 +168,92 @@ def test_confirmation_copies_only_accepted_files_and_keeps_copy_rejections_visib
     assert not (workspace / "00_intake/past/completed.md").exists()
 
 
+def test_valid_folder_correction_controls_final_copy_destination_and_preserves_source(tmp_path):
+    past, current = make_inputs(tmp_path)
+    before_bytes = current.read_bytes()
+    before_mtime = current.stat().st_mtime_ns
+    workspace = tmp_path / "workspace"
+    create_session(workspace, "monthly")
+    inspect_session(workspace, [past], [current])
+
+    state = confirm_folder_plan(workspace, {str(current): "02_current_materials/notes"})
+    final_path = workspace / "02_current_materials/notes" / current.name
+    copied = [item for item in state["copy_outcomes"] if item.get("original_path") == str(current)]
+
+    assert final_path.read_bytes() == before_bytes
+    assert Path(copied[0]["copied_path"]) == final_path
+    assert not (workspace / "00_intake/current" / current.name).exists()
+    assert current.read_bytes() == before_bytes
+    assert current.stat().st_mtime_ns == before_mtime
+
+
+def test_confirmation_resumes_partial_and_existing_destination_without_duplicates(tmp_path):
+    past, current = make_inputs(tmp_path)
+    workspace = tmp_path / "workspace"
+    create_session(workspace, "daily")
+    inspect_session(workspace, [past], [current])
+    state = load_session(workspace)
+    destination = workspace / "02_current_materials/metrics"
+    final_path = destination / current.name
+    destination.mkdir(parents=True)
+    final_path.write_bytes(b"partial")
+    state["stage"] = "folder_plan_confirmed"
+    (workspace / "report_wizard_state.json").write_text(json.dumps(state), encoding="utf-8")
+
+    resumed = confirm_folder_plan(workspace)
+    assert resumed["stage"] == "questioning"
+    assert final_path.read_bytes() == current.read_bytes()
+
+    resumed["stage"] = "folder_plan_confirmed"
+    (workspace / "report_wizard_state.json").write_text(json.dumps(resumed), encoding="utf-8")
+    rerun = confirm_folder_plan(workspace)
+    assert rerun["stage"] == "questioning"
+    assert final_path.read_bytes() == current.read_bytes()
+    assert not (destination / "metrics__2" / current.name).exists()
+    assert len(list(destination.glob("metrics.csv*"))) == 1
+
+
+@pytest.mark.parametrize(
+    ("report_type", "section_heading"),
+    [("daily", "# Daily Report"), ("weekly", "# Weekly Report"), ("monthly", "# Monthly Report")],
+)
+def test_schema_derived_template_and_draft_render_required_optional_evidence(tmp_path, report_type, section_heading):
+    past_a = write_source(
+        tmp_path / "past" / "a.md",
+        "# Common\n# Optional Context\nRevenue: 100\nOptional Label: old\n",
+    )
+    past_b = write_source(
+        tmp_path / "past" / "b.md",
+        "# Optional Context\n# Common\nRevenue: 110\n",
+    )
+    past_c = write_source(tmp_path / "past" / "c.md", "# Common\nRevenue: 120\n")
+    current = write_source(tmp_path / "current" / "metrics.csv", "metric,value\nsales,120\n")
+    workspace = tmp_path / report_type
+    create_session(workspace, report_type)
+    inspected = inspect_session(workspace, [past_a, past_b, past_c], [current])
+    sections = {item["name"]: item for item in inspected["schema_proposal"]["sections"]}
+    fields = {item["name"]: item for item in inspected["schema_proposal"]["fields"]}
+    assert sections["Common"]["required"] is True
+    assert sections["Optional Context"]["required"] is True
+    assert fields["Optional Label"]["required"] is False
+
+    confirm_folder_plan(workspace)
+    answer_all_questions(workspace)
+    built = build_report_workspace(workspace)
+    template = (workspace / "03_templates" / "{}_report_template.md".format(report_type)).read_text(encoding="utf-8")
+    draft = Path(built["artifacts"]["draft"]).read_text(encoding="utf-8")
+
+    assert section_heading in template
+    for rendered in (template, draft):
+        assert "## Common" in rendered
+        assert "## Optional Context" in rendered
+        assert "Revenue" in rendered
+        assert "Optional Label" in rendered
+        assert "evidence:" in rendered.lower()
+        assert "100" not in rendered
+        assert "110" not in rendered
+
+
 def test_one_question_persists_answer_skip_and_rejects_secret_like_values(tmp_path):
     workspace = tmp_path / "workspace"
     create_session(workspace, "daily")
