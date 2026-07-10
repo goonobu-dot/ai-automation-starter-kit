@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Monthly Report Output",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "missing_questions",
+    "draft_markdown"
+  ],
+  "properties": {
+    "missing_questions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "draft_markdown": {
+      "type": "string"
+    }
+  }
+}

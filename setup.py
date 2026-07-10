@@ -15,6 +15,8 @@ setup(
     license="MIT",
     package_dir={"": "src"},
     packages=find_packages("src"),
+    include_package_data=True,
+    package_data={"ai_automation_kit": ["packs/*.json"]},
     entry_points={
         "console_scripts": [
             "ai-automation-kit=ai_automation_kit.cli:main",

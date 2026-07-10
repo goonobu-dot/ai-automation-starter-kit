@@ -1,0 +1,8 @@
+{
+  "monthly-report": {
+    "pack_file": "monthly_report.json",
+    "pack_sha256": "d700ef61fd16a9aac366aa55db864d81add933155792b8c290bf19548585ce33",
+    "output_schema_file": "monthly_report_output.schema.json",
+    "output_schema_sha256": "5d9ddb4180589ea9d714af99a0c3eebbac958ff03e101e011557905de42b0236"
+  }
+}
