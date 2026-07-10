@@ -4,9 +4,15 @@ import argparse
 import hashlib
 import json
 import os
+import queue
+import signal
 import shutil
 import subprocess
 import sys
+import threading
+import time
+import urllib.parse
+import urllib.request
 from pathlib import Path
 
 
@@ -1357,6 +1363,7 @@ def _run_report_wizard_installed_smoke(cli_bin: Path, python_bin: Path, output: 
         env=env,
     )
     approved = json.loads(approval_path.read_text(encoding="utf-8"))
+    state_record = json.loads(state_path.read_text(encoding="utf-8"))
     state_after_approval = json.loads(
         _run_capture([str(cli_bin), "report-wizard", "status", "--workspace", str(report_wizard_output), "--json"], env=env).stdout
     )
@@ -1365,36 +1372,191 @@ def _run_report_wizard_installed_smoke(cli_bin: Path, python_bin: Path, output: 
         raise RuntimeError(f"unexpected report wizard approval status: {approved}")
     if approved.get("report_sha256") != expected_hash:
         raise RuntimeError("report wizard approval hash did not match the built draft")
+    if state_record.get("approval", {}).get("report_sha256") != expected_hash:
+        raise RuntimeError("report wizard state hash did not match the built draft")
     if state_after_approval["stage"] != "approved":
         raise RuntimeError(f"unexpected report wizard stage after approval: {state_after_approval['stage']}")
-
-    # Equivalent to `ai-automation-kit report-wizard serve`, but bounded so smoke never blocks.
-    _run(
-        [
-            str(python_bin),
-            "-c",
-            (
-                "import json, threading, urllib.request;"
-                "from pathlib import Path;"
-                "from ai_automation_kit.core.report_wizard_server import TOKEN_HEADER, create_report_wizard_server;"
-                f"workspace = Path({str(report_wizard_output)!r});"
-                "server = create_report_wizard_server(workspace, language='en', port=0);"
-                "thread = threading.Thread(target=server.serve_forever, daemon=True);"
-                "thread.start();"
-                "port = server.server_address[1];"
-                "token = server.session_token;"
-                "root = urllib.request.urlopen(f'http://127.0.0.1:{port}/?token={token}', timeout=5);"
-                "assert root.status == 200;"
-                "request = urllib.request.Request(f'http://127.0.0.1:{port}/api/state', headers={TOKEN_HEADER: token});"
-                "payload = json.loads(urllib.request.urlopen(request, timeout=5).read().decode('utf-8'));"
-                "assert payload['ok'] is True and payload['stage'] == 'approved';"
-                "server.shutdown();"
-                "thread.join(timeout=5);"
-                "server.server_close();"
-            ),
-        ],
-        env=env,
+    _assert_report_wizard_cli_serve(
+        cli_bin=cli_bin,
+        workspace=report_wizard_output,
+        expected_hash=expected_hash,
     )
+
+
+def _assert_report_wizard_cli_serve(cli_bin: Path, workspace: Path, expected_hash: str) -> None:
+    # Use installed ai-automation-kit report-wizard serve so smoke exercises the real CLI entrypoint.
+    # Require a clean serve exit after SIGINT; kill only as fallback.
+    env = os.environ.copy()
+    env["PYTHONUNBUFFERED"] = "1"
+    command = [
+        str(cli_bin),
+        "report-wizard",
+        "serve",
+        "--workspace",
+        str(workspace),
+        "--language",
+        "en",
+        "--port",
+        "0",
+        "--no-open",
+    ]
+    print("$ " + " ".join(command))
+    process = None
+    events: queue.Queue[tuple[str, str]] = queue.Queue()
+    readers: list[threading.Thread] = []
+    stdout_lines: list[str] = []
+    stderr_lines: list[str] = []
+    killed = False
+    returncode = None
+    failure = None
+    try:
+        process = subprocess.Popen(
+            command,
+            cwd=ROOT,
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            bufsize=1,
+        )
+        readers = [
+            threading.Thread(target=_pump_stream_lines, args=("stdout", process.stdout, events), daemon=True),
+            threading.Thread(target=_pump_stream_lines, args=("stderr", process.stderr, events), daemon=True),
+        ]
+        for reader in readers:
+            reader.start()
+
+        url = _wait_for_report_wizard_url(process, events, stdout_lines, stderr_lines, deadline_seconds=10.0)
+        root_html = _http_get_text(url)
+        if "<!doctype html>" not in root_html.lower():
+            raise RuntimeError("report wizard serve root did not return an HTML document")
+
+        token = urllib.parse.parse_qs(urllib.parse.urlsplit(url).query).get("token", [None])[0]
+        if not token:
+            raise RuntimeError("report wizard serve URL did not include a session token")
+        api_state_url = "{}/api/state".format(url.split("/?", 1)[0].rstrip("/"))
+        payload = _http_get_json(api_state_url, headers={"X-Report-Wizard-Token": token})
+        if payload.get("ok") is not True:
+            raise RuntimeError(f"report wizard /api/state did not return ok=true: {payload}")
+        if payload.get("stage") != "approved":
+            raise RuntimeError(f"report wizard /api/state stage was not approved: {payload}")
+        if payload["data"]["state"]["approval"]["report_sha256"] != expected_hash:
+            raise RuntimeError("report wizard HTTP approval hash did not match the approved draft hash")
+    except Exception as exc:  # pragma: no cover - exercised by smoke execution
+        failure = exc
+    finally:
+        if process is not None:
+            if process.poll() is None:
+                process.send_signal(signal.SIGINT)
+                try:
+                    returncode = process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    killed = True
+                    process.kill()
+                    returncode = process.wait(timeout=5)
+            else:
+                returncode = process.returncode
+            if process.stdout is not None:
+                process.stdout.close()
+            if process.stderr is not None:
+                process.stderr.close()
+        for reader in readers:
+            reader.join(timeout=1)
+        _drain_stream_events(events, stdout_lines, stderr_lines)
+    if failure is not None:
+        raise RuntimeError(
+            "report wizard CLI serve smoke failed:\n"
+            f"stdout={''.join(stdout_lines)}\n"
+            f"stderr={''.join(stderr_lines)}"
+        ) from failure
+    if killed:
+        raise RuntimeError(
+            "report wizard CLI serve required kill fallback:\n"
+            f"stdout={''.join(stdout_lines)}\n"
+            f"stderr={''.join(stderr_lines)}"
+        )
+    if returncode != 0:
+        raise RuntimeError(
+            "report wizard CLI serve exited with code {}:\nstdout={}\nstderr={}".format(
+                returncode,
+                "".join(stdout_lines),
+                "".join(stderr_lines),
+            )
+        )
+
+
+def _pump_stream_lines(name: str, stream, events: queue.Queue[tuple[str, str]]) -> None:
+    if stream is None:
+        return
+    try:
+        for line in iter(stream.readline, ""):
+            events.put((name, line))
+    finally:
+        events.put((name, ""))
+
+
+def _drain_stream_events(
+    events: queue.Queue[tuple[str, str]],
+    stdout_lines: list[str],
+    stderr_lines: list[str],
+) -> None:
+    while True:
+        try:
+            name, line = events.get_nowait()
+        except queue.Empty:
+            return
+        if not line:
+            continue
+        if name == "stdout":
+            stdout_lines.append(line)
+        else:
+            stderr_lines.append(line)
+
+
+def _wait_for_report_wizard_url(
+    process: subprocess.Popen[str],
+    events: queue.Queue[tuple[str, str]],
+    stdout_lines: list[str],
+    stderr_lines: list[str],
+    *,
+    deadline_seconds: float,
+) -> str:
+    deadline = time.monotonic() + deadline_seconds
+    while time.monotonic() < deadline:
+        if process.poll() is not None:
+            _drain_stream_events(events, stdout_lines, stderr_lines)
+            raise RuntimeError(
+                "report wizard CLI serve exited before printing its URL:\n"
+                f"stdout={''.join(stdout_lines)}\n"
+                f"stderr={''.join(stderr_lines)}"
+            )
+        timeout = max(0.0, min(0.25, deadline - time.monotonic()))
+        try:
+            name, line = events.get(timeout=timeout)
+        except queue.Empty:
+            continue
+        if not line:
+            continue
+        target = stdout_lines if name == "stdout" else stderr_lines
+        target.append(line)
+        candidate = line.strip()
+        if candidate.startswith("http://127.0.0.1:") or candidate.startswith("http://localhost:"):
+            return candidate
+    raise RuntimeError(
+        "timed out waiting for report wizard serve URL:\n"
+        f"stdout={''.join(stdout_lines)}\n"
+        f"stderr={''.join(stderr_lines)}"
+    )
+
+
+def _http_get_text(url: str, headers: dict[str, str] | None = None) -> str:
+    request = urllib.request.Request(url, headers=headers or {})
+    with urllib.request.urlopen(request, timeout=5) as response:
+        return response.read().decode("utf-8")
+
+
+def _http_get_json(url: str, headers: dict[str, str] | None = None) -> dict:
+    return json.loads(_http_get_text(url, headers=headers))
 
 
 def _run_capture(command: list[str], env: dict[str, str], cwd: Path | None = None) -> subprocess.CompletedProcess[str]:

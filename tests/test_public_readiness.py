@@ -1085,6 +1085,23 @@ def test_public_release_audit_script_exposes_loop_quality_checks():
     assert "REQUIRED_GITHUB_SMOKE_SNIPPETS" in text
 
 
+def test_release_smoke_uses_installed_cli_subprocess_for_report_wizard_server():
+    text = Path("scripts/release_smoke.py").read_text(encoding="utf-8")
+
+    assert '"report-wizard"' in text
+    assert '"serve"' in text
+    assert "--no-open" in text
+    assert "subprocess.Popen(" in text
+    assert "PYTHONUNBUFFERED" in text
+    assert "signal.SIGINT" in text
+    assert ".kill()" in text
+    assert "TimeoutExpired" in text
+    assert "/api/state" in text
+    assert "report_sha256" in text
+    assert "payload['data']['state']['approval']['report_sha256']" in text or 'payload["data"]["state"]["approval"]["report_sha256"]' in text
+    assert "create_report_wizard_server(" not in text
+
+
 def test_public_release_audit_script_checks_report_wizard_release_smoke_snippets():
     result = subprocess.run(
         [sys.executable, "scripts/public_release_audit.py"],
@@ -1103,8 +1120,14 @@ def test_public_release_audit_script_checks_report_wizard_release_smoke_snippets
         "scripts/release_smoke.py::approval.json",
         "scripts/release_smoke.py::report_sha256",
         "scripts/release_smoke.py::report-wizard serve",
+        "scripts/release_smoke.py::subprocess.Popen",
+        "scripts/release_smoke.py::PYTHONUNBUFFERED",
+        "scripts/release_smoke.py::signal.SIGINT",
+        "scripts/release_smoke.py::clean serve exit",
+        "scripts/release_smoke.py::kill fallback",
+        "scripts/release_smoke.py::close files",
+        "scripts/release_smoke.py::HTTP approval hash",
         "scripts/release_smoke.py::/api/state",
-        "scripts/release_smoke.py::server_close",
     ]:
         assert snippet in result.stdout
 
