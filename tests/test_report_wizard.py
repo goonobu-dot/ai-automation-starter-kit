@@ -14,6 +14,7 @@ from ai_automation_kit.core.report_wizard import (
     create_session,
     inspect_session,
     load_session,
+    set_session_goal,
     session_status,
 )
 
@@ -773,3 +774,26 @@ def test_state_transition_misuse_has_actionable_errors(tmp_path):
         answer_current_question(workspace, "answer")
     with pytest.raises(ValueError, match="ready_for_human_review"):
         approve_report(workspace, "Owner")
+
+
+def test_set_session_goal_updates_created_session_before_inputs(tmp_path):
+    workspace = tmp_path / "workspace"
+    create_session(workspace, "monthly", "ja")
+
+    updated = set_session_goal(workspace, "weekly", "en")
+
+    assert updated["stage"] == "created"
+    assert updated["report_type"] == "weekly"
+    assert updated["language"] == "en"
+    assert updated["accepted"] == []
+    assert updated["rejected"] == []
+
+
+def test_set_session_goal_rejects_after_inputs_or_stage_change(tmp_path):
+    past, current = make_inputs(tmp_path)
+    workspace = tmp_path / "workspace"
+    create_session(workspace, "monthly", "ja")
+    inspect_session(workspace, [past], [current])
+
+    with pytest.raises(ValueError, match="created stage"):
+        set_session_goal(workspace, "daily", "ja")

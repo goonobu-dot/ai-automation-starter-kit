@@ -371,6 +371,12 @@ def _validate_report_type(report_type: str) -> str:
     return report_type
 
 
+def _validate_session_language(language: str) -> str:
+    if language not in {"ja", "en"}:
+        raise ValueError("language must be 'ja' or 'en'")
+    return language
+
+
 def create_session(workspace: Path, report_type: str, language: str = "ja") -> Dict:
     report_type = _validate_report_type(report_type)
     if not isinstance(language, str) or not language.strip():
@@ -417,6 +423,18 @@ def create_session(workspace: Path, report_type: str, language: str = "ja") -> D
 
 def load_session(workspace: Path) -> Dict:
     return _load(workspace)
+
+
+def set_session_goal(workspace: Path, report_type: str, language: str) -> Dict:
+    state = _load(workspace)
+    if state["stage"] != "created":
+        raise ValueError("set_session_goal is only allowed from the created stage before inputs")
+    if state["accepted"] or state["rejected"] or state["copy_outcomes"]:
+        raise ValueError("set_session_goal is only allowed before inputs have been inspected")
+    state["report_type"] = _validate_report_type(report_type)
+    state["language"] = _validate_session_language(language)
+    state["next_action"] = "Inspect approved past reports and current materials"
+    return _save(state, workspace)
 
 
 def _heading_and_field_entries(text: str) -> Tuple[List[str], List[Tuple[str, str]]]:
