@@ -107,16 +107,11 @@ def _copy_json(value):
 
 def _validate_state(state: Dict, workspace: Path) -> Dict:
     if not isinstance(state, dict):
-        raise ValueError("report wizard state must be a JSON object; restore a valid state file")
-    if state.get("schema_version") != SCHEMA_VERSION:
-        raise ValueError(
-            "report wizard schema_version is unsupported; migrate or remove the state only after review"
-        )
-    if state.get("workspace") != str(_workspace_path(workspace)):
-        raise ValueError("report wizard state belongs to another workspace; use the matching workspace path")
-    if state.get("stage") not in STAGES:
-        raise ValueError("report wizard state has an invalid stage; restore a supported stage")
+        raise ValueError("invalid state root: expected a JSON object")
     required_keys = {
+        "schema_version",
+        "workspace",
+        "stage",
         "report_type",
         "language",
         "created_at",
@@ -135,7 +130,82 @@ def _validate_state(state: Dict, workspace: Path) -> Dict:
     }
     missing = sorted(required_keys.difference(state))
     if missing:
-        raise ValueError("report wizard state is missing required fields: {}".format(", ".join(missing)))
+        raise ValueError("invalid state field '{}': required field is missing".format(missing[0]))
+
+    def invalid(field: str, expected: str) -> None:
+        raise ValueError("invalid state field '{}': expected {}".format(field, expected))
+
+    if isinstance(state["schema_version"], bool) or not isinstance(state["schema_version"], int):
+        invalid("schema_version", "an integer version")
+    if state["schema_version"] != SCHEMA_VERSION:
+        invalid("schema_version", "supported version {}".format(SCHEMA_VERSION))
+    if not isinstance(state["workspace"], str):
+        invalid("workspace", "a string path")
+    if state["workspace"] != str(_workspace_path(workspace)):
+        raise ValueError("invalid state field 'workspace': state belongs to another workspace")
+    if not isinstance(state["stage"], str) or state["stage"] not in STAGES:
+        invalid("stage", "one of {}".format(", ".join(STAGES)))
+    if not isinstance(state["report_type"], str) or state["report_type"] not in REPORT_TYPES:
+        invalid("report_type", "one of {}".format(", ".join(REPORT_TYPES)))
+    if not isinstance(state["language"], str) or not state["language"].strip():
+        invalid("language", "a non-empty string")
+    for field in ("created_at", "updated_at", "next_action"):
+        if not isinstance(state[field], str):
+            invalid(field, "a string")
+
+    for field in ("accepted", "rejected", "skipped_inputs", "copy_outcomes", "unresolved_items"):
+        if not isinstance(state[field], list):
+            invalid(field, "a list")
+        if any(not isinstance(item, dict) for item in state[field]):
+            invalid(field, "a list of objects")
+    for field in ("folder_plan", "schema_proposal", "answers", "artifacts", "approval"):
+        if not isinstance(state[field], dict):
+            invalid(field, "an object")
+    for field in ("past_completed_reports", "current_materials", "rejected"):
+        if not isinstance(state["folder_plan"].get(field), list):
+            invalid("folder_plan.{}".format(field), "a list")
+        if any(not isinstance(item, dict) for item in state["folder_plan"].get(field, [])):
+            invalid("folder_plan.{}".format(field), "a list of objects")
+    for field in ("sections", "fields", "conflicts"):
+        if not isinstance(state["schema_proposal"].get(field), list):
+            invalid("schema_proposal.{}".format(field), "a list")
+        if any(not isinstance(item, dict) for item in state["schema_proposal"].get(field, [])):
+            invalid("schema_proposal.{}".format(field), "a list of objects")
+    if not isinstance(state["question_queue"], list):
+        invalid("question_queue", "a list")
+
+    def validate_question(question: object, field: str) -> None:
+        if not isinstance(question, dict):
+            invalid(field, "an object")
+        for key in ("id", "prompt", "required", "status"):
+            if key not in question:
+                invalid("{}.{}".format(field, key), "a present value")
+        if not isinstance(question["id"], str) or not question["id"].strip():
+            invalid("{}.id".format(field), "a non-empty string")
+        if not isinstance(question["prompt"], str):
+            invalid("{}.prompt".format(field), "a string")
+        if not isinstance(question["required"], bool):
+            invalid("{}.required".format(field), "a boolean")
+        if question["status"] not in {"pending", "answered", "skipped"}:
+            invalid("{}.status".format(field), "pending, answered, or skipped")
+
+    for index, question in enumerate(state["question_queue"]):
+        validate_question(question, "question_queue[{}]".format(index))
+    if state["current_question"] is not None:
+        validate_question(state["current_question"], "current_question")
+    for key, answer in state["answers"].items():
+        if not isinstance(key, str) or not isinstance(answer, dict):
+            invalid("answers", "an object of answer objects")
+    for index, item in enumerate(state["unresolved_items"]):
+        for key in ("id", "required", "reason"):
+            if key not in item:
+                invalid("unresolved_items[{}].{}".format(index, key), "a present value")
+        if not isinstance(item["id"], str) or not isinstance(item["reason"], str) or not isinstance(item["required"], bool):
+            invalid("unresolved_items[{}]".format(index), "id, reason, and required values")
+    if any(not isinstance(key, str) or not isinstance(value, str) for key, value in state["artifacts"].items()):
+        invalid("artifacts", "an object of string paths")
+    if not isinstance(state["approval"].get("status"), str) or state["approval"].get("status") not in {"pending", "approved"}:
+        invalid("approval.status", "pending or approved")
     return state
 
 
@@ -184,7 +254,8 @@ def _current_question(state: Dict) -> Optional[Dict]:
 
 
 def _refresh_unresolved(state: Dict) -> None:
-    unresolved = [item for item in state.get("unresolved_items", []) if item.get("id") == "source_inputs"]
+    question_ids = {question["id"] for question in state["question_queue"]}
+    unresolved = [item for item in state.get("unresolved_items", []) if item.get("id") not in question_ids]
     for question in state["question_queue"]:
         if question.get("required") and question.get("status") in {"pending", "skipped"}:
             unresolved.append(
@@ -202,6 +273,68 @@ def _refresh_unresolved(state: Dict) -> None:
         state["next_action"] = "Resolve required unresolved items before approval"
     elif state["stage"] not in {"approved", "ready_for_human_review"}:
         state["next_action"] = "Build the report workspace for human review"
+
+
+def _final_copy_validity(state: Dict, item: Dict, outcome: Dict) -> Tuple[bool, str]:
+    try:
+        destination = _validate_destination(item.get("destination"))
+        root = _workspace_path(state["workspace"])
+        final_path = Path(outcome.get("copied_path", ""))
+        expected_directory = root / destination
+        if final_path.parent.resolve(strict=False) != expected_directory.resolve(strict=False):
+            return False, "final path is outside the confirmed destination"
+        if os.path.commonpath([str(final_path.resolve(strict=False)), str(root)]) != str(root):
+            return False, "final path is outside the workspace"
+        expected_hash = outcome.get("sha256")
+        expected_bytes = outcome.get("bytes")
+        if not isinstance(expected_hash, str) or not isinstance(expected_bytes, int):
+            return False, "final copy is missing integrity metadata"
+        actual_hash, actual_bytes = _hash_file(final_path)
+        if actual_hash.lower() != expected_hash.lower() or actual_bytes != expected_bytes:
+            return False, "final copy failed SHA-256 or byte-count verification"
+        return True, ""
+    except (OSError, ValueError):
+        return False, "final copied input is missing or unsafe"
+
+
+def _refresh_copy_unresolved(state: Dict) -> Dict[str, Dict]:
+    plan_items = _plan_items_by_source(state)
+    outcomes_by_source = {}
+    for outcome in state.get("copy_outcomes", []):
+        outcomes_by_source.setdefault(outcome.get("original_path"), []).append(outcome)
+    successful = {}
+    failures = []
+    for record in state["accepted"]:
+        source_path = record.get("original_path")
+        item = plan_items.get(source_path)
+        matching = outcomes_by_source.get(source_path, [])
+        valid_outcome = None
+        failure_reason = "no successfully copied final input"
+        for outcome in matching:
+            if outcome.get("status") == "copy_rejected":
+                failure_reason = "copy rejected: {}".format(outcome.get("reason", "unknown reason"))
+            elif outcome.get("status") == "copied" and item is not None:
+                valid, reason = _final_copy_validity(state, item, outcome)
+                if valid:
+                    valid_outcome = outcome
+                    break
+                failure_reason = reason
+        if valid_outcome is not None:
+            successful[source_path] = valid_outcome
+            continue
+        digest = hashlib.sha256(str(source_path).encode("utf-8")).hexdigest()[:12]
+        failures.append(
+            {
+                "id": "source_copy_{}".format(digest),
+                "required": True,
+                "reason": "{}: {}".format(source_path, failure_reason),
+                "source_path": source_path,
+            }
+        )
+    state["unresolved_items"] = [
+        item for item in state.get("unresolved_items", []) if not str(item.get("id", "")).startswith("source_copy_")
+    ] + failures
+    return successful
 
 
 def _validate_report_type(report_type: str) -> str:
@@ -628,6 +761,7 @@ def confirm_folder_plan(workspace: Path, corrections: Optional[Dict[str, str]] =
     state = _load(workspace)
     state["copy_outcomes"] = organized
     state["stage"] = "questioning"
+    _refresh_copy_unresolved(state)
     _refresh_unresolved(state)
     state["next_action"] = "Answer the current question: {}".format(state["current_question"]["id"]) if state["current_question"] else "Build the report workspace"
     return _save(state, workspace)
@@ -794,6 +928,7 @@ def build_report_workspace(workspace: Path) -> Dict:
     state = _load(workspace)
     if state["stage"] not in {"questioning", "ready_for_draft", "ready_for_human_review"}:
         raise ValueError("building the report workspace requires questioning or ready_for_draft state")
+    successful_copies = _refresh_copy_unresolved(state)
     _refresh_unresolved(state)
     root = _workspace_path(workspace)
     for directory in ("03_templates", "04_ai_analysis", "05_grill_me_questions", "06_drafts", "07_approval"):
@@ -802,7 +937,11 @@ def build_report_workspace(workspace: Path) -> Dict:
     english, japanese = _report_names(report_type)
     template_path = root / "03_templates" / "{}_report_template.md".format(report_type)
     draft_path = root / "06_drafts" / "{}_report_draft.md".format(report_type)
-    current_records = [record for record in state["accepted"] if record.get("source_role") == "current_material"]
+    current_records = [
+        record
+        for record in state["accepted"]
+        if record.get("source_role") == "current_material" and record.get("original_path") in successful_copies
+    ]
     copied_paths = _final_copy_paths(state)
     provenance = {
         "sections": [
@@ -869,6 +1008,7 @@ def approve_report(workspace: Path, approver: str) -> Dict:
     state = _load(workspace)
     if state["stage"] not in {"questioning", "ready_for_draft", "ready_for_human_review"}:
         raise ValueError("approval requires ready_for_human_review state; build a reviewable draft first")
+    _refresh_copy_unresolved(state)
     _refresh_unresolved(state)
     required_unresolved = [item for item in state["unresolved_items"] if item.get("required")]
     if required_unresolved:
@@ -896,5 +1036,6 @@ def approve_report(workspace: Path, approver: str) -> Dict:
 
 def session_status(workspace: Path) -> Dict:
     state = _load(workspace)
+    _refresh_copy_unresolved(state)
     _refresh_unresolved(state)
     return state

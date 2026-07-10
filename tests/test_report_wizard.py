@@ -213,6 +213,112 @@ def test_confirmation_resumes_partial_and_existing_destination_without_duplicate
     assert len(list(destination.glob("metrics.csv*"))) == 1
 
 
+@pytest.mark.parametrize("role", ["past", "current"])
+@pytest.mark.parametrize("mutation", ["delete", "change"])
+def test_source_integrity_failure_after_inspection_blocks_readiness_and_approval(tmp_path, role, mutation):
+    past, current = make_inputs(tmp_path)
+    workspace = tmp_path / "workspace-{}-{}".format(role, mutation)
+    create_session(workspace, "monthly")
+    inspect_session(workspace, [past], [current])
+    target = past if role == "past" else current
+    if mutation == "delete":
+        target.unlink()
+    else:
+        target.write_text("changed after inspection", encoding="utf-8")
+
+    confirmed = confirm_folder_plan(workspace)
+    assert any(item["status"] == "copy_rejected" for item in confirmed["copy_outcomes"])
+    answer_all_questions(workspace)
+    built = build_report_workspace(workspace)
+
+    assert built["stage"] != "ready_for_human_review"
+    assert any(item["id"].startswith("source_copy_") for item in built["unresolved_items"])
+    with pytest.raises(ValueError, match="unresolved"):
+        approve_report(workspace, "Owner")
+
+
+@pytest.mark.parametrize(
+    ("field", "bad_value"),
+    [
+        ("schema_version", "one"),
+        ("stage", "not-a-stage"),
+        ("report_type", "quarterly"),
+        ("language", []),
+        ("accepted", {}),
+        ("rejected", {}),
+        ("skipped_inputs", {}),
+        ("copy_outcomes", {}),
+        ("folder_plan", []),
+        ("schema_proposal", []),
+        ("question_queue", {}),
+        ("answers", []),
+        ("unresolved_items", {}),
+        ("artifacts", []),
+        ("approval", []),
+    ],
+)
+def test_load_rejects_invalid_minimum_state_fields(tmp_path, field, bad_value):
+    workspace = tmp_path / field
+    create_session(workspace, "daily")
+    state_path = workspace / "report_wizard_state.json"
+    payload = json.loads(state_path.read_text(encoding="utf-8"))
+    payload[field] = bad_value
+    state_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="invalid state field.*{}".format(field)):
+        load_session(workspace)
+
+
+def test_load_rejects_non_object_state_root_with_actionable_value_error(tmp_path):
+    workspace = tmp_path / "workspace"
+    create_session(workspace, "daily")
+    (workspace / "report_wizard_state.json").write_text("[]", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="invalid state root"):
+        load_session(workspace)
+
+
+@pytest.mark.parametrize(
+    ("change", "pattern"),
+    [
+        ("not-a-dict", "question_queue\\[0\\].*expected an object"),
+        ({"id": None}, "question_queue\\[0\\]\\.id"),
+        ({"prompt": 1}, "question_queue\\[0\\]\\.prompt"),
+        ({"required": "yes"}, "question_queue\\[0\\]\\.required"),
+        ({"status": "unknown"}, "question_queue\\[0\\]\\.status"),
+    ],
+)
+def test_load_rejects_malformed_question_queue_items(tmp_path, change, pattern):
+    workspace = tmp_path / "queue-{}".format(len(str(change)))
+    create_session(workspace, "daily")
+    state_path = workspace / "report_wizard_state.json"
+    payload = json.loads(state_path.read_text(encoding="utf-8"))
+    if change == "not-a-dict":
+        payload["question_queue"] = ["not-a-question"]
+    else:
+        payload["question_queue"][0].update(change)
+    state_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match=pattern):
+        load_session(workspace)
+
+
+@pytest.mark.parametrize(
+    ("field", "nested_field"),
+    [("folder_plan", "current_materials"), ("schema_proposal", "sections")],
+)
+def test_load_rejects_non_object_nested_records(tmp_path, field, nested_field):
+    workspace = tmp_path / "nested-{}".format(field)
+    create_session(workspace, "daily")
+    state_path = workspace / "report_wizard_state.json"
+    payload = json.loads(state_path.read_text(encoding="utf-8"))
+    payload[field][nested_field] = [None]
+    state_path.write_text(json.dumps(payload), encoding="utf-8")
+
+    with pytest.raises(ValueError, match="invalid state field.*{}.*list of objects".format(nested_field)):
+        load_session(workspace)
+
+
 @pytest.mark.parametrize(
     ("report_type", "section_heading"),
     [("daily", "# Daily Report"), ("weekly", "# Weekly Report"), ("monthly", "# Monthly Report")],
