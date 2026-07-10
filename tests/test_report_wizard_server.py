@@ -1,5 +1,6 @@
 import json
 import re
+import socket
 import threading
 from http.client import HTTPConnection
 from pathlib import Path
@@ -9,6 +10,7 @@ import pytest
 from ai_automation_kit.core.report_intake import MAX_FILE_BYTES
 from ai_automation_kit.core.report_wizard import load_session
 from ai_automation_kit.core.report_wizard_server import (
+    MAX_REQUEST_BYTES,
     create_report_wizard_server,
     run_report_wizard_server,
 )
@@ -100,6 +102,31 @@ def _answer_until_ready(server):
         )
 
 
+def _raw_http(server, request_bytes, *, close_write=False):
+    with socket.create_connection(server.server_address, timeout=2) as client:
+        client.settimeout(2)
+        client.sendall(request_bytes)
+        if close_write:
+            client.shutdown(socket.SHUT_WR)
+        chunks = []
+        while True:
+            try:
+                chunk = client.recv(65536)
+            except socket.timeout:
+                break
+            if not chunk:
+                break
+            chunks.append(chunk)
+        return b"".join(chunks)
+
+
+def _parse_http_json(response_bytes):
+    header_bytes, _, body = response_bytes.partition(b"\r\n\r\n")
+    status_line = header_bytes.splitlines()[0].decode("iso-8859-1")
+    status_code = int(status_line.split()[1])
+    return status_code, json.loads(body.decode("utf-8"))
+
+
 def test_create_report_wizard_server_binds_localhost_and_creates_session(tmp_path):
     workspace = tmp_path / "workspace"
     server, thread = _start_server(workspace)
@@ -117,6 +144,25 @@ def test_create_report_wizard_server_binds_localhost_and_creates_session(tmp_pat
         assert payload["stage"] == "created"
     finally:
         _stop_server(server, thread)
+
+
+@pytest.mark.parametrize("language", ["fr", ""])
+def test_create_report_wizard_server_rejects_invalid_language_before_mutation(tmp_path, language):
+    workspace = tmp_path / "workspace"
+
+    with pytest.raises(ValueError, match="language must be 'ja' or 'en'"):
+        create_report_wizard_server(workspace, language=language, port=0)
+
+    assert not workspace.exists()
+
+
+def test_create_report_wizard_server_rejects_existing_invalid_state(tmp_path):
+    workspace = tmp_path / "workspace"
+    workspace.mkdir(parents=True)
+    (workspace / "report_wizard_state.json").write_text("{broken", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="invalid JSON"):
+        create_report_wizard_server(workspace, language="ja", port=0)
 
 
 def test_server_rejects_missing_bad_token_host_origin_unknown_method_and_endpoint(tmp_path):
@@ -172,6 +218,88 @@ def test_server_rejects_missing_bad_token_host_origin_unknown_method_and_endpoin
         status, _, payload = _json_request(server, "GET", "/api/missing")
         assert status == 404
         assert payload["ok"] is False
+    finally:
+        _stop_server(server, thread)
+
+
+def test_server_rejects_content_length_over_limit_without_hanging(tmp_path):
+    server, thread = _start_server(tmp_path / "workspace")
+    try:
+        request = (
+            "POST /api/goal HTTP/1.1\r\n"
+            "Host: 127.0.0.1:{port}\r\n"
+            "Accept: application/json\r\n"
+            "Origin: http://127.0.0.1:{port}\r\n"
+            "Content-Type: application/json\r\n"
+            "X-Report-Wizard-Token: {token}\r\n"
+            "Content-Length: {length}\r\n"
+            "\r\n"
+        ).format(
+            port=server.server_address[1],
+            token=server.session_token,
+            length=MAX_REQUEST_BYTES + 1,
+        ).encode("utf-8")
+        status, body = _parse_http_json(_raw_http(server, request, close_write=True))
+
+        assert status == 413
+        assert body["ok"] is False
+        assert "Traceback" not in json.dumps(body)
+    finally:
+        _stop_server(server, thread)
+
+
+@pytest.mark.parametrize("content_length", ["broken", "-1"])
+def test_server_rejects_malformed_or_negative_content_length(tmp_path, content_length):
+    server, thread = _start_server(tmp_path / "workspace")
+    try:
+        request = (
+            "POST /api/goal HTTP/1.1\r\n"
+            "Host: 127.0.0.1:{port}\r\n"
+            "Accept: application/json\r\n"
+            "Origin: http://127.0.0.1:{port}\r\n"
+            "Content-Type: application/json\r\n"
+            "X-Report-Wizard-Token: {token}\r\n"
+            "Content-Length: {length}\r\n"
+            "\r\n"
+            "{{}}"
+        ).format(
+            port=server.server_address[1],
+            token=server.session_token,
+            length=content_length,
+        ).encode("utf-8")
+        status, body = _parse_http_json(_raw_http(server, request, close_write=True))
+
+        assert status == 400
+        assert body["ok"] is False
+        assert "Content-Length" in body["error"]["message"]
+    finally:
+        _stop_server(server, thread)
+
+
+def test_server_rejects_short_body_when_declared_content_length_is_longer(tmp_path):
+    server, thread = _start_server(tmp_path / "workspace")
+    try:
+        request = (
+            "POST /api/goal HTTP/1.1\r\n"
+            "Host: 127.0.0.1:{port}\r\n"
+            "Accept: application/json\r\n"
+            "Origin: http://127.0.0.1:{port}\r\n"
+            "Content-Type: application/json\r\n"
+            "Connection: close\r\n"
+            "X-Report-Wizard-Token: {token}\r\n"
+            "Content-Length: 40\r\n"
+            "\r\n"
+            "{{}}"
+        ).format(
+            port=server.server_address[1],
+            token=server.session_token,
+        ).encode("utf-8")
+        status, body = _parse_http_json(_raw_http(server, request))
+
+        assert status == 400
+        assert body["ok"] is False
+        assert "ended early" in body["error"]["message"]
+        assert "Traceback" not in json.dumps(body)
     finally:
         _stop_server(server, thread)
 

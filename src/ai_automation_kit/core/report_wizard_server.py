@@ -7,6 +7,7 @@ import io
 import json
 import os
 import secrets
+import socket
 import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -30,6 +31,7 @@ from ai_automation_kit.core.report_wizard_ui import render_report_wizard_ui
 MAX_REQUEST_BYTES = 12 * 1024 * 1024
 TOKEN_HEADER = "X-Report-Wizard-Token"
 UPLOAD_PREFIX_BYTES = 6
+READ_TIMEOUT_SECONDS = 1.0
 
 
 class ReportWizardHTTPServer(ThreadingHTTPServer):
@@ -49,6 +51,12 @@ def _ensure_session(workspace: Path, language: str) -> Dict:
         if "create_session" not in str(error):
             raise
     return create_session(workspace, "monthly", language)
+
+
+def _validate_server_language(language: str) -> str:
+    if language not in {"ja", "en"}:
+        raise ValueError("language must be 'ja' or 'en'")
+    return language
 
 
 def _allowed_hosts(server: ReportWizardHTTPServer) -> set:
@@ -172,6 +180,7 @@ def _status_error_code(message: str, default: int = 400) -> int:
 
 
 def create_report_wizard_server(workspace: Path, language: str = "ja", port: int = 0) -> ThreadingHTTPServer:
+    language = _validate_server_language(language)
     workspace = _workspace_path(workspace)
     _ensure_session(workspace, language)
 
@@ -181,6 +190,10 @@ def create_report_wizard_server(workspace: Path, language: str = "ja", port: int
 
         def log_message(self, format, *args):  # noqa: A003
             return
+
+        def setup(self):
+            super().setup()
+            self.connection.settimeout(READ_TIMEOUT_SECONDS)
 
         def do_GET(self):
             self._dispatch("GET")
@@ -307,7 +320,12 @@ def create_report_wizard_server(workspace: Path, language: str = "ja", port: int
                 raise _RequestError(400, "Content-Length must be non-negative", "bad_content_length")
             if content_length > MAX_REQUEST_BYTES:
                 raise OverflowError("request exceeds the 12 MiB body limit")
-            body = self.rfile.read(content_length)
+            try:
+                body = self.rfile.read(content_length)
+            except socket.timeout as error:
+                raise _RequestError(400, "request body ended early", "short_body") from error
+            except OSError as error:
+                raise _RequestError(400, "request body ended early", "short_body") from error
             if len(body) != content_length:
                 raise _RequestError(400, "request body ended early", "short_body")
             return body

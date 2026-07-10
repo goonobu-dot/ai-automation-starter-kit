@@ -379,8 +379,7 @@ def _validate_session_language(language: str) -> str:
 
 def create_session(workspace: Path, report_type: str, language: str = "ja") -> Dict:
     report_type = _validate_report_type(report_type)
-    if not isinstance(language, str) or not language.strip():
-        raise ValueError("language must be a non-empty language code")
+    language = _validate_session_language(language)
     workspace = _workspace_path(workspace)
     state_path = workspace / STATE_FILENAME
     if state_path.exists():

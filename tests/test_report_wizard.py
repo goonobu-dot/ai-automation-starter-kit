@@ -797,3 +797,13 @@ def test_set_session_goal_rejects_after_inputs_or_stage_change(tmp_path):
 
     with pytest.raises(ValueError, match="created stage"):
         set_session_goal(workspace, "daily", "ja")
+
+
+@pytest.mark.parametrize("language", ["fr", ""])
+def test_create_session_rejects_invalid_language_before_workspace_mutation(tmp_path, language):
+    workspace = tmp_path / "workspace"
+
+    with pytest.raises(ValueError, match="language must be 'ja' or 'en'"):
+        create_session(workspace, "monthly", language)
+
+    assert not workspace.exists()
