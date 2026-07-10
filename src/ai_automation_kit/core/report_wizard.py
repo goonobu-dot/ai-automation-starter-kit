@@ -5,9 +5,11 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import secrets
 import stat
 import re
 import tempfile
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
@@ -78,7 +80,7 @@ def _state_path(workspace: Path) -> Path:
     return _workspace_path(workspace) / STATE_FILENAME
 
 
-def _write_json_atomic(path: Path, payload: Dict) -> None:
+def _write_text_atomic(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = None
     try:
@@ -91,14 +93,17 @@ def _write_json_atomic(path: Path, payload: Dict) -> None:
             delete=False,
         ) as handle:
             temporary = Path(handle.name)
-            json.dump(payload, handle, ensure_ascii=False, indent=2)
-            handle.write("\n")
+            handle.write(content)
             handle.flush()
             os.fsync(handle.fileno())
         temporary.replace(path)
     finally:
         if temporary is not None and temporary.exists():
             temporary.unlink()
+
+
+def _write_json_atomic(path: Path, payload: Dict) -> None:
+    _write_text_atomic(path, json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
 
 
 def _copy_json(value):
@@ -124,6 +129,7 @@ def _validate_state(state: Dict, workspace: Path) -> Dict:
         "schema_proposal",
         "question_queue",
         "current_question",
+        "operation_journal",
         "answers",
         "unresolved_items",
         "next_action",
@@ -173,6 +179,23 @@ def _validate_state(state: Dict, workspace: Path) -> Dict:
             invalid("schema_proposal.{}".format(field), "a list")
         if any(not isinstance(item, dict) for item in state["schema_proposal"].get(field, [])):
             invalid("schema_proposal.{}".format(field), "a list of objects")
+    if not isinstance(state["operation_journal"], dict):
+        invalid("operation_journal", "an object")
+    if state["operation_journal"].get("operation_id") is not None and not isinstance(state["operation_journal"].get("operation_id"), str):
+        invalid("operation_journal.operation_id", "a string or null")
+    if not isinstance(state["operation_journal"].get("operation"), str):
+        invalid("operation_journal.operation", "a string")
+    for field in ("completed_items", "outcomes"):
+        if not isinstance(state["operation_journal"].get(field), list):
+            invalid("operation_journal.{}".format(field), "a list")
+    if any(not isinstance(item, str) for item in state["operation_journal"].get("completed_items", [])):
+        invalid("operation_journal.completed_items", "a list of strings")
+    if any(not isinstance(item, dict) for item in state["operation_journal"].get("outcomes", [])):
+        invalid("operation_journal.outcomes", "a list of objects")
+    if state["operation_journal"].get("status") not in {"idle", "in_progress", "complete"}:
+        invalid("operation_journal.status", "idle, in_progress, or complete")
+    if state["operation_journal"].get("current_item") is not None and not isinstance(state["operation_journal"].get("current_item"), str):
+        invalid("operation_journal.current_item", "a string or null")
     if not isinstance(state["question_queue"], list):
         invalid("question_queue", "a list")
 
@@ -251,6 +274,9 @@ def _initial_questions() -> List[Dict]:
 def _current_question(state: Dict) -> Optional[Dict]:
     for question in state["question_queue"]:
         if question.get("status") == "pending":
+            return _copy_json(question)
+    for question in state["question_queue"]:
+        if question.get("required") and question.get("status") == "skipped":
             return _copy_json(question)
     return None
 
@@ -371,6 +397,14 @@ def create_session(workspace: Path, report_type: str, language: str = "ja") -> D
         "schema_proposal": {"sections": [], "fields": [], "conflicts": []},
         "question_queue": _initial_questions(),
         "current_question": None,
+        "operation_journal": {
+            "operation_id": None,
+            "operation": "confirm_copy",
+            "status": "idle",
+            "current_item": None,
+            "completed_items": [],
+            "outcomes": [],
+        },
         "answers": {},
         "unresolved_items": [],
         "next_action": "Inspect approved past reports and current materials",
@@ -488,7 +522,7 @@ def _conflict_questions(accepted: Sequence[Dict]) -> Tuple[List[Dict], List[Dict
         for label, value in fields:
             normalized = value.strip()
             values.setdefault(label, {}).setdefault(normalized, []).append(
-                {"path": record.get("original_path"), "sha256": record.get("sha256"), "value": value}
+                {"path": record.get("original_path"), "sha256": record.get("sha256"), "value_sha256": hashlib.sha256(normalized.encode("utf-8")).hexdigest()}
             )
     questions = []
     for label in sorted(values):
@@ -498,7 +532,24 @@ def _conflict_questions(accepted: Sequence[Dict]) -> Tuple[List[Dict], List[Dict
             continue
         digest = hashlib.sha256(label.encode("utf-8")).hexdigest()[:10]
         question_id = "conflict_{}".format(digest)
-        conflicts.append({"field": label, "question_id": question_id, "values": candidates})
+        references = []
+        value_hashes = []
+        for value_hash, records in candidates.items():
+            if value_hash:
+                value_hashes.append(hashlib.sha256(value_hash.encode("utf-8")).hexdigest())
+            references.extend(
+                {"path": record.get("path"), "sha256": record.get("sha256")}
+                for record in records
+            )
+        conflicts.append(
+            {
+                "field": label,
+                "question_id": question_id,
+                "value_count": len(nonempty),
+                "value_hashes": sorted(value_hashes),
+                "source_references": references,
+            }
+        )
         questions.append(
             {
                 "id": question_id,
@@ -592,31 +643,6 @@ def _hash_file(path: Path) -> Tuple[str, int]:
     return digest.hexdigest(), byte_count
 
 
-def _atomic_copy_file(source: Path, destination: Path) -> None:
-    temporary = None
-    try:
-        with tempfile.NamedTemporaryFile(
-            mode="wb",
-            dir=str(destination.parent),
-            prefix=".report-wizard-",
-            suffix=".tmp",
-            delete=False,
-        ) as handle:
-            temporary = Path(handle.name)
-            with source.open("rb") as source_file:
-                while True:
-                    chunk = source_file.read(1024 * 1024)
-                    if not chunk:
-                        break
-                    handle.write(chunk)
-            handle.flush()
-            os.fsync(handle.fileno())
-        temporary.replace(destination)
-    finally:
-        if temporary is not None and temporary.exists():
-            temporary.unlink()
-
-
 def _collision_name(name: str, number: int) -> str:
     path = Path(name)
     suffix = path.suffix
@@ -624,38 +650,184 @@ def _collision_name(name: str, number: int) -> str:
     return "{}__{}{}".format(stem, number, suffix)
 
 
-def _publish_staged_file(staged: Path, destination_directory: Path, name: str, expected_hash: str, expected_bytes: int) -> Tuple[Path, bool, bool]:
-    staged_hash, staged_bytes = _hash_file(staged)
-    if staged_hash.lower() != expected_hash.lower() or staged_bytes != expected_bytes:
-        raise ValueError("staged source integrity mismatch")
+def _verify_directory_identity(path: Path, directory_fd: int, expected_identity: Tuple[int, int], expected_realpath: str, phase: str) -> bool:
+    try:
+        path_stat = os.lstat(str(path))
+        fd_stat = os.fstat(directory_fd)
+        return (
+            (path_stat.st_dev, path_stat.st_ino) == expected_identity
+            and (fd_stat.st_dev, fd_stat.st_ino) == expected_identity
+            and os.path.realpath(str(path)) == expected_realpath
+        )
+    except OSError:
+        return False
 
-    candidate_name = name
-    number = 1
-    while True:
-        candidate = destination_directory / candidate_name
-        try:
-            observed = candidate.lstat()
-        except FileNotFoundError:
-            _atomic_copy_file(staged, candidate)
-            staged.unlink()
-            return candidate, False, False
-        if stat.S_ISLNK(observed.st_mode):
-            if number == 1:
-                raise ValueError("unsafe destination path contains a symlink")
+
+def _open_verified_directory(path: Path) -> Tuple[int, Tuple[int, int], str]:
+    observed = os.lstat(str(path))
+    if stat.S_ISLNK(observed.st_mode) or not stat.S_ISDIR(observed.st_mode):
+        raise ValueError("unsafe destination path contains a symlink or non-directory")
+    identity = (observed.st_dev, observed.st_ino)
+    realpath = os.path.realpath(str(path))
+    flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
+    directory_fd = os.open(str(path), flags)
+    if not _verify_directory_identity(path, directory_fd, identity, realpath, "after_open"):
+        os.close(directory_fd)
+        raise ValueError("destination_changed_during_copy")
+    return directory_fd, identity, realpath
+
+
+def _hash_at_dirfd(directory_fd: int, name: str) -> Tuple[str, int, os.stat_result]:
+    flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0)
+    file_fd = os.open(name, flags, dir_fd=directory_fd)
+    try:
+        observed = os.fstat(file_fd)
+        if not stat.S_ISREG(observed.st_mode):
+            raise ValueError("destination entry is not a regular file")
+        digest = hashlib.sha256()
+        byte_count = 0
+        with os.fdopen(file_fd, "rb") as source:
+            file_fd = -1
+            while True:
+                chunk = source.read(1024 * 1024)
+                if not chunk:
+                    break
+                digest.update(chunk)
+                byte_count += len(chunk)
+        return digest.hexdigest(), byte_count, observed
+    finally:
+        if file_fd >= 0:
+            os.close(file_fd)
+
+
+def _copy_staged_to_dirfd(staged: Path, directory_fd: int, expected_hash: str, expected_bytes: int) -> str:
+    observed = staged.lstat()
+    if stat.S_ISLNK(observed.st_mode) or not stat.S_ISREG(observed.st_mode):
+        raise ValueError("unsafe staged file")
+    temp_name = None
+    temp_fd = None
+    try:
+        for _ in range(32):
+            candidate = ".report-wizard-{}".format(secrets.token_hex(12))
+            flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+            try:
+                temp_fd = os.open(candidate, flags, 0o600, dir_fd=directory_fd)
+                temp_name = candidate
+                break
+            except FileExistsError:
+                continue
+        if temp_fd is None or temp_name is None:
+            raise ValueError("could not allocate a unique staging file")
+        digest = hashlib.sha256()
+        byte_count = 0
+        with staged.open("rb") as source, os.fdopen(temp_fd, "wb") as destination:
+            temp_fd = None
+            remaining = expected_bytes + 1
+            while remaining:
+                chunk = source.read(min(1024 * 1024, remaining))
+                if not chunk:
+                    break
+                if byte_count + len(chunk) > expected_bytes:
+                    raise ValueError("staged source exceeds expected size")
+                digest.update(chunk)
+                byte_count += len(chunk)
+                destination.write(chunk)
+            destination.flush()
+            os.fsync(destination.fileno())
+        if byte_count != expected_bytes or digest.hexdigest().lower() != expected_hash.lower():
+            raise ValueError("staged source integrity mismatch")
+        return temp_name
+    except Exception:
+        if temp_fd is not None:
+            os.close(temp_fd)
+        if temp_name is not None:
+            try:
+                os.unlink(temp_name, dir_fd=directory_fd)
+            except OSError:
+                pass
+        raise
+
+
+def _unlink_staged(staged: Path) -> None:
+    try:
+        observed = staged.lstat()
+    except FileNotFoundError:
+        return
+    if stat.S_ISDIR(observed.st_mode):
+        raise ValueError("staged path is a directory")
+    staged.unlink()
+
+
+def _publish_staged_file(staged: Path, destination_directory: Path, name: str, expected_hash: str, expected_bytes: int) -> Tuple[Path, bool, bool]:
+    directory_fd, expected_identity, expected_realpath = _open_verified_directory(destination_directory)
+    temp_name = None
+    try:
+        candidate_name = name
+        number = 1
+        repair_identity = None
+        while True:
+            try:
+                observed = os.stat(candidate_name, dir_fd=directory_fd, follow_symlinks=False)
+            except FileNotFoundError:
+                observed = None
+            if observed is None:
+                break
+            if stat.S_ISLNK(observed.st_mode):
+                if number == 1:
+                    raise ValueError("unsafe destination path contains a symlink")
+                number += 1
+                candidate_name = _collision_name(name, number)
+                continue
+            if stat.S_ISREG(observed.st_mode):
+                existing_hash, existing_bytes, existing_identity = _hash_at_dirfd(directory_fd, candidate_name)
+                if existing_hash.lower() == expected_hash.lower() and existing_bytes == expected_bytes:
+                    _unlink_staged(staged)
+                    return destination_directory / candidate_name, True, False
+                if number == 1 and existing_bytes < expected_bytes:
+                    repair_identity = existing_identity
+                    break
             number += 1
             candidate_name = _collision_name(name, number)
-            continue
-        if stat.S_ISREG(observed.st_mode):
-            existing_hash, existing_bytes = _hash_file(candidate)
-            if existing_hash.lower() == expected_hash.lower() and existing_bytes == expected_bytes:
-                staged.unlink()
-                return candidate, True, False
-            if number == 1 and existing_bytes < expected_bytes:
-                _atomic_copy_file(staged, candidate)
-                staged.unlink()
-                return candidate, False, True
-        number += 1
-        candidate_name = _collision_name(name, number)
+
+        temp_name = _copy_staged_to_dirfd(staged, directory_fd, expected_hash, expected_bytes)
+        if not _verify_directory_identity(destination_directory, directory_fd, expected_identity, expected_realpath, "before_publish"):
+            raise ValueError("destination_changed_during_copy")
+        if repair_identity is not None:
+            current = os.stat(candidate_name, dir_fd=directory_fd, follow_symlinks=False)
+            if (current.st_dev, current.st_ino) != (repair_identity.st_dev, repair_identity.st_ino):
+                raise ValueError("destination_changed_during_copy")
+            os.unlink(candidate_name, dir_fd=directory_fd)
+        try:
+            os.link(temp_name, candidate_name, src_dir_fd=directory_fd, dst_dir_fd=directory_fd, follow_symlinks=False)
+        except FileExistsError as error:
+            raise ValueError("destination_changed_during_copy") from error
+        try:
+            published_identity = os.stat(candidate_name, dir_fd=directory_fd, follow_symlinks=False)
+        except OSError as error:
+            try:
+                os.unlink(candidate_name, dir_fd=directory_fd)
+            except OSError:
+                pass
+            raise ValueError("destination_changed_after_publish") from error
+        if not _verify_directory_identity(destination_directory, directory_fd, expected_identity, expected_realpath, "after_publish"):
+            try:
+                current = os.stat(candidate_name, dir_fd=directory_fd, follow_symlinks=False)
+                if (current.st_dev, current.st_ino) == (published_identity.st_dev, published_identity.st_ino):
+                    os.unlink(candidate_name, dir_fd=directory_fd)
+            except OSError:
+                pass
+            raise ValueError("destination_changed_after_publish")
+        os.unlink(temp_name, dir_fd=directory_fd)
+        temp_name = None
+        _unlink_staged(staged)
+        return destination_directory / candidate_name, False, repair_identity is not None
+    finally:
+        if temp_name is not None:
+            try:
+                os.unlink(temp_name, dir_fd=directory_fd)
+            except OSError:
+                pass
+        os.close(directory_fd)
 
 
 def _plan_items_by_source(state: Dict) -> Dict[str, Dict]:
@@ -748,6 +920,51 @@ def _apply_folder_corrections(state: Dict, corrections: Dict[str, str]) -> None:
         item["corrected"] = True
 
 
+def _cleanup_staging_for_record(workspace: Path, record: Dict) -> None:
+    role = "past" if record.get("source_role") == "past_output" else "current"
+    staging_directory = _workspace_path(workspace) / "00_intake" / role
+    try:
+        observed = staging_directory.lstat()
+    except FileNotFoundError:
+        return
+    if stat.S_ISLNK(observed.st_mode) or not stat.S_ISDIR(observed.st_mode):
+        raise ValueError("unsafe staging directory")
+    name = _safe_output_name(record.get("name") or Path(record.get("original_path", "file")).name)
+    source_path = Path(name)
+    pattern = re.compile(r"^{}(?:__\d+)?{}$".format(re.escape(source_path.stem), re.escape(source_path.suffix)))
+    for candidate in staging_directory.iterdir():
+        if not pattern.match(candidate.name):
+            continue
+        candidate_stat = candidate.lstat()
+        if stat.S_ISDIR(candidate_stat.st_mode):
+            raise ValueError("unsafe staging entry is a directory")
+        candidate.unlink()
+
+
+def _new_operation_journal() -> Dict:
+    return {
+        "operation_id": uuid.uuid4().hex,
+        "operation": "confirm_copy",
+        "status": "in_progress",
+        "current_item": None,
+        "completed_items": [],
+        "outcomes": [],
+    }
+
+
+def _journal_valid_outcome(state: Dict, source_path: str) -> Optional[Dict]:
+    item = _plan_items_by_source(state).get(source_path)
+    if item is None:
+        return None
+    for outcome in reversed(state["operation_journal"].get("outcomes", [])):
+        if outcome.get("original_path") != source_path or outcome.get("status") != "copied":
+            continue
+        valid, _ = _final_copy_validity(state, item, outcome)
+        if valid:
+            return outcome
+    return None
+
+
 def confirm_folder_plan(workspace: Path, corrections: Optional[Dict[str, str]] = None) -> Dict:
     state = _load(workspace)
     if state["stage"] == "questioning" and not corrections:
@@ -757,11 +974,46 @@ def confirm_folder_plan(workspace: Path, corrections: Optional[Dict[str, str]] =
     _apply_folder_corrections(state, corrections or {})
     if state["stage"] == "inspection_ready":
         state["stage"] = "folder_plan_confirmed"
+        state["operation_journal"] = _new_operation_journal()
         _save(state, workspace)
-    outcomes = copy_approved_files(state["accepted"], _workspace_path(workspace))
-    organized = _organize_copy_outcomes(outcomes, state, _workspace_path(workspace))
+
+    if state["operation_journal"].get("status") == "idle":
+        state["operation_journal"] = _new_operation_journal()
+        _save(state, workspace)
+    journal = state["operation_journal"]
+    completed = set(journal.get("completed_items", []))
+    for record in state["accepted"]:
+        source_path = record.get("original_path")
+        if source_path in completed and _journal_valid_outcome(state, source_path):
+            _cleanup_staging_for_record(workspace, record)
+            continue
+        if source_path in completed:
+            completed.remove(source_path)
+            journal["completed_items"] = [item for item in journal["completed_items"] if item != source_path]
+            journal["outcomes"] = [item for item in journal["outcomes"] if item.get("original_path") != source_path]
+        journal["current_item"] = source_path
+        state["operation_journal"] = journal
+        state["copy_outcomes"] = list(journal["outcomes"])
+        _save(state, workspace)
+        _cleanup_staging_for_record(workspace, record)
+        outcomes = copy_approved_files([record], _workspace_path(workspace))
+        organized = _organize_copy_outcomes(outcomes, state, _workspace_path(workspace))
+        journal["outcomes"].extend(organized)
+        journal["completed_items"].append(source_path)
+        journal["current_item"] = None
+        state = _load(workspace)
+        state["operation_journal"] = journal
+        state["copy_outcomes"] = list(journal["outcomes"])
+        _refresh_copy_unresolved(state)
+        _refresh_unresolved(state)
+        _save(state, workspace)
+
     state = _load(workspace)
-    state["copy_outcomes"] = organized
+    journal = state["operation_journal"]
+    journal["status"] = "complete"
+    journal["current_item"] = None
+    state["operation_journal"] = journal
+    state["copy_outcomes"] = list(journal["outcomes"])
     state["stage"] = "questioning"
     _refresh_copy_unresolved(state)
     _refresh_unresolved(state)
@@ -812,8 +1064,7 @@ def _report_names(report_type: str) -> Tuple[str, str]:
 
 
 def _write_artifact(path: Path, content: str) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding="utf-8")
+    _write_text_atomic(path, content)
 
 
 def _json_artifact(path: Path, payload: Dict) -> None:
@@ -1008,6 +1259,16 @@ def build_report_workspace(workspace: Path) -> Dict:
 
 def approve_report(workspace: Path, approver: str) -> Dict:
     state = _load(workspace)
+    if state["stage"] == "approved":
+        approval_path = Path(state["artifacts"].get("approval") or (_workspace_path(workspace) / "07_approval/approval.json"))
+        repair = True
+        try:
+            repair = json.loads(approval_path.read_text(encoding="utf-8")) != state["approval"]
+        except (OSError, ValueError):
+            repair = True
+        if repair:
+            _json_artifact(approval_path, state["approval"])
+        return state
     if state["stage"] not in {"questioning", "ready_for_draft", "ready_for_human_review"}:
         raise ValueError("approval requires ready_for_human_review state; build a reviewable draft first")
     _refresh_copy_unresolved(state)
@@ -1032,8 +1293,10 @@ def approve_report(workspace: Path, approver: str) -> Dict:
     state["approval"] = approval
     state["stage"] = "approved"
     state["next_action"] = "Approved locally; no report was sent or uploaded"
-    _json_artifact(_workspace_path(workspace) / "07_approval" / "approval.json", approval)
-    return _save(state, workspace)
+    saved = _save(state, workspace)
+    approval_path = Path(saved["artifacts"].get("approval") or (_workspace_path(workspace) / "07_approval/approval.json"))
+    _json_artifact(approval_path, saved["approval"])
+    return saved
 
 
 def session_status(workspace: Path) -> Dict:

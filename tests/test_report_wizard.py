@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from ai_automation_kit.core import report_wizard
 from ai_automation_kit.core.report_wizard import (
     approve_report,
     answer_current_question,
@@ -330,6 +331,185 @@ def test_load_rejects_non_object_nested_records(tmp_path, field, nested_field):
 
     with pytest.raises(ValueError, match="invalid state field.*{}.*list of objects".format(nested_field)):
         load_session(workspace)
+
+
+def test_final_destination_symlink_is_rejected_without_writing_outside_workspace(tmp_path):
+    past, current = make_inputs(tmp_path)
+    workspace = tmp_path / "workspace"
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    create_session(workspace, "daily")
+    inspect_session(workspace, [past], [current])
+    destination_root = workspace / "02_current_materials"
+    destination_root.mkdir()
+    (destination_root / "metrics").symlink_to(outside, target_is_directory=True)
+
+    state = confirm_folder_plan(workspace)
+
+    assert any(item["status"] == "copy_rejected" for item in state["copy_outcomes"])
+    assert not (outside / current.name).exists()
+
+
+def test_post_publish_identity_race_removes_publication_and_records_rejection(tmp_path, monkeypatch):
+    past, current = make_inputs(tmp_path)
+    workspace = tmp_path / "workspace"
+    create_session(workspace, "daily")
+    inspect_session(workspace, [past], [current])
+    original_verify = report_wizard._verify_directory_identity
+
+    def fail_after_publish(path, directory_fd, expected_identity, expected_realpath, phase):
+        if phase == "after_publish":
+            return False
+        return original_verify(path, directory_fd, expected_identity, expected_realpath, phase)
+
+    monkeypatch.setattr(report_wizard, "_verify_directory_identity", fail_after_publish, raising=False)
+    state = confirm_folder_plan(workspace)
+
+    rejected = [item for item in state["copy_outcomes"] if item["status"] == "copy_rejected"]
+    assert rejected
+    assert "destination" in rejected[0]["reason"]
+    assert not (workspace / "02_current_materials/metrics" / current.name).exists()
+
+
+def test_skipped_required_question_is_represented_and_can_recover_to_approval(tmp_path):
+    past, current = make_inputs(tmp_path)
+    workspace = tmp_path / "workspace"
+    create_session(workspace, "monthly")
+    inspect_session(workspace, [past], [current])
+    confirm_folder_plan(workspace)
+    first_id = load_session(workspace)["current_question"]["id"]
+
+    skipped = answer_current_question(workspace, "", skipped=True)
+    assert skipped["current_question"]["id"] != first_id
+    while load_session(workspace)["current_question"]["id"] != first_id:
+        answer_current_question(workspace, "confirmed answer")
+    recovered = load_session(workspace)
+    assert recovered["stage"] == "questioning"
+    assert recovered["current_question"]["id"] == first_id
+    assert any(item["id"] == first_id for item in recovered["unresolved_items"])
+
+    answered = answer_current_question(workspace, "confirmed audience")
+    assert answered["current_question"] is None
+    assert not any(item["id"] == first_id for item in answered["unresolved_items"])
+    built = build_report_workspace(workspace)
+    approved = approve_report(workspace, "Owner")
+    assert built["stage"] == "ready_for_human_review"
+    assert approved["stage"] == "approved"
+
+
+def test_conflicting_values_are_redacted_from_state_questions_and_artifacts(tmp_path):
+    past = write_source(tmp_path / "past" / "past.md", "# Metrics\nRevenue: 1\n")
+    current_a = write_source(tmp_path / "current" / "a.md", "Revenue: confidential-A\n")
+    current_b = write_source(tmp_path / "current" / "b.md", "Revenue: confidential-B\n")
+    workspace = tmp_path / "workspace"
+    create_session(workspace, "weekly")
+    inspected = inspect_session(workspace, [past], [current_a, current_b])
+    serialized_state = json.dumps(inspected, ensure_ascii=False)
+    assert "confidential-A" not in serialized_state
+    assert "confidential-B" not in serialized_state
+    conflict = inspected["schema_proposal"]["conflicts"][0]
+    assert "value_hashes" in conflict
+    assert "source_references" in conflict
+    assert "values" not in conflict
+
+    confirm_folder_plan(workspace)
+    answer_all_questions(workspace)
+    build_report_workspace(workspace)
+    generated_roots = ["03_templates", "04_ai_analysis", "05_grill_me_questions", "06_drafts", "07_approval"]
+    for root in generated_roots:
+        for path in (workspace / root).rglob("*"):
+            if path.is_file():
+                content = path.read_text(encoding="utf-8")
+                assert "confidential-A" not in content
+                assert "confidential-B" not in content
+
+
+def test_confirmation_journal_resumes_after_interruption_without_staging_duplicates(tmp_path, monkeypatch):
+    past, current = make_inputs(tmp_path)
+    second = write_source(tmp_path / "current" / "notes.md", "note for the current period")
+    workspace = tmp_path / "workspace"
+    create_session(workspace, "daily")
+    inspect_session(workspace, [past], [current, second])
+    original_organize = report_wizard._organize_copy_outcomes
+    calls = {"count": 0}
+
+    def interrupt_once(outcomes, state, root):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            raise RuntimeError("simulated organizer interruption")
+        return original_organize(outcomes, state, root)
+
+    monkeypatch.setattr(report_wizard, "_organize_copy_outcomes", interrupt_once)
+    with pytest.raises(RuntimeError, match="simulated"):
+        confirm_folder_plan(workspace)
+    interrupted = json.loads((workspace / "report_wizard_state.json").read_text(encoding="utf-8"))
+    assert interrupted["operation_journal"]["status"] == "in_progress"
+    assert interrupted["operation_journal"]["current_item"]
+
+    monkeypatch.setattr(report_wizard, "_organize_copy_outcomes", original_organize)
+    resumed = confirm_folder_plan(workspace)
+    assert resumed["stage"] == "questioning"
+    assert resumed["operation_journal"]["status"] == "complete"
+    staging_files = list((workspace / "00_intake").rglob("*"))
+    assert not [path for path in staging_files if path.is_file()]
+
+
+def test_build_repairs_artifacts_after_interrupted_write(tmp_path, monkeypatch):
+    past, current = make_inputs(tmp_path)
+    workspace = tmp_path / "workspace"
+    create_session(workspace, "daily")
+    inspect_session(workspace, [past], [current])
+    confirm_folder_plan(workspace)
+    answer_all_questions(workspace)
+    original_write = report_wizard._write_artifact
+    calls = {"count": 0}
+
+    def interrupt_after_first(path, content):
+        calls["count"] += 1
+        original_write(path, content)
+        if calls["count"] == 1:
+            raise RuntimeError("simulated artifact interruption")
+
+    monkeypatch.setattr(report_wizard, "_write_artifact", interrupt_after_first)
+    with pytest.raises(RuntimeError, match="artifact"):
+        build_report_workspace(workspace)
+    monkeypatch.setattr(report_wizard, "_write_artifact", original_write)
+
+    repaired = build_report_workspace(workspace)
+    assert repaired["stage"] == "ready_for_human_review"
+    assert all(path.exists() for path in [
+        workspace / "04_ai_analysis/source_manifest.json",
+        workspace / "04_ai_analysis/provenance.json",
+        workspace / "06_drafts/daily_report_draft.md",
+        workspace / "07_approval/approval.json",
+    ])
+
+
+def test_approval_state_is_saved_before_artifact_and_already_approved_repairs_artifact(tmp_path, monkeypatch):
+    past, current = make_inputs(tmp_path)
+    workspace = tmp_path / "workspace"
+    create_session(workspace, "daily")
+    inspect_session(workspace, [past], [current])
+    confirm_folder_plan(workspace)
+    answer_all_questions(workspace)
+    build_report_workspace(workspace)
+    original_write = report_wizard._write_artifact
+
+    def fail_approval_artifact(path, content):
+        if Path(path).name == "approval.json":
+            raise RuntimeError("simulated approval artifact interruption")
+        return original_write(path, content)
+
+    monkeypatch.setattr(report_wizard, "_write_artifact", fail_approval_artifact)
+    with pytest.raises(RuntimeError, match="approval artifact"):
+        approve_report(workspace, "Owner")
+    assert load_session(workspace)["stage"] == "approved"
+    monkeypatch.setattr(report_wizard, "_write_artifact", original_write)
+    approval_path = workspace / "07_approval/approval.json"
+    approval_path.write_text("stale", encoding="utf-8")
+    repaired = approve_report(workspace, "Owner")
+    assert repaired["stage"] == "approved"
+    assert json.loads(approval_path.read_text(encoding="utf-8"))["status"] == "approved"
 
 
 @pytest.mark.parametrize(
