@@ -48,6 +48,59 @@ _TRANSLATIONS = {
         "status_error": "エラー",
         "status_success": "完了",
         "refresh": "状態を更新",
+        "byte_unit": "バイト",
+        "runtime": {
+            "questions": {
+                "report_audience": "このレポートを読む人は誰ですか？",
+                "best_style_reference": "書き方の見本にする過去レポートはどれですか？",
+                "mandatory_sections": "毎回必ず含める項目は何ですか？",
+                "reporting_period": "このレポートの対象期間はいつですか？",
+                "final_approver": "最終確認を行う人は誰ですか？",
+                "save_destination": "承認済みレポートをどこに保存しますか？",
+            },
+            "conflict_question": "資料どうしの内容が一致しません。正しい内容を確認してください。",
+            "reasons": {
+                "Required question has not been answered": "必須の質問にまだ回答していません",
+                "Required question was skipped": "必須の質問がスキップされています",
+                "No readable accepted source inputs were found": "読み取れる資料が見つかりませんでした",
+                "copy rejected": "ファイルをコピーできませんでした",
+                "unknown reason": "理由を確認できません",
+                "unsafe_destination_path": "保存先を安全に確認できません",
+                "unsafe_source_path": "元ファイルを安全に確認できません",
+                "copy_failed": "ファイルのコピーに失敗しました",
+                "destination_changed_during_copy": "コピー中に保存先が変更されました",
+                "cleanup_failed": "一時ファイルの削除に失敗しました",
+                "missing_confirmed_destination": "確定した保存先が見つかりません",
+                "final path is outside the confirmed destination": "保存先が確定した範囲の外にあります",
+                "final copy is missing integrity metadata": "コピー結果の確認情報がありません",
+                "final copy failed SHA-256 or byte-count verification": "コピー後の内容確認に失敗しました",
+                "final copied input is missing or unsafe": "コピー済み資料が見つからないか、安全に確認できません",
+                "rejected": "受け付けられませんでした",
+            },
+            "actions": {
+                "Inspect approved past reports and current materials": "過去の完成レポートと今回の資料を追加し、資料を検査してください",
+                "Review the folder plan and confirm it before copying approved files": "フォルダ計画を確認し、問題がなければ計画を確定してください",
+                "Resolve required unresolved items before approval": "承認前に、未解決の必須項目を確認してください",
+                "Build the report workspace for human review": "人が確認できる下書きを作成してください",
+                "Build the report workspace": "レポートの下書きを作成してください",
+                "Retry confirmation after destination_changed_during_copy": "保存先を確認して、もう一度計画を確定してください",
+                "Resolve unresolved items before approval": "承認前に未解決の項目を確認してください",
+                "Review the draft, then approve it": "下書きを確認し、問題がなければ承認を記録してください",
+                "Approved locally; no report was sent or uploaded": "ローカルで承認を記録しました。外部への送信やアップロードは行っていません",
+            },
+            "answer_action": "現在の質問に回答してください",
+            "stages": {
+                "created": "準備中",
+                "inspection_ready": "資料の確認完了",
+                "folder_plan_confirmed": "フォルダ計画を確定済み",
+                "questioning": "確認質問に回答中",
+                "ready_for_draft": "下書きを作成できます",
+                "ready_for_human_review": "人による確認待ち",
+                "approved": "承認済み",
+            },
+            "approval_status": {"pending": "承認待ち", "approved": "承認済み"},
+            "languages": {"ja": "日本語", "en": "英語"},
+        },
     },
     "en": {
         "title": "Report Setup Wizard",
@@ -91,6 +144,27 @@ _TRANSLATIONS = {
         "status_error": "Error",
         "status_success": "Done",
         "refresh": "Refresh State",
+        "byte_unit": "bytes",
+        "runtime": {
+            "questions": {
+                "report_audience": "Who is the audience for this report?",
+                "best_style_reference": "Which past report is the best style reference?",
+                "mandatory_sections": "Which sections must appear in every report?",
+                "reporting_period": "What reporting period should the next report cover?",
+                "final_approver": "Who is the final approver?",
+                "save_destination": "Where should the approved report be saved?",
+            },
+            "conflict_question": "The current materials disagree. Review the approved sources and confirm the correct value.",
+            "reasons": {
+                "Required question has not been answered": "Required question has not been answered",
+                "Required question was skipped": "Required question was skipped",
+            },
+            "actions": {},
+            "answer_action": "Answer the current question",
+            "stages": {},
+            "approval_status": {},
+            "languages": {"ja": "Japanese", "en": "English"},
+        },
     },
 }
 
@@ -178,9 +252,10 @@ def render_report_wizard_ui(language: str, token: str) -> str:
       margin: 0;
       display: grid;
       gap: 8px;
-      grid-template-columns: repeat(7, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
     }}
     .progress li {{
+      min-width: 0;
       min-height: 72px;
       border: 1px solid var(--line);
       border-radius: 6px;
@@ -189,6 +264,7 @@ def render_report_wizard_ui(language: str, token: str) -> str:
       display: grid;
       gap: 6px;
       align-content: start;
+      overflow-wrap: anywhere;
     }}
     .progress .step-index {{
       display: inline-flex;
@@ -585,14 +661,52 @@ def render_report_wizard_ui(language: str, token: str) -> str:
         byId(id).appendChild(item);
       }}
 
+      function runtimeGroup(name) {{
+        return (STRINGS.runtime && STRINGS.runtime[name]) || {{}};
+      }}
+
+      function translateReason(reason) {{
+        let translated = reason || runtimeGroup("reasons").rejected || "rejected";
+        Object.keys(runtimeGroup("reasons")).forEach(function (source) {{
+          translated = translated.split(source).join(runtimeGroup("reasons")[source]);
+        }});
+        return translated;
+      }}
+
+      function translateQuestion(question) {{
+        if (!question) {{
+          return STRINGS.status_success;
+        }}
+        if (String(question.id || "").indexOf("conflict_") === 0) {{
+          return STRINGS.runtime.conflict_question;
+        }}
+        return runtimeGroup("questions")[question.id] || question.prompt;
+      }}
+
+      function translateNextAction(action) {{
+        const text = action || "";
+        const direct = runtimeGroup("actions")[text];
+        if (direct) {{
+          return direct;
+        }}
+        if (text.indexOf("Answer current question:") === 0 || text.indexOf("Answer the current question:") === 0) {{
+          return STRINGS.runtime.answer_action;
+        }}
+        return text;
+      }}
+
+      function translateStage(stage) {{
+        return runtimeGroup("stages")[stage] || stage;
+      }}
+
       function renderUploads(uploads) {{
         clearList("past-upload-list");
         clearList("current-upload-list");
         (uploads.past || []).forEach(function (item) {{
-          appendListItem("past-upload-list", item.name + " [" + item.bytes + " bytes]");
+          appendListItem("past-upload-list", item.name + " [" + item.bytes + " " + STRINGS.byte_unit + "]");
         }});
         (uploads.current || []).forEach(function (item) {{
-          appendListItem("current-upload-list", item.name + " [" + item.bytes + " bytes]");
+          appendListItem("current-upload-list", item.name + " [" + item.bytes + " " + STRINGS.byte_unit + "]");
         }});
       }}
 
@@ -600,10 +714,10 @@ def render_report_wizard_ui(language: str, token: str) -> str:
         clearList("warning-list");
         const warnings = [];
         (statePayload.rejected || []).forEach(function (item) {{
-          warnings.push((item.name || item.original_path || "item") + ": " + (item.reason || "rejected"));
+          warnings.push((item.name || item.original_path || "item") + ": " + translateReason(item.reason));
         }});
         (statePayload.unresolved_items || []).forEach(function (item) {{
-          warnings.push(item.id + ": " + item.reason);
+          warnings.push(item.id + ": " + translateReason(item.reason));
         }});
         if (!warnings.length) {{
           warnings.push(STRINGS.status_success);
@@ -636,7 +750,7 @@ def render_report_wizard_ui(language: str, token: str) -> str:
         byId("answer-input").disabled = !current;
         byId("answer-button").disabled = !current;
         byId("skip-button").disabled = !current;
-        byId("question-text").textContent = current ? current.prompt : STRINGS.status_success;
+        byId("question-text").textContent = translateQuestion(current);
       }}
 
       function renderProgress(stage) {{
@@ -674,12 +788,12 @@ def render_report_wizard_ui(language: str, token: str) -> str:
         renderArtifacts(state.session);
         renderQuestion(state.session);
         renderProgress(state.session.stage);
-        setMessage("goal-message", payload.next_action, "");
-        setMessage("review-message", STRINGS.state + ": " + state.session.stage, "");
+        setMessage("goal-message", translateNextAction(payload.next_action), "");
+        setMessage("review-message", STRINGS.state + ": " + translateStage(state.session.stage), "");
         setMessage("draft-message", state.session.artifacts.draft || STRINGS.draft, state.session.artifacts.draft ? "success" : "");
-        setMessage("approval-message", state.session.approval.status || STRINGS.approval, state.session.approval.status === "approved" ? "success" : "");
-        byId("stage-pill").textContent = state.session.stage;
-        byId("language-value").textContent = state.session.language;
+        setMessage("approval-message", runtimeGroup("approval_status")[state.session.approval.status] || state.session.approval.status || STRINGS.approval, state.session.approval.status === "approved" ? "success" : "");
+        byId("stage-pill").textContent = translateStage(state.session.stage);
+        byId("language-value").textContent = runtimeGroup("languages")[state.session.language] || state.session.language;
         Array.prototype.forEach.call(document.querySelectorAll("[data-report-type]"), function (button) {{
           button.setAttribute("aria-pressed", button.dataset.reportType === state.reportType ? "true" : "false");
         }});
@@ -703,7 +817,7 @@ def render_report_wizard_ui(language: str, token: str) -> str:
         try {{
           renderState(await apiFetch("/api/state"));
         }} catch (error) {{
-          setMessage("review-message", error.message, "error");
+          setMessage("review-message", translateReason(error.message), "error");
         }}
       }}
 
@@ -716,11 +830,11 @@ def render_report_wizard_ui(language: str, token: str) -> str:
           }});
           renderState(payload);
           if (messageId) {{
-            setMessage(messageId, payload.next_action, successTone || "success");
+            setMessage(messageId, translateNextAction(payload.next_action), successTone || "success");
           }}
         }} catch (error) {{
           if (messageId) {{
-            setMessage(messageId, error.message, "error");
+            setMessage(messageId, translateReason(error.message), "error");
           }}
         }}
       }}
@@ -745,7 +859,7 @@ def render_report_wizard_ui(language: str, token: str) -> str:
           setMessage(messageId, payload.data.saved.length + " " + STRINGS.status_success, "success");
           input.value = "";
         }} catch (error) {{
-          setMessage(messageId, error.message, "error");
+          setMessage(messageId, translateReason(error.message), "error");
         }}
       }}
 

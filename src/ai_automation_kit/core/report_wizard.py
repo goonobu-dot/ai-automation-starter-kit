@@ -237,7 +237,7 @@ def _validate_state(state: Dict, workspace: Path) -> Dict:
 def _load(workspace: Path) -> Dict:
     path = _state_path(workspace)
     if not path.exists():
-        raise ValueError("report wizard session does not exist; call create_session first")
+        raise ValueError("report wizard session does not exist; run 'ai-automation-kit report-wizard init --workspace <path>' first")
     try:
         state = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as error:

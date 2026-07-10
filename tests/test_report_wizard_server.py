@@ -627,6 +627,11 @@ def test_render_report_wizard_ui_is_self_contained_localized_and_safe():
     assert "prefers-reduced-motion" in en
     assert "flowchart" in ja
     assert "<ol" in ja and "<ol" in en
+    assert "このレポートを読む人は誰ですか？" in ja
+    assert "必須の質問にまだ回答していません" in ja
+    assert "Who is the audience for this report?" in en
+    assert "Required question has not been answered" in en
+    assert "grid-template-columns: repeat(4, minmax(0, 1fr));" in ja
 
 
 def test_run_report_wizard_server_delegates_and_opens_browser(monkeypatch, tmp_path):

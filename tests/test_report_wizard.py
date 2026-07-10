@@ -25,6 +25,11 @@ def write_source(path, text):
     return path
 
 
+def test_missing_session_error_names_the_public_init_command(tmp_path):
+    with pytest.raises(ValueError, match=r"report-wizard init"):
+        load_session(tmp_path / "missing")
+
+
 def make_inputs(tmp_path, report_type="monthly"):
     past = write_source(
         tmp_path / "past" / "completed.md",

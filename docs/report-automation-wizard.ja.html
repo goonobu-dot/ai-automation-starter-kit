@@ -546,19 +546,23 @@
       </div>
       <table class="support-table">
         <caption><strong>全文を扱える形式</strong></caption>
-        <tr><th>形式</th><th>扱い</th><th>実務メモ</th></tr>
+        <thead><tr><th scope="col">形式</th><th scope="col">扱い</th><th scope="col">実務メモ</th></tr></thead>
+        <tbody>
         <tr><td>Markdown / プレーンテキスト</td><td>全文を扱える形式</td><td>過去の下書き、メモ、運用補足に向いています。</td></tr>
         <tr><td>CSV / JSON</td><td>全文を扱える形式</td><td>数値表、ログ、構造化エクスポートに向いています。</td></tr>
         <tr><td>DOCX</td><td>全文を扱える形式</td><td>完成レポートがWordで保存されている場合に向いています。</td></tr>
         <tr><td>XLSX</td><td>全文を扱える形式</td><td>表や指標がまだ表計算ファイルにある場合に向いています。</td></tr>
         <tr><td>PDF</td><td>対応リーダーがある場合に全文を扱える形式</td><td>PDFは任意で分離して扱います。抽出品質が不安な場合は人間確認前提にします。</td></tr>
+        </tbody>
       </table>
       <table class="support-table">
         <caption><strong>メタデータのみ扱う形式</strong></caption>
-        <tr><th>形式</th><th>扱い</th><th>実務メモ</th></tr>
+        <thead><tr><th scope="col">形式</th><th scope="col">扱い</th><th scope="col">実務メモ</th></tr></thead>
+        <tbody>
         <tr><td>PNG</td><td>メタデータのみ扱う形式</td><td>画像はOCRせずメタデータのみ扱います。</td></tr>
         <tr><td>JPEG</td><td>メタデータのみ扱う形式</td><td>画像が存在することは記録できますが、中の文字は根拠として読みません。</td></tr>
         <tr><td>WebP</td><td>メタデータのみ扱う形式</td><td>人間が必要性を理解している画像だけを入れてください。</td></tr>
+        </tbody>
       </table>
       <p>隠しファイル、実行ファイル、圧縮ファイル、用途不明のバイナリはレポート根拠として扱わないでください。PDFが機密性や抽出品質の面で微妙なら、別フォルダに隔離し、人間が原本と照合してから採用します。</p>
     </section>
@@ -672,8 +676,8 @@
             <div class="screen-top"><span class="dot blue"></span><span class="dot green"></span><span class="dot amber"></span>分類確認とフォルダ案</div>
             <div class="screen-body">
               <div class="screen-row"><div class="screen-label">過去</div><div class="screen-box green">01_past_outputs/monthly_reports</div></div>
-              <div class="screen-row"><div class="screen-label">今回</div><div class="screen-box purple">02_current_materials/metrics と notes</div></div>
-              <div class="screen-row"><div class="screen-label">競合</div><div class="screen-box red">会議メモの日付と表計算の日付がずれています</div></div>
+              <div class="screen-row"><div class="screen-label">今回</div><div class="screen-box purple">今回の数値 と 今回のメモ</div></div>
+              <div class="screen-row"><div class="screen-label">不一致</div><div class="screen-box red">会議メモの日付と表計算の日付がずれています</div></div>
               <div class="screen-row"><div class="screen-label">判断</div><div class="screen-box amber">確定前に分類や期間を直す</div></div>
             </div>
           </div>
@@ -856,9 +860,10 @@ AIエージェントは承認状態や送信状態を変更できません。
       <h2>9. トラブルシューティング</h2>
       <p>初心者向けのエラー説明は、原因だけでなく次の一手まで書いてある方が役立ちます。よくあるケースを下にまとめます。</p>
       <table class="trouble-table">
-        <tr><th>エラーまたは症状</th><th>意味</th><th>次にやること</th></tr>
+        <thead><tr><th scope="col">エラーまたは症状</th><th scope="col">意味</th><th scope="col">次にやること</th></tr></thead>
+        <tbody>
         <tr>
-          <td><code>report wizard session does not exist; call create_session first</code></td>
+          <td><code>report wizard session does not exist; run 'ai-automation-kit report-wizard init --workspace &lt;path&gt;' first</code></td>
           <td>まだ作業場所の初期化が済んでいません。</td>
           <td><code>ai-automation-kit report-wizard init --workspace ...</code> を実行してから再開します。</td>
         </tr>
@@ -897,6 +902,7 @@ AIエージェントは承認状態や送信状態を変更できません。
           <td>ローカル環境によってはPDF抽出が部分的です。</td>
           <td>PDFは任意で分離して扱います。原本と照合してから承認してください。</td>
         </tr>
+        </tbody>
       </table>
     </section>
 

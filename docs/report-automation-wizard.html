@@ -547,19 +547,23 @@
       </div>
       <table class="support-table">
         <caption><strong>Full extraction support</strong></caption>
-        <tr><th>Format</th><th>Behavior</th><th>Practical note</th></tr>
+        <thead><tr><th scope="col">Format</th><th scope="col">Behavior</th><th scope="col">Practical note</th></tr></thead>
+        <tbody>
         <tr><td>Markdown and plain text</td><td>Full extraction support</td><td>Useful for previous drafts, notes, and operator instructions.</td></tr>
         <tr><td>CSV and JSON</td><td>Full extraction support</td><td>Useful for metrics, logs, and structured exports.</td></tr>
         <tr><td>DOCX</td><td>Full extraction support</td><td>Useful when completed reports are stored as Word files.</td></tr>
         <tr><td>XLSX</td><td>Full extraction support</td><td>Useful when tables and metrics are still in spreadsheet form.</td></tr>
         <tr><td>PDF</td><td>Full extraction support when the supported reader is available</td><td>PDF intake is optional and should stay isolated if extraction quality is uncertain.</td></tr>
+        </tbody>
       </table>
       <table class="support-table">
         <caption><strong>Metadata-only intake</strong></caption>
-        <tr><th>Format</th><th>Behavior</th><th>Practical note</th></tr>
+        <thead><tr><th scope="col">Format</th><th scope="col">Behavior</th><th scope="col">Practical note</th></tr></thead>
+        <tbody>
         <tr><td>PNG</td><td>Metadata-only intake</td><td>Images are metadata-only, with no OCR.</td></tr>
         <tr><td>JPEG</td><td>Metadata-only intake</td><td>Useful for a file presence record, not for text extraction.</td></tr>
         <tr><td>WebP</td><td>Metadata-only intake</td><td>Use only when a human knows the image belongs in the evidence set.</td></tr>
+        </tbody>
       </table>
       <p>Hidden files, executable files, archives, and unknown binaries should not be treated as report evidence. If a PDF is sensitive or brittle, keep it in an isolated folder and document that a human must verify the extracted content before any wording is reused.</p>
     </section>
@@ -721,7 +725,7 @@
             <div class="screen-top"><span class="dot blue"></span><span class="dot green"></span><span class="dot amber"></span>Human approval record</div>
             <div class="screen-body">
               <div class="screen-row"><div class="screen-label">Approver</div><div class="screen-box red">Operations manager</div></div>
-              <div class="screen-row"><div class="screen-label">State</div><div class="screen-box green">ready_for_human_review</div></div>
+              <div class="screen-row"><div class="screen-label">State</div><div class="screen-box green">Ready for human review</div></div>
               <div class="screen-row"><div class="screen-label">Check</div><div class="screen-box">Review draft, provenance, unresolved items, and save path</div></div>
               <div class="screen-row"><div class="screen-label">Boundary</div><div class="screen-box red">Never send automatically</div></div>
             </div>
@@ -857,9 +861,10 @@ This workspace is local-only: never send, upload, email, publish, or submit anyt
       <h2>9. Troubleshooting</h2>
       <p>Good troubleshooting language is specific. Show the operator what happened, why it matters, and what they should try next.</p>
       <table class="trouble-table">
-        <tr><th>Error or symptom</th><th>What it means</th><th>What to do next</th></tr>
+        <thead><tr><th scope="col">Error or symptom</th><th scope="col">What it means</th><th scope="col">What to do next</th></tr></thead>
+        <tbody>
         <tr>
-          <td><code>report wizard session does not exist; call create_session first</code></td>
+          <td><code>report wizard session does not exist; run 'ai-automation-kit report-wizard init --workspace &lt;path&gt;' first</code></td>
           <td>The workspace has not been initialized yet.</td>
           <td>Run <code>ai-automation-kit report-wizard init --workspace ...</code> in an empty or intended workspace.</td>
         </tr>
@@ -898,6 +903,7 @@ This workspace is local-only: never send, upload, email, publish, or submit anyt
           <td>PDF extraction may be partial or unavailable in the local setup.</td>
           <td>Keep the PDF in an isolated verification folder and confirm the wording against the original before approval.</td>
         </tr>
+        </tbody>
       </table>
     </section>
 

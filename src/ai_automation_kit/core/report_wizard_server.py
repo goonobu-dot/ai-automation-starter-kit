@@ -26,6 +26,7 @@ from ai_automation_kit.core.report_wizard import session_status
 from ai_automation_kit.core.report_wizard import set_session_goal
 from ai_automation_kit.core.report_wizard import answer_current_question
 from ai_automation_kit.core.report_wizard import approve_report
+from ai_automation_kit.core.report_wizard import STATE_FILENAME
 from ai_automation_kit.core.report_wizard_ui import render_report_wizard_ui
 
 
@@ -46,12 +47,9 @@ def _workspace_path(workspace: Path) -> Path:
 
 def _ensure_session(workspace: Path, language: str) -> Dict:
     workspace = _workspace_path(workspace)
-    try:
-        return load_session(workspace)
-    except ValueError as error:
-        if "create_session" not in str(error):
-            raise
-    return create_session(workspace, "monthly", language)
+    if not (workspace / STATE_FILENAME).exists():
+        return create_session(workspace, "monthly", language)
+    return load_session(workspace)
 
 
 def _validate_server_language(language: str) -> str:
