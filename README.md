@@ -30,6 +30,8 @@ ai-automation-kit beginner
 
 [docs/GETTING_STARTED.ja.md（はじめかた）](docs/GETTING_STARTED.ja.md) が唯一の入口です。30分で最初のデモまで完走できます。その先は [docs/INDEX.md（ドキュメント索引）](docs/INDEX.md) から必要なものだけ開いてください。
 
+> **Phase 1A platform note / 対応OS:** Safe monthly office-workspace creation and approval mutation require macOS or Linux. Windows stops before creating or changing this workspace because the required race-resistant no-follow filesystem operations are unavailable in this design. Existing read-only and unrelated kit features are unaffected. / 安全な月次オフィスワークスペースの作成・承認更新は macOS または Linux 専用です。Windows では必要な安全機能がないため、フォルダを作成・変更する前に停止します。既存の読み取り専用機能や他の機能には影響しません。
+
 ## English Quick Start
 
 Do not read everything first. Install, run the doctor, and generate one complete demo workspace:
