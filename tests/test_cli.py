@@ -270,6 +270,81 @@ def test_parser_accepts_report_wizard_nested_commands():
     assert serve_args.no_open is True
 
 
+def test_parser_supports_office_workspace_create_status_inspect_and_serve():
+    parser = build_parser()
+
+    create_args = parser.parse_args(
+        [
+            "office-workspace",
+            "create",
+            "--root",
+            "work",
+            "--name",
+            "Monthly",
+            "--approver",
+            "Owner",
+            "--pin",
+            "482913",
+            "--period",
+            "2026-07",
+            "--language",
+            "en",
+        ]
+    )
+    assert create_args.command == "office-workspace"
+    assert create_args.office_workspace_command == "create"
+    assert create_args.root == "work"
+    assert create_args.period == "2026-07"
+    assert create_args.language == "en"
+
+    status_args = parser.parse_args(["office-workspace", "status", "--workspace", "workspace", "--json"])
+    assert status_args.office_workspace_command == "status"
+    assert status_args.json is True
+
+    inspect_args = parser.parse_args(["office-workspace", "inspect", "--workspace", "workspace", "--period", "2026-07"])
+    assert inspect_args.office_workspace_command == "inspect"
+    assert inspect_args.period == "2026-07"
+
+    serve_args = parser.parse_args(
+        ["office-workspace", "serve", "--root", "work", "--language", "en", "--port", "8081", "--no-open"]
+    )
+    assert serve_args.office_workspace_command == "serve"
+    assert serve_args.root == "work"
+    assert serve_args.language == "en"
+    assert serve_args.port == 8081
+    assert serve_args.no_open is True
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [
+        [
+            "office-workspace",
+            "create",
+            "--root",
+            "work",
+            "--name",
+            "Monthly",
+            "--approver",
+            "Owner",
+            "--pin",
+            "482913",
+            "--period",
+            "2026-07",
+            "--shell",
+            "bash",
+        ],
+        ["office-workspace", "serve", "--root", "work", "--sandbox", "workspace-write"],
+        ["office-workspace", "serve", "--root", "work", "--api-key", "test-key"],
+    ],
+)
+def test_parser_rejects_unsafe_office_workspace_flags(argv):
+    parser = build_parser()
+
+    with pytest.raises(SystemExit):
+        parser.parse_args(argv)
+
+
 @pytest.mark.parametrize(
     "argv",
     [
@@ -1267,6 +1342,223 @@ def test_main_report_wizard_serve_lazy_imports_server_only_when_needed(tmp_path,
         "workspace": Path(workspace),
         "language": "en",
         "port": 4310,
+        "open_browser": False,
+    }
+    assert captured.out == ""
+    assert captured.err == ""
+
+
+def test_main_runs_office_workspace_create_status_and_inspect(tmp_path, capsys):
+    root = tmp_path / "workspaces"
+    workspace = root / "Monthly"
+
+    exit_code = main(
+        [
+            "office-workspace",
+            "create",
+            "--root",
+            str(root),
+            "--name",
+            "Monthly",
+            "--approver",
+            "Owner",
+            "--pin",
+            "482913",
+            "--period",
+            "2026-07",
+            "--language",
+            "en",
+        ]
+    )
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "workspace=" in captured.out
+    assert str(workspace) in captured.out
+    assert "next_action=Put this month's files into 03_CURRENT_INPUTS/2026-07." in captured.out
+
+    (workspace / "01_APPROVED_PAST_OUTPUTS" / "approved.md").write_text("# Past\nRevenue 100\n", encoding="utf-8")
+    (workspace / "03_CURRENT_INPUTS" / "2026-07" / "current.md").write_text("# Current\nRevenue 120\n", encoding="utf-8")
+
+    exit_code = main(["office-workspace", "status", "--workspace", str(workspace), "--json"])
+    first_status = capsys.readouterr()
+    assert exit_code == 0
+    first_payload = json.loads(first_status.out)
+    assert first_payload["workspace"] == str(workspace)
+    assert first_payload["current_period"] == "2026-07"
+    assert first_payload["current_stage"] == "created"
+    assert first_payload["next_action"].startswith("Put this month's files")
+
+    exit_code = main(["office-workspace", "status", "--workspace", str(workspace), "--json"])
+    second_status = capsys.readouterr()
+    assert exit_code == 0
+    assert second_status.out == first_status.out
+
+    exit_code = main(["office-workspace", "inspect", "--workspace", str(workspace), "--period", "2026-07"])
+    inspect_output = capsys.readouterr()
+    assert exit_code == 0
+    assert "stage=questioning" in inspect_output.out
+    assert "accepted=2" in inspect_output.out
+    assert "pending_questions=audience" in inspect_output.out
+
+
+def test_main_office_workspace_create_rejects_symlink_root_without_target_writes(tmp_path, capsys):
+    target = tmp_path / "target"
+    target.mkdir()
+    symlink_root = tmp_path / "linked-root"
+    symlink_root.symlink_to(target, target_is_directory=True)
+
+    exit_code = main(
+        [
+            "office-workspace",
+            "create",
+            "--root",
+            str(symlink_root),
+            "--name",
+            "Monthly",
+            "--approver",
+            "Owner",
+            "--pin",
+            "482913",
+            "--period",
+            "2026-07",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert "symlink" in captured.err.lower()
+    assert list(target.iterdir()) == []
+
+
+@pytest.mark.parametrize("command", ["status", "inspect", "serve"])
+def test_main_office_workspace_commands_reject_symlink_workspace_path(tmp_path, capsys, command):
+    root = tmp_path / "workspaces"
+    assert (
+        main(
+            [
+                "office-workspace",
+                "create",
+                "--root",
+                str(root),
+                "--name",
+                "Monthly",
+                "--approver",
+                "Owner",
+                "--pin",
+                "482913",
+                "--period",
+                "2026-07",
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+    linked_workspace = tmp_path / "linked-workspace"
+    linked_workspace.symlink_to(root / "Monthly", target_is_directory=True)
+    argv = ["office-workspace", command]
+    if command == "serve":
+        argv.extend(["--root", str(linked_workspace), "--no-open"])
+    else:
+        argv.extend(["--workspace", str(linked_workspace)])
+        if command == "inspect":
+            argv.extend(["--period", "2026-07"])
+
+    exit_code = main(argv)
+
+    captured = capsys.readouterr()
+    assert exit_code == 2
+    assert "symlink" in captured.err.lower()
+
+
+def test_main_office_workspace_create_accepts_relative_and_absolute_roots(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    roots = [Path("relative-root"), tmp_path / "absolute-root"]
+
+    for index, root in enumerate(roots, start=1):
+        exit_code = main(
+            [
+                "office-workspace",
+                "create",
+                "--root",
+                str(root),
+                "--name",
+                "Monthly{}".format(index),
+                "--approver",
+                "Owner",
+                "--pin",
+                "482913",
+                "--period",
+                "2026-07",
+            ]
+        )
+        captured = capsys.readouterr()
+        expected = tmp_path / root / "Monthly{}".format(index) if not root.is_absolute() else root / "Monthly{}".format(index)
+        assert exit_code == 0
+        assert "workspace={}".format(expected) in captured.out
+        assert expected.is_dir()
+
+
+def test_main_office_workspace_serve_lazy_imports_server_only_when_needed(tmp_path, monkeypatch, capsys):
+    root = tmp_path / "workspaces"
+    imported = {"names": []}
+    called = {}
+
+    def fake_import_module(name):
+        imported["names"].append(name)
+        return types.SimpleNamespace(
+            run_office_workspace_server=lambda root, language, port, open_browser: called.update(
+                {
+                    "root": root,
+                    "language": language,
+                    "port": port,
+                    "open_browser": open_browser,
+                }
+            )
+        )
+
+    monkeypatch.setattr("ai_automation_kit.cli.importlib.import_module", fake_import_module)
+
+    exit_code = main(
+        [
+            "office-workspace",
+            "create",
+            "--root",
+            str(root),
+            "--name",
+            "Monthly",
+            "--approver",
+            "Owner",
+            "--pin",
+            "482913",
+            "--period",
+            "2026-07",
+        ]
+    )
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert imported["names"] == []
+    assert "workspace=" in captured.out
+
+    exit_code = main(
+        [
+            "office-workspace",
+            "serve",
+            "--root",
+            str(root),
+            "--language",
+            "en",
+            "--port",
+            "4311",
+            "--no-open",
+        ]
+    )
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert imported["names"] == ["ai_automation_kit.core.office_workspace_server"]
+    assert called == {
+        "root": Path(root),
+        "language": "en",
+        "port": 4311,
         "open_browser": False,
     }
     assert captured.out == ""

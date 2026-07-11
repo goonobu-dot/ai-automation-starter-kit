@@ -110,6 +110,9 @@ def test_public_repo_metadata_files_exist():
         "SECURITY.md",
         "CONTRIBUTING.md",
         "CHANGELOG.md",
+        "AGENTS.md",
+        "START_WITH_CODEX.md",
+        "START_WITH_CODEX.ja.md",
         "docs/PUBLISHING.md",
         "docs/RELEASE_CHECKLIST.md",
         ".github/workflows/ci.yml",
@@ -971,6 +974,81 @@ def test_readme_positions_project_as_ai_agent_skill_kit_not_cli_only():
     assert "AI Agent Grill Me Skill" in readme
     assert "ask the AI to read the skill document" in readme
     assert "local Python CLI for turning public GitHub signals" not in readme
+
+
+def test_codex_monthly_setup_docs_and_agent_contract_are_present_and_beginner_friendly():
+    expected_docs = {
+        "START_WITH_CODEX.md": [
+            "Read this repository's AGENTS.md and help me create a monthly report workspace.",
+            "Ask only one question at a time.",
+            "codex login status",
+            "ai-automation-kit office-workspace create",
+            "Do not ask for an API key",
+            "Do not send anything externally",
+            "validate the setup before opening the local UI",
+            "01_APPROVED_PAST_OUTPUTS",
+            "02_PAST_SUPPORTING_FILES",
+            "03_CURRENT_INPUTS",
+            "macOS or Linux",
+            "manual recovery",
+        ],
+        "START_WITH_CODEX.ja.md": [
+            "このリポジトリの AGENTS.md を読み、月報自動化の作業場所を作ってください。",
+            "質問は1回に1つだけ",
+            "codex login status",
+            "ai-automation-kit office-workspace create",
+            "APIキーを要求しない",
+            "外部送信しない",
+            "ローカルUIを開く前に検証",
+            "01_APPROVED_PAST_OUTPUTS",
+            "02_PAST_SUPPORTING_FILES",
+            "03_CURRENT_INPUTS",
+            "macOS または Linux",
+            "手動復旧",
+        ],
+        "AGENTS.md": [
+            "one question at a time",
+            "codex login status",
+            "ai-automation-kit office-workspace create",
+            "Do not ask for an API key",
+            "Do not send anything externally",
+            "Validate the setup before opening the local UI",
+            "01_APPROVED_PAST_OUTPUTS",
+            "02_PAST_SUPPORTING_FILES",
+            "03_CURRENT_INPUTS",
+            "manual recovery",
+            "Phase 1A",
+        ],
+    }
+    for path, snippets in expected_docs.items():
+        text = Path(path).read_text(encoding="utf-8")
+        assert len(text) > 1200, path
+        for snippet in snippets:
+            assert snippet in text, f"{path} missing {snippet}"
+
+
+def test_cli_release_surface_includes_safe_office_workspace_commands():
+    cli_text = Path("src/ai_automation_kit/cli.py").read_text(encoding="utf-8")
+
+    for snippet in [
+        'add_parser("office-workspace")',
+        'add_parser("create")',
+        'add_parser("status")',
+        'add_parser("inspect")',
+        'add_parser("serve")',
+        'add_argument("--root", required=True)',
+        'add_argument("--workspace", required=True)',
+        'add_argument("--period", required=True)',
+        'add_argument("--no-open", action="store_true")',
+    ]:
+        assert snippet in cli_text, f"cli.py missing office workspace surface: {snippet}"
+
+    for forbidden in [
+        "--dangerously-bypass-approvals-and-sandbox",
+        "--yolo",
+        "--api-key",
+    ]:
+        assert forbidden not in cli_text, f"cli.py must not expose unsafe office workspace flag {forbidden}"
 
 
 def test_ci_runs_tests_from_project_root():

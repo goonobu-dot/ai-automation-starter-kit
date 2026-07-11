@@ -10,6 +10,7 @@ import socket
 import subprocess
 import sys
 import threading
+import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Dict, Iterable, Optional, Tuple
@@ -20,6 +21,7 @@ from ai_automation_kit.core.codex_runner import codex_preflight
 from ai_automation_kit.core.codex_runner import run_status
 from ai_automation_kit.core.codex_runner import start_codex_run
 from ai_automation_kit.core.office_workspace_builder import _absolute_path
+from ai_automation_kit.core.office_workspace_builder import _path_uses_symlink
 from ai_automation_kit.core.office_workspace_builder import _read_text_no_follow
 from ai_automation_kit.core.office_workspace_builder import create_office_workspace
 from ai_automation_kit.core.office_workspace_builder import validate_period_id
@@ -30,6 +32,7 @@ from ai_automation_kit.core.office_workspace_state import create_period
 from ai_automation_kit.core.office_workspace_state import inspect_period
 from ai_automation_kit.core.office_workspace_state import load_workspace
 from ai_automation_kit.core.office_workspace_state import save_answer
+from ai_automation_kit.core.office_workspace_ui import render_office_workspace_ui
 
 
 MAX_REQUEST_BYTES = 64 * 1024
@@ -105,8 +108,16 @@ def create_office_workspace_server(root: Path, language: str = "ja", port: int =
             try:
                 self._reject_untrusted_client()
                 self._reject_untrusted_host()
-                self._require_token()
                 path = self._parsed_url.path
+
+                if path == "/":
+                    if method != "GET":
+                        self._send_error_envelope(405, "method_not_allowed", "unsupported method for this endpoint")
+                        return
+                    self._serve_root()
+                    return
+
+                self._require_token()
 
                 if method == "POST":
                     self._reject_bad_origin()
@@ -157,6 +168,9 @@ def create_office_workspace_server(root: Path, language: str = "ja", port: int =
                     mapped.message,
                     next_action=mapped.next_action,
                 )
+
+        def _serve_root(self) -> None:
+            self._send_html(200, render_office_workspace_ui(self.server.language, self.server.session_token))
 
         def _serve_workspaces(self) -> None:
             workspaces = []
@@ -483,6 +497,16 @@ def create_office_workspace_server(root: Path, language: str = "ja", port: int =
             self.end_headers()
             self.wfile.write(encoded)
 
+        def _send_html(self, status: int, html: str) -> None:
+            encoded = html.encode("utf-8")
+            self.send_response(status)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(encoded)))
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.end_headers()
+            self.wfile.write(encoded)
+
         def _send_error_envelope(
             self,
             status: int,
@@ -523,6 +547,8 @@ def _validate_server_language(language: str) -> str:
 
 def _prepare_server_root(root: Path) -> Path:
     root_path = _absolute_path(root)
+    if _path_uses_symlink(root_path):
+        raise ValueError("server root cannot use symlinked paths")
     if root_path.exists():
         if root_path.is_symlink() or not root_path.is_dir():
             raise ValueError("server root must be a directory")
@@ -534,6 +560,10 @@ def _prepare_server_root(root: Path) -> Path:
 def _allowed_hosts(server: OfficeWorkspaceHTTPServer) -> set:
     port = server.server_address[1]
     return {"127.0.0.1:{}".format(port), "localhost:{}".format(port)}
+
+
+def _server_origin(server: OfficeWorkspaceHTTPServer) -> str:
+    return "http://127.0.0.1:{}".format(server.server_address[1])
 
 
 def _issue_action_nonce(server: OfficeWorkspaceHTTPServer) -> str:
@@ -951,9 +981,25 @@ class _RequestError(Exception):
         self.next_action = next_action
 
 
+def run_office_workspace_server(root: Path, language: str = "ja", port: int = 0, open_browser: bool = True) -> int:
+    server = create_office_workspace_server(root, language=language, port=port)
+    url = _server_origin(server) + "/"
+    print(url)
+    if open_browser:
+        webbrowser.open(url)
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
+    return 0
+
+
 __all__ = [
     "MAX_REQUEST_BYTES",
     "OfficeWorkspaceHTTPServer",
     "TOKEN_HEADER",
     "create_office_workspace_server",
+    "run_office_workspace_server",
 ]

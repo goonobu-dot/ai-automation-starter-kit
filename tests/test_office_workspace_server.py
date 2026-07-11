@@ -22,6 +22,7 @@ from ai_automation_kit.core.office_workspace_server import (
     MAX_REQUEST_BYTES,
     TOKEN_HEADER,
     create_office_workspace_server,
+    run_office_workspace_server,
 )
 
 
@@ -275,6 +276,52 @@ def test_create_office_workspace_server_binds_localhost_and_lists_workspaces(tmp
         assert re.fullmatch(r"[0-9a-f]{64}", _action_nonce(payload))
     finally:
         _stop_server(server, thread)
+
+
+def test_server_serves_operator_ui_at_root_without_token_query(tmp_path, monkeypatch):
+    server, thread = _start_server(tmp_path / "workspaces", monkeypatch)
+    try:
+        status, headers, payload = _request(server, "GET", "/")
+
+        assert status == 200
+        assert headers["Content-Type"] == "text/html; charset=utf-8"
+        html = payload.decode("utf-8")
+        assert "Monthly report workspace" not in html
+        assert "月報作業場所" in html
+        assert "?token=" not in html
+    finally:
+        _stop_server(server, thread)
+
+
+def test_run_office_workspace_server_prints_clean_url_and_respects_no_open(monkeypatch, tmp_path, capsys):
+    root = tmp_path / "workspaces"
+    calls = {"closed": False, "opened": []}
+
+    class FakeServer:
+        session_token = "f" * 64
+        server_address = ("127.0.0.1", 4312)
+
+        def serve_forever(self):
+            raise KeyboardInterrupt
+
+        def server_close(self):
+            calls["closed"] = True
+
+    def fake_create(root_arg, language="ja", port=0):
+        calls["create"] = {"root": Path(root_arg), "language": language, "port": port}
+        return FakeServer()
+
+    monkeypatch.setattr("ai_automation_kit.core.office_workspace_server.create_office_workspace_server", fake_create)
+    monkeypatch.setattr("ai_automation_kit.core.office_workspace_server.webbrowser.open", lambda url: calls["opened"].append(url))
+
+    assert run_office_workspace_server(root, language="en", port=4312, open_browser=False) == 0
+
+    captured = capsys.readouterr()
+    assert captured.out.strip() == "http://127.0.0.1:4312/"
+    assert "?token=" not in captured.out
+    assert calls["create"] == {"root": root, "language": "en", "port": 4312}
+    assert calls["opened"] == []
+    assert calls["closed"] is True
 
 
 def test_workspace_list_includes_bounded_latest_persisted_run_for_current_period(tmp_path, monkeypatch):

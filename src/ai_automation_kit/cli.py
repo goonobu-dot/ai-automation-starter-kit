@@ -66,6 +66,13 @@ from ai_automation_kit.core.report_wizard import confirm_folder_plan
 from ai_automation_kit.core.report_wizard import create_session
 from ai_automation_kit.core.report_wizard import inspect_session
 from ai_automation_kit.core.report_wizard import session_status
+from ai_automation_kit.core.office_workspace_builder import _absolute_path
+from ai_automation_kit.core.office_workspace_builder import _path_uses_symlink
+from ai_automation_kit.core.office_workspace_builder import create_office_workspace
+from ai_automation_kit.core.office_workspace_state import _load_period_state
+from ai_automation_kit.core.office_workspace_state import create_period
+from ai_automation_kit.core.office_workspace_state import inspect_period
+from ai_automation_kit.core.office_workspace_state import load_workspace
 from ai_automation_kit.core.side_hustle_blueprints import generate_side_hustle_blueprints
 from ai_automation_kit.templates.docs_rag import run_docs_rag
 from ai_automation_kit.templates.delivery_pipeline import run_delivery_pipeline
@@ -343,6 +350,31 @@ def build_parser() -> argparse.ArgumentParser:
     report_wizard_serve.add_argument("--port", type=int, default=0)
     report_wizard_serve.add_argument("--no-open", action="store_true")
 
+    office_workspace = subparsers.add_parser("office-workspace")
+    office_workspace_subparsers = office_workspace.add_subparsers(dest="office_workspace_command", required=True)
+
+    office_workspace_create = office_workspace_subparsers.add_parser("create")
+    office_workspace_create.add_argument("--root", required=True)
+    office_workspace_create.add_argument("--name", required=True)
+    office_workspace_create.add_argument("--approver", required=True)
+    office_workspace_create.add_argument("--pin", required=True)
+    office_workspace_create.add_argument("--period", required=True)
+    office_workspace_create.add_argument("--language", default="ja", choices=["ja", "en"])
+
+    office_workspace_status = office_workspace_subparsers.add_parser("status")
+    office_workspace_status.add_argument("--workspace", required=True)
+    office_workspace_status.add_argument("--json", action="store_true")
+
+    office_workspace_inspect = office_workspace_subparsers.add_parser("inspect")
+    office_workspace_inspect.add_argument("--workspace", required=True)
+    office_workspace_inspect.add_argument("--period", required=True)
+
+    office_workspace_serve = office_workspace_subparsers.add_parser("serve")
+    office_workspace_serve.add_argument("--root", required=True)
+    office_workspace_serve.add_argument("--language", default="ja", choices=["ja", "en"])
+    office_workspace_serve.add_argument("--port", type=int, default=0)
+    office_workspace_serve.add_argument("--no-open", action="store_true")
+
     flow_export = subparsers.add_parser("flow-export")
     flow_export.add_argument("--flow-id", required=True)
     flow_export.add_argument("--target", required=True, choices=["n8n", "activepieces", "windmill"])
@@ -457,6 +489,150 @@ def _print_report_wizard_state(state: dict, *, as_json: bool = False) -> None:
         print(f"artifact_{name}={path}")
 
 
+def _office_workspace_next_action(language: str, period_id: str | None, stage: str | None) -> str:
+    period_suffix = period_id or "YYYY-MM"
+    messages = {
+        "ja": {
+            None: "最初の対象月を作成してください。",
+            "created": "03_CURRENT_INPUTS/{} に今月資料を入れてください。".format(period_suffix),
+            "inputs_ready": "資料を確認してください。",
+            "reviewed": "不足している回答を埋めてください。",
+            "questioning": "未回答の質問に1つずつ答えてください。",
+            "ready_for_run": "下書きを作成できます。",
+            "running": "下書き作成の完了を待つか、必要なら停止してください。",
+            "ready_for_review": "下書きを確認して承認してください。",
+            "approved": "次の対象月を準備できます。",
+            "failed": "資料と状態を見直して再実行してください。",
+            "cancelled": "状態を確認して再実行してください。",
+        },
+        "en": {
+            None: "Create the first reporting period.",
+            "created": "Put this month's files into 03_CURRENT_INPUTS/{}.".format(period_suffix),
+            "inputs_ready": "Inspect the materials.",
+            "reviewed": "Fill the missing answers.",
+            "questioning": "Answer the remaining questions one at a time.",
+            "ready_for_run": "Generate the draft when you are ready.",
+            "running": "Wait for draft generation to finish, or cancel it if needed.",
+            "ready_for_review": "Review the draft and approve it.",
+            "approved": "Prepare the next reporting period when ready.",
+            "failed": "Recheck the materials and try again.",
+            "cancelled": "Refresh the state and retry when ready.",
+        },
+    }
+    localized = messages.get(language, messages["en"])
+    return localized.get(stage, localized[None])
+
+
+def _office_workspace_cli_path(path: str | Path, label: str) -> Path:
+    lexical_path = _absolute_path(Path(path))
+    if _path_uses_symlink(lexical_path):
+        raise ValueError("{} cannot use symlinked paths".format(label))
+    return lexical_path
+
+
+def _office_workspace_status_payload(workspace: Path) -> dict[str, object]:
+    workspace_path = _office_workspace_cli_path(workspace, "workspace")
+    state = load_workspace(workspace_path)
+    current_period = state.get("current_period")
+    period_state = _load_period_state(workspace_path, current_period) if current_period else None
+    return {
+        "approver": state["approval"]["approver"],
+        "current_period": current_period,
+        "current_stage": period_state["stage"] if period_state else None,
+        "language": state["language"],
+        "name": state["name"],
+        "next_action": _office_workspace_next_action(
+            state["language"],
+            current_period,
+            period_state["stage"] if period_state else None,
+        ),
+        "pack_id": state["pack_id"],
+        "pending_question_ids": list(period_state["pending_question_ids"]) if period_state else [],
+        "periods": list(state["periods"]),
+        "updated_at": state["updated_at"],
+        "workspace": str(workspace_path),
+    }
+
+
+def _print_office_workspace_status(payload: dict[str, object], *, as_json: bool = False) -> None:
+    if as_json:
+        print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+        return
+    for key in [
+        "workspace",
+        "name",
+        "language",
+        "pack_id",
+        "current_period",
+        "current_stage",
+        "next_action",
+    ]:
+        print(f"{key}={payload[key]}")
+    print("pending_questions={}".format(",".join(payload["pending_question_ids"])))
+
+
+def _run_office_workspace_command(args: argparse.Namespace) -> int:
+    command = args.office_workspace_command
+
+    try:
+        if command == "create":
+            root = _office_workspace_cli_path(args.root, "workspace parent")
+            root.mkdir(parents=True, exist_ok=True)
+            workspace = create_office_workspace(
+                root,
+                name=args.name,
+                approver=args.approver,
+                pin=args.pin,
+                language=args.language,
+            )
+            create_period(workspace, args.period)
+            print(f"workspace={workspace}")
+            print(f"next_action={_office_workspace_next_action(args.language, args.period, 'created')}")
+            return 0
+        if command == "status":
+            _print_office_workspace_status(
+                _office_workspace_status_payload(Path(args.workspace)),
+                as_json=args.json,
+            )
+            return 0
+        if command == "inspect":
+            workspace = _office_workspace_cli_path(args.workspace, "workspace")
+            period_state = inspect_period(workspace, args.period)
+            manifest_path = workspace / ".system" / "periods" / args.period / "source_manifest.json"
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+            print(f"workspace={workspace}")
+            print(f"period={args.period}")
+            print(f"stage={period_state['stage']}")
+            print(f"accepted={manifest['counts']['accepted']}")
+            print(f"rejected={manifest['counts']['rejected']}")
+            print(f"pending_questions={','.join(period_state['pending_question_ids'])}")
+            print(
+                "next_action={}".format(
+                    _office_workspace_next_action("en" if load_workspace(workspace)["language"] == "en" else "ja", args.period, period_state["stage"])
+                )
+            )
+            return 0
+        if command == "serve":
+            root = _office_workspace_cli_path(args.root, "server root")
+            try:
+                module = importlib.import_module("ai_automation_kit.core.office_workspace_server")
+                run_server = getattr(module, "run_office_workspace_server")
+            except (ImportError, AttributeError) as exc:
+                print(str(exc), file=sys.stderr)
+                return 1
+            run_server(root, args.language, args.port, open_browser=not args.no_open)
+            return 0
+    except ValueError as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+    except RuntimeError as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+
+    print("unknown office-workspace command", file=sys.stderr)
+    return 2
+
+
 def _run_report_wizard_command(args: argparse.Namespace) -> int:
     workspace = Path(args.workspace)
     command = args.report_wizard_command
@@ -531,6 +707,8 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     if args.command == "report-wizard":
         return _run_report_wizard_command(args)
+    if args.command == "office-workspace":
+        return _run_office_workspace_command(args)
     if args.command == "research-agent":
         run = run_research_agent(config_path=args.config, output_dir=args.output)
         print(f"run_id={run.run_id}")
