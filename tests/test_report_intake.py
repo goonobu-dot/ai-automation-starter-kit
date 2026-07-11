@@ -185,6 +185,48 @@ def test_accepted_content_is_deduplicated_across_source_roles(tmp_path):
     assert duplicates[0]["source_role"] == "current_material"
 
 
+def test_supporting_paths_are_accepted_in_deterministic_role_order(tmp_path):
+    past = tmp_path / "2025-summary.md"
+    supporting = tmp_path / "2025-supporting.md"
+    current = tmp_path / "2026-current.md"
+    past.write_text("approved summary", encoding="utf-8")
+    supporting.write_text("supporting note", encoding="utf-8")
+    current.write_text("current input", encoding="utf-8")
+
+    payload = inspect_sources([past], [current], supporting_paths=[supporting])
+
+    assert [record["source_role"] for record in accepted_records(payload)] == [
+        "past_output",
+        "past_supporting",
+        "current_material",
+    ]
+    assert [record["name"] for record in accepted_records(payload)] == [
+        "2025-summary.md",
+        "2025-supporting.md",
+        "2026-current.md",
+    ]
+
+
+def test_supporting_duplicates_are_rejected_after_past_outputs_before_current_material(tmp_path):
+    past = tmp_path / "approved.md"
+    supporting = tmp_path / "supporting.md"
+    current = tmp_path / "current.md"
+    past.write_text("same", encoding="utf-8")
+    supporting.write_text("same", encoding="utf-8")
+    current.write_text("current", encoding="utf-8")
+
+    payload = inspect_sources([past], [current], supporting_paths=[supporting])
+
+    assert [(record["source_role"], record["status"]) for record in payload["records"]] == [
+        ("past_output", "accepted"),
+        ("past_supporting", "rejected"),
+        ("current_material", "accepted"),
+    ]
+    duplicate = payload["records"][1]
+    assert duplicate["reason"] == "duplicate_content"
+    assert duplicate["sha256"] == accepted_records(payload)[0]["sha256"]
+
+
 def test_docx_and_xlsx_are_extracted_with_stdlib_zip_xml(tmp_path):
     docx = tmp_path / "2023_summary.docx"
     write_zip(

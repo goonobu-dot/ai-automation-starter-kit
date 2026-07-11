@@ -771,7 +771,7 @@ def _copy_snapshot_record(
     if not isinstance(record, dict) or not required <= set(record):
         raise ValueError("accepted record is missing integrity metadata")
     source_role = record["source_role"]
-    if source_role not in {"past_output", "current_material"}:
+    if source_role not in {"past_output", "past_supporting", "current_material"}:
         raise ValueError("accepted record source_role is invalid")
     if (
         not isinstance(record["extraction_status"], str)
@@ -804,10 +804,14 @@ def _copy_snapshot_record(
 def _validate_snapshot_source_path(source: Path, source_role: str, workspace: Path, period_id: str) -> str:
     if not source.is_absolute() or ".." in source.parts:
         raise ValueError("snapshot source is outside the authorized source root")
-    if source_role == "past_output":
-        authorized_root = workspace / "01_APPROVED_PAST_OUTPUTS"
-    else:
-        authorized_root = workspace / "03_CURRENT_INPUTS" / period_id
+    authorized_roots = {
+        "past_output": workspace / "01_APPROVED_PAST_OUTPUTS",
+        "past_supporting": workspace / "02_PAST_SUPPORTING_FILES",
+        "current_material": workspace / "03_CURRENT_INPUTS" / period_id,
+    }
+    authorized_root = authorized_roots.get(source_role)
+    if authorized_root is None:
+        raise ValueError("accepted record source_role is invalid")
     normalized_source = Path(os.path.abspath(os.fspath(source)))
     normalized_root = Path(os.path.abspath(os.fspath(authorized_root)))
     try:

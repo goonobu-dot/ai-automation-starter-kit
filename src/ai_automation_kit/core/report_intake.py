@@ -701,6 +701,7 @@ def inspect_sources(
     past_paths: List[Path],
     material_paths: List[Path],
     *,
+    supporting_paths: Iterable[Path] = (),
     max_file_bytes: int = MAX_FILE_BYTES,
     max_files: int = MAX_FILES,
 ) -> Dict:
@@ -716,7 +717,11 @@ def inspect_sources(
     inspected = 0
     truncated = False
     stop = False
-    for paths, source_role in ((past_paths, "past_output"), (material_paths, "current_material")):
+    for paths, source_role in (
+        (past_paths, "past_output"),
+        (supporting_paths, "past_supporting"),
+        (material_paths, "current_material"),
+    ):
         if stop:
             break
         for path, skip_reason in _iter_source_paths(paths):

@@ -1354,6 +1354,7 @@ def _run_installed_office_internal_flow(
 ) -> dict:
     code = """
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -1362,20 +1363,60 @@ workspace = Path(sys.argv[2]).resolve()
 fake_codex = Path(sys.argv[3]).resolve()
 expected_hash = sys.argv[4]
 
+# Keep fallback dependency paths available, but make the installed wheel win over
+# any user-site copy of ai_automation_kit that may live on PYTHONPATH.
+for entry in [item for item in os.environ.get("PYTHONPATH", "").split(os.pathsep) if item]:
+    while entry in sys.path:
+        sys.path.remove(entry)
+    sys.path.append(entry)
+
 import ai_automation_kit
 
 package_path = Path(ai_automation_kit.__file__).resolve()
-if str(package_path).startswith(str(repo_root)):
+source_tree_package = (repo_root / "src" / "ai_automation_kit").resolve()
+if source_tree_package in package_path.parents:
     raise RuntimeError("source-tree import leakage")
 
 from ai_automation_kit.core.codex_runner import start_codex_run, wait_for_run
-from ai_automation_kit.core.office_workspace_state import approve_draft, create_period, save_answer
+from ai_automation_kit.core.office_workspace_state import approve_draft, create_period, inspect_period, save_answer
 
+inspect_period(workspace, "2026-07")
 save_answer(workspace, "2026-07", "audience", "Operations board and finance lead")
 run = start_codex_run(workspace, "2026-07", executable=str(fake_codex), timeout_seconds=60)
 completed = wait_for_run(workspace, run["run_id"], timeout_seconds=10)
 if completed["status"] != "ready_for_review":
     raise RuntimeError(f"unexpected installed run status: {completed}")
+if not completed.get("source_manifest_hash") or not completed.get("snapshot_manifest_hash"):
+    raise RuntimeError("installed office workspace run did not record source evidence hashes")
+
+manifest_path = workspace / ".system" / "periods" / "2026-07" / "source_manifest.json"
+manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+supporting_manifest = [
+    item for item in manifest.get("accepted", []) if item.get("source_role") == "past_supporting"
+]
+if len(supporting_manifest) != 1 or supporting_manifest[0].get("name") != "recurring-notes.md":
+    raise RuntimeError("installed office workspace source manifest did not retain supporting evidence metadata")
+
+snapshot_manifest_path = (
+    workspace
+    / ".system"
+    / "runs"
+    / run["run_id"]
+    / "sandbox"
+    / "input_snapshot"
+    / "source_manifest.json"
+)
+snapshot_manifest = json.loads(snapshot_manifest_path.read_text(encoding="utf-8"))
+supporting_snapshot = [
+    item
+    for item in snapshot_manifest.get("records", [])
+    if item.get("provenance", {}).get("source_role") == "past_supporting"
+]
+if (
+    len(supporting_snapshot) != 1
+    or supporting_snapshot[0].get("relative_path") != "input_snapshot/past_supporting/recurring-notes.md"
+):
+    raise RuntimeError("installed office workspace snapshot did not retain supporting evidence metadata")
 
 period = approve_draft(workspace, "2026-07", "monthly_report.md", "Release QA", "482913")
 approved = period["approved_outputs"][-1]
@@ -1395,6 +1436,11 @@ print(
             "approved_sha256": approved["sha256"],
             "approved_path": approved["path"],
             "audit_hash": approved["audit_hash"],
+            "supporting_evidence": {
+                "manifest_name": supporting_manifest[0]["name"],
+                "snapshot_path": supporting_snapshot[0]["relative_path"],
+                "source_role": supporting_snapshot[0]["provenance"]["source_role"],
+            },
         },
         ensure_ascii=False,
     )
@@ -1514,6 +1560,13 @@ def _run_office_workspace_installed_smoke(cli_bin: Path, python_bin: Path, outpu
     _require_file(approved_path)
     if approved_path.read_text(encoding="utf-8") != exact_draft:
         raise RuntimeError("installed office workspace approved draft content did not match the exact known draft")
+    supporting_evidence = internal.get("supporting_evidence", {})
+    if supporting_evidence != {
+        "manifest_name": "recurring-notes.md",
+        "snapshot_path": "input_snapshot/past_supporting/recurring-notes.md",
+        "source_role": "past_supporting",
+    }:
+        raise RuntimeError(f"installed office workspace supporting evidence metadata was incomplete: {supporting_evidence}")
 
     status_after = json.loads(
         _run_capture(

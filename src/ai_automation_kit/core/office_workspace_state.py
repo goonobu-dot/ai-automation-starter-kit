@@ -370,8 +370,9 @@ def inspect_period(workspace: Path, period_id: str) -> Dict:
 
     root = validate_workspace_root(workspace)
     past_root = root / "01_APPROVED_PAST_OUTPUTS"
+    supporting_root = root / "02_PAST_SUPPORTING_FILES"
     current_root = root / "03_CURRENT_INPUTS" / period_id
-    result = inspect_sources([past_root], [current_root])
+    result = inspect_sources([past_root], [current_root], supporting_paths=[supporting_root])
     manifest = {
         "period_id": period_id,
         "generated_at": _utc_now(),

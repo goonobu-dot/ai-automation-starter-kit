@@ -161,6 +161,35 @@ def test_inspect_period_writes_source_manifest_and_moves_to_questioning(tmp_path
     assert period["pending_question_ids"] == ["audience"]
 
 
+def test_inspect_period_persists_supporting_manifest_metadata_without_text_leaks(tmp_path):
+    root = create_office_workspace(tmp_path, name="Monthly", approver="Owner", pin="482913")
+    create_period(root, "2026-07")
+    supporting_text = "- Vendor escalation is reviewed every Tuesday.\n"
+    write_text(root / "01_APPROVED_PAST_OUTPUTS" / "approved.md", "# Past\n売上: 100\n")
+    write_text(root / "02_PAST_SUPPORTING_FILES" / "recurring-notes.md", supporting_text)
+    write_text(root / "03_CURRENT_INPUTS/2026-07" / "current.md", "# Current\n売上: 120\n")
+
+    period = inspect_period(root, "2026-07")
+
+    manifest_path = root / ".system/periods/2026-07/source_manifest.json"
+    manifest_text = manifest_path.read_text(encoding="utf-8")
+    manifest = json.loads(manifest_text)
+    supporting = next(
+        item for item in manifest["accepted"] if item["source_role"] == "past_supporting"
+    )
+
+    assert period["stage"] == "questioning"
+    assert manifest["counts"]["accepted"] == 3
+    assert [item["source_role"] for item in manifest["accepted"]] == [
+        "past_output",
+        "past_supporting",
+        "current_material",
+    ]
+    assert supporting["name"] == "recurring-notes.md"
+    assert "text" not in supporting
+    assert supporting_text not in manifest_text
+
+
 def test_state_machine_and_question_validation_are_enforced(tmp_path):
     root = create_office_workspace(tmp_path, name="Monthly", approver="Owner", pin="482913")
     create_period(root, "2026-07")
