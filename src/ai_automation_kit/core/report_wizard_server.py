@@ -380,7 +380,7 @@ def create_report_wizard_server(workspace: Path, language: str = "ja", port: int
         def _reject_bad_origin(self) -> None:
             origin = self.headers.get("Origin")
             if not origin:
-                return
+                raise _RequestError(403, "Origin is required for state-changing requests", "origin_not_allowed")
             parsed = urlsplit(origin)
             allowed = _allowed_hosts(self.server)
             if parsed.scheme != "http" or parsed.netloc not in allowed:

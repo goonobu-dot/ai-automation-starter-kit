@@ -46,10 +46,12 @@ def _request(server, method, path, *, body=None, headers=None):
         connection.close()
 
 
-def _json_request(server, method, path, *, token=True, body=None, headers=None):
+def _json_request(server, method, path, *, token=True, body=None, headers=None, origin=True):
     merged_headers = {"Accept": "application/json"}
     if token:
         merged_headers["X-Report-Wizard-Token"] = server.session_token
+    if method == "POST" and origin:
+        merged_headers["Origin"] = "http://127.0.0.1:{}".format(server.server_address[1])
     if headers:
         merged_headers.update(headers)
     status, response_headers, payload = _request(server, method, path, body=body, headers=merged_headers)
@@ -240,6 +242,49 @@ def test_server_rejects_missing_bad_token_host_origin_unknown_method_and_endpoin
         status, _, payload = _json_request(server, "GET", "/api/missing")
         assert status == 404
         assert payload["ok"] is False
+    finally:
+        _stop_server(server, thread)
+
+
+@pytest.mark.parametrize("origin", [None, "http://evil.test"])
+def test_state_changing_post_requires_allowed_origin_before_body_or_business_mutation(
+    tmp_path, monkeypatch, origin
+):
+    workspace = tmp_path / "workspace"
+    server, thread = _start_server(workspace)
+    calls = {"goal": 0}
+
+    def fail_if_called(*args, **kwargs):
+        calls["goal"] += 1
+        raise AssertionError("business mutation must not run for a rejected Origin")
+
+    monkeypatch.setattr(report_wizard_server, "set_session_goal", fail_if_called)
+    try:
+        state_path = workspace / "report_wizard_state.json"
+        state_before = state_path.read_bytes()
+        body = json.dumps({"report_type": "weekly", "language": "en"}).encode("utf-8")
+        headers = {
+            "Content-Type": "application/json",
+            "Content-Length": str(len(body)),
+        }
+        if origin is not None:
+            headers["Origin"] = origin
+
+        status, _, payload = _json_request(
+            server,
+            "POST",
+            "/api/goal",
+            body=body,
+            headers=headers,
+            origin=False,
+        )
+
+        assert status == 403
+        assert payload["error"]["code"] == "origin_not_allowed"
+        assert calls == {"goal": 0}
+        assert state_path.read_bytes() == state_before
+        assert load_session(workspace)["report_type"] == "monthly"
+        assert not (workspace / "00_uploads").exists()
     finally:
         _stop_server(server, thread)
 
