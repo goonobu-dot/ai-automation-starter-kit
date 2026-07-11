@@ -277,6 +277,49 @@ def test_create_office_workspace_server_binds_localhost_and_lists_workspaces(tmp
         _stop_server(server, thread)
 
 
+def test_workspace_list_includes_bounded_latest_persisted_run_for_current_period(tmp_path, monkeypatch):
+    server, thread = _start_server(tmp_path / "workspaces", monkeypatch)
+    try:
+        _, _, listed = _get_workspaces(server)
+        created = _create_workspace(server, nonce=_action_nonce(listed))
+        workspace = created["data"]["workspace"]
+        workspace_id = workspace["id"]
+        workspace_root = Path(workspace["root"])
+        _, _, period = _rollover(server, workspace_id, _action_nonce(created), "2026-07")
+
+        run_root = workspace_root / ".system" / "runs" / RUN_ID
+        write_text(
+            run_root / "run.json",
+            json.dumps(
+                {
+                    "run_id": RUN_ID,
+                    "period_id": "2026-07",
+                    "status": "ready_for_review",
+                    "started_at": "2026-07-11T01:02:03Z",
+                    "finished_at": "2026-07-11T01:02:04Z",
+                    "prompt": "must not leave the server",
+                    "sandbox": "/private/internal/path",
+                }
+            ),
+        )
+
+        status, _, payload = _get_workspaces(server)
+
+        assert status == 200
+        summary = next(item for item in payload["data"]["workspaces"] if item["id"] == workspace_id)
+        assert summary["run"] == {
+            "run_id": RUN_ID,
+            "status": "ready_for_review",
+            "started_at": "2026-07-11T01:02:03Z",
+            "finished_at": "2026-07-11T01:02:04Z",
+        }
+        assert "prompt" not in summary["run"]
+        assert "sandbox" not in summary["run"]
+        assert _action_nonce(period)
+    finally:
+        _stop_server(server, thread)
+
+
 @pytest.mark.parametrize("language", ["fr", ""])
 def test_create_office_workspace_server_rejects_invalid_language_before_mutation(tmp_path, language):
     root = tmp_path / "workspaces"

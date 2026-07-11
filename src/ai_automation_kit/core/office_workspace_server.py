@@ -624,17 +624,19 @@ def _resolve_workspace_id(server: OfficeWorkspaceHTTPServer, workspace_id: str) 
 def _workspace_summary(server: OfficeWorkspaceHTTPServer, workspace_root: Path, public_id: str) -> Dict:
     state = load_workspace(workspace_root)
     period_state = _load_current_period_state(workspace_root)
+    current_period = state["current_period"]
     return {
         "id": public_id,
         "name": state["name"],
         "root": str(workspace_root),
         "language": state["language"],
         "pack_id": state["pack_id"],
-        "current_period": state["current_period"],
+        "current_period": current_period,
         "periods": list(state["periods"]),
         "updated_at": state["updated_at"],
         "period_stage": period_state["stage"] if period_state else None,
         "approver": state["approval"]["approver"],
+        "run": _bounded_run_summary(_latest_run_for_period(workspace_root, current_period)),
     }
 
 
@@ -775,6 +777,23 @@ def _latest_run_for_period(workspace_root: Path, period_id: Optional[str]) -> Op
         return run_status(workspace_root, latest_run_id)
     except Exception:
         return None
+
+
+def _bounded_run_summary(run: Optional[Dict]) -> Optional[Dict]:
+    if not isinstance(run, dict):
+        return None
+    allowed_statuses = {"running", "cancelling", "questioning", "ready_for_review", "failed", "cancelled"}
+    run_id = run.get("run_id")
+    status = run.get("status")
+    if not isinstance(run_id, str) or not RUN_ID_RE.fullmatch(run_id) or status not in allowed_statuses:
+        return None
+
+    summary = {"run_id": run_id, "status": status, "started_at": None, "finished_at": None}
+    for key in ("started_at", "finished_at"):
+        value = run.get(key)
+        if isinstance(value, str):
+            summary[key] = value[:64]
+    return summary
 
 
 def _workspace_next_action(detail: Dict) -> str:
