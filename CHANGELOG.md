@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Office workspace public release integration (2026-07)
+
+- Published `docs/office-workspace.ja.html` and `docs/office-workspace.html`: separate Japanese and English monthly office workspace manuals with install/login, ask Codex setup, folder map, three file types, inspect, answer, generate, cancel/retry, approve, rollover, local/AI/human boundaries, troubleshooting, and matching `START_WITH_CODEX` links.
+- Surfaced the Phase 1A monthly office workspace route in `README.md` and `docs/INDEX.md`, with honest scope notes that it is monthly-report only, local-only, and macOS or Linux only for workspace mutation.
+- Extended public release audit and release smoke to require the office-workspace manuals, `START_WITH_CODEX.md`, `START_WITH_CODEX.ja.md`, `AGENTS.md`, bundled monthly-report pack resources, and an installed-wheel office-workspace flow that verifies the approved hash and localhost server lifecycle.
+
 ### Report wizard public release integration (2026-07)
 
 - Added public navigation for the resumable `report-wizard` workflow across `README.md`, `docs/INDEX.md`, `docs/USER_MANUAL.md`, `docs/USER_MANUAL.ja.md`, `docs/manual.html`, and `docs/manual.ja.html`, with language-separated links to `docs/report-automation-wizard.html` and `docs/report-automation-wizard.ja.html`.

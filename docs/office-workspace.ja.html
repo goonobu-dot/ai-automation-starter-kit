@@ -1,0 +1,1137 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>月報オペレーター作業場所マニュアル</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f3f5f7;
+      --panel: #ffffff;
+      --panel-muted: #eef2f6;
+      --ink: #16202b;
+      --muted: #546170;
+      --line: #cad3dc;
+      --accent: #1f6feb;
+      --accent-soft: #dce9fb;
+      --good: #12663a;
+      --good-soft: #ddf3e5;
+      --warn: #8a5200;
+      --warn-soft: #fff0d8;
+      --danger: #9d1c1c;
+      --danger-soft: #f9dddd;
+      --shadow: 0 12px 24px rgba(22, 32, 43, 0.08);
+      --radius: 6px;
+      --content: 1120px;
+      --mono: "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.75;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration-thickness: 0.08em;
+      text-underline-offset: 0.16em;
+    }
+
+    a:hover {
+      text-decoration-thickness: 0.12em;
+    }
+
+    a:focus-visible,
+    button:focus-visible,
+    summary:focus-visible,
+    code:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    main:focus-visible,
+    main#main:focus-visible,
+    main:target,
+    main#main:target {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      transform: translateY(-160%);
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      background: var(--ink);
+      color: #ffffff;
+      z-index: 20;
+    }
+
+    .skip-link:focus-visible {
+      transform: translateY(0);
+    }
+
+    .site-header,
+    .site-nav,
+    .site-footer {
+      padding: 0 20px;
+    }
+
+    .header-inner,
+    .nav-inner,
+    .main-inner,
+    .footer-inner {
+      max-width: var(--content);
+      margin: 0 auto;
+    }
+
+    .site-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .header-inner {
+      padding: 28px 0 22px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .eyebrow {
+      margin: 0;
+      font-size: 13px;
+      letter-spacing: 0;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 36px;
+    }
+
+    h2 {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+
+    h3 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .lede {
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .status-strip {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .status-card,
+    .callout,
+    .folder-card,
+    .step-card,
+    .boundary-card,
+    .screen-example,
+    .command-card,
+    .trouble-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      box-shadow: var(--shadow);
+    }
+
+    .status-card,
+    .callout,
+    .folder-card,
+    .boundary-card,
+    .command-card,
+    .trouble-card {
+      padding: 18px;
+    }
+
+    .status-card strong,
+    .callout strong,
+    .folder-card strong,
+    .boundary-card strong,
+    .command-card strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .status-card p,
+    .callout p,
+    .folder-card p,
+    .boundary-card p,
+    .command-card p,
+    .trouble-card p {
+      margin: 0;
+    }
+
+    .site-nav {
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav-inner {
+      padding: 12px 0;
+    }
+
+    .nav-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .nav-list a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      text-decoration: none;
+      color: var(--ink);
+    }
+
+    .nav-list a:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    main {
+      display: block;
+    }
+
+    .main-inner {
+      padding: 28px 0 52px;
+      display: grid;
+      gap: 22px;
+    }
+
+    section {
+      background: transparent;
+      padding: 10px 20px;
+    }
+
+    .section-shell {
+      display: grid;
+      gap: 16px;
+    }
+
+    .panel-band {
+      padding: 22px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 16px;
+    }
+
+    .callout {
+      display: grid;
+      gap: 8px;
+    }
+
+    .callout.note {
+      background: var(--accent-soft);
+      border-color: #bdd2f7;
+    }
+
+    .callout.safe {
+      background: var(--good-soft);
+      border-color: #bcdcc8;
+    }
+
+    .callout.warn {
+      background: var(--warn-soft);
+      border-color: #efd6a4;
+    }
+
+    .callout.danger {
+      background: var(--danger-soft);
+      border-color: #efb9b9;
+    }
+
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .step-card {
+      padding: 16px;
+      min-height: 180px;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius);
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .step-card p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .flow-text-alt {
+      margin: 0;
+      padding: 16px;
+      border: 1px dashed var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-muted);
+      color: var(--muted);
+    }
+
+    .two-col,
+    .three-col {
+      display: grid;
+      gap: 12px;
+    }
+
+    .section-shell,
+    .panel-band,
+    .two-col > *,
+    .three-col > *,
+    .command-grid > * {
+      min-width: 0;
+    }
+
+    .two-col {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    .three-col {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .folder-card code,
+    .command-card code,
+    .screen-example code,
+    pre code {
+      font-family: var(--mono);
+      font-size: 14px;
+    }
+
+    code {
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    pre {
+      max-width: 100%;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .folder-list,
+    .boundary-list,
+    .check-list {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .screen-example {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .screen-example figcaption {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-muted);
+      font-weight: 600;
+    }
+
+    .screen-example pre {
+      margin: 0;
+      padding: 16px;
+      overflow-x: auto;
+      background: #0f1720;
+      color: #e8eef6;
+    }
+
+    .command-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .command-card pre {
+      margin: 10px 0 0;
+      padding: 14px;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-muted);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    th,
+    td {
+      text-align: left;
+      vertical-align: top;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    th {
+      background: var(--panel-muted);
+      font-size: 14px;
+    }
+
+    .boundary-card.ai {
+      background: #eef5ff;
+    }
+
+    .boundary-card.human {
+      background: #fff4df;
+    }
+
+    .boundary-card.local {
+      background: #edf9f1;
+    }
+
+    details {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      padding: 0 14px 14px;
+      box-shadow: var(--shadow);
+    }
+
+    details + details {
+      margin-top: 12px;
+    }
+
+    summary {
+      cursor: pointer;
+      padding: 14px 0;
+      font-weight: 600;
+    }
+
+    .footer-inner {
+      padding: 24px 0 44px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 760px) {
+      h1 {
+        font-size: 31px;
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+
+      section {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .troubleshooting-table,
+      .troubleshooting-table tbody,
+      .troubleshooting-table tr,
+      .troubleshooting-table td {
+        display: block;
+        width: 100%;
+      }
+
+      .troubleshooting-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .troubleshooting-table tr {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .troubleshooting-table tr:last-child {
+        border-bottom: 0;
+      }
+
+      .troubleshooting-table td {
+        padding: 0;
+        border: 0;
+      }
+
+      .troubleshooting-table td + td {
+        margin-top: 10px;
+      }
+
+      .troubleshooting-table td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 3px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+      }
+
+      .site-nav,
+      .skip-link {
+        display: none;
+      }
+
+      .panel-band,
+      .step-card,
+      .folder-card,
+      .boundary-card,
+      .command-card,
+      .screen-example,
+      .trouble-card,
+      table,
+      details {
+        box-shadow: none;
+      }
+
+      section {
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">本文へ移動</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <p class="eyebrow">Phase 1A local workflow</p>
+      <h1>月報オペレーター作業場所マニュアル</h1>
+      <p class="lede">このマニュアルは、初心者が月報用のローカル作業場所を安全に回すための手順書です。インストール、Codex ログイン確認、Codex への作成依頼、3種類のファイル配置、確認、回答、下書き作成、停止とやり直し、承認、翌月準備までを順番に示します。</p>
+      <div class="status-strip">
+        <div class="status-card">
+          <strong>正直な公開範囲</strong>
+          <p>この版は月報用の単一パックだけです。既存の flow project を置き換えるものではなく、ローカルの月次運用入口を追加した段階です。</p>
+        </div>
+        <div class="status-card">
+          <strong>対応OSの事実</strong>
+          <p>作成と承認更新は macOS または Linux のみです。Windows では読むことはできますが、安全な更新経路はこの版では提供しません。</p>
+        </div>
+        <div class="status-card">
+          <strong>安全の事実</strong>
+          <p>APIキーは不要です。外部送信はしません。承認はこの端末上のローカル記録です。</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="site-nav" aria-label="マニュアル目次">
+    <div class="nav-inner">
+      <ul class="nav-list">
+        <li><a href="#install-login">インストールとログイン</a></li>
+        <li><a href="#ask-codex">Codex へ依頼</a></li>
+        <li><a href="#folders">フォルダ全体像</a></li>
+        <li><a href="#three-file-types">3種類のファイル</a></li>
+        <li><a href="#inspect">確認</a></li>
+        <li><a href="#answer">回答</a></li>
+        <li><a href="#generate">下書き作成</a></li>
+        <li><a href="#cancel-retry">停止とやり直し</a></li>
+        <li><a href="#approve">承認</a></li>
+        <li><a href="#rollover">次月準備</a></li>
+        <li><a href="#boundaries">境界</a></li>
+        <li><a href="#troubleshooting">トラブル対応</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main id="main" tabindex="-1">
+    <div class="main-inner">
+      <section aria-labelledby="start-links">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="start-links">最初に開く資料</h2>
+            <div class="callout note">
+              <strong>対応するセットアップ文書</strong>
+              <p>Codex への最初の依頼文は <a href="../START_WITH_CODEX.ja.md">START_WITH_CODEX.ja.md</a> にあります。そこで参照するリポジトリ契約は <a href="../AGENTS.md">AGENTS.md</a>、全体索引は <a href="INDEX.md">INDEX.md</a>、英語版は <a href="office-workspace.html">office-workspace.html</a> です。</p>
+            </div>
+            <p>このマニュアルは、作業場所をこれから初回運用する人向けです。すでに作業場所ができている場合は、フォルダ全体像と確認手順から読めば十分です。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="install-login" aria-labelledby="install-login-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="install-login-heading">インストールと Codex ログイン確認</h2>
+            <p>最初にローカル Python 環境へキットを入れ、その後で Codex のローカルログイン状態を確認します。この流れはチャットへ資格情報を貼る方式ではありません。</p>
+            <div class="command-grid">
+              <div class="command-card">
+                <strong>リポジトリ上でキットを入れる</strong>
+                <p>CLI と月報パックを、確認するローカルファイルと同じ端末に置きます。</p>
+                <pre><code>python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip setuptools
+python3 -m pip install -e .</code></pre>
+              </div>
+              <div class="command-card">
+                <strong>作成前に Codex ログインを確認する</strong>
+                <p>Codex 主導のセットアップ前に、ローカルのログイン状態が整っている必要があります。</p>
+                <pre><code>codex login status</code></pre>
+              </div>
+            </div>
+            <figure class="screen-example">
+              <figcaption>screen-example: 作業場所作成前の端末例</figcaption>
+              <pre><code>$ codex login status
+Logged in locally.
+
+$ ai-automation-kit --version
+0.1.0</code></pre>
+            </figure>
+            <div class="callout warn">
+              <strong>ログイン未完了ならここで止める</strong>
+              <p><code>codex login status</code> が失敗したら、人間がローカルのログインを完了させてから再開します。APIキー要求へ切り替えないでください。外部送信で回避できるようにも説明しないでください。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="ask-codex" aria-labelledby="ask-codex-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="ask-codex-heading">Codex へ作業場所作成を依頼</h2>
+            <p><a href="../START_WITH_CODEX.ja.md">START_WITH_CODEX.ja.md</a> の冒頭3行を、そのまま Codex に渡します。Codex は保存先、作業名、承認者、対象月の4点を1つずつ確認してから CLI を実行します。</p>
+            <figure class="screen-example">
+              <figcaption>screen-example: Codex への最初の依頼文</figcaption>
+              <pre><code>このリポジトリの AGENTS.md を読み、月報自動化の作業場所を作ってください。
+質問は1回に1つだけ行い、保存場所、作業名、承認者、最初の対象月を確認してください。
+作成後、過去の完成月報、過去の参考資料、今月資料を入れる場所を開いて説明してください。</code></pre>
+            </figure>
+            <div class="two-col">
+              <div class="callout safe">
+                <strong>正式な作成経路</strong>
+                <p>Codex は <code>ai-automation-kit office-workspace create</code> を実行し、その直後に <code>ai-automation-kit office-workspace status --workspace</code> で状態確認します。</p>
+              </div>
+              <div class="callout danger">
+                <strong>勝手な追加はしない</strong>
+                <p>独自の実行ファイル指定、shell 回避、approval bypass、remote send、危険な shortcut flag は足さないでください。入口を狭くしているのは安全のためです。</p>
+              </div>
+            </div>
+            <pre><code>ai-automation-kit office-workspace create \
+  --root "./workspaces" \
+  --name "Construction Monthly" \
+  --approver "Operations Manager" \
+  --pin "482913" \
+  --period "2026-07" \
+  --language ja
+
+ai-automation-kit office-workspace status \
+  --workspace "./workspaces/Construction_Monthly" \
+  --json</code></pre>
+            <p>検索しやすい1行版: <code>ai-automation-kit office-workspace create --root ./workspaces --name "Construction Monthly" --approver "Operations Manager" --pin 482913 --period 2026-07 --language ja</code> と <code>ai-automation-kit office-workspace status --workspace ./workspaces/Construction_Monthly --json</code>。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="folders" aria-labelledby="folders-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="folders-heading">作業前にフォルダ全体像を見ておく</h2>
+            <p>月報オペレーター作業場所は、誰が見ても分かるローカルフォルダ構成を前提にしています。各手順が具体的な置き場に結びつくので、初心者でも何をどこへ入れるかを先に把握できます。</p>
+            <div class="flow-grid" aria-label="9段階の作業フロー">
+              <article class="step-card" data-flow-step="1">
+                <span class="step-number">1</span>
+                <h3>準備とログイン</h3>
+                <p>キットをローカルへ入れ、<code>codex login status</code> を確認します。</p>
+              </article>
+              <article class="step-card" data-flow-step="2">
+                <span class="step-number">2</span>
+                <h3>Codex へ依頼</h3>
+                <p>Codex が1問ずつ確認し、正式な CLI で作業場所を作成します。</p>
+              </article>
+              <article class="step-card" data-flow-step="3">
+                <span class="step-number">3</span>
+                <h3>ファイル配置</h3>
+                <p>3種類のファイルを正しいフォルダへ置き、今月資料は対象月フォルダだけにまとめます。</p>
+              </article>
+              <article class="step-card" data-flow-step="4">
+                <span class="step-number">4</span>
+                <h3>対象月を確認</h3>
+                <p>受理されたファイルと次の操作を確認してから、下書き要求へ進みます。</p>
+              </article>
+              <article class="step-card" data-flow-step="5">
+                <span class="step-number">5</span>
+                <h3>質問へ回答</h3>
+                <p>不足している必須回答だけを、1つずつ埋めます。</p>
+              </article>
+              <article class="step-card" data-flow-step="6">
+                <span class="step-number">6</span>
+                <h3>下書きを作る</h3>
+                <p>Codex は隔離された実行場所で下書きを作り、<code>05_DRAFTS</code> へ昇格させます。</p>
+              </article>
+              <article class="step-card" data-flow-step="7">
+                <span class="step-number">7</span>
+                <h3>停止してやり直す</h3>
+                <p>誤った資料や回答があれば停止し、状態を直してから同じ月で再実行します。</p>
+              </article>
+              <article class="step-card" data-flow-step="8">
+                <span class="step-number">8</span>
+                <h3>ローカル承認</h3>
+                <p>下書きを確認し、承認して監査記録と approved hash を残します。</p>
+              </article>
+              <article class="step-card" data-flow-step="9">
+                <span class="step-number">9</span>
+                <h3>次の月を準備</h3>
+                <p>承認済みの文体を参照候補にしつつ、次月フォルダを追加で作ります。</p>
+              </article>
+            </div>
+            <p class="flow-text-alt">テキスト版: インストールとログイン確認を行い、Codex に月報作業場所作成を依頼し、過去完成月報と過去参考資料と今月資料を所定の場所へ置き、対象月を確認し、不足質問へ1つずつ答え、下書きを作り、必要なら停止してやり直し、ローカル承認を行い、最後に次月を準備します。</p>
+            <div class="three-col">
+              <div class="folder-card">
+                <strong>00_START_HERE</strong>
+                <p>最初に開く概要です。分かりやすい説明と workspace status が置かれます。</p>
+              </div>
+              <div class="folder-card">
+                <strong>05_DRAFTS</strong>
+                <p>下書きはここに出ます。承認前の確認場所です。</p>
+              </div>
+              <div class="folder-card">
+                <strong>06_APPROVED_OUTPUTS と 07_AUDIT</strong>
+                <p>承認済みコピーと監査履歴がローカルに残ります。外部送信はしません。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="three-file-types" aria-labelledby="three-file-types-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="three-file-types-heading">3種類のファイル置き場</h2>
+            <p>初回の確認前に、3種類のファイルの意味を理解しておくことが重要です。フォルダの役割が曖昧だと、下書きの根拠も曖昧になります。</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>フォルダ</th>
+                  <th>入れるもの</th>
+                  <th>具体例</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>01_APPROVED_PAST_OUTPUTS</code></td>
+                  <td>すでに承認済みの過去月報です。文体、構成、見出しの手本になります。</td>
+                  <td><code>2026-05-monthly-report.md</code>、<code>2026-06-monthly-report.docx</code></td>
+                </tr>
+                <tr>
+                  <td><code>02_PAST_SUPPORTING_FILES</code></td>
+                  <td>過去の補助資料です。定例の指標名、前提条件、背景メモを補います。</td>
+                  <td><code>vendor-summary.xlsx</code>、<code>policy-export.pdf</code>、<code>recurring-notes.md</code></td>
+                </tr>
+                <tr>
+                  <td><code>03_CURRENT_INPUTS/&lt;YYYY-MM&gt;</code></td>
+                  <td>今月の資料だけを入れます。対象月フォルダに閉じ込めるのが大切です。</td>
+                  <td><code>2026-07/labor_hours.csv</code>、<code>2026-07/delivery_costs.xlsx</code>、<code>2026-07/site-meeting-notes.md</code></td>
+                </tr>
+              </tbody>
+            </table>
+            <figure class="screen-example">
+              <figcaption>screen-example: 確認前のフォルダ例</figcaption>
+              <pre><code>Construction_Monthly/
+  00_START_HERE/
+  01_APPROVED_PAST_OUTPUTS/
+    2026-05-monthly-report.md
+    2026-06-monthly-report.docx
+  02_PAST_SUPPORTING_FILES/
+    vendor-summary.xlsx
+    recurring-notes.md
+  03_CURRENT_INPUTS/
+    2026-07/
+      labor_hours.csv
+      delivery_costs.xlsx
+      site-meeting-notes.md</code></pre>
+            </figure>
+            <div class="callout note">
+              <strong>3種類を混ぜない</strong>
+              <p>今月の生資料を <code>01_APPROVED_PAST_OUTPUTS</code> に入れないでください。未承認の下書きを過去完成物の見本にも使わないでください。この分離自体が安全設計です。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="inspect" aria-labelledby="inspect-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="inspect-heading">対象月を確認する</h2>
+            <p>ファイルを置いたら、まずローカルの確認を実行します。どのファイルが受理されたか、次が質問か下書き作成かをここで判断します。</p>
+            <pre><code>ai-automation-kit office-workspace inspect \
+  --workspace "./workspaces/Construction_Monthly" \
+  --period "2026-07"</code></pre>
+            <p>1行版の確認コマンド: <code>ai-automation-kit office-workspace inspect --workspace ./workspaces/Construction_Monthly --period 2026-07</code>。</p>
+            <figure class="screen-example">
+              <figcaption>screen-example: 確認結果</figcaption>
+              <pre><code>workspace=/Users/example/workspaces/Construction_Monthly
+period=2026-07
+stage=questioning
+accepted=5
+rejected=0
+pending_questions=audience
+next_action=未回答の質問に1つずつ答えてください。</code></pre>
+            </figure>
+            <ul class="check-list">
+              <li>資料を差し替えたら、重要な変更後に再確認します。</li>
+              <li>確認は外部送信せず、ローカルの source manifest と状態だけを更新します。</li>
+              <li><code>questioning</code> なら次は回答です。無理に下書き作成へ進みません。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="answer" aria-labelledby="answer-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="answer-heading">質問へ1つずつ答える</h2>
+            <p>この作業場所は、不足している必須質問だけを出します。回答は短く、事実ベースで、今月の文脈に閉じたものにしてください。回答操作は localhost UI から行います。</p>
+            <div class="two-col">
+              <div class="callout safe">
+                <strong>よい回答</strong>
+                <p><code>閲覧者は運営会議と経理責任者です。</code> のように、文体や説明の深さが決まる回答です。</p>
+              </div>
+              <div class="callout warn">
+                <strong>避けたい回答</strong>
+                <p><code>いい感じで</code> のような曖昧な表現は、下書きの推測を増やし、修正回数を増やします。</p>
+              </div>
+            </div>
+            <figure class="screen-example">
+              <figcaption>screen-example: localhost 回答パネル</figcaption>
+              <pre><code>質問: この月報の主な読み手は誰ですか
+
+回答欄:
+運営会議、経理責任者、支店長
+
+操作:
+[ 回答を保存 ]</code></pre>
+            </figure>
+            <p>回答が保存されると、現在の対象月は <code>ready_for_run</code> になります。その状態で下書き作成へ進みます。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="generate" aria-labelledby="generate-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="generate-heading">下書きを作る</h2>
+            <p>下書き作成もローカルです。Codex は隔離された実行場所で安全なスナップショットだけを読み、検証後に <code>05_DRAFTS</code> へ昇格できるファイルだけを返します。</p>
+            <div class="callout note">
+              <strong>作成後に見えるもの</strong>
+              <p>対象月はレビュー待ちとなり、<code>05_DRAFTS/&lt;YYYY-MM&gt;</code> に下書きが現れ、UI では根拠や未解決項目を確認できます。</p>
+            </div>
+            <figure class="screen-example">
+              <figcaption>screen-example: 下書き確認パネル</figcaption>
+              <pre><code>状態: ready_for_review
+下書き: 05_DRAFTS/2026-07/monthly_report.md
+根拠: 受理済みローカルファイルのみ
+実行結果: 人間レビュー待ち
+
+操作:
+[ 下書きフォルダを開く ]  [ 停止 ]  [ 承認 ]</code></pre>
+            </figure>
+            <p>フォルダを開いて、承認前のドラフトとして読みます。ここではまだ完成版扱いにしません。</p>
+            <p>1行版のUI起動コマンド: <code>ai-automation-kit office-workspace serve --root ./workspaces --language ja --no-open</code>。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="cancel-retry" aria-labelledby="cancel-retry-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="cancel-retry-heading">停止してやり直す</h2>
+            <p>誤った資料が入っていた、回答を直したい、実行を止めたいといった場合は、いったん停止してローカル状態を直してから同じ月で再実行します。承認済み成果物や受理済み入力は守られます。</p>
+            <div class="two-col">
+              <div class="trouble-card">
+                <h3>停止が向く場面</h3>
+                <ul class="check-list">
+                  <li>今月フォルダに別月のファイルが入っていた。</li>
+                  <li>回答内容が関係者レビューで変わった。</li>
+                  <li>実行が止まり、資料修正が必要な不足質問が出た。</li>
+                </ul>
+              </div>
+              <div class="trouble-card">
+                <h3>次の動き</h3>
+                <ul class="check-list">
+                  <li>フォルダ内容または回答を直す。</li>
+                  <li>資料を変えたなら再確認する。</li>
+                  <li>同じ対象月で下書き作成をやり直す。</li>
+                </ul>
+              </div>
+            </div>
+            <figure class="screen-example">
+              <figcaption>screen-example: 停止と再実行の判断</figcaption>
+              <pre><code>現在状態: running
+問題: 1つの表計算が前月版だった
+
+操作:
+1. 実行を停止
+2. 03_CURRENT_INPUTS/2026-07 のファイルを差し替え
+3. 再確認
+4. 下書きを再作成</code></pre>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section id="approve" aria-labelledby="approve-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="approve-heading">ローカル承認して保存する</h2>
+            <p>承認すると、レビュー済みのローカル下書きが <code>06_APPROVED_OUTPUTS</code> へコピーされ、<code>07_AUDIT</code> に監査記録が追加されます。承認者名と設定済み PIN が承認条件です。</p>
+            <div class="three-col">
+              <div class="folder-card">
+                <strong>05_DRAFTS</strong>
+                <p>下書きを読み、元資料と照らし合わせる場所です。</p>
+              </div>
+              <div class="folder-card">
+                <strong>06_APPROVED_OUTPUTS</strong>
+                <p>承認済みのローカル完成版が保存され、固有の hash を持ちます。</p>
+              </div>
+              <div class="folder-card">
+                <strong>07_AUDIT</strong>
+                <p>監査履歴を残し、次月の文体参照を正直に辿れるようにします。</p>
+              </div>
+            </div>
+            <figure class="screen-example">
+              <figcaption>screen-example: 承認確認画面</figcaption>
+              <pre><code>承認者: Operations Manager
+PIN: ****** 
+
+結果:
+- 06_APPROVED_OUTPUTS/2026-07/monthly_report.md
+- 07_AUDIT/audit.jsonl
+- approved_sha256 を対象月状態へ保存</code></pre>
+            </figure>
+            <div class="callout safe">
+              <strong>approved hash は重要です</strong>
+              <p>承認済み hash があることで、次月は「どの完成版を文体参照にしたか」を曖昧にせず記録できます。監査履歴と一緒に残してください。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="rollover" aria-labelledby="rollover-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="rollover-heading">次の月を準備する</h2>
+            <p>承認後は次月を作り、承認済み前月を文体参照にするかを明示的に決めます。次月準備は append-only で、前月データを消しません。</p>
+            <figure class="screen-example">
+              <figcaption>screen-example: 次月準備の画面例</figcaption>
+              <pre><code>承認済み月: 2026-07
+次月: 2026-08
+承認済み文体参照を使う: はい
+
+新しくできるフォルダ:
+03_CURRENT_INPUTS/2026-08
+04_QUESTIONS/2026-08
+05_DRAFTS/2026-08
+06_APPROVED_OUTPUTS/2026-08</code></pre>
+            </figure>
+            <ul class="check-list">
+              <li>前月はそのまま残ります。</li>
+              <li>文体参照に使えるのは承認後の完成版だけです。</li>
+              <li>次月入力フォルダは空から始まり、今月資料と混ざりません。</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="boundaries" aria-labelledby="boundaries-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="boundaries-heading">AIが判断できることと人間が判断すること</h2>
+            <div class="three-col">
+              <div class="boundary-card ai">
+                <strong>AIが判断できること</strong>
+                <ul class="boundary-list">
+                  <li>受理済みのローカル資料スナップショットを読むこと。</li>
+                  <li>下書き文案、章立て、不足事項の指摘を行うこと。</li>
+                  <li>ホストが認めた場合のみ承認済み文体参照を使うこと。</li>
+                  <li>レビュー用のローカル下書きを準備すること。</li>
+                </ul>
+              </div>
+              <div class="boundary-card human">
+                <strong>人間が判断すること</strong>
+                <ul class="boundary-list">
+                  <li>どのファイルが使用許可済みか。</li>
+                  <li>読み手、数値、表現が正しいか。</li>
+                  <li>停止、再実行、承認、次月準備の判断。</li>
+                  <li>ローカルレビュー後に外部へ提出するかどうか。</li>
+                </ul>
+              </div>
+              <div class="boundary-card local">
+                <strong>ローカルシステムが守ること</strong>
+                <ul class="boundary-list">
+                  <li>APIキーは不要です。</li>
+                  <li>外部送信はしません。</li>
+                  <li>原本入力は変更しません。</li>
+                  <li>承認済みコピーと監査記録をディスク上に残します。</li>
+                </ul>
+              </div>
+            </div>
+            <div class="callout note">
+              <strong>ローカル限定の運用</strong>
+              <p>このマニュアルは意図的に範囲を絞っています。メール送信、Slack 投稿、公開、支払い、運用DB更新は、この作業場所の対象外です。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="troubleshooting" aria-labelledby="troubleshooting-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="troubleshooting-heading">トラブル対応</h2>
+            <table class="troubleshooting-table">
+              <thead>
+                <tr>
+                  <th>起きたこと</th>
+                  <th>よくある意味</th>
+                  <th>次にやること</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td data-label="起きたこと">Codex ログイン確認が失敗した</td>
+                  <td data-label="よくある意味">この端末のローカル Codex セッションが未準備です。</td>
+                  <td data-label="次にやること">ローカルのログインを完了し、<code>codex login status</code> を再実行してから再開します。</td>
+                </tr>
+                <tr>
+                  <td data-label="起きたこと">Windows で作成が止まった</td>
+                  <td data-label="よくある意味">Phase 1A の安全な作成と承認更新が未対応です。</td>
+                  <td data-label="次にやること">macOS または Linux の端末で作成と承認更新を行います。</td>
+                </tr>
+                <tr>
+                  <td data-label="起きたこと">確認で有効なファイルが見つからない</td>
+                  <td data-label="よくある意味">今月フォルダが空か、置き場が間違っています。</td>
+                  <td data-label="次にやること"><code>01_APPROVED_PAST_OUTPUTS</code>、<code>02_PAST_SUPPORTING_FILES</code>、<code>03_CURRENT_INPUTS/&lt;YYYY-MM&gt;</code> を見直します。</td>
+                </tr>
+                <tr>
+                  <td data-label="起きたこと">質問待ちのまま進まない</td>
+                  <td data-label="よくある意味">必須回答がまだ足りません。</td>
+                  <td data-label="次にやること">localhost UI から回答し、必要なら再実行します。</td>
+                </tr>
+                <tr>
+                  <td data-label="起きたこと">下書きをそのまま信用できない</td>
+                  <td data-label="よくある意味">まだ承認前で、レビュー待ちの状態です。</td>
+                  <td data-label="次にやること"><code>05_DRAFTS</code> の下書きを元資料と照合し、確認後に承認します。</td>
+                </tr>
+                <tr>
+                  <td data-label="起きたこと">手動復旧が必要と表示された</td>
+                  <td data-label="よくある意味">状態ファイル、run、lock の確認が必要です。</td>
+                  <td data-label="次にやること"><code>00_START_HERE/workspace_status.json</code>、<code>.system/workspace.json</code>、<code>.system/periods/&lt;YYYY-MM&gt;/state.json</code>、<code>.system/runs/</code>、<code>07_AUDIT/audit.jsonl</code> を見てから次の判断をします。</td>
+                </tr>
+              </tbody>
+            </table>
+            <details>
+              <summary>月次処理をいったん止めたいとき</summary>
+              <p>受理済みファイルはそのままにし、不明点だけを記録して承認前で止めます。確証のない承認より、一度止める方が安全です。</p>
+            </details>
+            <details>
+              <summary>次月で文体を引き継ぎたいとき</summary>
+              <p>前月を先に承認し、その上で次月準備時に文体参照として確認します。未承認下書きを基準にしないでください。</p>
+            </details>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>このマニュアルは月報オペレーター作業場所の入口だけを扱います。最初の依頼文は <a href="../START_WITH_CODEX.ja.md">START_WITH_CODEX.ja.md</a>、リポジトリ契約は <a href="../AGENTS.md">AGENTS.md</a>、資料索引は <a href="INDEX.md">INDEX.md</a> を開いてください。</p>
+      <div class="footer-links">
+        <a href="../START_WITH_CODEX.ja.md">START_WITH_CODEX.ja.md</a>
+        <a href="../AGENTS.md">AGENTS.md</a>
+        <a href="INDEX.md">INDEX.md</a>
+        <a href="office-workspace.html">office-workspace.html</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

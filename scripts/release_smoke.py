@@ -2,11 +2,14 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import queue
+import re
 import signal
 import shutil
+import socket
 import subprocess
 import sys
 import threading
@@ -1228,6 +1231,8 @@ def _env_with_src() -> dict[str, str]:
 
 
 def _verify_wheel_install(wheelhouse: Path, output: Path) -> None:
+    wheelhouse = wheelhouse.resolve()
+    output = output.resolve()
     wheels = sorted(wheelhouse.glob("ai_automation_starter_kit-*.whl"))
     if not wheels:
         raise FileNotFoundError(f"No ai_automation_starter_kit wheel found in {wheelhouse}")
@@ -1240,6 +1245,7 @@ def _verify_wheel_install(wheelhouse: Path, output: Path) -> None:
     _run([str(cli_bin), "--version"], env=os.environ.copy())
     _run([str(cli_bin), "doctor", "--output", str(output / "installed-doctor")], env=os.environ.copy())
     _run_report_wizard_installed_smoke(cli_bin, python_bin, output)
+    _run_office_workspace_installed_smoke(cli_bin, python_bin, output)
 
 
 def _venv_python(venv_dir: Path) -> Path:
@@ -1254,6 +1260,280 @@ def _venv_console_script(venv_dir: Path, name: str) -> Path:
     if posix_script.exists():
         return posix_script
     return venv_dir / "Scripts" / f"{name}.exe"
+
+
+def _isolated_installed_env(
+    cli_bin: Path,
+    extra_path: list[Path] | None = None,
+    python_paths: list[Path] | None = None,
+) -> dict[str, str]:
+    env = os.environ.copy()
+    env.pop("PYTHONPATH", None)
+    env["PYTHONNOUSERSITE"] = "1"
+    path_parts = [str(cli_bin.parent)]
+    for path in extra_path or []:
+        path_parts.append(str(path))
+    if env.get("PATH"):
+        path_parts.append(env["PATH"])
+    env["PATH"] = os.pathsep.join(path_parts)
+    if python_paths:
+        env["PYTHONPATH"] = os.pathsep.join(str(path) for path in python_paths)
+    return env
+
+
+def _optional_module_parent(module_name: str) -> Path | None:
+    spec = importlib.util.find_spec(module_name)
+    if spec is None:
+        return None
+    locations = spec.submodule_search_locations
+    if locations:
+        first = next(iter(locations), None)
+        if first:
+            return Path(first).resolve().parent
+    if spec.origin and spec.origin not in {"built-in", "frozen"}:
+        return Path(spec.origin).resolve().parent
+    return None
+
+
+def _office_workspace_python_paths() -> list[Path]:
+    if hasattr(hashlib, "scrypt"):
+        return []
+    cryptography_root = _optional_module_parent("cryptography")
+    if cryptography_root is None:
+        raise RuntimeError(
+            "Installed office-workspace smoke requires hashlib.scrypt support or a local cryptography package."
+        )
+    return [cryptography_root]
+
+
+def _parse_workspace_path(stdout: str) -> Path:
+    for line in stdout.splitlines():
+        if line.startswith("workspace="):
+            return Path(line.split("=", 1)[1].strip())
+    raise RuntimeError(f"workspace path was not printed:\n{stdout}")
+
+
+def _write_fake_office_codex(path: Path, exact_draft: str) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        """#!/usr/bin/env python3
+import json
+import sys
+from pathlib import Path
+
+EXACT_DRAFT = {exact_draft}
+
+argv = sys.argv[1:]
+if argv[:2] == ["login", "status"]:
+    raise SystemExit(0)
+if not argv or argv[0] != "exec":
+    raise SystemExit(91)
+sys.stdin.read()
+print(json.dumps({{"event": "run.started", "status": "running"}}), flush=True)
+output_path = Path(argv[argv.index("--output-last-message") + 1])
+output_path.parent.mkdir(parents=True, exist_ok=True)
+output_path.write_text(
+    json.dumps({{"missing_questions": [], "draft_markdown": EXACT_DRAFT}}),
+    encoding="utf-8",
+)
+print(json.dumps({{"event": "run.finished", "status": "completed"}}), flush=True)
+""".format(exact_draft=json.dumps(exact_draft)),
+        encoding="utf-8",
+    )
+    path.chmod(0o755)
+    return path
+
+
+def _run_installed_office_internal_flow(
+    python_bin: Path,
+    env: dict[str, str],
+    *,
+    workspace: Path,
+    fake_codex: Path,
+    expected_hash: str,
+) -> dict:
+    code = """
+import json
+import sys
+from pathlib import Path
+
+repo_root = Path(sys.argv[1]).resolve()
+workspace = Path(sys.argv[2]).resolve()
+fake_codex = Path(sys.argv[3]).resolve()
+expected_hash = sys.argv[4]
+
+import ai_automation_kit
+
+package_path = Path(ai_automation_kit.__file__).resolve()
+if str(package_path).startswith(str(repo_root)):
+    raise RuntimeError("source-tree import leakage")
+
+from ai_automation_kit.core.codex_runner import start_codex_run, wait_for_run
+from ai_automation_kit.core.office_workspace_state import approve_draft, create_period, save_answer
+
+save_answer(workspace, "2026-07", "audience", "Operations board and finance lead")
+run = start_codex_run(workspace, "2026-07", executable=str(fake_codex), timeout_seconds=60)
+completed = wait_for_run(workspace, run["run_id"], timeout_seconds=10)
+if completed["status"] != "ready_for_review":
+    raise RuntimeError(f"unexpected installed run status: {completed}")
+
+period = approve_draft(workspace, "2026-07", "monthly_report.md", "Release QA", "482913")
+approved = period["approved_outputs"][-1]
+if approved["sha256"] != expected_hash:
+    raise RuntimeError("approved_sha256 mismatch")
+
+create_period(
+    workspace,
+    "2026-08",
+    style_reference={"relative_path": approved["path"], "sha256": approved["sha256"]},
+)
+
+print(
+    json.dumps(
+        {
+            "run_id": run["run_id"],
+            "approved_sha256": approved["sha256"],
+            "approved_path": approved["path"],
+            "audit_hash": approved["audit_hash"],
+        },
+        ensure_ascii=False,
+    )
+)
+"""
+    completed = _run_capture(
+        [str(python_bin), "-c", code, str(ROOT), str(workspace), str(fake_codex), expected_hash],
+        env=env,
+        cwd=workspace.parent,
+    )
+    return json.loads(completed.stdout)
+
+
+def _run_office_workspace_installed_smoke(cli_bin: Path, python_bin: Path, output: Path) -> None:
+    _require_file(ROOT / "docs/office-workspace.html")
+    _require_file(ROOT / "docs/office-workspace.ja.html")
+    _require_file(ROOT / "START_WITH_CODEX.md")
+    _require_file(ROOT / "START_WITH_CODEX.ja.md")
+    _require_file(ROOT / "AGENTS.md")
+    _require_file(ROOT / "src" / "ai_automation_kit" / "packs" / "manifest.json")
+    _require_file(ROOT / "src" / "ai_automation_kit" / "packs" / "monthly_report.json")
+    _require_file(ROOT / "src" / "ai_automation_kit" / "packs" / "monthly_report_output.schema.json")
+    _require_file(ROOT / "src" / "ai_automation_kit" / "packs" / "monthly_report_prompt.json")
+
+    exact_draft = (
+        "# Monthly Draft\n"
+        "Revenue: 128000\n"
+        "Open issues: 2\n"
+        "Decision: Hold vendor escalation until Tuesday.\n"
+    )
+    expected_hash = hashlib.sha256(exact_draft.encode("utf-8")).hexdigest()
+    fake_codex = _write_fake_office_codex(output / "fake-codex-bin" / "codex", exact_draft)
+    env = _isolated_installed_env(
+        cli_bin,
+        extra_path=[fake_codex.parent],
+        python_paths=_office_workspace_python_paths(),
+    )
+
+    office_root = output / "installed-office-workspaces"
+    office_root.mkdir(parents=True, exist_ok=True)
+
+    # office-workspace create
+    created = _run_capture(
+        [
+            str(cli_bin),
+            "office-workspace",
+            "create",
+            "--root",
+            str(office_root),
+            "--name",
+            "Construction Monthly",
+            "--approver",
+            "Release QA",
+            "--pin",
+            "482913",
+            "--period",
+            "2026-07",
+            "--language",
+            "en",
+        ],
+        env=env,
+        cwd=output,
+    )
+    workspace = _parse_workspace_path(created.stdout)
+    status_before = json.loads(
+        _run_capture(
+            [str(cli_bin), "office-workspace", "status", "--workspace", str(workspace), "--json"],
+            env=env,
+            cwd=output,
+        ).stdout
+    )
+    if status_before["current_period"] != "2026-07" or status_before["current_stage"] != "created":
+        raise RuntimeError(f"unexpected office workspace status after create: {status_before}")
+
+    (workspace / "01_APPROVED_PAST_OUTPUTS" / "2026-06-monthly-report.md").write_text(
+        "# Approved Monthly Report\nRevenue: 120000\n",
+        encoding="utf-8",
+    )
+    (workspace / "02_PAST_SUPPORTING_FILES" / "recurring-notes.md").write_text(
+        "- Vendor escalation is reviewed every Tuesday.\n",
+        encoding="utf-8",
+    )
+    (workspace / "03_CURRENT_INPUTS" / "2026-07" / "labor_hours.csv").write_text(
+        "metric,value\nrevenue,128000\nopen_issues,2\n",
+        encoding="utf-8",
+    )
+    (workspace / "03_CURRENT_INPUTS" / "2026-07" / "meeting-notes.md").write_text(
+        "# Current notes\nDecision remains pending until Tuesday.\n",
+        encoding="utf-8",
+    )
+
+    # office-workspace inspect
+    inspected = _run_capture(
+        [
+            str(cli_bin),
+            "office-workspace",
+            "inspect",
+            "--workspace",
+            str(workspace),
+            "--period",
+            "2026-07",
+        ],
+        env=env,
+        cwd=output,
+    )
+    if "stage=questioning" not in inspected.stdout:
+        raise RuntimeError(f"unexpected office workspace inspect output:\n{inspected.stdout}")
+
+    internal = _run_installed_office_internal_flow(
+        python_bin,
+        env,
+        workspace=workspace,
+        fake_codex=fake_codex,
+        expected_hash=expected_hash,
+    )
+    approved_path = workspace / internal["approved_path"]
+    _require_file(approved_path)
+    if approved_path.read_text(encoding="utf-8") != exact_draft:
+        raise RuntimeError("installed office workspace approved draft content did not match the exact known draft")
+
+    status_after = json.loads(
+        _run_capture(
+            [str(cli_bin), "office-workspace", "status", "--workspace", str(workspace), "--json"],
+            env=env,
+            cwd=output,
+        ).stdout
+    )
+    if status_after["current_period"] != "2026-08" or status_after["current_stage"] != "created":
+        raise RuntimeError(f"unexpected office workspace status after rollover: {status_after}")
+
+    # office-workspace serve
+    _assert_office_workspace_cli_serve(
+        cli_bin=cli_bin,
+        root=office_root,
+        workspace=workspace,
+        workspace_name="Construction Monthly",
+        env=env,
+        expected_hash=expected_hash,
+    )
 
 
 def _run_report_wizard_installed_smoke(cli_bin: Path, python_bin: Path, output: Path) -> None:
@@ -1381,6 +1661,145 @@ def _run_report_wizard_installed_smoke(cli_bin: Path, python_bin: Path, output: 
         workspace=report_wizard_output,
         expected_hash=expected_hash,
     )
+
+
+def _assert_office_workspace_cli_serve(
+    *,
+    cli_bin: Path,
+    root: Path,
+    workspace: Path,
+    workspace_name: str,
+    env: dict[str, str],
+    expected_hash: str,
+) -> None:
+    port = _reserve_local_port()
+    base_url = f"http://127.0.0.1:{port}"
+    command = [
+        str(cli_bin),
+        "office-workspace",
+        "serve",
+        "--root",
+        str(root),
+        "--language",
+        "en",
+        "--port",
+        str(port),
+        "--no-open",
+    ]
+    print("$ " + " ".join(command))
+    process = None
+    events: queue.Queue[tuple[str, str]] = queue.Queue()
+    readers: list[threading.Thread] = []
+    stdout_lines: list[str] = []
+    stderr_lines: list[str] = []
+    killed = False
+    returncode = None
+    failure = None
+    try:
+        process = subprocess.Popen(
+            command,
+            cwd=root.parent,
+            env=env,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            bufsize=1,
+        )
+        readers = [
+            threading.Thread(target=_pump_stream_lines, args=("stdout", process.stdout, events), daemon=True),
+            threading.Thread(target=_pump_stream_lines, args=("stderr", process.stderr, events), daemon=True),
+        ]
+        for reader in readers:
+            reader.start()
+
+        root_html = _wait_for_http_ready(
+            process,
+            events,
+            stdout_lines,
+            stderr_lines,
+            url=base_url + "/",
+            deadline_seconds=10.0,
+            label="office workspace",
+        )
+        if "<!doctype html>" not in root_html.lower():
+            raise RuntimeError("office workspace serve root did not return an HTML document")
+
+        token_match = re.search(r'const SESSION_TOKEN = "([0-9a-f]{64})"', root_html)
+        if token_match is None:
+            raise RuntimeError("office workspace root did not expose a session token")
+        token = token_match.group(1)
+        list_payload = _http_get_json(
+            base_url + "/api/workspaces",
+            headers={"X-Office-Workspace-Token": token, "Accept": "application/json"},
+        )
+        if list_payload.get("ok") is not True:
+            raise RuntimeError(f"office workspace /api/workspaces did not return ok=true: {list_payload}")
+        if list_payload["data"]["preflight"]["ok"] is not True:
+            raise RuntimeError(f"office workspace preflight was not ready: {list_payload['data']['preflight']}")
+        summaries = list_payload["data"]["workspaces"]
+        if len(summaries) != 1:
+            raise RuntimeError(f"unexpected office workspace count: {summaries}")
+        summary = summaries[0]
+        if summary["name"] != workspace_name:
+            raise RuntimeError(f"unexpected office workspace summary: {summary}")
+        if summary["current_period"] != "2026-08":
+            raise RuntimeError(f"office workspace rollover did not persist in summary: {summary}")
+
+        detail_payload = _http_get_json(
+            base_url + "/api/workspaces/" + summary["id"],
+            headers={"X-Office-Workspace-Token": token, "Accept": "application/json"},
+        )
+        if detail_payload.get("ok") is not True:
+            raise RuntimeError(f"office workspace detail did not return ok=true: {detail_payload}")
+        detail = detail_payload["data"]["workspace"]
+        if Path(detail["root"]).resolve() != workspace.resolve():
+            raise RuntimeError(f"office workspace detail returned the wrong root: {detail}")
+        style_reference = detail["period"]["style_reference"]
+        if style_reference["sha256"] != expected_hash:
+            raise RuntimeError("office workspace style reference hash did not match the approved draft hash")
+        if detail["period"]["period_id"] != "2026-08":
+            raise RuntimeError(f"office workspace detail did not expose the rolled period: {detail['period']}")
+    except Exception as exc:  # pragma: no cover - exercised by smoke execution
+        failure = exc
+    finally:
+        if process is not None:
+            if process.poll() is None:
+                process.send_signal(signal.SIGINT)
+                try:
+                    returncode = process.wait(timeout=5)
+                except subprocess.TimeoutExpired:
+                    killed = True
+                    process.kill()
+                    returncode = process.wait(timeout=5)
+            else:
+                returncode = process.returncode
+            if process.stdout is not None:
+                process.stdout.close()
+            if process.stderr is not None:
+                process.stderr.close()
+        for reader in readers:
+            reader.join(timeout=1)
+        _drain_stream_events(events, stdout_lines, stderr_lines)
+    if failure is not None:
+        raise RuntimeError(
+            "office workspace CLI serve smoke failed:\n"
+            f"stdout={''.join(stdout_lines)}\n"
+            f"stderr={''.join(stderr_lines)}"
+        ) from failure
+    if killed:
+        raise RuntimeError(
+            "office workspace CLI serve required kill fallback:\n"
+            f"stdout={''.join(stdout_lines)}\n"
+            f"stderr={''.join(stderr_lines)}"
+        )
+    if returncode != 0:
+        raise RuntimeError(
+            "office workspace CLI serve exited with code {}:\nstdout={}\nstderr={}".format(
+                returncode,
+                "".join(stdout_lines),
+                "".join(stderr_lines),
+            )
+        )
 
 
 def _assert_report_wizard_cli_serve(cli_bin: Path, workspace: Path, expected_hash: str) -> None:
@@ -1521,12 +1940,31 @@ def _wait_for_report_wizard_url(
     *,
     deadline_seconds: float,
 ) -> str:
+    return _wait_for_local_url(
+        process,
+        events,
+        stdout_lines,
+        stderr_lines,
+        deadline_seconds=deadline_seconds,
+        label="report wizard",
+    )
+
+
+def _wait_for_local_url(
+    process: subprocess.Popen[str],
+    events: queue.Queue[tuple[str, str]],
+    stdout_lines: list[str],
+    stderr_lines: list[str],
+    *,
+    deadline_seconds: float,
+    label: str,
+) -> str:
     deadline = time.monotonic() + deadline_seconds
     while time.monotonic() < deadline:
         if process.poll() is not None:
             _drain_stream_events(events, stdout_lines, stderr_lines)
             raise RuntimeError(
-                "report wizard CLI serve exited before printing its URL:\n"
+                f"{label} CLI serve exited before printing its URL:\n"
                 f"stdout={''.join(stdout_lines)}\n"
                 f"stderr={''.join(stderr_lines)}"
             )
@@ -1543,7 +1981,46 @@ def _wait_for_report_wizard_url(
         if candidate.startswith("http://127.0.0.1:") or candidate.startswith("http://localhost:"):
             return candidate
     raise RuntimeError(
-        "timed out waiting for report wizard serve URL:\n"
+        f"timed out waiting for {label} serve URL:\n"
+        f"stdout={''.join(stdout_lines)}\n"
+        f"stderr={''.join(stderr_lines)}"
+    )
+
+
+def _reserve_local_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        sock.bind(("127.0.0.1", 0))
+        return int(sock.getsockname()[1])
+
+
+def _wait_for_http_ready(
+    process: subprocess.Popen[str],
+    events: queue.Queue[tuple[str, str]],
+    stdout_lines: list[str],
+    stderr_lines: list[str],
+    *,
+    url: str,
+    deadline_seconds: float,
+    label: str,
+) -> str:
+    deadline = time.monotonic() + deadline_seconds
+    last_error = ""
+    while time.monotonic() < deadline:
+        _drain_stream_events(events, stdout_lines, stderr_lines)
+        if process.poll() is not None:
+            raise RuntimeError(
+                f"{label} CLI serve exited before responding at {url}:\n"
+                f"stdout={''.join(stdout_lines)}\n"
+                f"stderr={''.join(stderr_lines)}"
+            )
+        try:
+            return _http_get_text(url)
+        except Exception as exc:  # pragma: no cover - exercised by smoke execution
+            last_error = str(exc)
+            time.sleep(0.1)
+    raise RuntimeError(
+        f"timed out waiting for {label} serve HTTP at {url}: {last_error}\n"
         f"stdout={''.join(stdout_lines)}\n"
         f"stderr={''.join(stderr_lines)}"
     )

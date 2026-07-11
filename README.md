@@ -32,6 +32,14 @@ ai-automation-kit beginner
 
 > **Phase 1A platform note / 対応OS:** Safe monthly office-workspace creation and approval mutation require macOS or Linux. Windows stops before creating or changing this workspace because the required race-resistant no-follow filesystem operations are unavailable in this design. Existing read-only and unrelated kit features are unaffected. / 安全な月次オフィスワークスペースの作成・承認更新は macOS または Linux 専用です。Windows では必要な安全機能がないため、フォルダを作成・変更する前に停止します。既存の読み取り専用機能や他の機能には影響しません。
 
+## Phase 1A: monthly office workspace
+
+If you want a Codex-led monthly office workspace instead of the broader sales or demo flows, start from the two setup notes and the paired manuals below. This is a local-only monthly-report route for beginners who want one safe review loop: create the workspace, place approved files, inspect, answer, generate, approve, and roll to the next month.
+
+- Setup prompt for Codex: [START_WITH_CODEX.ja.md](START_WITH_CODEX.ja.md) / [START_WITH_CODEX.md](START_WITH_CODEX.md)
+- Browser manual for the monthly office workspace: [docs/office-workspace.ja.html](docs/office-workspace.ja.html) / [docs/office-workspace.html](docs/office-workspace.html)
+- Honest status: Phase 1A is one monthly office workspace and one monthly-report pack. No API key is required, and no external sending occurs.
+
 ## English Quick Start
 
 Do not read everything first. Install, run the doctor, and generate one complete demo workspace:
@@ -64,6 +72,8 @@ Key documents:
 | Plain-language overview | [やさしい解説](docs/BEGINNER_GUIDE.ja.md) | [Beginner Guide](docs/BEGINNER_GUIDE.md) |
 | Operating manual | [使い方マニュアル](docs/USER_MANUAL.ja.md) | [User Manual](docs/USER_MANUAL.md) |
 | Browser manual (click to open as a web page) | [ブラウザ版マニュアル（クリックで開きます）](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.ja.html) | [Browser Manual](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.html) |
+| Codex monthly setup prompt | [Codexではじめる](START_WITH_CODEX.ja.md) | [Start With Codex](START_WITH_CODEX.md) |
+| Monthly office workspace manual | [月報オペレーター作業場所マニュアル](docs/office-workspace.ja.html) | [Monthly Operator Workspace Manual](docs/office-workspace.html) |
 | Report wizard manual | [レポートウィザード手順書](docs/report-automation-wizard.ja.html) | [Report Wizard Manual](docs/report-automation-wizard.html) |
 | Selling automation responsibly | [提案ガイド](docs/SELLING_AUTOMATION_GUIDE.ja.md) | [Selling Automation Guide](docs/SELLING_AUTOMATION_GUIDE.md) |
 | Choosing what to sell | [副業ブループリント](docs/SIDE_HUSTLE_BLUEPRINTS.ja.md) | [Side Hustle Blueprints](docs/SIDE_HUSTLE_BLUEPRINTS.md) |
@@ -88,6 +98,7 @@ The fastest path is `complete-workspace`: one command creates a full local deliv
 - **Runnable flows** — `flows` installs one of 60+ dry-run automation projects with `flow.yaml`, `workflow_map.mmd`, `operator_ui/index.html`, `.env.example`, `SYSTEM_RUNBOOK.md`, and scripts that generate `automation_output` work queues, approval queues, and `local_outbox` drafts. Nothing is sent externally.
 - **Folder-based report automation** — `report-automation` creates a daily, weekly, or monthly report workspace with past-output folders, current-material folders, `START_HERE_REPORT_AUTOMATION.md`, AI prompts, `grill_me_report_questions.md`, drafts, approval checklists, and a client-facing `demo_report_automation.html`.
 - **Resumable report wizard** — `report-wizard` adds `report_wizard_state.json`, `03_templates/*_report_template.md`, `04_ai_analysis/{source_manifest.json,schema_proposal.json,provenance.json,ai_agent_review_instructions.md}`, `05_grill_me_questions/session.json`, `06_drafts/*_report_draft.md`, and `07_approval/approval.json` so a human can inspect, answer, build, approve, and resume a local reporting session.
+- **Codex-led monthly office workspace** — `office-workspace` creates a monthly office workspace with `00_START_HERE`, `01_APPROVED_PAST_OUTPUTS`, `02_PAST_SUPPORTING_FILES`, `03_CURRENT_INPUTS/<YYYY-MM>`, `04_QUESTIONS`, `05_DRAFTS`, `06_APPROVED_OUTPUTS`, and `07_AUDIT`, then serves a localhost UI for inspect, answer, generate, cancel, approve, and rollover. This Phase 1A route is local-only, monthly-report only, and intended for macOS or Linux.
 - **Delivery evidence** — `FINAL_DELIVERY_GUIDE.md`, `completion_checklist.md`, `client_report.md`, `client_demo_package.zip`, `revenue_readiness_scorecard.md`, `paid_poc_scope.md`, and `share_check.md` (scan before sharing).
 - **Setup and cloud planning** — `guided-setup`, `guided-review`, and `cloud-plan` write question lists, readiness reports, and provider-specific runbooks such as `workload_architecture.md`, `deploy_runbook.md`, and `human_approval_required.md`.
 - **GitHub discovery** — `github-discover` and `onboard` turn public GitHub research into `run_summary.md`, `executive_decision_brief.md`, `pilot_scorecard.csv`, `value_realization_plan.md`, `value_measurement_report.md`, `stakeholder_rollout_map.md`, `risk_exception_register.md`, `operational_audit_plan.md`, `enterprise_readiness.md`, `artifact_index.md`, and an `adapter_starter/` dry-run skeleton.
@@ -158,6 +169,18 @@ ai-automation-kit share-check --source .tmp/complete-accounting --output .tmp/sh
 ```
 
 For the step-by-step local review flow, open [docs/report-automation-wizard.html](docs/report-automation-wizard.html) / [docs/report-automation-wizard.ja.html](docs/report-automation-wizard.ja.html). GitHub Pages hosts the same manual at [English](https://goonobu-dot.github.io/ai-automation-starter-kit/report-automation-wizard.html) / [日本語](https://goonobu-dot.github.io/ai-automation-starter-kit/report-automation-wizard.ja.html), alongside the general browser manuals at [manual.html](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.html) and [manual.ja.html](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.ja.html).
+
+Codex-led monthly office workspace (Phase 1A, macOS/Linux only):
+
+```bash
+codex login status
+ai-automation-kit office-workspace create --root ./workspaces --name "Construction Monthly" --approver "Operations Manager" --pin 482913 --period 2026-07 --language en
+ai-automation-kit office-workspace status --workspace ./workspaces/Construction_Monthly --json
+ai-automation-kit office-workspace inspect --workspace ./workspaces/Construction_Monthly --period 2026-07
+ai-automation-kit office-workspace serve --root ./workspaces --language en --no-open
+```
+
+For the guided prompt and the browser manual, open [START_WITH_CODEX.md](START_WITH_CODEX.md) / [START_WITH_CODEX.ja.md](START_WITH_CODEX.ja.md) and [docs/office-workspace.html](docs/office-workspace.html) / [docs/office-workspace.ja.html](docs/office-workspace.ja.html).
 
 Setup intake, review, and cloud planning:
 

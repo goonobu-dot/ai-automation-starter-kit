@@ -1,0 +1,1148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Monthly Operator Workspace Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f3f5f7;
+      --panel: #ffffff;
+      --panel-muted: #eef2f6;
+      --ink: #16202b;
+      --muted: #546170;
+      --line: #cad3dc;
+      --accent: #1f6feb;
+      --accent-soft: #dce9fb;
+      --good: #12663a;
+      --good-soft: #ddf3e5;
+      --warn: #8a5200;
+      --warn-soft: #fff0d8;
+      --danger: #9d1c1c;
+      --danger-soft: #f9dddd;
+      --shadow: 0 12px 24px rgba(22, 32, 43, 0.08);
+      --radius: 6px;
+      --content: 1120px;
+      --mono: "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration-thickness: 0.08em;
+      text-underline-offset: 0.16em;
+    }
+
+    a:hover {
+      text-decoration-thickness: 0.12em;
+    }
+
+    a:focus-visible,
+    button:focus-visible,
+    summary:focus-visible,
+    code:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    main:focus-visible,
+    main#main:focus-visible,
+    main:target,
+    main#main:target {
+      outline: 2px solid var(--accent);
+      outline-offset: 4px;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      transform: translateY(-160%);
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      background: var(--ink);
+      color: #ffffff;
+      z-index: 20;
+    }
+
+    .skip-link:focus-visible {
+      transform: translateY(0);
+    }
+
+    .site-header,
+    .site-nav,
+    .site-footer {
+      padding: 0 20px;
+    }
+
+    .header-inner,
+    .nav-inner,
+    .main-inner,
+    .footer-inner {
+      max-width: var(--content);
+      margin: 0 auto;
+    }
+
+    .site-header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .header-inner {
+      padding: 28px 0 22px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .eyebrow {
+      margin: 0;
+      font-size: 13px;
+      letter-spacing: 0;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 36px;
+    }
+
+    h2 {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+
+    h3 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    p,
+    li,
+    dd,
+    dt,
+    td,
+    th {
+      max-width: 74ch;
+    }
+
+    .lede {
+      margin: 0;
+      color: var(--muted);
+      font-size: 18px;
+    }
+
+    .status-strip {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .status-card,
+    .callout,
+    .folder-card,
+    .step-card,
+    .boundary-card,
+    .screen-example,
+    .command-card,
+    .trouble-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      box-shadow: var(--shadow);
+    }
+
+    .status-card,
+    .callout,
+    .folder-card,
+    .boundary-card,
+    .command-card,
+    .trouble-card {
+      padding: 18px;
+    }
+
+    .status-card strong,
+    .callout strong,
+    .folder-card strong,
+    .boundary-card strong,
+    .command-card strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .status-card p,
+    .callout p,
+    .folder-card p,
+    .boundary-card p,
+    .command-card p,
+    .trouble-card p {
+      margin: 0;
+    }
+
+    .site-nav {
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .nav-inner {
+      padding: 12px 0;
+    }
+
+    .nav-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .nav-list a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      text-decoration: none;
+      color: var(--ink);
+    }
+
+    .nav-list a:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    main {
+      display: block;
+    }
+
+    .main-inner {
+      padding: 28px 0 52px;
+      display: grid;
+      gap: 22px;
+    }
+
+    section {
+      background: transparent;
+      padding: 10px 20px;
+    }
+
+    .section-shell {
+      display: grid;
+      gap: 16px;
+    }
+
+    .panel-band {
+      padding: 22px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: grid;
+      gap: 16px;
+    }
+
+    .callout {
+      display: grid;
+      gap: 8px;
+    }
+
+    .callout.note {
+      background: var(--accent-soft);
+      border-color: #bdd2f7;
+    }
+
+    .callout.safe {
+      background: var(--good-soft);
+      border-color: #bcdcc8;
+    }
+
+    .callout.warn {
+      background: var(--warn-soft);
+      border-color: #efd6a4;
+    }
+
+    .callout.danger {
+      background: var(--danger-soft);
+      border-color: #efb9b9;
+    }
+
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .step-card {
+      padding: 16px;
+      position: relative;
+      min-height: 180px;
+      display: grid;
+      gap: 10px;
+      align-content: start;
+    }
+
+    .step-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius);
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .step-card p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .flow-text-alt {
+      margin: 0;
+      padding: 16px;
+      border: 1px dashed var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-muted);
+      color: var(--muted);
+    }
+
+    .two-col,
+    .three-col {
+      display: grid;
+      gap: 12px;
+    }
+
+    .section-shell,
+    .panel-band,
+    .two-col > *,
+    .three-col > *,
+    .command-grid > * {
+      min-width: 0;
+    }
+
+    .two-col {
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+
+    .three-col {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .folder-card code,
+    .command-card code,
+    .screen-example code,
+    pre code {
+      font-family: var(--mono);
+      font-size: 14px;
+    }
+
+    code {
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    pre {
+      max-width: 100%;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .folder-list,
+    .boundary-list,
+    .check-list {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .screen-example {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .screen-example figcaption {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--line);
+      background: var(--panel-muted);
+      font-weight: 600;
+    }
+
+    .screen-example pre {
+      margin: 0;
+      padding: 16px;
+      overflow-x: auto;
+      background: #0f1720;
+      color: #e8eef6;
+    }
+
+    .command-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .command-card pre {
+      margin: 10px 0 0;
+      padding: 14px;
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel-muted);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    th,
+    td {
+      text-align: left;
+      vertical-align: top;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    th {
+      background: var(--panel-muted);
+      font-size: 14px;
+    }
+
+    .boundary-card.ai {
+      background: #eef5ff;
+    }
+
+    .boundary-card.human {
+      background: #fff4df;
+    }
+
+    .boundary-card.local {
+      background: #edf9f1;
+    }
+
+    details {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      padding: 0 14px 14px;
+      box-shadow: var(--shadow);
+    }
+
+    details + details {
+      margin-top: 12px;
+    }
+
+    summary {
+      cursor: pointer;
+      padding: 14px 0;
+      font-weight: 600;
+    }
+
+    .footer-inner {
+      padding: 24px 0 44px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .footer-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    @media (max-width: 760px) {
+      h1 {
+        font-size: 31px;
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+
+      section {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .troubleshooting-table,
+      .troubleshooting-table tbody,
+      .troubleshooting-table tr,
+      .troubleshooting-table td {
+        display: block;
+        width: 100%;
+      }
+
+      .troubleshooting-table thead {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      .troubleshooting-table tr {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .troubleshooting-table tr:last-child {
+        border-bottom: 0;
+      }
+
+      .troubleshooting-table td {
+        padding: 0;
+        border: 0;
+      }
+
+      .troubleshooting-table td + td {
+        margin-top: 10px;
+      }
+
+      .troubleshooting-table td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 3px;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+    }
+
+    @media print {
+      body {
+        background: #ffffff;
+      }
+
+      .site-nav,
+      .skip-link {
+        display: none;
+      }
+
+      .panel-band,
+      .step-card,
+      .folder-card,
+      .boundary-card,
+      .command-card,
+      .screen-example,
+      .trouble-card,
+      table,
+      details {
+        box-shadow: none;
+      }
+
+      section {
+        break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <p class="eyebrow">Phase 1A local workflow</p>
+      <h1>Monthly operator workspace manual</h1>
+      <p class="lede">This manual shows the full monthly office workspace flow for a beginner: install, confirm Codex login, ask Codex to create the workspace, place three file types, inspect, answer, generate, cancel or retry, approve, and roll forward to the next month.</p>
+      <div class="status-strip">
+        <div class="status-card">
+          <strong>Honest release scope</strong>
+          <p>This release is one monthly office workspace for a monthly report pack. It is local-only and does not replace the older flow-project path.</p>
+        </div>
+        <div class="status-card">
+          <strong>Platform truth</strong>
+          <p>macOS or Linux only for workspace mutation. Windows is fine for reading docs, but not for the safe create and approval-mutation path in this release.</p>
+        </div>
+        <div class="status-card">
+          <strong>Safety truth</strong>
+          <p>No API key is required. No external sending occurs. Approval is a local record on this device.</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <nav class="site-nav" aria-label="Manual sections">
+    <div class="nav-inner">
+      <ul class="nav-list">
+        <li><a href="#install-login">Install and login</a></li>
+        <li><a href="#ask-codex">Ask Codex</a></li>
+        <li><a href="#folders">Folders</a></li>
+        <li><a href="#three-file-types">Three file types</a></li>
+        <li><a href="#inspect">Inspect</a></li>
+        <li><a href="#answer">Answer</a></li>
+        <li><a href="#generate">Generate</a></li>
+        <li><a href="#cancel-retry">Cancel and retry</a></li>
+        <li><a href="#approve">Approve</a></li>
+        <li><a href="#rollover">Rollover</a></li>
+        <li><a href="#boundaries">Boundaries</a></li>
+        <li><a href="#troubleshooting">Troubleshooting</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main id="main" tabindex="-1">
+    <div class="main-inner">
+      <section aria-labelledby="start-links">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="start-links">Open these first</h2>
+            <div class="callout note">
+              <strong>Matching setup guide</strong>
+              <p>Use <a href="../START_WITH_CODEX.md">START_WITH_CODEX.md</a> for the exact first message to Codex. The repository contract it references is <a href="../AGENTS.md">AGENTS.md</a>. The broader document map is <a href="INDEX.md">INDEX.md</a>. The Japanese counterpart of this manual is <a href="office-workspace.ja.html">office-workspace.ja.html</a>.</p>
+            </div>
+            <p>The manual below is written for the operator who is about to run the first real local month. Keep it open while you work. If the workspace is already created, jump straight to the folder map and the inspect step.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="install-login" aria-labelledby="install-login-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="install-login-heading">Install and confirm Codex login</h2>
+            <p>Install the package in a local Python environment first, then confirm that Codex login is already available on this machine. This flow depends on the local Codex login state, not on pasting credentials into chat.</p>
+            <div class="command-grid">
+              <div class="command-card">
+                <strong>Install the kit in the repository checkout</strong>
+                <p>This keeps the CLI and bundled monthly-report pack together on the same machine as the local files you review.</p>
+                <pre><code>python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip setuptools
+python3 -m pip install -e .</code></pre>
+              </div>
+              <div class="command-card">
+                <strong>Confirm Codex login before setup</strong>
+                <p>The login check must succeed before the workspace is created for a guided Codex-led setup session.</p>
+                <pre><code>codex login status</code></pre>
+              </div>
+            </div>
+            <figure class="screen-example">
+              <figcaption>screen-example: terminal before workspace creation</figcaption>
+              <pre><code>$ codex login status
+Logged in locally.
+
+$ ai-automation-kit --version
+0.1.0</code></pre>
+            </figure>
+            <div class="callout warn">
+              <strong>Stop here if login is not ready</strong>
+              <p>If <code>codex login status</code> fails, let the human finish the login flow first. Do not switch to an API-key explanation. Do not claim that a remote send mode will fix it.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="ask-codex" aria-labelledby="ask-codex-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="ask-codex-heading">Ask Codex to set up the workspace</h2>
+            <p>Paste the opening message from <a href="../START_WITH_CODEX.md">START_WITH_CODEX.md</a> into Codex. That file tells Codex to ask one question at a time and confirm the save root, workspace name, approver, and first month before running the CLI.</p>
+            <figure class="screen-example">
+              <figcaption>screen-example: first human request to Codex</figcaption>
+              <pre><code>Read this repository's AGENTS.md and help me create a monthly report workspace.
+Ask only one question at a time and confirm the save location, workspace name, approver, and first reporting month.
+After creation, open and explain where to place past approved reports, past supporting files, and this month's files.</code></pre>
+            </figure>
+            <div class="two-col">
+              <div class="callout safe">
+                <strong>Exact setup command</strong>
+                <p>Codex should eventually run <code>ai-automation-kit office-workspace create</code> with the confirmed values, then validate with <code>ai-automation-kit office-workspace status --workspace</code>.</p>
+              </div>
+              <div class="callout danger">
+                <strong>Do not improvise flags</strong>
+                <p>Do not add custom executable paths, shell bypasses, approval bypasses, remote-send options, or unsafe shortcut flags. The setup path is intentionally narrow.</p>
+              </div>
+            </div>
+            <pre><code>ai-automation-kit office-workspace create \
+  --root "./workspaces" \
+  --name "Construction Monthly" \
+  --approver "Operations Manager" \
+  --pin "482913" \
+  --period "2026-07" \
+  --language en
+
+ai-automation-kit office-workspace status \
+  --workspace "./workspaces/Construction_Monthly" \
+  --json</code></pre>
+            <p>Single-line references for copy and search: <code>ai-automation-kit office-workspace create --root ./workspaces --name "Construction Monthly" --approver "Operations Manager" --pin 482913 --period 2026-07 --language en</code> and <code>ai-automation-kit office-workspace status --workspace ./workspaces/Construction_Monthly --json</code>.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="folders" aria-labelledby="folders-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="folders-heading">See the folder map before you add files</h2>
+            <p>The monthly operator workspace is a local office workspace with visible folders. Every step in the loop points at a concrete folder, so a beginner can tell what belongs where before any AI run begins.</p>
+            <div class="flow-grid" aria-label="Nine-step workspace flow">
+              <article class="step-card" data-flow-step="1">
+                <span class="step-number">1</span>
+                <h3>Install and login</h3>
+                <p>Install the package locally and confirm <code>codex login status</code>.</p>
+              </article>
+              <article class="step-card" data-flow-step="2">
+                <span class="step-number">2</span>
+                <h3>Ask Codex</h3>
+                <p>Codex asks one question at a time, then creates the workspace with the official CLI.</p>
+              </article>
+              <article class="step-card" data-flow-step="3">
+                <span class="step-number">3</span>
+                <h3>Place the files</h3>
+                <p>Use the three file types and keep this month's source files in the dated input folder only.</p>
+              </article>
+              <article class="step-card" data-flow-step="4">
+                <span class="step-number">4</span>
+                <h3>Inspect the month</h3>
+                <p>Review the accepted files and the next action before any draft is requested.</p>
+              </article>
+              <article class="step-card" data-flow-step="5">
+                <span class="step-number">5</span>
+                <h3>Answer</h3>
+                <p>Fill missing required answers one question at a time.</p>
+              </article>
+              <article class="step-card" data-flow-step="6">
+                <span class="step-number">6</span>
+                <h3>Generate</h3>
+                <p>Codex builds a draft in the local workspace, never in an external system.</p>
+              </article>
+              <article class="step-card" data-flow-step="7">
+                <span class="step-number">7</span>
+                <h3>Cancel or retry</h3>
+                <p>Cancel if something is wrong, fix the inputs or answers, then retry the same month safely.</p>
+              </article>
+              <article class="step-card" data-flow-step="8">
+                <span class="step-number">8</span>
+                <h3>Approve</h3>
+                <p>Approve the local copy, write the audit record, and keep the approved hash.</p>
+              </article>
+              <article class="step-card" data-flow-step="9">
+                <span class="step-number">9</span>
+                <h3>Rollover</h3>
+                <p>Create the next month, optionally reuse the approved style reference, and repeat the loop.</p>
+              </article>
+            </div>
+            <p class="flow-text-alt">Flow text alternative: install and confirm login, ask Codex to create the monthly office workspace, place approved past reports and reference files plus this month's files, inspect the accepted inputs, answer missing questions one at a time, generate the draft, cancel and retry if needed, approve the local copy, then prepare the next month.</p>
+            <div class="three-col">
+              <div class="folder-card">
+                <strong>00_START_HERE</strong>
+                <p>Open the local overview here first. The workspace writes a plain-language starter page and the current workspace status.</p>
+              </div>
+              <div class="folder-card">
+                <strong>05_DRAFTS</strong>
+                <p>Drafts appear here only after generation succeeds. Review before approval.</p>
+              </div>
+              <div class="folder-card">
+                <strong>06_APPROVED_OUTPUTS and 07_AUDIT</strong>
+                <p>Approved copies and the audit trail stay local. No external sending occurs.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="three-file-types" aria-labelledby="three-file-types-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="three-file-types-heading">The three file types</h2>
+            <p>Every beginner should understand the three file types before the first inspect step. The AI works better when the folders are boring and explicit.</p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Folder</th>
+                  <th>What goes there</th>
+                  <th>Concrete example</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>01_APPROVED_PAST_OUTPUTS</code></td>
+                  <td>Older approved monthly reports that show tone, structure, and naming.</td>
+                  <td><code>2026-05-monthly-report.md</code>, <code>2026-06-monthly-report.docx</code></td>
+                </tr>
+                <tr>
+                  <td><code>02_PAST_SUPPORTING_FILES</code></td>
+                  <td>Older supporting references that help explain recurring metrics, field names, or background notes.</td>
+                  <td><code>vendor-summary.xlsx</code>, <code>finance-notes.md</code>, <code>policy-export.pdf</code></td>
+                </tr>
+                <tr>
+                  <td><code>03_CURRENT_INPUTS/&lt;YYYY-MM&gt;</code></td>
+                  <td>This month's files only. Put the current month in the dated folder and keep unrelated files out.</td>
+                  <td><code>2026-07/labor_hours.csv</code>, <code>2026-07/incident-notes.md</code>, <code>2026-07/cost-tracker.xlsx</code></td>
+                </tr>
+              </tbody>
+            </table>
+            <figure class="screen-example">
+              <figcaption>screen-example: folder view before inspect</figcaption>
+              <pre><code>Construction_Monthly/
+  00_START_HERE/
+  01_APPROVED_PAST_OUTPUTS/
+    2026-05-monthly-report.md
+    2026-06-monthly-report.docx
+  02_PAST_SUPPORTING_FILES/
+    vendor-summary.xlsx
+    recurring-notes.md
+  03_CURRENT_INPUTS/
+    2026-07/
+      labor_hours.csv
+      delivery_costs.xlsx
+      site-meeting-notes.md</code></pre>
+            </figure>
+            <div class="callout note">
+              <strong>Keep the three file types separate</strong>
+              <p>Do not drop this month's raw files into <code>01_APPROVED_PAST_OUTPUTS</code>. Do not treat an old draft as an approved style example. The separation is part of the safety model.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="inspect" aria-labelledby="inspect-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="inspect-heading">Inspect the month</h2>
+            <p>Once the files are in place, run the local inspect step. This confirms which files were accepted and whether the next action is a question or a ready-to-run draft request.</p>
+            <pre><code>ai-automation-kit office-workspace inspect \
+  --workspace "./workspaces/Construction_Monthly" \
+  --period "2026-07"</code></pre>
+            <p>Single-line inspect reference: <code>ai-automation-kit office-workspace inspect --workspace ./workspaces/Construction_Monthly --period 2026-07</code>.</p>
+            <figure class="screen-example">
+              <figcaption>screen-example: inspect output</figcaption>
+              <pre><code>workspace=/Users/example/workspaces/Construction_Monthly
+period=2026-07
+stage=questioning
+accepted=5
+rejected=0
+pending_questions=audience
+next_action=Answer the remaining questions one at a time.</code></pre>
+            </figure>
+            <ul class="check-list">
+              <li>Use inspect after every material change that matters.</li>
+              <li>Inspect does not send anything. It writes local state and a source manifest.</li>
+              <li>If the stage becomes <code>questioning</code>, the next step is to answer, not to force generation.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="answer" aria-labelledby="answer-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="answer-heading">Answer one question at a time</h2>
+            <p>The workspace asks only the missing required question. Keep the answer short, factual, and local to the month you are drafting. The question can be answered from the localhost UI after the inspect step.</p>
+            <div class="two-col">
+              <div class="callout safe">
+                <strong>Good answer</strong>
+                <p><code>Audience: Operations board and finance lead.</code> This tells the draft how direct or formal it should be.</p>
+              </div>
+              <div class="callout warn">
+                <strong>Bad answer</strong>
+                <p>A vague answer such as <code>make it good</code> forces the draft toward guesswork and usually causes revision churn.</p>
+              </div>
+            </div>
+            <figure class="screen-example">
+              <figcaption>screen-example: localhost answer panel</figcaption>
+              <pre><code>Question: Who will read this monthly report?
+
+Answer field:
+Operations board, finance lead, and the branch manager.
+
+Action:
+[ Save answer ]</code></pre>
+            </figure>
+            <p>Once the answer is saved, the current period moves to <code>ready_for_run</code>. At that point the draft can be generated from the UI.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="generate" aria-labelledby="generate-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="generate-heading">Generate the draft</h2>
+            <p>Generation is still local. Codex reads a safe snapshot inside a disposable run directory and writes only a staged draft that the host validates before promoting it into <code>05_DRAFTS</code>.</p>
+            <div class="callout note">
+              <strong>What appears after generation</strong>
+              <p>The period moves to review, a draft file appears in <code>05_DRAFTS/&lt;YYYY-MM&gt;</code>, and the UI shows provenance and unresolved items for the human reviewer.</p>
+            </div>
+            <figure class="screen-example">
+              <figcaption>screen-example: draft review panel</figcaption>
+              <pre><code>Status: ready_for_review
+Draft file: 05_DRAFTS/2026-07/monthly_report.md
+Source manifest: accepted local files only
+Run result: ready for human review
+
+Actions:
+[ Open draft folder ]  [ Cancel ]  [ Approve ]</code></pre>
+            </figure>
+            <p>Use the folder icon or local finder shortcut to open the draft. Read it as a draft, not as an approved final statement.</p>
+            <p>Single-line server reference: <code>ai-automation-kit office-workspace serve --root ./workspaces --language en --no-open</code>.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="cancel-retry" aria-labelledby="cancel-retry-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="cancel-retry-heading">Cancel and retry safely</h2>
+            <p>If the wrong files were used, if a question was answered badly, or if the run should stop, cancel the current run and correct the local state before retrying. The workspace keeps prior approved outputs and accepted inputs safe.</p>
+            <div class="two-col">
+              <div class="trouble-card">
+                <h3>When to cancel</h3>
+                <ul class="check-list">
+                  <li>The current month folder contains the wrong month.</li>
+                  <li>The answer changed after a stakeholder review.</li>
+                  <li>The run stalled or produced a missing-information question that needs a file fix.</li>
+                </ul>
+              </div>
+              <div class="trouble-card">
+                <h3>What to do next</h3>
+                <ul class="check-list">
+                  <li>Fix the folder contents or answer.</li>
+                  <li>Inspect again if the materials changed.</li>
+                  <li>Retry the draft generation for the same month.</li>
+                </ul>
+              </div>
+            </div>
+            <figure class="screen-example">
+              <figcaption>screen-example: cancel and retry decision</figcaption>
+              <pre><code>Current state: running
+Issue: one spreadsheet was from the prior month
+
+Action:
+1. Cancel the run
+2. Replace the file in 03_CURRENT_INPUTS/2026-07
+3. Inspect again
+4. Generate the draft again</code></pre>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section id="approve" aria-labelledby="approve-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="approve-heading">Approve the local copy</h2>
+            <p>Approval moves a reviewed local draft into <code>06_APPROVED_OUTPUTS</code> and writes the approval trail into <code>07_AUDIT</code>. The human approver name and the configured PIN are part of the approval step.</p>
+            <div class="three-col">
+              <div class="folder-card">
+                <strong>05_DRAFTS</strong>
+                <p>Read the draft here, compare it with the accepted inputs, and confirm wording before approval.</p>
+              </div>
+              <div class="folder-card">
+                <strong>06_APPROVED_OUTPUTS</strong>
+                <p>The approved local copy is saved here and gets its own hash.</p>
+              </div>
+              <div class="folder-card">
+                <strong>07_AUDIT</strong>
+                <p>The audit trail stores the local approval chain so the next month can cite the approved reference honestly.</p>
+              </div>
+            </div>
+            <figure class="screen-example">
+              <figcaption>screen-example: approval confirmation</figcaption>
+              <pre><code>Approver: Operations Manager
+PIN: ****** 
+
+Result:
+- 06_APPROVED_OUTPUTS/2026-07/monthly_report.md
+- 07_AUDIT/audit.jsonl
+- approved_sha256 stored in the period record</code></pre>
+            </figure>
+            <div class="callout safe">
+              <strong>Exact approved hash matters</strong>
+              <p>The approved hash lets the next period cite a style reference without pretending that a later edit was already reviewed. Keep the hash and the audit record together.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="rollover" aria-labelledby="rollover-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="rollover-heading">Prepare the next month</h2>
+            <p>After approval, create the next month and choose whether the approved prior output should become a style reference. Rollover is append-only. It does not delete the prior period.</p>
+            <figure class="screen-example">
+              <figcaption>screen-example: rollover view</figcaption>
+              <pre><code>Current approved month: 2026-07
+Next month: 2026-08
+Reuse approved style reference: yes
+
+New folders:
+03_CURRENT_INPUTS/2026-08
+04_QUESTIONS/2026-08
+05_DRAFTS/2026-08
+06_APPROVED_OUTPUTS/2026-08</code></pre>
+            </figure>
+            <ul class="check-list">
+              <li>Rollover keeps the old month intact.</li>
+              <li>The approved prior month can be referenced only after approval exists.</li>
+              <li>The next month starts empty in the current-input folder so the new files stay separate.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="boundaries" aria-labelledby="boundaries-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="boundaries-heading">What AI can do and what a human must decide</h2>
+            <div class="three-col">
+              <div class="boundary-card ai">
+                <strong>What AI can do</strong>
+                <ul class="boundary-list">
+                  <li>Read the accepted local snapshot for the current month.</li>
+                  <li>Draft wording, outline sections, and point at missing facts.</li>
+                  <li>Reuse the approved style reference only when the host confirms it.</li>
+                  <li>Prepare a local draft for review.</li>
+                </ul>
+              </div>
+              <div class="boundary-card human">
+                <strong>What a human must decide</strong>
+                <ul class="boundary-list">
+                  <li>Which files are approved to use.</li>
+                  <li>Whether the audience, numbers, and wording are correct.</li>
+                  <li>Whether to cancel, retry, approve, or roll forward.</li>
+                  <li>Any external submission after the local review is complete.</li>
+                </ul>
+              </div>
+              <div class="boundary-card local">
+                <strong>What the local system guarantees</strong>
+                <ul class="boundary-list">
+                  <li>No API key is required.</li>
+                  <li>No external sending occurs.</li>
+                  <li>Original input files remain untouched.</li>
+                  <li>Approved copies and audit records stay visible on disk.</li>
+                </ul>
+              </div>
+            </div>
+            <div class="callout note">
+              <strong>Local-only workflow</strong>
+              <p>This manual is intentionally narrow. It does not promise email sending, Slack posting, publication, payment, or production database updates. Those are outside the scope of this office workspace.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="troubleshooting" aria-labelledby="troubleshooting-heading">
+        <div class="section-shell">
+          <div class="panel-band">
+            <h2 id="troubleshooting-heading">Troubleshooting</h2>
+            <table class="troubleshooting-table">
+              <thead>
+                <tr>
+                  <th>What happened</th>
+                  <th>What it usually means</th>
+                  <th>What to do next</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td data-label="What happened">Codex login check failed</td>
+                  <td data-label="What it usually means">The local Codex session is not ready on this machine.</td>
+                  <td data-label="What to do next">Finish the local login flow, rerun <code>codex login status</code>, then resume setup.</td>
+                </tr>
+                <tr>
+                  <td data-label="What happened">Workspace creation stopped on Windows</td>
+                  <td data-label="What it usually means">The safe create and approval-mutation path is not supported there in Phase 1A.</td>
+                  <td data-label="What to do next">Use a macOS or Linux machine for creation and approval mutation.</td>
+                </tr>
+                <tr>
+                  <td data-label="What happened">Inspect found no useful files</td>
+                  <td data-label="What it usually means">The current month folder is empty, or the files were placed in the wrong directory.</td>
+                  <td data-label="What to do next">Recheck <code>01_APPROVED_PAST_OUTPUTS</code>, <code>02_PAST_SUPPORTING_FILES</code>, and <code>03_CURRENT_INPUTS/&lt;YYYY-MM&gt;</code>.</td>
+                </tr>
+                <tr>
+                  <td data-label="What happened">The period stays in questioning</td>
+                  <td data-label="What it usually means">A required answer is still missing.</td>
+                  <td data-label="What to do next">Answer the question from the localhost UI, then try generation again.</td>
+                </tr>
+                <tr>
+                  <td data-label="What happened">The draft should not be trusted yet</td>
+                  <td data-label="What it usually means">The period is ready for review, not approved.</td>
+                  <td data-label="What to do next">Read the draft in <code>05_DRAFTS</code>, compare it with the local source files, then approve the local copy.</td>
+                </tr>
+                <tr>
+                  <td data-label="What happened">The UI says manual recovery is required</td>
+                  <td data-label="What it usually means">The workspace state, run directory, or lock file needs a human check.</td>
+                  <td data-label="What to do next">Inspect <code>00_START_HERE/workspace_status.json</code>, <code>.system/workspace.json</code>, <code>.system/periods/&lt;YYYY-MM&gt;/state.json</code>, <code>.system/runs/</code>, and <code>07_AUDIT/audit.jsonl</code> before deciding the next action.</td>
+                </tr>
+              </tbody>
+            </table>
+            <details>
+              <summary>What to do when you must pause the month</summary>
+              <p>Leave the accepted files where they are, write down which answer still needs confirmation, and stop before approval. A pause is safer than approving uncertain wording.</p>
+            </details>
+            <details>
+              <summary>What to do when the next month should reuse style carefully</summary>
+              <p>Approve the prior month first, then confirm the style reference during rollover. Do not treat an unapproved draft as a style baseline.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <p>This manual covers the monthly office workspace route only. For the setup prompt, open <a href="../START_WITH_CODEX.md">START_WITH_CODEX.md</a>. For the repository contract, open <a href="../AGENTS.md">AGENTS.md</a>. For the document map, open <a href="INDEX.md">INDEX.md</a>.</p>
+      <div class="footer-links">
+        <a href="../START_WITH_CODEX.md">START_WITH_CODEX.md</a>
+        <a href="../AGENTS.md">AGENTS.md</a>
+        <a href="INDEX.md">INDEX.md</a>
+        <a href="office-workspace.ja.html">office-workspace.ja.html</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

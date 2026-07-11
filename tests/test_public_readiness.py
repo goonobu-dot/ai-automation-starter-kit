@@ -1,4 +1,5 @@
 from html.parser import HTMLParser
+import importlib.util
 from pathlib import Path
 import re
 import subprocess
@@ -94,6 +95,14 @@ def _extract_visible_text(html: str) -> str:
     for value in allowlist:
         text = text.replace(value, "")
     return text
+
+
+def _load_release_smoke_module():
+    spec = importlib.util.spec_from_file_location("release_smoke_module", Path("scripts/release_smoke.py"))
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def test_cli_prints_version(capsys):
@@ -1027,6 +1036,211 @@ def test_codex_monthly_setup_docs_and_agent_contract_are_present_and_beginner_fr
             assert snippet in text, f"{path} missing {snippet}"
 
 
+def test_office_workspace_manuals_define_mobile_overflow_contracts():
+    for path in ["docs/office-workspace.html", "docs/office-workspace.ja.html"]:
+        text = Path(path).read_text(encoding="utf-8")
+
+        assert "overflow-wrap: anywhere" in text, f"{path} must break long inline code"
+        assert "white-space: pre-wrap" in text, f"{path} must wrap copyable preformatted text"
+        assert "min-width: 0" in text, f"{path} grid and content children must be shrinkable"
+        assert 'class="troubleshooting-table"' in text
+        assert ".troubleshooting-table thead" in text
+        assert ".troubleshooting-table td::before" in text
+        assert "content: attr(data-label)" in text
+        assert text.count('data-label="') >= 18, f"{path} needs a mobile label for every troubleshooting cell"
+        troubleshooting = text.split('id="troubleshooting"', 1)[1]
+        assert '<table class="troubleshooting-table">' in troubleshooting
+
+
+def test_office_workspace_manuals_are_published_with_localized_beginner_flows():
+    expected = {
+        "docs/office-workspace.html": {
+            "lang": "en",
+            "required": [
+                "<!doctype html>",
+                '<html lang="en">',
+                'id="install-login"',
+                'id="ask-codex"',
+                'id="folders"',
+                'id="three-file-types"',
+                'id="inspect"',
+                'id="answer"',
+                'id="generate"',
+                'id="cancel-retry"',
+                'id="approve"',
+                'id="rollover"',
+                'id="boundaries"',
+                'id="troubleshooting"',
+                "Monthly operator workspace manual",
+                "Install and confirm Codex login",
+                "Ask Codex to set up the workspace",
+                "The three file types",
+                "Inspect the month",
+                "Answer one question at a time",
+                "Generate the draft",
+                "Cancel and retry safely",
+                "Approve the local copy",
+                "Prepare the next month",
+                "What AI can do",
+                "What a human must decide",
+                "No API key is required",
+                "No external sending occurs",
+                "macOS or Linux only for workspace mutation",
+                "START_WITH_CODEX.md",
+                "../START_WITH_CODEX.md",
+                "../AGENTS.md",
+                "INDEX.md",
+                "codex login status",
+                "ai-automation-kit office-workspace create",
+                "ai-automation-kit office-workspace status --workspace",
+                "ai-automation-kit office-workspace inspect --workspace",
+                "ai-automation-kit office-workspace serve --root",
+                "01_APPROVED_PAST_OUTPUTS",
+                "02_PAST_SUPPORTING_FILES",
+                "03_CURRENT_INPUTS",
+                "05_DRAFTS",
+                "06_APPROVED_OUTPUTS",
+                "07_AUDIT",
+                "screen-example",
+            ],
+            "forbidden": [
+                "月報オペレーター作業場所マニュアル",
+                "AIが判断できること",
+                "人間が判断すること",
+                "外部送信はしません",
+                "手動復旧",
+            ],
+        },
+        "docs/office-workspace.ja.html": {
+            "lang": "ja",
+            "required": [
+                "<!doctype html>",
+                '<html lang="ja">',
+                'id="install-login"',
+                'id="ask-codex"',
+                'id="folders"',
+                'id="three-file-types"',
+                'id="inspect"',
+                'id="answer"',
+                'id="generate"',
+                'id="cancel-retry"',
+                'id="approve"',
+                'id="rollover"',
+                'id="boundaries"',
+                'id="troubleshooting"',
+                "月報オペレーター作業場所マニュアル",
+                "インストールと Codex ログイン確認",
+                "Codex へ作業場所作成を依頼",
+                "3種類のファイル置き場",
+                "対象月を確認する",
+                "質問へ1つずつ答える",
+                "下書きを作る",
+                "停止してやり直す",
+                "ローカル承認して保存する",
+                "次の月を準備する",
+                "AIが判断できること",
+                "人間が判断すること",
+                "APIキーは不要です",
+                "外部送信はしません",
+                "作成と承認更新は macOS または Linux のみ",
+                "START_WITH_CODEX.ja.md",
+                "../START_WITH_CODEX.ja.md",
+                "../AGENTS.md",
+                "INDEX.md",
+                "codex login status",
+                "ai-automation-kit office-workspace create",
+                "ai-automation-kit office-workspace status --workspace",
+                "ai-automation-kit office-workspace inspect --workspace",
+                "ai-automation-kit office-workspace serve --root",
+                "01_APPROVED_PAST_OUTPUTS",
+                "02_PAST_SUPPORTING_FILES",
+                "03_CURRENT_INPUTS",
+                "05_DRAFTS",
+                "06_APPROVED_OUTPUTS",
+                "07_AUDIT",
+                "screen-example",
+            ],
+            "forbidden": [
+                "Monthly operator workspace manual",
+                "What AI can do",
+                "What a human must decide",
+                "No external sending occurs",
+                "manual recovery",
+            ],
+        },
+    }
+    for path, rules in expected.items():
+        text = Path(path).read_text(encoding="utf-8")
+        assert len(text) > 12000, path
+        assert '<meta name="viewport" content="width=device-width, initial-scale=1"' in text
+        assert "<header" in text and "<nav" in text and "<main" in text and "<section" in text and "<footer" in text
+        assert 'class="skip-link"' in text
+        assert "prefers-reduced-motion" in text
+        assert "@media print" in text
+        assert ":focus-visible" in text
+        assert 'href="#main"' in text
+        assert re.search(r'<main[^>]*id="main"[^>]*tabindex="-1"', text), f"{path} must make main focusable for skip links"
+        assert "main:focus-visible" in text or "main#main:focus-visible" in text
+        assert "main:target" in text or "main#main:target" in text
+        assert text.count('data-flow-step="') == 9, f"{path} must render exactly nine visual flow steps"
+        assert 'class="flow-text-alt"' in text
+        assert "linear-gradient" not in text
+        assert "radial-gradient" not in text
+        assert "innerHTML" not in text
+        assert "<script" not in text.lower()
+        assert re.search(r"border-radius:\s*[1-8]px", text), f"{path} should keep radii quiet"
+        assert not re.search(r"font-size\s*:\s*[^;]*vw", text), f"{path} must not use viewport font scaling"
+        assert "fonts.googleapis.com" not in text
+        assert "@import" not in text
+        assert "src=" not in text.lower()
+        if rules["lang"] == "en":
+            assert not re.search(r"[\u3040-\u30ff\u4e00-\u9fff]", text), path
+        for snippet in rules["required"]:
+            assert snippet in text, f"{path} missing {snippet}"
+        for snippet in rules["forbidden"]:
+            assert snippet not in text, f"{path} should not mix language with {snippet}"
+        _assert_no_broken_local_hrefs(path, text)
+
+
+def test_readme_index_and_changelog_publish_the_office_workspace_beginner_route():
+    readme = Path("README.md").read_text(encoding="utf-8")
+    index = Path("docs/INDEX.md").read_text(encoding="utf-8")
+    changelog = Path("CHANGELOG.md").read_text(encoding="utf-8")
+
+    for snippet in [
+        "Phase 1A",
+        "monthly office workspace",
+        "docs/office-workspace.html",
+        "docs/office-workspace.ja.html",
+        "START_WITH_CODEX.md",
+        "START_WITH_CODEX.ja.md",
+        "ai-automation-kit office-workspace create",
+        "ai-automation-kit office-workspace status --workspace",
+        "ai-automation-kit office-workspace inspect --workspace",
+        "ai-automation-kit office-workspace serve --root",
+        "macOS or Linux",
+    ]:
+        assert snippet in readme, f"README.md missing office workspace route: {snippet}"
+
+    getting_started_index = index.split("## 💼", 1)[0]
+    for snippet in [
+        "office-workspace.ja.html",
+        "office-workspace.html",
+        "../START_WITH_CODEX.ja.md".replace("../", ""),
+        "../START_WITH_CODEX.md".replace("../", ""),
+    ]:
+        assert snippet in getting_started_index, f"docs/INDEX.md missing office workspace entry: {snippet}"
+
+    for snippet in [
+        "office-workspace",
+        "docs/office-workspace.ja.html",
+        "docs/office-workspace.html",
+        "installed-wheel",
+        "release smoke",
+    ]:
+        assert snippet in changelog, f"CHANGELOG.md missing office workspace release note: {snippet}"
+
+
 def test_cli_release_surface_includes_safe_office_workspace_commands():
     cli_text = Path("src/ai_automation_kit/cli.py").read_text(encoding="utf-8")
 
@@ -1132,6 +1346,42 @@ def test_public_release_audit_script_checks_report_wizard_public_navigation():
         assert snippet in result.stdout
 
 
+def test_public_release_audit_script_checks_office_workspace_manuals_packs_and_setup_docs():
+    result = subprocess.run(
+        [sys.executable, "scripts/public_release_audit.py"],
+        text=True,
+        capture_output=True,
+        check=True,
+    )
+
+    for snippet in [
+        "docs/office-workspace.html",
+        "docs/office-workspace.ja.html",
+        "START_WITH_CODEX.md",
+        "START_WITH_CODEX.ja.md",
+        "AGENTS.md",
+        "src/ai_automation_kit/packs/manifest.json",
+        "src/ai_automation_kit/packs/monthly_report.json",
+        "src/ai_automation_kit/packs/monthly_report_output.schema.json",
+        "src/ai_automation_kit/packs/monthly_report_prompt.json",
+        "README.md::docs/office-workspace.html",
+        "README.md::docs/office-workspace.ja.html",
+        "README.md::ai-automation-kit office-workspace create",
+        "README.md::ai-automation-kit office-workspace status --workspace",
+        "README.md::ai-automation-kit office-workspace inspect --workspace",
+        "README.md::ai-automation-kit office-workspace serve --root",
+        "scripts/release_smoke.py::office-workspace create",
+        "scripts/release_smoke.py::office-workspace inspect",
+        "scripts/release_smoke.py::office-workspace serve",
+        "scripts/release_smoke.py::start_codex_run",
+        "scripts/release_smoke.py::approve_draft",
+        "scripts/release_smoke.py::create_period",
+        "scripts/release_smoke.py::X-Office-Workspace-Token",
+        "scripts/release_smoke.py::approved_sha256",
+    ]:
+        assert snippet in result.stdout
+
+
 def test_public_release_audit_script_exposes_loop_quality_checks():
     text = Path("scripts/public_release_audit.py").read_text()
 
@@ -1180,6 +1430,117 @@ def test_release_smoke_uses_installed_cli_subprocess_for_report_wizard_server():
     assert "create_report_wizard_server(" not in text
 
 
+def test_release_smoke_covers_installed_office_workspace_flow_without_source_tree_leakage():
+    text = Path("scripts/release_smoke.py").read_text(encoding="utf-8")
+
+    for snippet in [
+        '"office-workspace"',
+        '"create"',
+        '"inspect"',
+        '"serve"',
+        "docs/office-workspace.html",
+        "docs/office-workspace.ja.html",
+        "START_WITH_CODEX.md",
+        "START_WITH_CODEX.ja.md",
+        "AGENTS.md",
+        "manifest.json",
+        "monthly_report.json",
+        "monthly_report_output.schema.json",
+        "monthly_report_prompt.json",
+        "save_answer",
+        "start_codex_run",
+        "wait_for_run",
+        "approve_draft",
+        "create_period",
+        "X-Office-Workspace-Token",
+        "/api/workspaces",
+        "approved_sha256",
+        "PYTHONPATH",
+        "_reserve_local_port",
+        "_wait_for_http_ready",
+    ]:
+        assert snippet in text, f"scripts/release_smoke.py missing office workspace smoke snippet: {snippet}"
+
+
+def test_release_smoke_installed_wheel_flow_keeps_virtualenv_entrypoints(tmp_path, monkeypatch):
+    release_smoke = _load_release_smoke_module()
+    wheelhouse = tmp_path / "wheelhouse"
+    wheelhouse.mkdir()
+    (wheelhouse / "ai_automation_starter_kit-0.1.0-py3-none-any.whl").write_text("placeholder", encoding="utf-8")
+    output = tmp_path / "smoke-output"
+    commands: list[list[str]] = []
+    report_calls: list[tuple[Path, Path, Path]] = []
+    office_calls: list[tuple[Path, Path, Path]] = []
+
+    def fake_run(command, cwd=None, env=None):
+        normalized = [str(part) for part in command]
+        commands.append(normalized)
+        if normalized[:3] == [sys.executable, "-m", "venv"]:
+            venv_dir = Path(normalized[3])
+            (venv_dir / "bin").mkdir(parents=True, exist_ok=True)
+            (venv_dir / "bin" / "python").symlink_to(Path(sys.executable))
+            return
+        if len(normalized) >= 4 and normalized[1:4] == ["-m", "pip", "install"]:
+            cli_bin = Path(normalized[0]).parent / "ai-automation-kit"
+            cli_bin.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+
+    monkeypatch.setattr(release_smoke, "_run", fake_run)
+    monkeypatch.setattr(
+        release_smoke,
+        "_run_report_wizard_installed_smoke",
+        lambda cli_bin, python_bin, output_path: report_calls.append((cli_bin, python_bin, output_path)),
+    )
+    monkeypatch.setattr(
+        release_smoke,
+        "_run_office_workspace_installed_smoke",
+        lambda cli_bin, python_bin, output_path: office_calls.append((cli_bin, python_bin, output_path)),
+    )
+
+    release_smoke._verify_wheel_install(wheelhouse, output)
+
+    install_command = commands[1]
+    version_command = commands[2]
+    expected_output = output.resolve()
+
+    assert install_command[0].endswith("/install-venv/bin/python")
+    assert install_command[0] != str(Path(sys.executable).resolve())
+    assert Path(install_command[0]).resolve() == Path(sys.executable).resolve()
+    assert version_command[0].endswith("/install-venv/bin/ai-automation-kit")
+    assert report_calls == [(Path(version_command[0]), Path(install_command[0]), expected_output)]
+    assert office_calls == [(Path(version_command[0]), Path(install_command[0]), expected_output)]
+
+
+def test_release_smoke_office_workspace_flow_uses_local_cryptography_fallback_without_source_tree(
+    tmp_path, monkeypatch
+):
+    release_smoke = _load_release_smoke_module()
+    site_packages = tmp_path / "site-packages"
+    cryptography_package = site_packages / "cryptography"
+    cryptography_package.mkdir(parents=True)
+    fake_spec = type(
+        "FakeSpec",
+        (),
+        {
+            "submodule_search_locations": [str(cryptography_package)],
+            "origin": str(cryptography_package / "__init__.py"),
+        },
+    )()
+
+    monkeypatch.delattr(release_smoke.hashlib, "scrypt", raising=False)
+    monkeypatch.setattr(release_smoke.importlib.util, "find_spec", lambda name: fake_spec if name == "cryptography" else None)
+
+    python_paths = release_smoke._office_workspace_python_paths()
+    env = release_smoke._isolated_installed_env(
+        tmp_path / "install-venv" / "bin" / "ai-automation-kit",
+        python_paths=python_paths,
+    )
+
+    assert python_paths == [site_packages.resolve()]
+    assert env["PYTHONNOUSERSITE"] == "1"
+    assert env["PYTHONPATH"] == str(site_packages.resolve())
+    assert "/src" not in env["PYTHONPATH"]
+
+
 def test_public_release_audit_script_checks_report_wizard_release_smoke_snippets():
     result = subprocess.run(
         [sys.executable, "scripts/public_release_audit.py"],
@@ -1206,6 +1567,18 @@ def test_public_release_audit_script_checks_report_wizard_release_smoke_snippets
         "scripts/release_smoke.py::close files",
         "scripts/release_smoke.py::HTTP approval hash",
         "scripts/release_smoke.py::/api/state",
+    ]:
+        assert snippet in result.stdout
+
+    for snippet in [
+        "scripts/release_smoke.py::office-workspace create",
+        "scripts/release_smoke.py::office-workspace inspect",
+        "scripts/release_smoke.py::office-workspace serve",
+        "scripts/release_smoke.py::start_codex_run",
+        "scripts/release_smoke.py::approve_draft",
+        "scripts/release_smoke.py::create_period",
+        "scripts/release_smoke.py::X-Office-Workspace-Token",
+        "scripts/release_smoke.py::approved_sha256",
     ]:
         assert snippet in result.stdout
 

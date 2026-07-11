@@ -13,6 +13,9 @@ REQUIRED_FILES = [
     "SECURITY.md",
     "CONTRIBUTING.md",
     "CHANGELOG.md",
+    "AGENTS.md",
+    "START_WITH_CODEX.md",
+    "START_WITH_CODEX.ja.md",
     "pyproject.toml",
     "setup.py",
     ".gitignore",
@@ -26,6 +29,8 @@ REQUIRED_FILES = [
     "docs/archive/AUTOMATION_DEMAND_RESEARCH.md",
     "docs/manual.html",
     "docs/manual.ja.html",
+    "docs/office-workspace.html",
+    "docs/office-workspace.ja.html",
     "docs/report-automation-wizard.html",
     "docs/report-automation-wizard.ja.html",
     "docs/report-automation-wizard-flow.mmd",
@@ -85,6 +90,13 @@ REQUIRED_FILES = [
     "docs/FAQ.ja.md",
     "scripts/release_smoke.py",
     "scripts/run_all_demos.py",
+]
+
+REQUIRED_PACK_RESOURCE_FILES = [
+    "src/ai_automation_kit/packs/manifest.json",
+    "src/ai_automation_kit/packs/monthly_report.json",
+    "src/ai_automation_kit/packs/monthly_report_output.schema.json",
+    "src/ai_automation_kit/packs/monthly_report_prompt.json",
 ]
 
 REQUIRED_EXAMPLE_FILES = [
@@ -179,6 +191,10 @@ REQUIRED_README_SNIPPETS = [
     "goonobu-dot.github.io/ai-automation-starter-kit/manual.ja.html",
     "docs/report-automation-wizard.html",
     "docs/report-automation-wizard.ja.html",
+    "docs/office-workspace.html",
+    "docs/office-workspace.ja.html",
+    "START_WITH_CODEX.md",
+    "START_WITH_CODEX.ja.md",
     "docs/USER_MANUAL.md",
     "docs/BEGINNER_ROUTE_MAP.md",
     "docs/BEGINNER_ROUTE_MAP.ja.md",
@@ -255,6 +271,10 @@ REQUIRED_CLI_DOC_SNIPPETS = [
     "ai-automation-kit report-wizard build",
     "ai-automation-kit report-wizard approve",
     "ai-automation-kit report-wizard serve",
+    "ai-automation-kit office-workspace create",
+    "ai-automation-kit office-workspace status --workspace",
+    "ai-automation-kit office-workspace inspect --workspace",
+    "ai-automation-kit office-workspace serve --root",
     "ai-automation-kit flows list",
     "ai-automation-kit flows install",
     "ai-automation-kit flows list --industry reception",
@@ -368,6 +388,10 @@ REQUIRED_PUBLISHING_SNIPPETS = [
 REQUIRED_CHANGELOG_SNIPPETS = [
     "Unreleased",
     "0.1.0",
+    "office-workspace",
+    "docs/office-workspace.ja.html",
+    "installed-wheel",
+    "release smoke",
 ]
 
 REQUIRED_CONTRIBUTING_SNIPPETS = [
@@ -428,6 +452,30 @@ REQUIRED_HTML_MANUAL_SNIPPETS = {
         "USER_MANUAL.ja.md",
         "manual.html",
         "report-automation-wizard.ja.html",
+    ],
+    "docs/office-workspace.html": [
+        "Monthly operator workspace manual",
+        "Install and confirm Codex login",
+        "Ask Codex to set up the workspace",
+        "The three file types",
+        "Cancel and retry safely",
+        "No API key is required",
+        "No external sending occurs",
+        "../START_WITH_CODEX.md",
+        "../AGENTS.md",
+        "INDEX.md",
+    ],
+    "docs/office-workspace.ja.html": [
+        "月報オペレーター作業場所マニュアル",
+        "インストールと Codex ログイン確認",
+        "Codex へ作業場所作成を依頼",
+        "3種類のファイル置き場",
+        "停止してやり直す",
+        "APIキーは不要です",
+        "外部送信はしません",
+        "../START_WITH_CODEX.ja.md",
+        "../AGENTS.md",
+        "INDEX.md",
     ],
 }
 
@@ -560,6 +608,14 @@ REQUIRED_RELEASE_SMOKE_SNIPPETS = [
     ("close files", "process.stdout.close"),
     ("/api/state", "/api/state"),
     ("HTTP approval hash", 'payload["data"]["state"]["approval"]["report_sha256"]'),
+    ("office-workspace create", "office-workspace create"),
+    ("office-workspace inspect", "office-workspace inspect"),
+    ("office-workspace serve", "office-workspace serve"),
+    ("start_codex_run", "start_codex_run"),
+    ("approve_draft", "approve_draft"),
+    ("create_period", "create_period"),
+    ("X-Office-Workspace-Token", "X-Office-Workspace-Token"),
+    ("approved_sha256", "approved_sha256"),
     ("beginner-sales", "beginner-sales"),
     ("quickstart", "quickstart"),
     ("flow-guide", "flow-guide"),
@@ -623,6 +679,14 @@ def main() -> int:
             failures.append(f"empty required file: {relative_path}")
         elif path.stat().st_size > MAX_REQUIRED_FILE_BYTES:
             failures.append(f"required file too large: {relative_path}")
+        checks.append(relative_path)
+
+    for relative_path in REQUIRED_PACK_RESOURCE_FILES:
+        path = ROOT / relative_path
+        if not path.exists():
+            failures.append(f"missing workflow pack resource: {relative_path}")
+        elif path.stat().st_size == 0:
+            failures.append(f"empty workflow pack resource: {relative_path}")
         checks.append(relative_path)
 
     for relative_path in REQUIRED_EXAMPLE_FILES:
