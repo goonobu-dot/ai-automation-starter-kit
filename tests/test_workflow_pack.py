@@ -5,28 +5,71 @@ from importlib import resources
 import pytest
 
 from ai_automation_kit.core.workflow_pack import (
+    list_bundled_packs,
     load_bundled_output_schema,
     load_bundled_pack,
     load_bundled_prompt_template,
     validate_pack,
 )
 
+EXPECTED_PACK_ORDER = [
+    "monthly-report",
+    "inquiry-daily",
+    "sales-daily",
+    "finance-daily",
+    "project-daily",
+    "attendance-daily",
+    "meeting-actions-daily",
+    "expense-check-daily",
+    "invoice-order-check-daily",
+    "internal-requests-daily",
+    "executive-digest-daily",
+]
 
-def test_monthly_pack_is_bundled_valid_and_draft_only():
-    pack = load_bundled_pack("monthly-report")
+EXPECTED_PERIOD_TYPES = {
+    "monthly-report": "month",
+    "inquiry-daily": "day",
+    "sales-daily": "day",
+    "finance-daily": "day",
+    "project-daily": "day",
+    "attendance-daily": "day",
+    "meeting-actions-daily": "day",
+    "expense-check-daily": "day",
+    "invoice-order-check-daily": "day",
+    "internal-requests-daily": "day",
+    "executive-digest-daily": "day",
+}
+
+
+@pytest.mark.parametrize("pack_id", EXPECTED_PACK_ORDER)
+def test_bundled_packs_are_valid_and_draft_only(pack_id):
+    pack = load_bundled_pack(pack_id)
 
     assert pack["schema_version"] == 1
-    assert pack["risk_tier"] == "low"
-    assert pack["outputs"] == [
-        {"id": "draft", "relative_path": "monthly_report.md", "max_bytes": 1048576}
-    ]
-    assert set(pack["prohibited_actions"]) == {
+    assert pack["period_type"] == EXPECTED_PERIOD_TYPES[pack_id]
+    assert pack["approval"]["required"] is True
+    assert len(pack["outputs"]) == 1
+    assert pack["outputs"][0]["id"] == "draft"
+    assert pack["outputs"][0]["relative_path"].endswith(".md")
+    assert pack["outputs"][0]["max_bytes"] > 0
+    assert set(pack["prohibited_actions"]) >= {
         "external_send",
         "publish",
         "payment",
         "production_write",
         "self_approve",
     }
+    assert pack["questions"]
+    assert pack["inputs"]
+
+
+def test_monthly_pack_keeps_expected_core_metadata():
+    pack = load_bundled_pack("monthly-report")
+
+    assert pack["risk_tier"] == "low"
+    assert pack["outputs"] == [
+        {"id": "draft", "relative_path": "monthly_report.md", "max_bytes": 1048576}
+    ]
 
 
 def test_pack_rejects_unknown_fields_absolute_paths_and_free_prompt_text():
@@ -66,6 +109,20 @@ def test_pack_rejects_unsupported_question_type_missing_prohibited_action_and_ne
         validate_pack(bad_output)
 
 
+def test_pack_rejects_missing_or_unsupported_period_type():
+    base = load_bundled_pack("monthly-report")
+
+    missing_period_type = dict(base)
+    missing_period_type.pop("period_type")
+    with pytest.raises(ValueError, match="fields do not match schema version 1"):
+        validate_pack(missing_period_type)
+
+    bad_period_type = dict(base)
+    bad_period_type["period_type"] = "week"
+    with pytest.raises(ValueError, match="period_type"):
+        validate_pack(bad_period_type)
+
+
 def test_load_bundled_pack_returns_deep_copy():
     first = load_bundled_pack("monthly-report")
     first["display_name"]["ja"] = "changed"
@@ -77,8 +134,20 @@ def test_load_bundled_pack_returns_deep_copy():
     assert second["questions"][0]["id"] == "audience"
 
 
-def test_output_schema_is_draft_only_and_closed():
-    schema = load_bundled_output_schema("monthly-report")
+def test_list_bundled_packs_returns_manifest_order_and_deep_copies():
+    packs = list_bundled_packs()
+
+    assert [pack["id"] for pack in packs] == EXPECTED_PACK_ORDER
+    packs[0]["display_name"]["ja"] = "changed"
+
+    refreshed = list_bundled_packs()
+
+    assert refreshed[0]["display_name"]["ja"] == "月報作成"
+
+
+@pytest.mark.parametrize("pack_id", EXPECTED_PACK_ORDER)
+def test_output_schema_is_draft_only_and_closed(pack_id):
+    schema = load_bundled_output_schema(pack_id)
 
     assert schema["type"] == "object"
     assert schema["additionalProperties"] is False
@@ -86,17 +155,23 @@ def test_output_schema_is_draft_only_and_closed():
     assert set(schema["required"]) == {"missing_questions", "draft_markdown"}
 
 
-def test_monthly_prompt_template_is_versioned_closed_and_pack_owned():
-    prompt = load_bundled_prompt_template("monthly-report")
+@pytest.mark.parametrize("pack_id", EXPECTED_PACK_ORDER)
+def test_prompt_templates_are_versioned_closed_and_pack_owned(pack_id):
+    pack = load_bundled_pack(pack_id)
+    prompt = load_bundled_prompt_template(pack_id)
 
     assert set(prompt) == {"template_id", "allowed_variables", "template"}
-    assert prompt["template_id"] == "monthly-report-v1"
+    assert prompt["template_id"] == pack["prompt_template_id"]
     assert prompt["allowed_variables"] == ["period_id", "source_manifest", "answers"]
     assert "{period_id}" in prompt["template"]
     assert "{source_manifest}" in prompt["template"]
     assert "{answers}" in prompt["template"]
     assert "BEGIN_UNTRUSTED_DATA" in prompt["template"]
     assert "END_UNTRUSTED_DATA" in prompt["template"]
+    assert "supplied sources" in prompt["template"]
+    assert "draft for human review" in prompt["template"]
+    assert "Only a human approver" in prompt["template"]
+    assert "Do not send messages" in prompt["template"]
 
 
 def test_prompt_template_hash_is_verified_before_parse(monkeypatch):
@@ -144,15 +219,16 @@ def test_prompt_template_rejects_contract_changes(monkeypatch, mutation, message
 
 def test_manifest_hash_matches_bundled_pack_bytes():
     manifest_path = resources.files("ai_automation_kit").joinpath("packs", "manifest.json")
-    pack_path = resources.files("ai_automation_kit").joinpath("packs", "monthly_report.json")
-    schema_path = resources.files("ai_automation_kit").joinpath("packs", "monthly_report_output.schema.json")
-    prompt_path = resources.files("ai_automation_kit").joinpath("packs", "monthly_report_prompt.json")
-
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-    pack_bytes = pack_path.read_bytes()
-    schema_bytes = schema_path.read_bytes()
-    prompt_bytes = prompt_path.read_bytes()
 
-    assert manifest["monthly-report"]["pack_sha256"] == hashlib.sha256(pack_bytes).hexdigest()
-    assert manifest["monthly-report"]["output_schema_sha256"] == hashlib.sha256(schema_bytes).hexdigest()
-    assert manifest["monthly-report"]["prompt_template_sha256"] == hashlib.sha256(prompt_bytes).hexdigest()
+    assert list(manifest) == EXPECTED_PACK_ORDER
+
+    for pack_id in EXPECTED_PACK_ORDER:
+        entry = manifest[pack_id]
+        pack_bytes = resources.files("ai_automation_kit").joinpath("packs", entry["pack_file"]).read_bytes()
+        schema_bytes = resources.files("ai_automation_kit").joinpath("packs", entry["output_schema_file"]).read_bytes()
+        prompt_bytes = resources.files("ai_automation_kit").joinpath("packs", entry["prompt_template_file"]).read_bytes()
+
+        assert entry["pack_sha256"] == hashlib.sha256(pack_bytes).hexdigest()
+        assert entry["output_schema_sha256"] == hashlib.sha256(schema_bytes).hexdigest()
+        assert entry["prompt_template_sha256"] == hashlib.sha256(prompt_bytes).hexdigest()

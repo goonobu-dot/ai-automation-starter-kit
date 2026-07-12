@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "id": "expense-check-daily",
+  "display_name": {
+    "ja": "経費チェック日次確認",
+    "en": "Expense Check Daily"
+  },
+  "category": "finance",
+  "period_type": "day",
+  "risk_tier": "medium",
+  "business_outcome": "Prepare a sourced daily expense review draft with policy gaps for human approval",
+  "inputs": [
+    {
+      "id": "expense_claim_export",
+      "required": true,
+      "accepted_extensions": [
+        ".csv",
+        ".xlsx",
+        ".json",
+        ".pdf"
+      ]
+    },
+    {
+      "id": "expense_policy_reference",
+      "required": false,
+      "accepted_extensions": [
+        ".md",
+        ".txt",
+        ".pdf",
+        ".docx"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "materiality_threshold",
+      "type": "short_text",
+      "required": true,
+      "max_length": 120
+    },
+    {
+      "id": "frequent_policy_violations",
+      "type": "long_text",
+      "required": false,
+      "max_length": 600
+    },
+    {
+      "id": "same_day_block_required",
+      "type": "confirmation",
+      "required": false
+    }
+  ],
+  "prompt_template_id": "expense-check-daily-v1",
+  "allowed_prompt_variables": [
+    "period_id",
+    "source_manifest",
+    "answers"
+  ],
+  "outputs": [
+    {
+      "id": "draft",
+      "relative_path": "expense_check_daily.md",
+      "max_bytes": 1048576
+    }
+  ],
+  "approval": {
+    "required": true,
+    "role": "expense_approver"
+  },
+  "prohibited_actions": [
+    "external_send",
+    "publish",
+    "payment",
+    "production_write",
+    "self_approve",
+    "expense_reimbursement"
+  ],
+  "success_metrics": [
+    "exception_capture_rate",
+    "missing_fact_count",
+    "review_minutes"
+  ]
+}

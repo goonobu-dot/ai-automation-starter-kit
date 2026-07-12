@@ -1,5 +1,7 @@
 # AI Automation Starter Kit
 
+Daily workflow automation: [日本語の初心者ガイド](docs/daily-workflows.ja.html) | [English beginner guide](docs/daily-workflows.html)
+
 AI Automation Starter Kit is a GitHub-data-driven AI agent skill kit for people who want to propose and deliver small, safe business automation projects — especially beginners selling automation to small and medium companies. One command generates client-ready artifacts: demos, discovery questions, proposals, pricing menus, dry-run flow projects, and delivery checklists. Nothing is sent externally: every risky action stays behind a human approval step.
 
 ## 日本語の方へ：3ステップで始める

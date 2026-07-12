@@ -1,0 +1,87 @@
+{
+  "schema_version": 1,
+  "id": "sales-daily",
+  "display_name": {
+    "ja": "営業日次整理",
+    "en": "Sales Daily"
+  },
+  "category": "sales",
+  "period_type": "day",
+  "risk_tier": "low",
+  "business_outcome": "Prepare a sourced daily sales follow-up draft without contacting anyone",
+  "inputs": [
+    {
+      "id": "pipeline_export",
+      "required": true,
+      "accepted_extensions": [
+        ".csv",
+        ".xlsx",
+        ".json"
+      ]
+    },
+    {
+      "id": "call_or_meeting_notes",
+      "required": false,
+      "accepted_extensions": [
+        ".md",
+        ".txt",
+        ".docx",
+        ".pdf"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "today_revenue_focus",
+      "type": "short_text",
+      "required": true,
+      "max_length": 200
+    },
+    {
+      "id": "deal_stage_priority",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        "early_pipeline",
+        "active_pipeline",
+        "closing"
+      ]
+    },
+    {
+      "id": "discount_guardrails",
+      "type": "long_text",
+      "required": false,
+      "max_length": 600
+    }
+  ],
+  "prompt_template_id": "sales-daily-v1",
+  "allowed_prompt_variables": [
+    "period_id",
+    "source_manifest",
+    "answers"
+  ],
+  "outputs": [
+    {
+      "id": "draft",
+      "relative_path": "sales_daily.md",
+      "max_bytes": 1048576
+    }
+  ],
+  "approval": {
+    "required": true,
+    "role": "sales_manager"
+  },
+  "prohibited_actions": [
+    "external_send",
+    "publish",
+    "payment",
+    "production_write",
+    "self_approve",
+    "crm_update"
+  ],
+  "success_metrics": [
+    "review_minutes",
+    "missing_fact_count",
+    "manager_edit_count"
+  ]
+}

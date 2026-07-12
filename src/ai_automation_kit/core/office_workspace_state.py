@@ -329,15 +329,15 @@ def load_workspace(workspace: Path) -> Dict:
 
 
 def create_period(workspace: Path, period_id: str, style_reference: Optional[Dict] = None) -> Dict:
-    period_id = validate_period_id(period_id)
     workspace_state = _load_workspace_state(workspace)
+    pack = load_bundled_pack(workspace_state["pack_id"])
+    period_id = validate_period_id(period_id, pack["period_type"])
     if period_id in workspace_state["periods"]:
         raise ValueError("period {} already exists".format(period_id))
     if workspace_state["periods"] and period_id <= workspace_state["periods"][-1]:
         raise ValueError("period rollover is append-only and must move forward")
 
     validated_style_reference = _validated_style_reference(workspace, period_id, style_reference)
-    pack = load_bundled_pack(workspace_state["pack_id"])
     root = validate_workspace_root(workspace)
     for folder in PERIOD_FOLDERS:
         (root / folder / period_id).mkdir(mode=0o700, parents=True, exist_ok=False)

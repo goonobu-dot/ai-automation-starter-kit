@@ -9,6 +9,44 @@ from pathlib import Path
 import pytest
 
 
+@pytest.fixture
+def office_workspace_pack_stubs(monkeypatch):
+    packs = {
+        "monthly-report": {
+            "id": "monthly-report",
+            "period_type": "month",
+            "questions": [{"id": "audience", "required": True, "type": "short_text", "max_length": 200}],
+            "outputs": [{"relative_path": "monthly_report.md"}],
+        },
+        "inquiry-daily": {
+            "id": "inquiry-daily",
+            "period_type": "day",
+            "questions": [{"id": "audience", "required": True, "type": "short_text", "max_length": 200}],
+            "outputs": [{"relative_path": "daily_inquiry.md"}],
+        },
+    }
+
+    def fake_load_bundled_pack(pack_id):
+        try:
+            return json.loads(json.dumps(packs[pack_id]))
+        except KeyError as exc:
+            raise ValueError(f"unknown workflow pack: {pack_id}") from exc
+
+    def fake_pack_manifest_entry(pack_id):
+        if pack_id not in packs:
+            raise ValueError(f"unknown workflow pack: {pack_id}")
+        return {
+            "pack_file": f"{pack_id}.json",
+            "pack_sha256": "0" * 64,
+            "output_schema_file": f"{pack_id}.schema.json",
+            "output_schema_sha256": "1" * 64,
+        }
+
+    monkeypatch.setattr("ai_automation_kit.core.office_workspace_builder.load_bundled_pack", fake_load_bundled_pack)
+    monkeypatch.setattr("ai_automation_kit.core.office_workspace_builder._pack_manifest_entry", fake_pack_manifest_entry)
+    monkeypatch.setattr("ai_automation_kit.core.office_workspace_state.load_bundled_pack", fake_load_bundled_pack)
+
+
 def test_parser_accepts_research_agent_command():
     parser = build_parser()
     args = parser.parse_args(["research-agent", "--config", "sample.json", "--output", "out"])
@@ -294,8 +332,35 @@ def test_parser_supports_office_workspace_create_status_inspect_and_serve():
     assert create_args.command == "office-workspace"
     assert create_args.office_workspace_command == "create"
     assert create_args.root == "work"
+    assert create_args.pack == "monthly-report"
     assert create_args.period == "2026-07"
     assert create_args.language == "en"
+
+    daily_create_args = parser.parse_args(
+        [
+            "office-workspace",
+            "create",
+            "--root",
+            "work",
+            "--name",
+            "Daily",
+            "--approver",
+            "Owner",
+            "--pin",
+            "482913",
+            "--pack",
+            "inquiry-daily",
+            "--period",
+            "2026-07-12",
+        ]
+    )
+    assert daily_create_args.office_workspace_command == "create"
+    assert daily_create_args.pack == "inquiry-daily"
+    assert daily_create_args.period == "2026-07-12"
+
+    packs_args = parser.parse_args(["office-workspace", "packs", "--json"])
+    assert packs_args.office_workspace_command == "packs"
+    assert packs_args.json is True
 
     status_args = parser.parse_args(["office-workspace", "status", "--workspace", "workspace", "--json"])
     assert status_args.office_workspace_command == "status"
@@ -1348,7 +1413,7 @@ def test_main_report_wizard_serve_lazy_imports_server_only_when_needed(tmp_path,
     assert captured.err == ""
 
 
-def test_main_runs_office_workspace_create_status_and_inspect(tmp_path, capsys):
+def test_main_runs_office_workspace_create_status_and_inspect(tmp_path, capsys, office_workspace_pack_stubs):
     root = tmp_path / "workspaces"
     workspace = root / "Monthly"
 
@@ -1401,6 +1466,129 @@ def test_main_runs_office_workspace_create_status_and_inspect(tmp_path, capsys):
     assert "pending_questions=audience" in inspect_output.out
 
 
+def test_main_runs_office_workspace_create_with_daily_pack(tmp_path, capsys, office_workspace_pack_stubs):
+    root = tmp_path / "workspaces"
+    workspace = root / "Daily_Support"
+
+    exit_code = main(
+        [
+            "office-workspace",
+            "create",
+            "--root",
+            str(root),
+            "--name",
+            "Daily Support",
+            "--approver",
+            "Owner",
+            "--pin",
+            "482913",
+            "--pack",
+            "inquiry-daily",
+            "--period",
+            "2026-07-12",
+            "--language",
+            "en",
+        ]
+    )
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "workspace=" in captured.out
+    assert str(workspace) in captured.out
+    assert "next_action=Put this month's files into 03_CURRENT_INPUTS/2026-07-12." in captured.out
+
+    exit_code = main(["office-workspace", "status", "--workspace", str(workspace), "--json"])
+    status_output = capsys.readouterr()
+    assert exit_code == 0
+    payload = json.loads(status_output.out)
+    assert payload["workspace"] == str(workspace)
+    assert payload["pack_id"] == "inquiry-daily"
+    assert payload["current_period"] == "2026-07-12"
+    assert payload["current_stage"] == "created"
+
+
+def test_main_removes_partial_workspace_when_first_daily_period_is_invalid(tmp_path, capsys):
+    exit_code = main(
+        [
+            "office-workspace",
+            "create",
+            "--root",
+            str(tmp_path),
+            "--name",
+            "Broken Daily",
+            "--approver",
+            "Owner",
+            "--pin",
+            "482913",
+            "--pack",
+            "inquiry-daily",
+            "--period",
+            "2026-07",
+        ]
+    )
+
+    assert exit_code == 2
+    assert "YYYY-MM-DD" in capsys.readouterr().err
+    assert not (tmp_path / "Broken_Daily").exists()
+
+
+def test_main_runs_office_workspace_packs(tmp_path, monkeypatch, capsys):
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(
+        "ai_automation_kit.cli.list_bundled_packs",
+        lambda: [
+            {
+                "id": "monthly-report",
+                "display_name": {"ja": "月次レポート", "en": "Monthly Report"},
+                "period_type": "month",
+                "risk_tier": "medium",
+            },
+            {
+                "id": "inquiry-daily",
+                "display_name": {"ja": "日次問い合わせ", "en": "Daily Inquiry"},
+                "period_type": "day",
+                "risk_tier": "low",
+            },
+        ],
+    )
+
+    exit_code = main(["office-workspace", "packs"])
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert captured.out == (
+        "id=monthly-report\n"
+        "name_ja=月次レポート\n"
+        "name_en=Monthly Report\n"
+        "period_type=month\n"
+        "risk_tier=medium\n"
+        "\n"
+        "id=inquiry-daily\n"
+        "name_ja=日次問い合わせ\n"
+        "name_en=Daily Inquiry\n"
+        "period_type=day\n"
+        "risk_tier=low\n"
+    )
+    assert captured.err == ""
+
+    exit_code = main(["office-workspace", "packs", "--json"])
+    json_output = capsys.readouterr()
+    assert exit_code == 0
+    assert json.loads(json_output.out) == [
+        {
+            "id": "monthly-report",
+            "display_name": {"ja": "月次レポート", "en": "Monthly Report"},
+            "period_type": "month",
+            "risk_tier": "medium",
+        },
+        {
+            "id": "inquiry-daily",
+            "display_name": {"ja": "日次問い合わせ", "en": "Daily Inquiry"},
+            "period_type": "day",
+            "risk_tier": "low",
+        },
+    ]
+    assert json_output.err == ""
+
+
 def test_main_office_workspace_create_rejects_symlink_root_without_target_writes(tmp_path, capsys):
     target = tmp_path / "target"
     target.mkdir()
@@ -1431,7 +1619,7 @@ def test_main_office_workspace_create_rejects_symlink_root_without_target_writes
 
 
 @pytest.mark.parametrize("command", ["status", "inspect", "serve"])
-def test_main_office_workspace_commands_reject_symlink_workspace_path(tmp_path, capsys, command):
+def test_main_office_workspace_commands_reject_symlink_workspace_path(tmp_path, capsys, command, office_workspace_pack_stubs):
     root = tmp_path / "workspaces"
     assert (
         main(
@@ -1470,7 +1658,7 @@ def test_main_office_workspace_commands_reject_symlink_workspace_path(tmp_path, 
     assert "symlink" in captured.err.lower()
 
 
-def test_main_office_workspace_create_accepts_relative_and_absolute_roots(tmp_path, monkeypatch, capsys):
+def test_main_office_workspace_create_accepts_relative_and_absolute_roots(tmp_path, monkeypatch, capsys, office_workspace_pack_stubs):
     monkeypatch.chdir(tmp_path)
     roots = [Path("relative-root"), tmp_path / "absolute-root"]
 
@@ -1498,7 +1686,7 @@ def test_main_office_workspace_create_accepts_relative_and_absolute_roots(tmp_pa
         assert expected.is_dir()
 
 
-def test_main_office_workspace_serve_lazy_imports_server_only_when_needed(tmp_path, monkeypatch, capsys):
+def test_main_office_workspace_serve_lazy_imports_server_only_when_needed(tmp_path, monkeypatch, capsys, office_workspace_pack_stubs):
     root = tmp_path / "workspaces"
     imported = {"names": []}
     called = {}

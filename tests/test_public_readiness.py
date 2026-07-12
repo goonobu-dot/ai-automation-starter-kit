@@ -25,6 +25,10 @@ def _assert_no_broken_local_hrefs(path: str, text: str) -> None:
         assert (doc.parent / target).exists(), f"{path} has broken local href {href}"
 
 
+def _published_daily_workflow_docs() -> list[str]:
+    return [path for path in ["docs/daily-workflows.ja.html", "docs/daily-workflows.html"] if Path(path).exists()]
+
+
 class _VisibleTextParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__()
@@ -1036,6 +1040,21 @@ def test_codex_monthly_setup_docs_and_agent_contract_are_present_and_beginner_fr
             assert snippet in text, f"{path} missing {snippet}"
 
 
+def test_readme_and_start_docs_link_daily_workflow_manuals_when_published():
+    published_docs = _published_daily_workflow_docs()
+    if not published_docs:
+        return
+
+    readme = Path("README.md").read_text(encoding="utf-8")
+    start_en = Path("START_WITH_CODEX.md").read_text(encoding="utf-8")
+    start_ja = Path("START_WITH_CODEX.ja.md").read_text(encoding="utf-8")
+
+    for doc_path in published_docs:
+        assert doc_path in readme, f"README.md missing daily workflow manual link: {doc_path}"
+        assert doc_path in start_en, f"START_WITH_CODEX.md missing daily workflow manual link: {doc_path}"
+        assert doc_path in start_ja, f"START_WITH_CODEX.ja.md missing daily workflow manual link: {doc_path}"
+
+
 def test_office_workspace_manuals_define_mobile_overflow_contracts():
     for path in ["docs/office-workspace.html", "docs/office-workspace.ja.html"]:
         text = Path(path).read_text(encoding="utf-8")
@@ -1435,9 +1454,14 @@ def test_release_smoke_covers_installed_office_workspace_flow_without_source_tre
 
     for snippet in [
         '"office-workspace"',
+        '"packs"',
         '"create"',
         '"inspect"',
         '"serve"',
+        '"--pack"',
+        '"inquiry-daily"',
+        '"2026-07-12"',
+        "YYYY-MM-DD",
         "02_PAST_SUPPORTING_FILES",
         "recurring-notes.md",
         "past_supporting",
@@ -1447,9 +1471,12 @@ def test_release_smoke_covers_installed_office_workspace_flow_without_source_tre
         "START_WITH_CODEX.ja.md",
         "AGENTS.md",
         "manifest.json",
-        "monthly_report.json",
-        "monthly_report_output.schema.json",
-        "monthly_report_prompt.json",
+        "OFFICE_WORKSPACE_PACK_IDS",
+        "pack_file",
+        "output_schema_file",
+        "prompt_template_file",
+        "load_bundled_output_schema",
+        "load_bundled_prompt_template",
         "save_answer",
         "start_codex_run",
         "wait_for_run",

@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "id": "invoice-order-check-daily",
+  "display_name": {
+    "ja": "請求・発注照合日次確認",
+    "en": "Invoice and Order Check Daily"
+  },
+  "category": "finance",
+  "period_type": "day",
+  "risk_tier": "medium",
+  "business_outcome": "Prepare a sourced daily invoice and order exception draft for human review",
+  "inputs": [
+    {
+      "id": "invoice_register",
+      "required": true,
+      "accepted_extensions": [
+        ".csv",
+        ".xlsx",
+        ".json",
+        ".pdf"
+      ]
+    },
+    {
+      "id": "purchase_order_export",
+      "required": true,
+      "accepted_extensions": [
+        ".csv",
+        ".xlsx",
+        ".json",
+        ".pdf"
+      ]
+    },
+    {
+      "id": "receiving_or_contract_notes",
+      "required": false,
+      "accepted_extensions": [
+        ".md",
+        ".txt",
+        ".docx",
+        ".pdf"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "match_tolerance_rule",
+      "type": "short_text",
+      "required": true,
+      "max_length": 120
+    },
+    {
+      "id": "critical_exception_definition",
+      "type": "long_text",
+      "required": false,
+      "max_length": 600
+    },
+    {
+      "id": "same_day_vendor_hold_required",
+      "type": "confirmation",
+      "required": false
+    }
+  ],
+  "prompt_template_id": "invoice-order-check-daily-v1",
+  "allowed_prompt_variables": [
+    "period_id",
+    "source_manifest",
+    "answers"
+  ],
+  "outputs": [
+    {
+      "id": "draft",
+      "relative_path": "invoice_order_check_daily.md",
+      "max_bytes": 1048576
+    }
+  ],
+  "approval": {
+    "required": true,
+    "role": "procurement_or_finance_approver"
+  },
+  "prohibited_actions": [
+    "external_send",
+    "publish",
+    "payment",
+    "production_write",
+    "self_approve",
+    "invoice_issue",
+    "vendor_confirmation"
+  ],
+  "success_metrics": [
+    "match_exception_capture_rate",
+    "missing_fact_count",
+    "review_minutes"
+  ]
+}

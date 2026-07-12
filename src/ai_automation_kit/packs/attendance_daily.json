@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "id": "attendance-daily",
+  "display_name": {
+    "ja": "勤怠日次確認",
+    "en": "Attendance Daily"
+  },
+  "category": "people_ops",
+  "period_type": "day",
+  "risk_tier": "medium",
+  "business_outcome": "Prepare a sourced daily attendance exception draft for human review",
+  "inputs": [
+    {
+      "id": "time_clock_export",
+      "required": true,
+      "accepted_extensions": [
+        ".csv",
+        ".xlsx",
+        ".json"
+      ]
+    },
+    {
+      "id": "leave_and_shift_notes",
+      "required": false,
+      "accepted_extensions": [
+        ".md",
+        ".txt",
+        ".pdf",
+        ".docx"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "overtime_threshold",
+      "type": "short_text",
+      "required": true,
+      "max_length": 120
+    },
+    {
+      "id": "same_day_follow_up_rule",
+      "type": "long_text",
+      "required": false,
+      "max_length": 600
+    },
+    {
+      "id": "manager_confirmation_required",
+      "type": "confirmation",
+      "required": false
+    }
+  ],
+  "prompt_template_id": "attendance-daily-v1",
+  "allowed_prompt_variables": [
+    "period_id",
+    "source_manifest",
+    "answers"
+  ],
+  "outputs": [
+    {
+      "id": "draft",
+      "relative_path": "attendance_daily.md",
+      "max_bytes": 1048576
+    }
+  ],
+  "approval": {
+    "required": true,
+    "role": "people_ops_manager"
+  },
+  "prohibited_actions": [
+    "external_send",
+    "publish",
+    "payment",
+    "production_write",
+    "self_approve",
+    "attendance_correction"
+  ],
+  "success_metrics": [
+    "exception_capture_rate",
+    "missing_fact_count",
+    "review_minutes"
+  ]
+}

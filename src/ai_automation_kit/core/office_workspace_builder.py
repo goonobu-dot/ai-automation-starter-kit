@@ -18,7 +18,8 @@ from ai_automation_kit.core.workflow_pack import load_bundled_pack
 
 
 WORKSPACE_SCHEMA_VERSION = 1
-PERIOD_ID_RE = re.compile(r"^[0-9]{4}-(0[1-9]|1[0-2])$")
+MONTH_PERIOD_ID_RE = re.compile(r"^[0-9]{4}-(0[1-9]|1[0-2])$")
+DAY_PERIOD_ID_RE = re.compile(r"^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$")
 PUBLIC_FOLDERS = (
     "00_START_HERE",
     "01_APPROVED_PAST_OUTPUTS",
@@ -428,10 +429,27 @@ def validate_workspace_root(workspace: Path) -> Path:
     return root
 
 
-def validate_period_id(period_id: str) -> str:
-    if not isinstance(period_id, str) or not PERIOD_ID_RE.fullmatch(period_id):
-        raise ValueError("period_id must match strict YYYY-MM format")
-    return period_id
+def validate_period_id(period_id: str, period_type: Optional[str] = None) -> str:
+    if period_type not in {None, "month", "day"}:
+        raise ValueError("period_type must be 'month' or 'day'")
+    if not isinstance(period_id, str):
+        expected = "YYYY-MM-DD" if period_type == "day" else "YYYY-MM"
+        raise ValueError("period_id must match strict {} format".format(expected))
+
+    if period_type in {None, "month"} and MONTH_PERIOD_ID_RE.fullmatch(period_id):
+        return period_id
+    if period_type in {None, "day"} and DAY_PERIOD_ID_RE.fullmatch(period_id):
+        try:
+            datetime.strptime(period_id, "%Y-%m-%d")
+        except ValueError:
+            pass
+        else:
+            return period_id
+
+    expected = "YYYY-MM-DD" if period_type == "day" else "YYYY-MM"
+    if period_type is None:
+        expected = "YYYY-MM or YYYY-MM-DD"
+    raise ValueError("period_id must match strict {} format".format(expected))
 
 
 def create_office_workspace(

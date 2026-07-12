@@ -6,6 +6,7 @@
     "en": "Monthly Report"
   },
   "category": "reports",
+  "period_type": "month",
   "risk_tier": "low",
   "business_outcome": "Create a sourced monthly report draft",
   "inputs": [

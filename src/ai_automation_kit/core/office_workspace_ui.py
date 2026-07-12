@@ -11,17 +11,18 @@ _SAFE_TOKEN_RE = re.compile(r"^[0-9a-f]{64}$")
 
 _TRANSLATIONS = {
     "ja": {
-        "title": "月報作業場所",
-        "subtitle": "作業場所を選び、資料確認、下書き作成、ローカル承認、次月準備までをこの画面で進めます。",
+        "title": "オフィス作業場所",
+        "subtitle": "作業場所、ワークフローパック、最初の期間を決めてから、この画面で資料確認、下書き作成、ローカル承認、次の期間の準備まで進めます。",
         "list_view": "作業場所一覧",
-        "detail_view": "月次詳細",
+        "detail_view": "期間詳細",
         "back_to_list": "一覧へ戻る",
-        "list_heading": "月報作業場所一覧",
-        "list_help": "毎月使う作業場所をここから選びます。",
-        "detail_heading": "月次詳細",
-        "detail_help": "現在の月の状態を確認して、必要な操作だけを進めます。",
+        "list_heading": "作業場所一覧",
+        "list_help": "作業場所ごとの現在の期間と次の操作をここから確認します。",
+        "detail_heading": "期間詳細",
+        "detail_help": "現在の期間の状態を確認して、必要な操作だけを進めます。",
         "workspace_name": "作業場所名",
-        "active_month": "進行中の月",
+        "active_month": "進行中の期間",
+        "pack_name": "ワークフローパック",
         "codex_preflight": "Codex事前確認",
         "recent_run": "直近の実行",
         "next_action": "次の操作",
@@ -29,8 +30,11 @@ _TRANSLATIONS = {
         "approval_waiting": "承認待ち",
         "approval_clear": "承認待ちはありません",
         "open_workspace": "詳細を開く",
-        "create_workspace": "新しい月報作業場所を作る",
+        "create_workspace": "作業場所と最初の期間を作る",
         "name_label": "作業場所名",
+        "pack_label": "ワークフローパック",
+        "pack_help": "作りたい仕事の種類を選ぶと、期間の入力形式が自動で切り替わります。",
+        "first_period_label": "最初の期間",
         "approver_label": "承認者名",
         "pin_label": "承認用PIN",
         "root_choice_label": "保存先",
@@ -71,6 +75,7 @@ _TRANSLATIONS = {
         "approval_honesty": "承認すると外部送信は行わず、完成版をローカル保存します。",
         "rollover_panel": "次月準備",
         "next_period_label": "次の期間",
+        "period_help_label": "入力形式",
         "reuse_style": "直前の承認済み完成版を文体見本として使う",
         "rollover": "次の期間を準備",
         "status_ready": "準備完了",
@@ -86,7 +91,7 @@ _TRANSLATIONS = {
         "no_question": "現在の未回答質問はありません。",
         "no_recent_run": "まだ実行はありません。",
         "no_workspaces": "まだ作業場所がありません。",
-        "create_first": "最初の月報作業場所を作成してください。",
+        "create_first": "最初の作業場所と期間を作成してください。",
         "preflight_ok": "Codexを使えます",
         "preflight_fix": "Codexの準備が必要です",
         "run_running": "実行中",
@@ -96,6 +101,16 @@ _TRANSLATIONS = {
         "run_review": "確認待ち",
         "run_approved": "承認後",
         "count_suffix": "件",
+        "period_formats": {
+            "month": {
+                "placeholder": "2026-07",
+                "help": "月次パックでは YYYY-MM 形式で入力します。",
+            },
+            "day": {
+                "placeholder": "2026-07-12",
+                "help": "日次パックでは YYYY-MM-DD 形式で入力します。",
+            },
+        },
         "extraction_statuses": {
             "not_attempted": "確認未実施",
             "extracted": "内容を読み取り済み",
@@ -128,7 +143,8 @@ _TRANSLATIONS = {
             "bad_draft_id": "下書きの指定が正しくありません。",
             "bad_folder_role": "フォルダの指定が正しくありません。",
             "bad_json": "入力内容を確認してください。",
-            "bad_period_id": "期間は YYYY-MM 形式で入力してください。",
+            "bad_pack_id": "利用できるワークフローパックを選んでください。",
+            "bad_period_id": "期間は表示中の形式に合わせて入力してください。",
             "bad_question_id": "質問の指定が正しくありません。",
             "bad_root_choice": "利用可能な保存先を選んでください。",
             "bad_run_id": "実行の指定が正しくありません。",
@@ -185,17 +201,18 @@ _TRANSLATIONS = {
         ],
     },
     "en": {
-        "title": "Monthly report workspace",
-        "subtitle": "Choose a workspace, inspect materials, generate a draft, record local approval, and prepare the next month from one screen.",
+        "title": "Office workspace",
+        "subtitle": "Choose a workspace, a workflow pack, and the first period, then inspect materials, generate a draft, record local approval, and prepare the next period from one screen.",
         "list_view": "Workspace list",
-        "detail_view": "Monthly detail",
+        "detail_view": "Period detail",
         "back_to_list": "Back to list",
-        "list_heading": "Monthly report workspace list",
-        "list_help": "Choose the workspace you use each month.",
-        "detail_heading": "Monthly detail",
-        "detail_help": "Check the current month, then run only the next required action.",
+        "list_heading": "Workspace list",
+        "list_help": "Review the current period and next action for each workspace.",
+        "detail_heading": "Period detail",
+        "detail_help": "Check the current period, then run only the next required action.",
         "workspace_name": "Workspace name",
-        "active_month": "Active month",
+        "active_month": "Active period",
+        "pack_name": "Workflow pack",
         "codex_preflight": "Codex preflight",
         "recent_run": "Recent run",
         "next_action": "Next action",
@@ -203,8 +220,11 @@ _TRANSLATIONS = {
         "approval_waiting": "Waiting for approval",
         "approval_clear": "No approvals are waiting",
         "open_workspace": "Open detail",
-        "create_workspace": "Create workspace",
+        "create_workspace": "Create workspace and first period",
         "name_label": "Workspace name",
+        "pack_label": "Workflow pack",
+        "pack_help": "Choose the kind of work first. The period format updates automatically.",
+        "first_period_label": "First period",
         "approver_label": "Approver name",
         "pin_label": "Approval PIN",
         "root_choice_label": "Save location",
@@ -245,6 +265,7 @@ _TRANSLATIONS = {
         "approval_honesty": "Approval saves a local approved copy and does not send anything externally.",
         "rollover_panel": "Next period",
         "next_period_label": "Next period",
+        "period_help_label": "Format",
         "reuse_style": "Use the latest approved final copy as a style reference",
         "rollover": "Prepare next period",
         "status_ready": "Ready",
@@ -260,7 +281,7 @@ _TRANSLATIONS = {
         "no_question": "There is no unanswered question right now.",
         "no_recent_run": "No run yet.",
         "no_workspaces": "No workspace exists yet.",
-        "create_first": "Create your first monthly workspace.",
+        "create_first": "Create your first workspace and period.",
         "preflight_ok": "Codex is ready",
         "preflight_fix": "Codex needs attention",
         "run_running": "Running",
@@ -270,6 +291,16 @@ _TRANSLATIONS = {
         "run_review": "Waiting for review",
         "run_approved": "After approval",
         "count_suffix": "files",
+        "period_formats": {
+            "month": {
+                "placeholder": "2026-07",
+                "help": "Monthly packs use YYYY-MM.",
+            },
+            "day": {
+                "placeholder": "2026-07-12",
+                "help": "Daily packs use YYYY-MM-DD.",
+            },
+        },
         "extraction_statuses": {
             "not_attempted": "Not inspected",
             "extracted": "Extracted",
@@ -302,7 +333,8 @@ _TRANSLATIONS = {
             "bad_draft_id": "The selected draft is invalid.",
             "bad_folder_role": "The selected folder role is invalid.",
             "bad_json": "Review the entered values.",
-            "bad_period_id": "Enter the period in YYYY-MM format.",
+            "bad_pack_id": "Choose an available workflow pack.",
+            "bad_period_id": "Enter the period using the format shown on screen.",
             "bad_question_id": "The selected question is invalid.",
             "bad_root_choice": "Choose an available save location.",
             "bad_run_id": "The selected run is invalid.",
@@ -802,12 +834,24 @@ def render_office_workspace_ui(language: str, token: str) -> str:
             <input id="workspace-name-input" type="text" autocomplete="organization">
           </div>
           <div>
+            <label for="workflow-pack-select">{pack_label}</label>
+            <select id="workflow-pack-select"></select>
+          </div>
+          <div>
+            <label for="first-period-input">{first_period_label}</label>
+            <input id="first-period-input" type="text" inputmode="numeric" autocomplete="off">
+            <p id="first-period-help" class="muted"></p>
+          </div>
+          <div>
             <label for="approver-input">{approver_label}</label>
             <input id="approver-input" type="text" autocomplete="name">
           </div>
           <div>
             <label for="pin-input">{pin_label}</label>
             <input id="pin-input" type="password" inputmode="numeric" autocomplete="off">
+          </div>
+          <div style="grid-column: 1 / -1;">
+            <p class="muted">{pack_help}</p>
           </div>
           <div style="grid-column: 1 / -1;">
             <label for="root-choice-select">{root_choice_label}</label>
@@ -932,7 +976,8 @@ def render_office_workspace_ui(language: str, token: str) -> str:
             </div>
             <div>
               <label for="next-period-input">{next_period_label}</label>
-              <input id="next-period-input" type="text" inputmode="numeric" autocomplete="off" placeholder="2026-08">
+              <input id="next-period-input" type="text" inputmode="numeric" autocomplete="off">
+              <p id="next-period-help" class="muted"></p>
             </div>
             <div>
               <label for="reuse-style-checkbox">{reuse_style}</label>
@@ -950,9 +995,11 @@ def render_office_workspace_ui(language: str, token: str) -> str:
   <script>
     (function () {{
       const STRINGS = {strings};
+      const PAGE_LANG = {page_lang_json};
       const SESSION_TOKEN = {token};
       const state = {{
         workspaces: [],
+        packCatalog: [],
         rootChoices: [],
         preflight: null,
         selectedWorkspaceId: "",
@@ -1197,6 +1244,39 @@ def render_office_workspace_ui(language: str, token: str) -> str:
         }}) || null;
       }}
 
+      function localizedDisplayName(entry) {{
+        if (!entry || typeof entry !== "object") {{
+          return "";
+        }}
+        const displayName = entry.display_name;
+        if (displayName && typeof displayName === "object") {{
+          return text(displayName[PAGE_LANG] || displayName.en || displayName.ja || "");
+        }}
+        return "";
+      }}
+
+      function periodFormat(periodType) {{
+        const formats = STRINGS.period_formats || {{}};
+        return formats[periodType] || formats.month || {{ placeholder: "", help: "" }};
+      }}
+
+      function applyPeriodFormat(inputId, helpId, periodType) {{
+        const format = periodFormat(periodType);
+        byId(inputId).placeholder = text(format.placeholder);
+        byId(helpId).textContent = STRINGS.period_help_label + ": " + text(format.help);
+      }}
+
+      function currentCreatePackId() {{
+        return byId("workflow-pack-select").value;
+      }}
+
+      function selectedCreatePack() {{
+        const packId = currentCreatePackId();
+        return (state.packCatalog || []).find(function (pack) {{
+          return pack && pack.id === packId;
+        }}) || null;
+      }}
+
       function latestApprovedOutput(workspace) {{
         if (!workspace || !workspace.period || !Array.isArray(workspace.period.approved_outputs)) {{
           return null;
@@ -1216,6 +1296,26 @@ def render_office_workspace_ui(language: str, token: str) -> str:
           option.textContent = text(choice.path || choice.id);
           select.appendChild(option);
         }});
+      }}
+
+      function renderPackChoices() {{
+        const select = byId("workflow-pack-select");
+        const previous = select.value;
+        select.replaceChildren();
+        (state.packCatalog || []).forEach(function (pack) {{
+          const option = document.createElement("option");
+          option.value = text(pack.id);
+          option.textContent = localizedDisplayName(pack) || text(pack.id);
+          select.appendChild(option);
+        }});
+        if (previous) {{
+          select.value = previous;
+        }}
+        if (!select.value && select.options.length) {{
+          select.selectedIndex = 0;
+        }}
+        const pack = selectedCreatePack();
+        applyPeriodFormat("first-period-input", "first-period-help", pack ? text(pack.period_type) : "month");
       }}
 
       function renderWorkspaceRows() {{
@@ -1238,7 +1338,7 @@ def render_office_workspace_ui(language: str, token: str) -> str:
           row.className = "workspace-row";
 
           const fields = [
-            text(workspace.name),
+            text(workspace.name) + (localizedDisplayName(workspace) ? " / " + localizedDisplayName(workspace) : ""),
             text(workspace.current_period || "-"),
             formatPreflight(state.preflight),
             formatRun(workspace.run || null),
@@ -1277,6 +1377,7 @@ def render_office_workspace_ui(language: str, token: str) -> str:
         const list = byId("workspace-meta-list");
         list.replaceChildren();
         appendMetaItem(list, STRINGS.workspace_name, workspace ? workspace.name : STRINGS.not_selected);
+        appendMetaItem(list, STRINGS.pack_name, workspace ? (localizedDisplayName(workspace) || text(workspace.pack_id)) : "-");
         appendMetaItem(list, STRINGS.active_month, workspace && workspace.current_period ? workspace.current_period : "-");
         appendMetaItem(list, STRINGS.codex_preflight, formatPreflight(state.preflight));
         appendMetaItem(list, STRINGS.recent_run, formatRun(workspace ? workspace.run : null));
@@ -1439,6 +1540,7 @@ def render_office_workspace_ui(language: str, token: str) -> str:
         const period = workspace && workspace.period ? workspace.period : null;
         const run = workspace ? workspace.run : null;
         const stage = period ? period.stage : "";
+        const periodType = workspace ? text(workspace.period_type || "month") : "month";
         const hasPeriod = !!(workspace && workspace.current_period);
         const isCancelling = !!(run && run.status === "cancelling");
         const canCancel = !!(run && (run.status === "running" || run.status === "cancelling"));
@@ -1457,6 +1559,7 @@ def render_office_workspace_ui(language: str, token: str) -> str:
         byId("reuse-style-checkbox").disabled = stage !== "approved" || !latestApprovedOutput(workspace);
         byId("open-draft-button").disabled = !workspace || !hasPeriod;
         byId("detail-stage-pill").textContent = stage ? (STRINGS.steps[stage] || stage) : STRINGS.status_idle;
+        applyPeriodFormat("next-period-input", "next-period-help", periodType);
       }}
 
       function renderDetail(workspace) {{
@@ -1477,9 +1580,11 @@ def render_office_workspace_ui(language: str, token: str) -> str:
       async function refreshWorkspaceList() {{
         const payload = await apiFetch(ROUTES.workspaces(), {{ method: "GET" }});
         state.workspaces = Array.isArray(payload.data.workspaces) ? payload.data.workspaces : [];
+        state.packCatalog = Array.isArray(payload.data.pack_catalog) ? payload.data.pack_catalog : [];
         state.rootChoices = Array.isArray(payload.data.root_choices) ? payload.data.root_choices : [];
         state.preflight = payload.data.preflight || null;
         renderRootChoices();
+        renderPackChoices();
         byId("list-preflight-pill").textContent = formatPreflight(state.preflight);
         renderWorkspaceRows();
         if (state.selectedWorkspaceId) {{
@@ -1514,8 +1619,11 @@ def render_office_workspace_ui(language: str, token: str) -> str:
 
       async function createWorkspace() {{
         await withButton("create-workspace-button", async function () {{
+          const pack = selectedCreatePack();
           const payload = await postJson(ROUTES.workspaces(), {{
             name: byId("workspace-name-input").value,
+            pack_id: pack ? pack.id : "",
+            period_id: byId("first-period-input").value,
             root_choice: byId("root-choice-select").value,
             approver: byId("approver-input").value,
             pin: byId("pin-input").value,
@@ -1523,6 +1631,7 @@ def render_office_workspace_ui(language: str, token: str) -> str:
           state.selectedWorkspaceId = payload.data.workspace.id;
           await refreshWorkspaceList();
           await loadWorkspaceDetail(state.selectedWorkspaceId);
+          byId("first-period-input").value = "";
           byId("pin-input").value = "";
           setMessage("workspace-list-message", STRINGS.status_done, "success");
         }});
@@ -1670,6 +1779,10 @@ def render_office_workspace_ui(language: str, token: str) -> str:
         showView("list");
       }});
       byId("refresh-button").addEventListener("click", refreshAll);
+      byId("workflow-pack-select").addEventListener("change", function () {{
+        const pack = selectedCreatePack();
+        applyPeriodFormat("first-period-input", "first-period-help", pack ? text(pack.period_type) : "month");
+      }});
       byId("create-workspace-button").addEventListener("click", function () {{
         createWorkspace().catch(function (error) {{
           setMessage("workspace-list-message", formatApiError(error), "error");
@@ -1719,6 +1832,7 @@ def render_office_workspace_ui(language: str, token: str) -> str:
 </html>
 """.format(
         page_lang=language,
+        page_lang_json=json.dumps(language),
         title=strings["title"],
         subtitle=strings["subtitle"],
         list_view=strings["list_view"],
@@ -1736,6 +1850,9 @@ def render_office_workspace_ui(language: str, token: str) -> str:
         open_workspace=strings["open_workspace"],
         create_workspace=strings["create_workspace"],
         name_label=strings["name_label"],
+        pack_label=strings["pack_label"],
+        pack_help=strings["pack_help"],
+        first_period_label=strings["first_period_label"],
         approver_label=strings["approver_label"],
         pin_label=strings["pin_label"],
         root_choice_label=strings["root_choice_label"],

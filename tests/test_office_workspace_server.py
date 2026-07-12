@@ -173,17 +173,32 @@ def _get_workspaces(server):
     return _json_request(server, "GET", "/api/workspaces")
 
 
-def _create_workspace(server, *, nonce, name="Monthly", approver="Owner", pin="482913", root_choice="server_root"):
+def _create_workspace(
+    server,
+    *,
+    nonce,
+    name="Monthly",
+    approver="Owner",
+    pin="482913",
+    root_choice="server_root",
+    pack_id=None,
+    period_id=None,
+):
+    request = {
+        "action_nonce": nonce,
+        "name": name,
+        "root_choice": root_choice,
+        "approver": approver,
+        "pin": pin,
+    }
+    if pack_id is not None:
+        request["pack_id"] = pack_id
+    if period_id is not None:
+        request["period_id"] = period_id
     status, _, payload = _post_json(
         server,
         "/api/workspaces",
-        {
-            "action_nonce": nonce,
-            "name": name,
-            "root_choice": root_choice,
-            "approver": approver,
-            "pin": pin,
-        },
+        request,
     )
     assert status == 200
     assert payload["ok"] is True
@@ -265,10 +280,15 @@ def test_create_office_workspace_server_binds_localhost_and_lists_workspaces(tmp
         assert payload == {
             "ok": True,
             "data": payload["data"],
-            "next_action": "Create a monthly workspace to begin.",
+            "next_action": "Create a workspace and first period to begin.",
             "error": None,
         }
         assert payload["data"]["workspaces"] == []
+        assert payload["data"]["pack_catalog"][0] == {
+            "id": "monthly-report",
+            "display_name": {"ja": "月報作成", "en": "Monthly Report"},
+            "period_type": "month",
+        }
         assert payload["data"]["preflight"]["ok"] is True
         assert payload["data"]["root_choices"] == [
             {"id": "server_root", "path": str((tmp_path / "workspaces").resolve())}
@@ -286,8 +306,8 @@ def test_server_serves_operator_ui_at_root_without_token_query(tmp_path, monkeyp
         assert status == 200
         assert headers["Content-Type"] == "text/html; charset=utf-8"
         html = payload.decode("utf-8")
-        assert "Monthly report workspace" not in html
-        assert "月報作業場所" in html
+        assert "Office workspace" not in html
+        assert "オフィス作業場所" in html
         assert "?token=" not in html
     finally:
         _stop_server(server, thread)
@@ -656,6 +676,8 @@ def test_create_and_detail_use_opaque_server_mapped_workspace_ids(tmp_path, monk
         assert status == 200
         assert payload["data"]["workspace"]["id"] == workspace["id"]
         assert payload["data"]["workspace"]["name"] == "Okinawa Monthly"
+        assert payload["data"]["workspace"]["display_name"] == {"ja": "月報作成", "en": "Monthly Report"}
+        assert payload["data"]["workspace"]["period_type"] == "month"
         assert payload["data"]["workspace"]["current_period"] is None
         assert payload["data"]["workspace"]["period"] is None
         assert payload["data"]["workspace"]["run"] is None
@@ -705,6 +727,35 @@ def test_validation_rejects_unknown_workspace_and_bad_period_question_run_draft_
         status, _, payload = _open_folder(server, workspace_id, nonce, "../../evil")
         assert status == 400
         assert payload["error"]["code"] == "bad_folder_role"
+    finally:
+        _stop_server(server, thread)
+
+
+def test_create_workspace_can_bundle_first_period_for_daily_pack(tmp_path, monkeypatch):
+    server, thread = _start_server(tmp_path / "workspaces", monkeypatch)
+    try:
+        _, _, listed = _get_workspaces(server)
+        created = _create_workspace(
+            server,
+            nonce=_action_nonce(listed),
+            name="Daily Inbox",
+            pack_id="inquiry-daily",
+            period_id="2026-07-12",
+        )
+
+        workspace = created["data"]["workspace"]
+
+        assert workspace["pack_id"] == "inquiry-daily"
+        assert workspace["display_name"]["en"]
+        assert workspace["period_type"] == "day"
+        assert workspace["current_period"] == "2026-07-12"
+        assert workspace["period"]["period_id"] == "2026-07-12"
+        assert workspace["period"]["stage"] == "created"
+
+        listed = _get_workspaces(server)[2]["data"]["workspaces"]
+        summary = next(item for item in listed if item["id"] == workspace["id"])
+        assert summary["display_name"] == workspace["display_name"]
+        assert summary["period_type"] == "day"
     finally:
         _stop_server(server, thread)
 

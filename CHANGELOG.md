@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Daily office workflow packs (2026-07)
+
+- Expanded the hardened monthly office workspace into a cadence-aware pack system while preserving the existing monthly default.
+- Added ten daily packs in a guided order: inquiries, sales, finance, projects, attendance, meeting actions, expenses, invoice/order checks, internal requests, and executive digest.
+- Added strict real-date validation, pack selection and first-period creation in the browser UI and CLI, local draft/PIN approval coverage for every pack, and cleanup of failed first-period setup.
+- Added separate Japanese and English beginner HTML guides plus installed-wheel checks for the pack catalog, packaged resources, daily creation, invalid dates, and monthly compatibility.
+
 ### Office workspace public release integration (2026-07)
 
 - Published `docs/office-workspace.ja.html` and `docs/office-workspace.html`: separate Japanese and English monthly office workspace manuals with install/login, ask Codex setup, folder map, three file types, inspect, answer, generate, cancel/retry, approve, rollover, local/AI/human boundaries, troubleshooting, and matching `START_WITH_CODEX` links.

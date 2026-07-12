@@ -4,6 +4,8 @@ After creation, open and explain where to place past approved reports, past supp
 
 # Start With Codex
 
+Choose from ten daily workflows in the [English beginner guide](docs/daily-workflows.html). The [Japanese guide](docs/daily-workflows.ja.html) is also available.
+
 This file is for a beginner who wants Codex to prepare the local monthly-report workspace without guessing hidden steps.
 
 Ask only one question at a time.

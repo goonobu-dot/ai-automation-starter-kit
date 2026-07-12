@@ -6,6 +6,7 @@ import json
 import os
 import re
 import secrets
+import shutil
 import socket
 import subprocess
 import sys
@@ -33,6 +34,8 @@ from ai_automation_kit.core.office_workspace_state import inspect_period
 from ai_automation_kit.core.office_workspace_state import load_workspace
 from ai_automation_kit.core.office_workspace_state import save_answer
 from ai_automation_kit.core.office_workspace_ui import render_office_workspace_ui
+from ai_automation_kit.core.workflow_pack import list_bundled_packs
+from ai_automation_kit.core.workflow_pack import load_bundled_pack
 
 
 MAX_REQUEST_BYTES = 64 * 1024
@@ -177,12 +180,14 @@ def create_office_workspace_server(root: Path, language: str = "ja", port: int =
             for workspace_root in _discover_workspaces(self.server):
                 public_id = _public_workspace_id(self.server, workspace_root)
                 workspaces.append(_workspace_summary(self.server, workspace_root, public_id))
+            pack_catalog = [_pack_catalog_entry(pack) for pack in list_bundled_packs()]
             preflight = _normalized_preflight(codex_preflight())
             next_action = preflight["next_action"] if not preflight["ok"] else ""
             if not next_action and not workspaces:
-                next_action = "Create a monthly workspace to begin."
+                next_action = "Create a workspace and first period to begin."
             payload = {
                 "workspaces": workspaces,
+                "pack_catalog": pack_catalog,
                 "root_choices": [{"id": "server_root", "path": str(self.server.root)}],
                 "preflight": preflight,
             }
@@ -191,12 +196,14 @@ def create_office_workspace_server(root: Path, language: str = "ja", port: int =
         def _serve_create_workspace(self) -> None:
             payload = self._validated_json_body(
                 required={"action_nonce", "name", "root_choice", "approver", "pin"},
-                allowed={"action_nonce", "name", "root_choice", "approver", "pin"},
+                allowed={"action_nonce", "name", "root_choice", "approver", "pin", "pack_id", "period_id"},
             )
             self._consume_action_nonce(payload.get("action_nonce"))
             root_choice = payload["root_choice"]
             if root_choice not in ROOT_CHOICES:
                 raise _RequestError(400, "bad_root_choice", "root_choice must select the configured server root")
+            pack_id = _validated_pack_id(payload.get("pack_id"))
+            first_period_id = _optional_bounded_text(payload.get("period_id"), "period_id", maximum=32)
             with self.server.state_change_lock:
                 workspace_root = create_office_workspace(
                     self.server.root,
@@ -204,7 +211,14 @@ def create_office_workspace_server(root: Path, language: str = "ja", port: int =
                     approver=_bounded_text(payload["approver"], "approver", maximum=200),
                     pin=_bounded_text(payload["pin"], "pin", maximum=64),
                     language=self.server.language,
+                    pack_id=pack_id,
                 )
+                try:
+                    if first_period_id is not None:
+                        create_period(workspace_root, first_period_id)
+                except Exception:
+                    shutil.rmtree(workspace_root, ignore_errors=True)
+                    raise
                 public_id = _public_workspace_id(self.server, workspace_root)
                 detail = _workspace_detail(self.server, workspace_root, public_id)
             self._send_json(
@@ -213,7 +227,7 @@ def create_office_workspace_server(root: Path, language: str = "ja", port: int =
                     self.server,
                     True,
                     {"workspace": detail},
-                    next_action="Create the first reporting period.",
+                    next_action=_workspace_next_action(detail),
                     error=None,
                 ),
             )
@@ -265,7 +279,7 @@ def create_office_workspace_server(root: Path, language: str = "ja", port: int =
                 allowed={"action_nonce", "period_id"},
             )
             self._consume_action_nonce(payload.get("action_nonce"))
-            period_id = validate_period_id(payload["period_id"])
+            period_id = _validated_workspace_period_id(workspace_root, payload["period_id"])
             with self.server.state_change_lock:
                 inspect_period(workspace_root, period_id)
                 detail = _workspace_detail(self.server, workspace_root, workspace_id)
@@ -296,7 +310,7 @@ def create_office_workspace_server(root: Path, language: str = "ja", port: int =
                 allowed={"action_nonce", "period_id"},
             )
             self._consume_action_nonce(payload.get("action_nonce"))
-            period_id = validate_period_id(payload["period_id"])
+            period_id = _validated_workspace_period_id(workspace_root, payload["period_id"])
             with self.server.state_change_lock:
                 period_state = _load_period_state(workspace_root, period_id)
                 if period_state["stage"] != "ready_for_run":
@@ -367,7 +381,7 @@ def create_office_workspace_server(root: Path, language: str = "ja", port: int =
                 allowed={"action_nonce", "next_period_id", "style_reference"},
             )
             self._consume_action_nonce(payload.get("action_nonce"))
-            next_period_id = validate_period_id(payload["next_period_id"])
+            next_period_id = _validated_workspace_period_id(workspace_root, payload["next_period_id"])
             style_reference = _validated_style_reference_request(payload["style_reference"])
             with self.server.state_change_lock:
                 create_period(workspace_root, next_period_id, style_reference=style_reference)
@@ -612,6 +626,12 @@ def _bounded_text(value, label: str, *, maximum: int) -> str:
     return value.strip()
 
 
+def _optional_bounded_text(value, label: str, *, maximum: int) -> Optional[str]:
+    if value is None:
+        return None
+    return _bounded_text(value, label, maximum=maximum)
+
+
 def _discover_workspaces(server: OfficeWorkspaceHTTPServer) -> Tuple[Path, ...]:
     discovered = []
     if not server.root.exists():
@@ -653,6 +673,7 @@ def _resolve_workspace_id(server: OfficeWorkspaceHTTPServer, workspace_id: str) 
 
 def _workspace_summary(server: OfficeWorkspaceHTTPServer, workspace_root: Path, public_id: str) -> Dict:
     state = load_workspace(workspace_root)
+    pack = load_bundled_pack(state["pack_id"])
     period_state = _load_current_period_state(workspace_root)
     current_period = state["current_period"]
     return {
@@ -661,6 +682,8 @@ def _workspace_summary(server: OfficeWorkspaceHTTPServer, workspace_root: Path, 
         "root": str(workspace_root),
         "language": state["language"],
         "pack_id": state["pack_id"],
+        "display_name": dict(pack["display_name"]),
+        "period_type": pack["period_type"],
         "current_period": current_period,
         "periods": list(state["periods"]),
         "updated_at": state["updated_at"],
@@ -672,6 +695,7 @@ def _workspace_summary(server: OfficeWorkspaceHTTPServer, workspace_root: Path, 
 
 def _workspace_detail(server: OfficeWorkspaceHTTPServer, workspace_root: Path, public_id: str) -> Dict:
     state = load_workspace(workspace_root)
+    pack = load_bundled_pack(state["pack_id"])
     current_period = state["current_period"]
     period_state = _load_current_period_state(workspace_root)
     return {
@@ -680,6 +704,8 @@ def _workspace_detail(server: OfficeWorkspaceHTTPServer, workspace_root: Path, p
         "root": str(workspace_root),
         "language": state["language"],
         "pack_id": state["pack_id"],
+        "display_name": dict(pack["display_name"]),
+        "period_type": pack["period_type"],
         "current_period": current_period,
         "periods": list(state["periods"]),
         "period": period_state,
@@ -708,7 +734,7 @@ def _current_period_id(workspace_root: Path) -> str:
             409,
             "state_conflict",
             "requested action is not allowed in the current workspace state",
-            next_action="Create the first reporting period.",
+            next_action="Create the first period.",
         )
     return current_period
 
@@ -747,7 +773,7 @@ def _folder_path_for_role(
                     409,
                     "state_conflict",
                     "requested action is not allowed in the current workspace state",
-                    next_action="Create the first reporting period.",
+                    next_action="Create the first period.",
                 )
             return None
         return workspace_root / folder_name / current_period
@@ -830,7 +856,7 @@ def _workspace_next_action(detail: Dict) -> str:
     current_period = detail.get("current_period")
     period = detail.get("period")
     if not current_period or not period:
-        return "Create the first reporting period."
+        return "Create the first period."
     stage = period.get("stage")
     if stage == "created":
         return "Place the current files in the workspace and inspect them."
@@ -854,6 +880,14 @@ def _normalized_preflight(preflight: Dict) -> Dict:
     next_action = normalized.get("next_action")
     normalized["next_action"] = next_action if isinstance(next_action, str) else ""
     return normalized
+
+
+def _pack_catalog_entry(pack: Dict) -> Dict:
+    return {
+        "id": pack["id"],
+        "display_name": dict(pack["display_name"]),
+        "period_type": pack["period_type"],
+    }
 
 
 def _error_next_action(language: str, code: str) -> str:
@@ -902,6 +936,21 @@ def _validate_folder_role(value) -> str:
     if not isinstance(value, str) or value not in FOLDER_ROLE_PATHS:
         raise _RequestError(400, "bad_folder_role", "role must be one of the allowed folder roles")
     return value
+
+
+def _validated_pack_id(value) -> str:
+    if value is None:
+        return "monthly-report"
+    if not isinstance(value, str) or not SAFE_IDENTIFIER_RE.fullmatch(value):
+        raise _RequestError(400, "bad_pack_id", "pack_id must be a safe identifier")
+    return value
+
+
+def _validated_workspace_period_id(workspace_root: Path, value) -> str:
+    if not isinstance(value, str):
+        validate_period_id(value)
+    pack = load_bundled_pack(load_workspace(workspace_root)["pack_id"])
+    return validate_period_id(value, pack["period_type"])
 
 
 def _validated_style_reference_request(value) -> Optional[Dict]:
@@ -956,7 +1005,9 @@ def _map_domain_error(error: Exception) -> "_RequestError":
             "requested action is not allowed in the current workspace state",
             next_action=next_action,
         )
-    if message == "period_id must match strict YYYY-MM format":
+    if message.startswith("unknown workflow pack:"):
+        return _RequestError(400, "bad_pack_id", "pack_id is invalid")
+    if message.startswith("period_id must match strict "):
         return _RequestError(400, "bad_period_id", message)
     if "Codex executable is unavailable" in message or "Codex executable is not runnable" in message:
         return _RequestError(503, "codex_unavailable", "Codex is not ready", next_action="Install or repair Codex CLI.")

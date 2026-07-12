@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "id": "internal-requests-daily",
+  "display_name": {
+    "ja": "社内依頼日次整理",
+    "en": "Internal Requests Daily"
+  },
+  "category": "operations",
+  "period_type": "day",
+  "risk_tier": "low",
+  "business_outcome": "Prepare a sourced daily internal request triage draft for human review",
+  "inputs": [
+    {
+      "id": "request_queue_export",
+      "required": true,
+      "accepted_extensions": [
+        ".csv",
+        ".xlsx",
+        ".json",
+        ".md",
+        ".txt"
+      ]
+    },
+    {
+      "id": "service_catalog_or_policy_notes",
+      "required": false,
+      "accepted_extensions": [
+        ".md",
+        ".txt",
+        ".pdf",
+        ".docx"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "triage_priority_rule",
+      "type": "short_text",
+      "required": true,
+      "max_length": 200
+    },
+    {
+      "id": "routing_exceptions",
+      "type": "long_text",
+      "required": false,
+      "max_length": 600
+    },
+    {
+      "id": "cross_team_approval_required",
+      "type": "confirmation",
+      "required": false
+    }
+  ],
+  "prompt_template_id": "internal-requests-daily-v1",
+  "allowed_prompt_variables": [
+    "period_id",
+    "source_manifest",
+    "answers"
+  ],
+  "outputs": [
+    {
+      "id": "draft",
+      "relative_path": "internal_requests_daily.md",
+      "max_bytes": 1048576
+    }
+  ],
+  "approval": {
+    "required": true,
+    "role": "operations_manager"
+  },
+  "prohibited_actions": [
+    "external_send",
+    "publish",
+    "payment",
+    "production_write",
+    "self_approve",
+    "request_closure"
+  ],
+  "success_metrics": [
+    "triage_minutes",
+    "routing_accuracy",
+    "missing_fact_count"
+  ]
+}

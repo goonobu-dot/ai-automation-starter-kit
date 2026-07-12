@@ -14,6 +14,7 @@ PACK_KEYS = {
     "id",
     "display_name",
     "category",
+    "period_type",
     "risk_tier",
     "business_outcome",
     "inputs",
@@ -26,6 +27,7 @@ PACK_KEYS = {
     "success_metrics",
 }
 QUESTION_TYPES = {"short_text", "long_text", "single_choice", "confirmation"}
+PERIOD_TYPES = {"day", "month"}
 PROHIBITED_REQUIRED = {
     "external_send",
     "publish",
@@ -43,6 +45,10 @@ def load_bundled_pack(pack_id: str) -> dict:
     if payload.get("id") != pack_id:
         raise ValueError("workflow pack id does not match manifest entry")
     return copy.deepcopy(validate_pack(payload))
+
+
+def list_bundled_packs() -> list[dict]:
+    return [load_bundled_pack(pack_id) for pack_id in _load_manifest()]
 
 
 def load_bundled_output_schema(pack_id: str) -> dict:
@@ -92,6 +98,7 @@ def validate_pack(payload: dict) -> dict:
     _require_non_empty_string(payload["id"], "workflow pack id")
     _validate_display_name(payload["display_name"])
     _require_non_empty_string(payload["category"], "workflow pack category")
+    _validate_period_type(payload["period_type"])
     _require_non_empty_string(payload["business_outcome"], "workflow pack business outcome")
     _validate_inputs(payload["inputs"])
     _validate_questions(payload["questions"])
@@ -161,6 +168,11 @@ def _validate_display_name(display_name: Any) -> None:
         raise ValueError("workflow display name must include ja and en")
     for label in display_name.values():
         _require_non_empty_string(label, "workflow display label")
+
+
+def _validate_period_type(period_type: Any) -> None:
+    if period_type not in PERIOD_TYPES:
+        raise ValueError("workflow period_type is not supported")
 
 
 def _validate_inputs(inputs: Any) -> None:

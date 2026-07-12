@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "id": "meeting-actions-daily",
+  "display_name": {
+    "ja": "会議アクション日次整理",
+    "en": "Meeting Actions Daily"
+  },
+  "category": "operations",
+  "period_type": "day",
+  "risk_tier": "low",
+  "business_outcome": "Prepare a sourced daily meeting actions draft without assigning or sending anything",
+  "inputs": [
+    {
+      "id": "meeting_notes",
+      "required": true,
+      "accepted_extensions": [
+        ".md",
+        ".txt",
+        ".docx",
+        ".pdf"
+      ]
+    },
+    {
+      "id": "decision_log",
+      "required": false,
+      "accepted_extensions": [
+        ".csv",
+        ".xlsx",
+        ".json",
+        ".md"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "action_owner_rule",
+      "type": "short_text",
+      "required": true,
+      "max_length": 200
+    },
+    {
+      "id": "follow_up_due_date_rule",
+      "type": "long_text",
+      "required": false,
+      "max_length": 600
+    },
+    {
+      "id": "needs_cross_team_review",
+      "type": "confirmation",
+      "required": false
+    }
+  ],
+  "prompt_template_id": "meeting-actions-daily-v1",
+  "allowed_prompt_variables": [
+    "period_id",
+    "source_manifest",
+    "answers"
+  ],
+  "outputs": [
+    {
+      "id": "draft",
+      "relative_path": "meeting_actions_daily.md",
+      "max_bytes": 1048576
+    }
+  ],
+  "approval": {
+    "required": true,
+    "role": "meeting_owner"
+  },
+  "prohibited_actions": [
+    "external_send",
+    "publish",
+    "payment",
+    "production_write",
+    "self_approve",
+    "task_assignment"
+  ],
+  "success_metrics": [
+    "action_capture_rate",
+    "missing_fact_count",
+    "review_minutes"
+  ]
+}

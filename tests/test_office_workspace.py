@@ -18,6 +18,7 @@ from ai_automation_kit.core.office_workspace_state import (
     promote_run_result,
     save_answer,
 )
+from ai_automation_kit.core.workflow_pack import load_bundled_pack
 
 
 def write_text(path: Path, content: str) -> Path:
@@ -124,6 +125,94 @@ def test_monthly_rollover_is_append_only_and_rejects_prior_period(tmp_path):
         create_period(root, "2026-08")
     with pytest.raises(ValueError, match="append-only"):
         create_period(root, "2026-06")
+
+
+def test_daily_workspace_accepts_strict_days_and_rolls_forward(tmp_path):
+    root = create_office_workspace(
+        tmp_path,
+        name="Daily Support",
+        approver="Owner",
+        pin="482913",
+        pack_id="inquiry-daily",
+    )
+
+    create_period(root, "2026-07-12")
+    create_period(root, "2026-07-13")
+
+    assert (root / "03_CURRENT_INPUTS/2026-07-12").is_dir()
+    assert (root / "03_CURRENT_INPUTS/2026-07-13").is_dir()
+    with pytest.raises(ValueError, match="append-only"):
+        create_period(root, "2026-07-11")
+
+
+@pytest.mark.parametrize("period_id", ["2026-07", "2026-02-30", "2026-7-12", "12-07-2026"])
+def test_daily_workspace_rejects_non_strict_or_impossible_days(tmp_path, period_id):
+    root = create_office_workspace(
+        tmp_path,
+        name="Daily Support",
+        approver="Owner",
+        pin="482913",
+        pack_id="inquiry-daily",
+    )
+
+    with pytest.raises(ValueError, match="YYYY-MM-DD"):
+        create_period(root, period_id)
+
+
+def test_monthly_workspace_rejects_daily_period(tmp_path):
+    root = create_office_workspace(tmp_path, name="Monthly", approver="Owner", pin="482913")
+
+    with pytest.raises(ValueError, match="YYYY-MM"):
+        create_period(root, "2026-07-12")
+
+
+DAILY_PACK_IDS = [
+    "inquiry-daily",
+    "sales-daily",
+    "finance-daily",
+    "project-daily",
+    "attendance-daily",
+    "meeting-actions-daily",
+    "expense-check-daily",
+    "invoice-order-check-daily",
+    "internal-requests-daily",
+    "executive-digest-daily",
+]
+
+
+@pytest.mark.parametrize("pack_id", DAILY_PACK_IDS)
+def test_every_daily_pack_completes_local_draft_and_approval_flow(tmp_path, pack_id):
+    pack = load_bundled_pack(pack_id)
+    root = create_office_workspace(
+        tmp_path,
+        name=pack_id,
+        approver="Owner",
+        pin="482913",
+        pack_id=pack_id,
+    )
+    period_id = "2026-07-12"
+    create_period(root, period_id)
+    write_text(root / "01_APPROVED_PAST_OUTPUTS" / "approved.md", "# Approved example\nReviewed by owner.\n")
+    write_text(root / "03_CURRENT_INPUTS" / period_id / "current.md", "# Current facts\nItem A needs review.\n")
+
+    state = inspect_period(root, period_id)
+    for question_id in list(state["pending_question_ids"]):
+        state = save_answer(root, period_id, question_id, "Owner confirmed")
+    assert state["stage"] == "ready_for_run"
+
+    output_name = pack["outputs"][0]["relative_path"]
+    state = promote_run_result(
+        root,
+        period_id,
+        "run-{}".format(pack_id),
+        {"missing_questions": [], "draft_markdown": "# Draft\nSource-grounded review required.\n"},
+    )
+    assert state["stage"] == "ready_for_review"
+    assert state["current_draft"]["name"] == output_name
+
+    approved = approve_draft(root, period_id, output_name, "Owner", "482913")
+    assert approved["stage"] == "approved"
+    assert (root / "06_APPROVED_OUTPUTS" / period_id / output_name).is_file()
 
 
 @pytest.mark.parametrize("period_id", ["2026-13", "2026-7", "July-2026"])

@@ -74,6 +74,7 @@ from ai_automation_kit.core.office_workspace_state import create_period
 from ai_automation_kit.core.office_workspace_state import inspect_period
 from ai_automation_kit.core.office_workspace_state import load_workspace
 from ai_automation_kit.core.side_hustle_blueprints import generate_side_hustle_blueprints
+from ai_automation_kit.core.workflow_pack import list_bundled_packs
 from ai_automation_kit.templates.docs_rag import run_docs_rag
 from ai_automation_kit.templates.delivery_pipeline import run_delivery_pipeline
 from ai_automation_kit.templates.excel_to_internal_app import run_excel_to_internal_app
@@ -359,7 +360,11 @@ def build_parser() -> argparse.ArgumentParser:
     office_workspace_create.add_argument("--approver", required=True)
     office_workspace_create.add_argument("--pin", required=True)
     office_workspace_create.add_argument("--period", required=True)
+    office_workspace_create.add_argument("--pack", default="monthly-report")
     office_workspace_create.add_argument("--language", default="ja", choices=["ja", "en"])
+
+    office_workspace_packs = office_workspace_subparsers.add_parser("packs")
+    office_workspace_packs.add_argument("--json", action="store_true")
 
     office_workspace_status = office_workspace_subparsers.add_parser("status")
     office_workspace_status.add_argument("--workspace", required=True)
@@ -571,6 +576,21 @@ def _print_office_workspace_status(payload: dict[str, object], *, as_json: bool 
     print("pending_questions={}".format(",".join(payload["pending_question_ids"])))
 
 
+def _print_office_workspace_packs(packs: list[dict[str, object]], *, as_json: bool = False) -> None:
+    if as_json:
+        print(json.dumps(packs, ensure_ascii=False, indent=2, sort_keys=True))
+        return
+    for index, pack in enumerate(packs):
+        display_name = pack["display_name"]
+        print(f"id={pack['id']}")
+        print(f"name_ja={display_name['ja']}")
+        print(f"name_en={display_name['en']}")
+        print(f"period_type={pack['period_type']}")
+        print(f"risk_tier={pack['risk_tier']}")
+        if index != len(packs) - 1:
+            print()
+
+
 def _run_office_workspace_command(args: argparse.Namespace) -> int:
     command = args.office_workspace_command
 
@@ -584,10 +604,20 @@ def _run_office_workspace_command(args: argparse.Namespace) -> int:
                 approver=args.approver,
                 pin=args.pin,
                 language=args.language,
+                pack_id=args.pack,
             )
-            create_period(workspace, args.period)
+            try:
+                create_period(workspace, args.period)
+            except Exception:
+                # Workspace creation and its first period are one CLI action.
+                # Avoid leaving a discoverable but unusable partial workspace.
+                shutil.rmtree(workspace, ignore_errors=True)
+                raise
             print(f"workspace={workspace}")
             print(f"next_action={_office_workspace_next_action(args.language, args.period, 'created')}")
+            return 0
+        if command == "packs":
+            _print_office_workspace_packs(list_bundled_packs(), as_json=args.json)
             return 0
         if command == "status":
             _print_office_workspace_status(

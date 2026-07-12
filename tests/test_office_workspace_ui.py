@@ -33,26 +33,28 @@ def test_ui_has_two_localized_beginner_views_and_no_language_leakage():
     assert 'id="workspace-list-view"' in en
     assert 'id="workspace-detail-view"' in en
 
-    assert "月報作業場所" in ja
-    assert "新しい月報作業場所を作る" in ja
+    assert "オフィス作業場所" in ja
+    assert "作業場所と最初の期間を作る" in ja
+    assert "ワークフローパック" in ja
     assert "資料を確認" in ja
     assert "下書きを作成" in ja
     assert "承認者名" in ja
     assert "承認用PIN" in ja
     assert "次の期間を準備" in ja
     assert "Monthly report workspace" not in ja
-    assert "Create workspace" not in ja
+    assert "Create workspace and first period" not in ja
     assert "Generate draft" not in ja
 
-    assert "Monthly report workspace" in en
-    assert "Create workspace" in en
+    assert "Office workspace" in en
+    assert "Create workspace and first period" in en
+    assert "Workflow pack" in en
     assert "Inspect materials" in en
     assert "Generate draft" in en
     assert "Approver name" in en
     assert "Approval PIN" in en
     assert "Prepare next period" in en
     assert "月報作業場所" not in en
-    assert "新しい月報作業場所を作る" not in en
+    assert "作業場所と最初の期間を作る" not in en
     assert "承認して完成版へ保存" not in en
 
 
@@ -143,6 +145,8 @@ def test_ui_uses_textcontent_createelement_and_accessible_responsive_css():
     assert ".focus()" in html
     for control_id in (
         "workspace-name-input",
+        "workflow-pack-select",
+        "first-period-input",
         "approver-input",
         "pin-input",
         "answer-input",
@@ -183,7 +187,7 @@ def test_ui_honestly_labels_draft_and_local_approval_states():
 def test_ui_script_escapes_data_through_json_literals():
     html = render_office_workspace_ui("en", SAFE_TOKEN)
 
-    match = re.search(r"const STRINGS = (\{.*?\});\s+const SESSION_TOKEN =", html, re.S)
+    match = re.search(r"const STRINGS = (\{.*?\});\s+const PAGE_LANG = .*?;\s+const SESSION_TOKEN =", html, re.S)
     assert match, "STRINGS JSON literal was not embedded"
     payload = match.group(1)
     assert "</script>" not in payload
@@ -231,6 +235,7 @@ def test_ui_has_complete_localized_error_code_maps_with_generic_fallback():
         "bad_draft_id",
         "bad_folder_role",
         "bad_json",
+        "bad_pack_id",
         "bad_period_id",
         "bad_question_id",
         "bad_root_choice",
@@ -333,6 +338,24 @@ def test_ui_pins_busy_error_and_disabled_control_contracts():
         "open-draft-button",
     ):
         assert 'byId("{}")'.format(control) in html
+
+
+def test_ui_uses_pack_catalog_and_period_type_to_drive_beginner_period_inputs():
+    html = render_office_workspace_ui("en", SAFE_TOKEN)
+
+    for element_id in ("workflow-pack-select", "first-period-input", "first-period-help", "next-period-help"):
+        assert 'id="{}"'.format(element_id) in html
+    assert "state.packCatalog" in html
+    assert "payload.data.pack_catalog" in html
+    assert "renderPackChoices" in html
+    assert "localizedDisplayName" in html
+    assert "applyPeriodFormat" in html
+    assert 'pack_id: pack ? pack.id : ""' in html
+    assert 'period_id: byId("first-period-input").value' in html
+    assert 'applyPeriodFormat("first-period-input", "first-period-help"' in html
+    assert 'applyPeriodFormat("next-period-input", "next-period-help"' in html
+    assert "Monthly packs use YYYY-MM." in html
+    assert "Daily packs use YYYY-MM-DD." in html
 
 
 def test_ui_localizes_every_extraction_status_without_rendering_raw_enums():

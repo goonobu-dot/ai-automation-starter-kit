@@ -8,6 +8,7 @@ import os
 import queue
 import re
 import signal
+import shlex
 import shutil
 import socket
 import subprocess
@@ -21,6 +22,19 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT = ROOT / ".tmp" / "release-smoke"
+OFFICE_WORKSPACE_PACK_IDS = [
+    "monthly-report",
+    "inquiry-daily",
+    "sales-daily",
+    "finance-daily",
+    "project-daily",
+    "attendance-daily",
+    "meeting-actions-daily",
+    "expense-check-daily",
+    "invoice-order-check-daily",
+    "internal-requests-daily",
+    "executive-digest-daily",
+]
 
 
 def main() -> int:
@@ -29,7 +43,10 @@ def main() -> int:
     parser.add_argument("--skip-github", action="store_true", help="Skip live GitHub API checks.")
     args = parser.parse_args()
 
-    output = Path(args.output)
+    # Installed binaries are invoked while cwd points inside the smoke output.
+    # Resolve once so a caller-supplied relative output cannot turn those
+    # executable paths into invalid cwd-relative paths.
+    output = Path(args.output).resolve()
     if output.exists():
         shutil.rmtree(output)
     output.mkdir(parents=True, exist_ok=True)
@@ -1306,11 +1323,195 @@ def _office_workspace_python_paths() -> list[Path]:
     return [cryptography_root]
 
 
+def _installed_cli_with_late_python_paths(
+    cli_bin: Path,
+    python_bin: Path,
+    output: Path,
+    python_paths: list[Path],
+) -> Path:
+    if not python_paths:
+        return cli_bin
+    wrapper = output / "installed-office-cli"
+    path_literals = repr([str(path) for path in python_paths])
+    bootstrap = (
+        "import sys; import ai_automation_kit; "
+        "sys.path.extend({}); from ai_automation_kit.cli import main; "
+        "raise SystemExit(main(sys.argv[1:]))"
+    ).format(path_literals)
+    wrapper.write_text(
+        "#!/bin/sh\nexec {} -c {} \"$@\"\n".format(
+            shlex.quote(str(python_bin)),
+            shlex.quote(bootstrap),
+        ),
+        encoding="utf-8",
+    )
+    wrapper.chmod(0o700)
+    return wrapper
+
+
 def _parse_workspace_path(stdout: str) -> Path:
     for line in stdout.splitlines():
         if line.startswith("workspace="):
             return Path(line.split("=", 1)[1].strip())
     raise RuntimeError(f"workspace path was not printed:\n{stdout}")
+
+
+def _require_office_workspace_pack_resources() -> None:
+    manifest_path = ROOT / "src" / "ai_automation_kit" / "packs" / "manifest.json"
+    _require_file(manifest_path)
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    if list(manifest) != OFFICE_WORKSPACE_PACK_IDS:
+        raise RuntimeError(f"unexpected office workspace pack manifest order: {list(manifest)}")
+
+    packs_root = manifest_path.parent
+    for pack_id in OFFICE_WORKSPACE_PACK_IDS:
+        entry = manifest.get(pack_id)
+        if not isinstance(entry, dict):
+            raise RuntimeError(f"office workspace pack manifest entry is missing for {pack_id}")
+        for key in ("pack_file", "output_schema_file", "prompt_template_file"):
+            value = entry.get(key)
+            if not isinstance(value, str) or not value:
+                raise RuntimeError(f"office workspace pack manifest entry is missing {key} for {pack_id}")
+            _require_file(packs_root / value)
+
+
+def _assert_installed_office_pack_catalog(cli_bin: Path, env: dict[str, str], cwd: Path) -> None:
+    payload = json.loads(
+        _run_capture([str(cli_bin), "office-workspace", "packs", "--json"], env=env, cwd=cwd).stdout
+    )
+    actual_ids = [pack.get("id") for pack in payload]
+    if actual_ids != OFFICE_WORKSPACE_PACK_IDS:
+        raise RuntimeError(f"unexpected installed office-workspace pack order: {actual_ids}")
+    for index, pack in enumerate(payload):
+        expected_period_type = "month" if index == 0 else "day"
+        if pack.get("period_type") != expected_period_type:
+            raise RuntimeError(f"unexpected period_type for {pack.get('id')}: {pack.get('period_type')}")
+
+
+def _assert_installed_office_pack_resources_load(python_bin: Path, env: dict[str, str], cwd: Path) -> None:
+    code = """
+import json
+import sys
+from pathlib import Path
+
+repo_root = Path(sys.argv[1]).resolve()
+expected_ids = json.loads(sys.argv[2])
+
+import ai_automation_kit
+
+package_path = Path(ai_automation_kit.__file__).resolve()
+source_tree_package = (repo_root / "src" / "ai_automation_kit").resolve()
+if source_tree_package in package_path.parents:
+    raise RuntimeError("source-tree import leakage")
+
+from ai_automation_kit.core.workflow_pack import (
+    list_bundled_packs,
+    load_bundled_output_schema,
+    load_bundled_prompt_template,
+)
+
+packs = list_bundled_packs()
+actual_ids = [pack["id"] for pack in packs]
+if actual_ids != expected_ids:
+    raise RuntimeError(f"unexpected bundled office pack ids: {actual_ids}")
+
+loaded_resources = []
+for pack in packs:
+    pack_id = pack["id"]
+    schema = load_bundled_output_schema(pack_id)
+    prompt = load_bundled_prompt_template(pack_id)
+    loaded_resources.append(
+        {
+            "id": pack_id,
+            "output_keys": sorted(schema["properties"]),
+            "prompt_template_id": prompt["template_id"],
+            "output_paths": [item["relative_path"] for item in pack["outputs"]],
+        }
+    )
+
+print(json.dumps({"pack_ids": actual_ids, "loaded_resources": loaded_resources}, ensure_ascii=False))
+"""
+    payload = json.loads(
+        _run_capture(
+            [str(python_bin), "-c", code, str(ROOT), json.dumps(OFFICE_WORKSPACE_PACK_IDS)],
+            env=env,
+            cwd=cwd,
+        ).stdout
+    )
+    if payload.get("pack_ids") != OFFICE_WORKSPACE_PACK_IDS:
+        raise RuntimeError(f"unexpected installed packaged office resources: {payload}")
+
+
+def _assert_installed_daily_workspace_create(cli_bin: Path, env: dict[str, str], office_root: Path, cwd: Path) -> None:
+    created = _run_capture(
+        [
+            str(cli_bin),
+            "office-workspace",
+            "create",
+            "--root",
+            str(office_root),
+            "--name",
+            "Daily Inquiry",
+            "--approver",
+            "Release QA",
+            "--pin",
+            "482913",
+            "--pack",
+            "inquiry-daily",
+            "--period",
+            "2026-07-12",
+            "--language",
+            "en",
+        ],
+        env=env,
+        cwd=cwd,
+    )
+    if "2026-07-12" not in created.stdout:
+        raise RuntimeError(f"unexpected daily office workspace create output:\n{created.stdout}")
+    workspace = _parse_workspace_path(created.stdout)
+    status = json.loads(
+        _run_capture(
+            [str(cli_bin), "office-workspace", "status", "--workspace", str(workspace), "--json"],
+            env=env,
+            cwd=cwd,
+        ).stdout
+    )
+    if status.get("pack_id") != "inquiry-daily":
+        raise RuntimeError(f"unexpected daily office workspace pack: {status}")
+    if status.get("current_period") != "2026-07-12" or status.get("current_stage") != "created":
+        raise RuntimeError(f"unexpected daily office workspace status: {status}")
+    _require_file(workspace / "03_CURRENT_INPUTS" / "2026-07-12")
+
+
+def _assert_installed_daily_workspace_rejects_invalid_period(
+    cli_bin: Path, env: dict[str, str], office_root: Path, cwd: Path
+) -> None:
+    command = [
+        str(cli_bin),
+        "office-workspace",
+        "create",
+        "--root",
+        str(office_root),
+        "--name",
+        "Broken Daily Inquiry",
+        "--approver",
+        "Release QA",
+        "--pin",
+        "482913",
+        "--pack",
+        "inquiry-daily",
+        "--period",
+        "2026-07",
+        "--language",
+        "en",
+    ]
+    print("$ " + " ".join(command))
+    failed = subprocess.run(command, cwd=cwd, env=env, check=False, text=True, capture_output=True)
+    if failed.returncode == 0:
+        raise RuntimeError("invalid daily office workspace period unexpectedly succeeded")
+    error_text = "\n".join(part for part in [failed.stdout, failed.stderr] if part).strip()
+    if "YYYY-MM-DD" not in error_text:
+        raise RuntimeError(f"invalid daily office workspace error did not mention YYYY-MM-DD:\n{error_text}")
 
 
 def _write_fake_office_codex(path: Path, exact_draft: str) -> Path:
@@ -1460,10 +1661,7 @@ def _run_office_workspace_installed_smoke(cli_bin: Path, python_bin: Path, outpu
     _require_file(ROOT / "START_WITH_CODEX.md")
     _require_file(ROOT / "START_WITH_CODEX.ja.md")
     _require_file(ROOT / "AGENTS.md")
-    _require_file(ROOT / "src" / "ai_automation_kit" / "packs" / "manifest.json")
-    _require_file(ROOT / "src" / "ai_automation_kit" / "packs" / "monthly_report.json")
-    _require_file(ROOT / "src" / "ai_automation_kit" / "packs" / "monthly_report_output.schema.json")
-    _require_file(ROOT / "src" / "ai_automation_kit" / "packs" / "monthly_report_prompt.json")
+    _require_office_workspace_pack_resources()
 
     exact_draft = (
         "# Monthly Draft\n"
@@ -1473,14 +1671,17 @@ def _run_office_workspace_installed_smoke(cli_bin: Path, python_bin: Path, outpu
     )
     expected_hash = hashlib.sha256(exact_draft.encode("utf-8")).hexdigest()
     fake_codex = _write_fake_office_codex(output / "fake-codex-bin" / "codex", exact_draft)
-    env = _isolated_installed_env(
-        cli_bin,
-        extra_path=[fake_codex.parent],
-        python_paths=_office_workspace_python_paths(),
-    )
+    python_paths = _office_workspace_python_paths()
+    cli_bin = _installed_cli_with_late_python_paths(cli_bin, python_bin, output, python_paths)
+    env = _isolated_installed_env(cli_bin, extra_path=[fake_codex.parent])
 
     office_root = output / "installed-office-workspaces"
     office_root.mkdir(parents=True, exist_ok=True)
+
+    _assert_installed_office_pack_catalog(cli_bin, env, output)
+    _assert_installed_office_pack_resources_load(python_bin, env, output)
+    _assert_installed_daily_workspace_rejects_invalid_period(cli_bin, env, office_root, output)
+    _assert_installed_daily_workspace_create(cli_bin, env, office_root, output)
 
     # office-workspace create
     created = _run_capture(
@@ -1549,9 +1750,12 @@ def _run_office_workspace_installed_smoke(cli_bin: Path, python_bin: Path, outpu
     if "stage=questioning" not in inspected.stdout:
         raise RuntimeError(f"unexpected office workspace inspect output:\n{inspected.stdout}")
 
+    internal_env = dict(env)
+    if python_paths:
+        internal_env["PYTHONPATH"] = os.pathsep.join(str(path) for path in python_paths)
     internal = _run_installed_office_internal_flow(
         python_bin,
-        env,
+        internal_env,
         workspace=workspace,
         fake_codex=fake_codex,
         expected_hash=expected_hash,
@@ -1790,11 +1994,10 @@ def _assert_office_workspace_cli_serve(
         if list_payload["data"]["preflight"]["ok"] is not True:
             raise RuntimeError(f"office workspace preflight was not ready: {list_payload['data']['preflight']}")
         summaries = list_payload["data"]["workspaces"]
-        if len(summaries) != 1:
-            raise RuntimeError(f"unexpected office workspace count: {summaries}")
-        summary = summaries[0]
-        if summary["name"] != workspace_name:
-            raise RuntimeError(f"unexpected office workspace summary: {summary}")
+        matching = [item for item in summaries if item.get("name") == workspace_name]
+        if len(matching) != 1:
+            raise RuntimeError(f"expected exactly one matching office workspace: {summaries}")
+        summary = matching[0]
         if summary["current_period"] != "2026-08":
             raise RuntimeError(f"office workspace rollover did not persist in summary: {summary}")
 
