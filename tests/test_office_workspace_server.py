@@ -288,6 +288,9 @@ def test_create_office_workspace_server_binds_localhost_and_lists_workspaces(tmp
             "id": "monthly-report",
             "display_name": {"ja": "月報作成", "en": "Monthly Report"},
             "period_type": "month",
+            "category": "reports",
+            "risk_tier": "low",
+            "business_outcome": "Create a sourced monthly report draft",
         }
         assert payload["data"]["preflight"]["ok"] is True
         assert payload["data"]["root_choices"] == [

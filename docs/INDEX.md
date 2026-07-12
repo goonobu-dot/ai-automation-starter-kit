@@ -19,6 +19,8 @@
 | [月報オペレーター作業場所マニュアル](office-workspace.ja.html) | [Monthly Operator Workspace Manual](office-workspace.html) | 月報のローカル作業場所を inspect → answer → generate → approve → rollover で回す手順 / Browser manual for the monthly office workspace |
 | [日次業務10パック初心者ガイド](daily-workflows.ja.html) | [Complete Daily Workflow Manual](daily-workflows.html) | 問い合わせ・営業・経費など10種類を毎日同じUIで回す手順 / Install, operate, approve, troubleshoot, and reuse ten daily workflow packs |
 | [作業負担軽減5パック手順書](work-relief-workflows.ja.html) | [Work Relief Workflows Manual](work-relief-workflows.html) | Gmail やメール送信を含まない5つのローカル確認パック / Five local review packs without Gmail or email automation |
+| [統制ワークフロー6パック手順書](control-workflows.ja.html) | [Control Workflow Packs Manual](control-workflows.html) | 照合・規程変更・品質事故・取引先・アクセス・助成金をローカル下書きとPIN承認で回す手順 / Six local control workflow draft packs with source review and PIN approval |
+| [統制業務自動化の調査根拠](research/OFFICE_CONTROL_AUTOMATION_RESEARCH_2026-07.md) | [Office Control Automation Research](research/OFFICE_CONTROL_AUTOMATION_RESEARCH_2026-07.md) | X・公開資料・GitHubの採用判断、見送り理由、ライセンス注意 / Research evidence, rejected ideas, and license notes |
 | [レポートウィザード手順書](report-automation-wizard.ja.html) | [Report Wizard Manual](report-automation-wizard.html) | `report-wizard` の `init → inspect → confirm → answer → status → build → approve → serve` を追う手順書 / Step-by-step guide for the resumable report wizard |
 | [FAQ](FAQ.ja.md) | [FAQ](FAQ.md) | よくある質問 / Frequently asked questions |
 

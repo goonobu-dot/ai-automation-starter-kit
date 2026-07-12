@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Control Workflow Packs Manual | AI Automation Starter Kit</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f4;
+      --panel: #ffffff;
+      --soft: #edf3ee;
+      --ink: #17221b;
+      --muted: #58665d;
+      --line: #cbd7ce;
+      --accent: #245f46;
+      --accent-soft: #dcebe2;
+      --warn: #7a4b00;
+      --warn-soft: #fff1d4;
+      --danger: #8d2525;
+      --danger-soft: #f8dfdc;
+      --radius: 6px;
+      --content: 1120px;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: var(--sans); font-size: 16px; line-height: 1.66; color: var(--ink); background: var(--bg); }
+    a { color: var(--accent); text-underline-offset: 0.18em; }
+    header, nav, main, footer { padding: 0 20px; }
+    .wrap { max-width: var(--content); margin: 0 auto; }
+    header { background: var(--panel); border-bottom: 1px solid var(--line); }
+    header .wrap { padding: 30px 0 24px; display: grid; gap: 14px; }
+    .eyebrow { margin: 0; color: var(--muted); font-size: 13px; text-transform: uppercase; letter-spacing: 0; }
+    h1, h2, h3 { margin: 0; letter-spacing: 0; line-height: 1.22; }
+    h1 { max-width: 920px; font-size: 36px; }
+    h2 { font-size: 28px; margin-bottom: 12px; }
+    h3 { font-size: 20px; margin-bottom: 8px; }
+    p, li, td, th { max-width: 78ch; }
+    .lede { margin: 0; color: var(--muted); font-size: 18px; }
+    nav { background: #fff; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+    nav .wrap { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 0; }
+    nav a { display: inline-block; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); text-decoration: none; font-size: 14px; }
+    main .wrap { padding: 28px 0 44px; display: grid; gap: 28px; }
+    section { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+    .callout { border-left: 5px solid var(--accent); background: var(--accent-soft); padding: 16px; border-radius: var(--radius); }
+    .warning { border-left-color: var(--warn); background: var(--warn-soft); }
+    .danger { border-left-color: var(--danger); background: var(--danger-soft); }
+    .flow { display: grid; grid-template-columns: repeat(7, minmax(132px, 1fr)); gap: 8px; overflow-x: auto; padding-bottom: 6px; }
+    .flow div { border: 1px solid var(--line); border-top: 4px solid var(--accent); border-radius: var(--radius); padding: 12px; background: #fff; min-height: 160px; }
+    .flow strong, .cards strong, .pack strong { display: block; color: var(--accent); margin-bottom: 6px; }
+    .cards, .folder-grid, .boundary-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .cards article, .folder-grid article, .boundary-grid article, .pack { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; background: #fff; }
+    .pack { display: grid; gap: 10px; margin-top: 12px; }
+    .pack h3 { color: var(--accent); }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; min-width: 920px; border-collapse: collapse; background: #fff; }
+    th, td { border: 1px solid var(--line); padding: 10px; text-align: left; vertical-align: top; }
+    th { background: var(--soft); }
+    code { font-family: var(--mono); font-size: 0.94em; background: var(--soft); padding: 2px 5px; border-radius: 4px; }
+    pre { margin: 12px 0; overflow-x: auto; padding: 14px; background: #17221b; color: #fff; border-radius: var(--radius); }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    ul, ol { padding-left: 22px; }
+    li { margin: 6px 0; }
+    details { border-top: 1px solid var(--line); padding: 12px 0; }
+    summary { cursor: pointer; font-weight: 700; }
+    footer { border-top: 1px solid var(--line); background: #fff; color: var(--muted); }
+    footer .wrap { padding: 22px 0 34px; }
+    @media (max-width: 760px) {
+      h1 { font-size: 30px; }
+      h2 { font-size: 24px; }
+      section { padding: 18px; }
+      nav { position: static; }
+      .flow { grid-template-columns: repeat(7, 160px); }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <p class="eyebrow">AI Automation Starter Kit</p>
+    <h1>Control Workflow Packs: Beginner Operating Manual</h1>
+    <p class="lede">Use six daily control packs to turn messy office evidence into local review drafts. This manual covers install, Codex login, exact folders, localhost operation, source review, AI questions, draft filenames, PIN approval, next-day reuse, troubleshooting, safety, and side-business positioning.</p>
+    <p>The six workflows are Spreadsheet reconciliation, Policy change impact, Quality incident and corrective action, Vendor onboarding, Access review, and Grant application packet preparation.</p>
+  </div>
+</header>
+<nav aria-label="Manual sections">
+  <div class="wrap">
+    <a href="#scope">Scope</a>
+    <a href="#install">Install</a>
+    <a href="#packs">Six packs</a>
+    <a href="#folders">Folders</a>
+    <a href="#operate">Operate</a>
+    <a href="#reuse">Next day</a>
+    <a href="#troubleshooting">Troubleshooting</a>
+    <a href="#business">Side business</a>
+    <a href="control-workflows.ja.html">Japanese manual</a>
+  </div>
+</nav>
+<main>
+  <div class="wrap">
+    <section id="scope">
+      <h2>1. What this manual is for</h2>
+      <div class="callout warning"><strong>Human-first boundary:</strong> these packs create local drafts for review. They do not approve controls, post finance entries, submit grants, change access, activate vendors, close CAPAs, send email, or contact anyone outside your computer.</div>
+      <p>The six packs are for daily control work where the expensive part is collecting evidence, comparing it, identifying missing facts, and preparing a sourced draft for a responsible person. They are not full automation. The useful promise is smaller and safer: reduce copy-paste and first-draft time while keeping approval, judgment, and external action with a human.</p>
+      <div class="cards">
+        <article><strong>Best fit</strong>Teams that already have recurring files, a named approver, and a current manual review process.</article>
+        <article><strong>Bad fit</strong>Teams asking AI to certify compliance, authorize payments, change access, or make legal decisions without review.</article>
+        <article><strong>Core rhythm</strong>Place files, inspect sources, answer questions, generate a draft, review facts, approve locally, reuse tomorrow.</article>
+      </div>
+      <p>Email automation is out of scope. Gmail, Outlook, Slack, Teams, vendor notifications, applicant notifications, customer updates, and any external message sending are separate projects. This manual deliberately keeps the control packs local and review-only.</p>
+    </section>
+
+    <section>
+      <h2>2. The visual daily flow</h2>
+      <div class="flow" aria-label="Daily control workflow">
+        <div><strong>1. Choose pack</strong>Select one of the six control packs and enter the first date as <code>YYYY-MM-DD</code>.</div>
+        <div><strong>2. Add sources</strong>Put required files in the exact workspace folders. Keep current-day material separate.</div>
+        <div><strong>3. Inspect</strong>Check accepted, skipped, rejected, and missing source records before drafting.</div>
+        <div><strong>4. Answer</strong>Give the AI the control threshold, escalation rule, and any hold rule.</div>
+        <div><strong>5. Draft</strong>Generate a sourced local markdown draft in <code>05_DRAFTS</code>.</div>
+        <div><strong>6. Review</strong>Compare the draft against source files. Mark unsupported claims before approval.</div>
+        <div><strong>7. Approve</strong>Use approver name and PIN to copy the reviewed file into <code>06_APPROVED_OUTPUTS</code>.</div>
+      </div>
+    </section>
+
+    <section id="install">
+      <h2>3. Install and login</h2>
+      <p>Run these commands in a terminal. The workflow uses the local Codex login and the installed package command. Do not paste passwords, API keys, tokens, bank details, or client secrets into chat.</p>
+      <pre><code>git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git
+cd ai-automation-starter-kit
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m ensurepip --upgrade
+python3 -m pip install --upgrade pip setuptools
+python3 -m pip install -e .
+ai-automation-kit --version
+codex login status</code></pre>
+      <p>If <code>codex login status</code> says login is not ready, complete local Codex login first. This manual does not ask for a raw OpenAI API key because the office-workspace route is designed around local Codex operation. If your organization has policy requirements, follow those before placing real company files in any workspace.</p>
+      <p>Confirm that the packs are visible:</p>
+      <pre><code>ai-automation-kit office-workspace packs</code></pre>
+      <p>You should see the monthly report pack, the earlier daily packs, and these six daily control packs. Daily packs require dates such as <code>2026-07-13</code>. Monthly packs use <code>YYYY-MM</code>, but these six packs use <code>YYYY-MM-DD</code>.</p>
+    </section>
+
+    <section id="packs">
+      <h2>4. Choose one of the six exact packs</h2>
+      <p>Start with one pack. Do not create a general "compliance automation" workspace that mixes finance, access, vendors, grants, and quality evidence. Each pack has a different approver role, risk boundary, and draft filename.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Pack id</th><th>Use it for</th><th>Required inputs</th><th>AI questions</th><th>Draft filename</th><th>Approver role</th></tr></thead>
+          <tbody>
+            <tr><td><code>spreadsheet-reconciliation-daily</code></td><td>Daily ledger, bank, or subledger exception review.</td><td><code>ledger_export</code>; <code>bank_or_subledger_statement</code></td><td><code>reconciliation_cutoff_rule</code>; <code>unreconciled_item_escalation_rule</code>; optional <code>same_day_journal_hold_required</code></td><td><code>spreadsheet_reconciliation_daily.md</code></td><td><code>finance_approver</code></td></tr>
+            <tr><td><code>policy-change-impact-daily</code></td><td>Daily review of policy notices against controls and process inventory.</td><td><code>policy_change_notice</code>; <code>control_or_process_inventory</code></td><td><code>material_impact_definition</code>; <code>mandatory_approval_or_training_rule</code>; optional <code>immediate_control_freeze_required</code></td><td><code>policy_change_impact_daily.md</code></td><td><code>compliance_owner</code></td></tr>
+            <tr><td><code>quality-incident-capa-daily</code></td><td>Daily quality incident, containment, and CAPA risk summary.</td><td><code>quality_incident_log</code>; <code>capa_tracker</code></td><td><code>critical_quality_risk_definition</code>; <code>containment_and_capa_escalation_rule</code>; optional <code>shipment_or_release_hold_required</code></td><td><code>quality_incident_capa_daily.md</code></td><td><code>quality_owner</code></td></tr>
+            <tr><td><code>vendor-onboarding-daily</code></td><td>Daily vendor readiness and missing diligence review.</td><td><code>vendor_intake_register</code>; <code>vendor_due_diligence_documents</code></td><td><code>minimum_vendor_readiness_rule</code>; <code>required_approvals_and_due_diligence_rule</code>; optional <code>same_day_vendor_activation_hold_required</code></td><td><code>vendor_onboarding_daily.md</code></td><td><code>procurement_or_finance_approver</code></td></tr>
+            <tr><td><code>access-review-daily</code></td><td>Daily access, entitlement, and exception evidence review.</td><td><code>access_review_export</code>; <code>role_or_entitlement_matrix</code></td><td><code>privileged_access_scope_rule</code>; <code>review_escalation_and_approval_rule</code>; optional <code>same_day_access_change_hold_required</code></td><td><code>access_review_daily.md</code></td><td><code>security_or_it_approver</code></td></tr>
+            <tr><td><code>grant-packet-daily</code></td><td>Daily grant packet completeness, eligibility evidence, and attachment review.</td><td><code>grant_notice_or_program_guidelines</code>; <code>eligibility_and_budget_workbook</code></td><td><code>eligibility_boundary_rule</code>; <code>narrative_and_attachment_expectation_rule</code>; optional <code>same_day_submission_hold_required</code></td><td><code>grant_packet_daily.md</code></td><td><code>grant_or_finance_approver</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout"><strong>Beginner recommendation:</strong> if you have no regulated background, start with <code>spreadsheet-reconciliation-daily</code> using fake sample files. For real client work, start with a low-risk read-only pilot and get the client to name the approver and prohibited actions in writing.</div>
+    </section>
+
+    <section id="create">
+      <h2>5. Create a workspace</h2>
+      <p>The localhost UI is the easiest route for beginners because it shows the pack list and date format. Start the UI with:</p>
+      <pre><code>ai-automation-kit office-workspace serve --root "$HOME/AI-Office-Workspaces" --language en</code></pre>
+      <p>The terminal prints an address like <code>http://127.0.0.1:8080/</code>. Open that address on the same computer. Keep the server on <code>127.0.0.1</code>; it is not a public web app.</p>
+      <p>You can also create a workspace directly from the CLI. This example creates a spreadsheet reconciliation workspace for July 13, 2026:</p>
+      <pre><code>ai-automation-kit office-workspace create \
+  --root ./workspaces \
+  --name "Client A Spreadsheet Reconciliation" \
+  --approver "Finance Manager" \
+  --pin 482913 \
+  --period 2026-07-13 \
+  --pack spreadsheet-reconciliation-daily \
+  --language en
+
+ai-automation-kit office-workspace status \
+  --workspace ./workspaces/Client_A_Spreadsheet_Reconciliation \
+  --json</code></pre>
+      <p>The PIN is local approval protection. It is not a bank PIN, device PIN, account password, or secret to paste into a client chat. Use a temporary workflow PIN and store it according to the client's internal rules.</p>
+    </section>
+
+    <section id="folders">
+      <h2>6. Exact folders and what goes inside</h2>
+      <div class="folder-grid">
+        <article><strong><code>00_START_HERE</code></strong>Read the local status notes first. This folder helps a new operator understand the workspace state.</article>
+        <article><strong><code>01_APPROVED_PAST_OUTPUTS</code></strong>Put older approved final outputs here. Use them as style and structure examples, not as current facts.</article>
+        <article><strong><code>02_PAST_SUPPORTING_FILES</code></strong>Put standing references here: policies, matrices, templates, approved control language, prior notes, and definitions.</article>
+        <article><strong><code>03_CURRENT_INPUTS/YYYY-MM-DD</code></strong>Put today's source evidence here. For July 13, 2026, use <code>03_CURRENT_INPUTS/2026-07-13</code>.</article>
+        <article><strong><code>04_QUESTIONS/YYYY-MM-DD</code></strong>Generated missing-information questions appear here when the source review is not enough.</article>
+        <article><strong><code>05_DRAFTS/YYYY-MM-DD</code></strong>Draft markdown files appear here. These are not approved deliverables.</article>
+        <article><strong><code>06_APPROVED_OUTPUTS/YYYY-MM-DD</code></strong>The reviewed file is copied here only after approver name and PIN approval.</article>
+        <article><strong><code>07_AUDIT</code></strong>Local audit records and approval evidence live here. Do not edit these by hand during normal operation.</article>
+      </div>
+      <h3>Input examples by pack</h3>
+      <div class="pack">
+        <h3><code>spreadsheet-reconciliation-daily</code></h3>
+        <p>Put <code>ledger_export_2026-07-13.csv</code>, <code>bank_statement_2026-07-13.xlsx</code>, and optional <code>reconciliation_policy.md</code> in the current date folder or supporting folders. The draft should list matched totals, unmatched items, missing owners, cutoff issues, and items that need escalation. It must not post journal entries, adjust balances, pay, or sign off reconciliation.</p>
+      </div>
+      <div class="pack">
+        <h3><code>policy-change-impact-daily</code></h3>
+        <p>Use files such as <code>policy_notice_vendor_security.pdf</code>, <code>control_inventory.xlsx</code>, and optional <code>exception_log.csv</code>. The draft should map the notice to affected controls, processes, training, approvals, and open questions. It must not publish policies, change controls, assign training, or request attestations.</p>
+      </div>
+      <div class="pack">
+        <h3><code>quality-incident-capa-daily</code></h3>
+        <p>Use <code>quality_incident_log.csv</code>, <code>capa_tracker.xlsx</code>, and optional audit notes. The draft should identify severity, containment owner, due date, verification status, overdue CAPAs, and missing evidence. It must not close CAPAs, change product disposition, authorize release, or notify suppliers.</p>
+      </div>
+      <div class="pack">
+        <h3><code>vendor-onboarding-daily</code></h3>
+        <p>Use <code>vendor_intake_register.xlsx</code>, due diligence PDFs, tax notes, and banking setup notes. The draft should separate ready, blocked, and missing-evidence vendors. It must not activate vendors, accept tax forms, update banking, pay vendors, or contact vendors.</p>
+      </div>
+      <div class="pack">
+        <h3><code>access-review-daily</code></h3>
+        <p>Use <code>access_review_export.csv</code>, <code>role_entitlement_matrix.xlsx</code>, and optional joiner-mover-leaver logs. The draft should identify privileged access, mismatched roles, missing approval evidence, and exceptions. It must not grant access, revoke access, certify a review, or contact users.</p>
+      </div>
+      <div class="pack">
+        <h3><code>grant-packet-daily</code></h3>
+        <p>Use <code>grant_notice.pdf</code>, <code>eligibility_budget_workbook.xlsx</code>, and supporting attachments. The draft should organize eligibility evidence, budget support, narrative support, attachment status, deadlines, and unresolved questions. It must not submit anything, certify eligibility, sign forms, or promise an award.</p>
+      </div>
+    </section>
+
+    <section id="operate">
+      <h2>7. Operate the workflow</h2>
+      <h3>Inspect sources first</h3>
+      <p>After placing files, click <strong>Inspect materials</strong> in the UI or run:</p>
+      <pre><code>ai-automation-kit office-workspace inspect \
+  --workspace ./workspaces/Client_A_Spreadsheet_Reconciliation \
+  --period 2026-07-13</code></pre>
+      <p>Review accepted, rejected, and skipped records. Confirm the source manifest includes the files you expected. If a required input is missing, do not draft around it. Add the missing file or answer that the evidence is unavailable.</p>
+      <h3>Answer AI questions</h3>
+      <p>The AI questions are not decoration. They define how the draft should interpret risk and materiality. Good answers are short, concrete, and owned by the responsible person.</p>
+      <ul>
+        <li>For reconciliation: "Escalate any unreconciled item above USD 500, any bank fee without owner, and any same-day cutoff mismatch."</li>
+        <li>For policy impact: "Material impact means the change affects a customer-facing control, regulated process, training obligation, or executive sign-off."</li>
+        <li>For CAPA: "Critical quality risk means open containment for shipped product, overdue verification, repeat defect, or missing root cause owner."</li>
+        <li>For vendors: "Minimum readiness requires legal name, tax form evidence, sanctions screen, payment terms, owner approval, and banking evidence."</li>
+        <li>For access review: "Privileged scope includes admin, production write, finance approval, security console, and shared owner accounts."</li>
+        <li>For grants: "Eligibility must be supported by the notice, applicant records, budget workbook, and attachment evidence; unknown means unresolved."</li>
+      </ul>
+      <h3>Generate, then read the draft against sources</h3>
+      <p>When the UI shows the run is ready, generate the draft. The expected draft filenames are exact: <code>spreadsheet_reconciliation_daily.md</code>, <code>policy_change_impact_daily.md</code>, <code>quality_incident_capa_daily.md</code>, <code>vendor_onboarding_daily.md</code>, <code>access_review_daily.md</code>, and <code>grant_packet_daily.md</code>.</p>
+      <p>Open the file in <code>05_DRAFTS/YYYY-MM-DD</code>. Check every number, date, person, system, vendor, policy, program, deadline, amount, and recommendation against the source files. Unsupported claims should be removed or marked as missing evidence before approval.</p>
+      <h3>Approve with PIN only after review</h3>
+      <p>Approval copies the reviewed draft into <code>06_APPROVED_OUTPUTS/YYYY-MM-DD</code> and records audit information. Approval does not send, publish, submit, update production, or notify anyone. The responsible human still decides whether the approved local file can be used outside the workspace.</p>
+    </section>
+
+    <section id="reuse">
+      <h2>8. Reuse the workspace tomorrow</h2>
+      <p>After approval, prepare the next date. Daily packs use calendar dates, so July 13, 2026 rolls to <code>2026-07-14</code>. The prior approved output can be reused as a style and structure reference when the UI offers it.</p>
+      <ol>
+        <li>Confirm today's approved output is the one you want tomorrow to follow.</li>
+        <li>Prepare the next period in the UI or by using the workspace controls.</li>
+        <li>Place only the new day's source files in <code>03_CURRENT_INPUTS/2026-07-14</code>.</li>
+        <li>Keep standing policies and matrices in <code>02_PAST_SUPPORTING_FILES</code>.</li>
+        <li>Inspect again. The system should not assume yesterday's facts are today's facts.</li>
+        <li>Answer new questions if policy, threshold, approver, or hold rules changed.</li>
+        <li>Generate, source-review, approve, and record the next local output.</li>
+      </ol>
+      <div class="callout warning"><strong>Reuse is not training:</strong> the system uses the prior approved output as a checked reference for structure and tone. It does not permanently train a model on your files.</div>
+    </section>
+
+    <section id="safety">
+      <h2>9. Safety rules for control work</h2>
+      <div class="boundary-grid">
+        <article><strong>Never skip source review</strong>A clean-looking draft can still be wrong. Compare it to the accepted source manifest and original files.</article>
+        <article><strong>Never approve your own high-risk output</strong>Use the named finance, compliance, quality, procurement, security, IT, grant, or finance approver.</article>
+        <article><strong>Never turn drafts into external actions</strong>Email automation, access changes, vendor activation, payment, grant submission, and policy publication are outside this pack family.</article>
+        <article><strong>Never hide uncertainty</strong>If evidence is missing, the draft should say so. Do not let the AI invent eligibility, approval, or root-cause facts.</article>
+      </div>
+      <p>For real client or company data, start with sanitized samples. If the workflow handles regulated, personal, financial, security, medical, legal, export-controlled, or grant-certification material, the responsible organization must decide whether local AI review is allowed.</p>
+    </section>
+
+    <section id="troubleshooting">
+      <h2>10. Troubleshooting</h2>
+      <details><summary>The UI does not open</summary><p>Confirm the terminal running <code>office-workspace serve</code> is still active. Open the exact <code>127.0.0.1</code> URL printed by the command. If the port is busy, restart the server and use the new printed address.</p></details>
+      <details><summary>Codex is not logged in</summary><p>Run <code>codex login status</code>. Complete local login. Do not paste an API key, password, or token into the manual, UI, or chat.</p></details>
+      <details><summary>The date is rejected</summary><p>Use strict <code>YYYY-MM-DD</code>. Examples: <code>2026-07-13</code> and <code>2026-12-01</code>. Invalid dates, month-only dates, and informal labels are rejected for these daily packs.</p></details>
+      <details><summary>A file is skipped or rejected</summary><p>Check extension, corruption, size, and whether the file is a shortcut or cloud placeholder. The packs accept combinations of <code>.csv</code>, <code>.xlsx</code>, <code>.json</code>, <code>.pdf</code>, <code>.docx</code>, <code>.md</code>, and <code>.txt</code>, depending on the input slot.</p></details>
+      <details><summary>The AI asks too many questions</summary><p>That usually means the files do not contain enough evidence. Add a policy, matrix, owner list, deadline, threshold, or prior approved output. Do not answer with guesses when the organization has a real rule.</p></details>
+      <details><summary>The draft has confident but unsupported text</summary><p>Remove the claim, add the source, or mark the issue unresolved. Approval should mean the human reviewer has compared the claim to evidence.</p></details>
+      <details><summary>Approval fails</summary><p>Check approver spelling, PIN, current period, and whether the draft is the current draft for that date. Do not manually copy files into <code>06_APPROVED_OUTPUTS</code> as a workaround.</p></details>
+      <details><summary>Manual recovery is required</summary><p>Check <code>00_START_HERE/workspace_status.json</code>, <code>.system/workspace.json</code>, <code>.system/periods/YYYY-MM-DD/state.json</code>, <code>.system/runs/</code>, and <code>07_AUDIT/audit.jsonl</code>. Stop and summarize the known state before editing anything by hand.</p></details>
+    </section>
+
+    <section id="business">
+      <h2>11. Side-business positioning</h2>
+      <p>The strongest beginner offer is not "I will automate compliance." The safer offer is: "I will set up one local daily control-draft workspace, prove it on sample data, and leave approval with your responsible person." This is easier to sell honestly because the buyer can see the folders, source manifest, questions, draft, approval record, and limits.</p>
+      <h3>A practical first paid pilot</h3>
+      <ol>
+        <li>Choose one buyer role: finance manager, compliance owner, quality manager, procurement lead, IT/security lead, or grants administrator.</li>
+        <li>Ask for one painful daily review that already has files and a named approver.</li>
+        <li>Use sanitized sample data for the demo and avoid live systems.</li>
+        <li>Measure draft time, missing evidence count, correction count, and final review time.</li>
+        <li>Deliver the workspace, this manual, a one-page scope, and a list of actions that remain human-only.</li>
+        <li>Price the pilot as setup plus one or two review cycles, not as a permanent autonomous agent.</li>
+      </ol>
+      <div class="callout danger"><strong>Do not claim full automation:</strong> do not promise guaranteed accuracy, automatic control approval, audit certification, automatic access change, vendor activation, grant submission, payment, or external communication. The product value is controlled drafting and repeatable review.</div>
+    </section>
+
+    <section>
+      <h2>12. Related documents</h2>
+      <ul>
+        <li><a href="office-workspace.html">Monthly office workspace manual</a></li>
+        <li><a href="daily-workflows.html">Daily workflow automation manual</a></li>
+        <li><a href="work-relief-workflows.html">Work relief workflows manual</a></li>
+        <li><a href="../START_WITH_CODEX.md">Start With Codex</a></li>
+        <li><a href="research/OFFICE_CONTROL_AUTOMATION_RESEARCH_2026-07.md">July 2026 control automation research note</a></li>
+        <li><a href="INDEX.md">Documentation index</a></li>
+      </ul>
+    </section>
+  </div>
+</main>
+<footer>
+  <div class="wrap">AI Automation Starter Kit supports local, reviewable office workflows. It creates drafts and approval records; people remain responsible for decisions and external action.</div>
+</footer>
+</body>
+</html>

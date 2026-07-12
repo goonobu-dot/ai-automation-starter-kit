@@ -29,6 +29,12 @@ EXPECTED_PACK_ORDER = [
     "contract-intake-daily",
     "quote-comparison-daily",
     "compliance-deadline-daily",
+    "spreadsheet-reconciliation-daily",
+    "policy-change-impact-daily",
+    "quality-incident-capa-daily",
+    "vendor-onboarding-daily",
+    "access-review-daily",
+    "grant-packet-daily",
 ]
 
 EMAIL_FREE_DAILY_PACKS = [
@@ -37,6 +43,12 @@ EMAIL_FREE_DAILY_PACKS = [
     "contract-intake-daily",
     "quote-comparison-daily",
     "compliance-deadline-daily",
+    "spreadsheet-reconciliation-daily",
+    "policy-change-impact-daily",
+    "quality-incident-capa-daily",
+    "vendor-onboarding-daily",
+    "access-review-daily",
+    "grant-packet-daily",
 ]
 
 EXPECTED_PERIOD_TYPES = {
@@ -56,6 +68,12 @@ EXPECTED_PERIOD_TYPES = {
     "contract-intake-daily": "day",
     "quote-comparison-daily": "day",
     "compliance-deadline-daily": "day",
+    "spreadsheet-reconciliation-daily": "day",
+    "policy-change-impact-daily": "day",
+    "quality-incident-capa-daily": "day",
+    "vendor-onboarding-daily": "day",
+    "access-review-daily": "day",
+    "grant-packet-daily": "day",
 }
 
 

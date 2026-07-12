@@ -887,6 +887,9 @@ def _pack_catalog_entry(pack: Dict) -> Dict:
         "id": pack["id"],
         "display_name": dict(pack["display_name"]),
         "period_type": pack["period_type"],
+        "category": pack["category"],
+        "risk_tier": pack["risk_tier"],
+        "business_outcome": pack["business_outcome"],
     }
 
 

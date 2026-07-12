@@ -8,6 +8,8 @@
 
 メール送信なしの作業負担軽減5パックは、[日本語手順書](docs/work-relief-workflows.ja.html)と[英語版](docs/work-relief-workflows.html)から見られます。Gmail とメール自動化はその対象外で、別プロジェクトとして扱います。
 
+日次の統制ワークフロー6パックは、[日本語手順書](docs/control-workflows.ja.html)と[英語版](docs/control-workflows.html)から見られます。表計算照合、規程変更影響、品質事故・是正予防措置、取引先登録、アクセス棚卸、助成金資料の下書き確認を扱います。ここでもメール自動化は対象外です。
+
 このファイルは、月報作業場所を Codex にローカルで整えてもらうための、初心者向けの実務メモです。宣伝ではなく、実際に何を確認して何を実行するかだけを書いています。
 
 ## 最初に Codex へ送る内容
@@ -31,11 +33,19 @@ codex login status
 
 ## 作業場所を作るコマンド
 
-保存場所、作業名、承認者、対象月の4点が決まったら、Codex は次の形式で実行します。
+保存場所、作業名、承認者、対象月の4点が決まったら、月報の標準形では Codex は次の形式で実行します。
 
 ```bash
 ai-automation-kit office-workspace create --root "<保存先ルート>" --name "<作業名>" --approver "<承認者名>" --pin "<6〜32桁の数字PIN>" --period "<YYYY-MM>" --language ja
 ```
+
+日次の統制ワークフローでは、対象日を厳密な <code>YYYY-MM-DD</code> にし、正確なパックIDを追加します。
+
+```bash
+ai-automation-kit office-workspace create --root "<保存先ルート>" --name "<作業名>" --approver "<承認者名>" --pin "<6〜32桁の数字PIN>" --period "<YYYY-MM-DD>" --pack "spreadsheet-reconciliation-daily" --language ja
+```
+
+他の統制パックIDは、`policy-change-impact-daily`、`quality-incident-capa-daily`、`vendor-onboarding-daily`、`access-review-daily`、`grant-packet-daily` です。
 
 作成直後にローカルUIを開くのではなく、先に状態確認を行います。
 

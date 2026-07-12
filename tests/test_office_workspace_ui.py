@@ -343,12 +343,26 @@ def test_ui_pins_busy_error_and_disabled_control_contracts():
 def test_ui_uses_pack_catalog_and_period_type_to_drive_beginner_period_inputs():
     html = render_office_workspace_ui("en", SAFE_TOKEN)
 
-    for element_id in ("workflow-pack-select", "first-period-input", "first-period-help", "next-period-help"):
+    for element_id in (
+        "workflow-pack-select",
+        "workflow-pack-help",
+        "first-period-input",
+        "first-period-help",
+        "next-period-help",
+    ):
         assert 'id="{}"'.format(element_id) in html
     assert "state.packCatalog" in html
     assert "payload.data.pack_catalog" in html
     assert "renderPackChoices" in html
     assert "localizedDisplayName" in html
+    assert "localizedCategory" in html
+    assert "localizedRisk" in html
+    assert 'document.createElement("optgroup")' in html
+    assert "pack.category" in html
+    assert "risk_tier" in html
+    assert "pack.business_outcome" in html
+    assert "Draft preparation only; a person must review and approve." in html
+    assert "下書き作成専用です。人が確認して承認します。" in render_office_workspace_ui("ja", SAFE_TOKEN)
     assert "applyPeriodFormat" in html
     assert 'pack_id: pack ? pack.id : ""' in html
     assert 'period_id: byId("first-period-input").value' in html

@@ -1138,6 +1138,62 @@ def test_public_entrypoints_link_work_relief_manuals():
         assert "work-relief-workflows.html" in text, path
 
 
+def test_control_workflow_manuals_are_bilingual_complete_and_email_free():
+    manuals = {
+        "docs/control-workflows.ja.html": [
+            "表計算・台帳照合",
+            "規程変更の影響確認",
+            "品質事故・是正措置",
+            "取引先登録",
+            "アクセス権確認",
+            "助成金・補助金資料",
+            "メール自動化は対象外",
+        ],
+        "docs/control-workflows.html": [
+            "Spreadsheet reconciliation",
+            "Policy change impact",
+            "Quality incident and corrective action",
+            "Vendor onboarding",
+            "Access review",
+            "Grant application packet",
+            "Email automation is out of scope",
+        ],
+    }
+    for path, snippets in manuals.items():
+        text = Path(path).read_text(encoding="utf-8")
+        assert len(text) > 14000
+        assert "office-workspace serve" in text
+        assert "01_APPROVED_PAST_OUTPUTS" in text
+        assert "03_CURRENT_INPUTS" in text
+        assert "06_APPROVED_OUTPUTS" in text
+        assert "PIN" in text
+        assert "YYYY-MM-DD" in text
+        for snippet in snippets:
+            assert snippet in text, f"{path} missing {snippet}"
+    assert not re.search(
+        r"[\u3040-\u30ff\u4e00-\u9fff]",
+        Path("docs/control-workflows.html").read_text(encoding="utf-8"),
+    )
+
+
+def test_control_workflow_release_links_and_research_are_public():
+    for path in ["README.md", "START_WITH_CODEX.md", "START_WITH_CODEX.ja.md", "docs/INDEX.md"]:
+        text = Path(path).read_text(encoding="utf-8")
+        assert "control-workflows.ja.html" in text, path
+        assert "control-workflows.html" in text, path
+
+    for path in ["README.md", "docs/INDEX.md"]:
+        assert "OFFICE_CONTROL_AUTOMATION_RESEARCH_2026-07.md" in Path(path).read_text(encoding="utf-8"), path
+
+    research = Path("docs/research/OFFICE_CONTROL_AUTOMATION_RESEARCH_2026-07.md").read_text(encoding="utf-8")
+    assert "GitHub" in research
+    assert "X research" in research
+    assert "Grants.gov" in research
+    assert "MarkItDown" in research
+    assert "OpenLineage" in research
+    assert "email" in research.lower()
+
+
 def test_office_workspace_manuals_define_mobile_overflow_contracts():
     for path in ["docs/office-workspace.html", "docs/office-workspace.ja.html"]:
         text = Path(path).read_text(encoding="utf-8")

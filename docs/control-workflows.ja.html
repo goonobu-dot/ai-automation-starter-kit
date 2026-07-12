@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>統制ワークフロー6パック手順書 | AI Automation Starter Kit</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f6f2;
+      --panel: #ffffff;
+      --soft: #eef2ea;
+      --ink: #1b2118;
+      --muted: #5d6659;
+      --line: #d0d8ca;
+      --accent: #2f6545;
+      --accent-soft: #e0ecdf;
+      --warn: #805200;
+      --warn-soft: #fff1d5;
+      --danger: #8d2525;
+      --danger-soft: #f8dfdc;
+      --radius: 6px;
+      --content: 1120px;
+      --sans: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+      --mono: "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; font-family: var(--sans); font-size: 16px; line-height: 1.76; color: var(--ink); background: var(--bg); }
+    a { color: var(--accent); text-underline-offset: 0.18em; }
+    header, nav, main, footer { padding: 0 20px; }
+    .wrap { max-width: var(--content); margin: 0 auto; }
+    header { background: var(--panel); border-bottom: 1px solid var(--line); }
+    header .wrap { padding: 30px 0 24px; display: grid; gap: 14px; }
+    .eyebrow { margin: 0; color: var(--muted); font-size: 13px; letter-spacing: 0; }
+    h1, h2, h3 { margin: 0; letter-spacing: 0; line-height: 1.28; }
+    h1 { max-width: 920px; font-size: 34px; }
+    h2 { font-size: 27px; margin-bottom: 12px; }
+    h3 { font-size: 20px; margin-bottom: 8px; }
+    p, li, td, th { max-width: 78ch; }
+    .lede { margin: 0; color: var(--muted); font-size: 18px; }
+    nav { background: #fff; border-bottom: 1px solid var(--line); position: sticky; top: 0; z-index: 5; }
+    nav .wrap { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 0; }
+    nav a { display: inline-block; padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); text-decoration: none; font-size: 14px; }
+    main .wrap { padding: 28px 0 44px; display: grid; gap: 28px; }
+    section { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+    .callout { border-left: 5px solid var(--accent); background: var(--accent-soft); padding: 16px; border-radius: var(--radius); }
+    .warning { border-left-color: var(--warn); background: var(--warn-soft); }
+    .danger { border-left-color: var(--danger); background: var(--danger-soft); }
+    .flow { display: grid; grid-template-columns: repeat(7, minmax(132px, 1fr)); gap: 8px; overflow-x: auto; padding-bottom: 6px; }
+    .flow div { border: 1px solid var(--line); border-top: 4px solid var(--accent); border-radius: var(--radius); padding: 12px; background: #fff; min-height: 170px; }
+    .flow strong, .cards strong, .pack strong { display: block; color: var(--accent); margin-bottom: 6px; }
+    .cards, .folder-grid, .boundary-grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+    .cards article, .folder-grid article, .boundary-grid article, .pack { border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; background: #fff; }
+    .pack { display: grid; gap: 10px; margin-top: 12px; }
+    .pack h3 { color: var(--accent); }
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; min-width: 940px; border-collapse: collapse; background: #fff; }
+    th, td { border: 1px solid var(--line); padding: 10px; text-align: left; vertical-align: top; }
+    th { background: var(--soft); }
+    code { font-family: var(--mono); font-size: 0.94em; background: var(--soft); padding: 2px 5px; border-radius: 4px; }
+    pre { margin: 12px 0; overflow-x: auto; padding: 14px; background: #1b2118; color: #fff; border-radius: var(--radius); }
+    pre code { background: transparent; color: inherit; padding: 0; }
+    ul, ol { padding-left: 22px; }
+    li { margin: 6px 0; }
+    details { border-top: 1px solid var(--line); padding: 12px 0; }
+    summary { cursor: pointer; font-weight: 700; }
+    footer { border-top: 1px solid var(--line); background: #fff; color: var(--muted); }
+    footer .wrap { padding: 22px 0 34px; }
+    @media (max-width: 760px) {
+      h1 { font-size: 29px; }
+      h2 { font-size: 24px; }
+      section { padding: 18px; }
+      nav { position: static; }
+      .flow { grid-template-columns: repeat(7, 160px); }
+    }
+  </style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <p class="eyebrow">AI Automation Starter Kit</p>
+    <h1>統制ワークフロー6パック 初心者向け運用手順書</h1>
+    <p class="lede">日々の照合、規程変更、品質事故、取引先登録、アクセス棚卸、助成金資料を、ローカルの確認用下書きにまとめるための手順書です。インストール、ログイン、正確なフォルダ、画面起動、資料確認、AIへの質問、下書きファイル名、PIN承認、翌日再利用、困ったときの対処、安全範囲、副業としての提案方法までを扱います。</p>
+    <p>対象業務は、表計算・台帳照合、規程変更の影響確認、品質事故・是正措置、取引先登録、アクセス権確認、助成金・補助金資料の6種類です。</p>
+  </div>
+</header>
+<nav aria-label="手順書の目次">
+  <div class="wrap">
+    <a href="#scope">範囲</a>
+    <a href="#install">準備</a>
+    <a href="#packs">6パック</a>
+    <a href="#folders">フォルダ</a>
+    <a href="#operate">操作</a>
+    <a href="#reuse">翌日</a>
+    <a href="#troubleshooting">対処</a>
+    <a href="#business">副業</a>
+    <a href="control-workflows.html">英語版</a>
+  </div>
+</nav>
+<main>
+  <div class="wrap">
+    <section id="scope">
+      <h2>1. この手順書でできること</h2>
+      <div class="callout warning"><strong>最初に確認してください。</strong> この6パックは、ローカルの確認用下書きを作るためのものです。統制承認、会計仕訳、助成金提出、アクセス変更、取引先有効化、是正予防措置の完了、メール送信、外部連絡は行いません。</div>
+      <p>対象は、毎日似た形の資料を集め、差分や不足を確認し、責任者が読むための下書きを作る仕事です。完全自動化ではありません。価値は、コピペ、初期確認、抜け漏れ整理、下書き作成を軽くしつつ、最終判断と外部アクションを人間に残すことです。</p>
+      <div class="cards">
+        <article><strong>向いている現場</strong>毎日または頻繁に資料が発生し、承認者が決まっており、現在も人間が確認している業務です。</article>
+        <article><strong>向いていない現場</strong>AIに統制証明、支払い、権限変更、法務判断、助成金の適格性証明を任せたい現場です。</article>
+        <article><strong>基本の流れ</strong>資料を置く、読み取り結果を確認する、質問に答える、下書きを作る、資料と照合する、PINでローカル承認する、翌日に再利用する、という流れです。</article>
+      </div>
+      <p>メール自動化は対象外です。Gmail、Outlook、Slack、Teams、取引先への通知、申請先への連絡、顧客連絡などの外部送信は別プロジェクトとして扱います。この手順書は、あえてローカル確認と人間承認だけに範囲を絞っています。</p>
+    </section>
+
+    <section>
+      <h2>2. 1日の見える流れ</h2>
+      <div class="flow" aria-label="日次統制ワークフロー">
+        <div><strong>1. パック選択</strong>6つの統制パックから1つ選び、最初の日付を <code>YYYY-MM-DD</code> で入力します。</div>
+        <div><strong>2. 資料配置</strong>決められたフォルダに必要資料を置きます。当日資料と過去資料を混ぜません。</div>
+        <div><strong>3. 資料確認</strong>受理、除外、拒否、足りない資料を、下書き前に確認します。</div>
+        <div><strong>4. 質問回答</strong>重要度、エスカレーション、保留条件など、判断ルールを入力します。</div>
+        <div><strong>5. 下書き作成</strong><code>05_DRAFTS</code> に根拠付きの下書きファイルを作ります。</div>
+        <div><strong>6. 人間確認</strong>数字、日付、担当者、結論を元資料と見比べます。</div>
+        <div><strong>7. PIN承認</strong>承認者名とPINで、確認済みファイルを <code>06_APPROVED_OUTPUTS</code> に保存します。</div>
+      </div>
+    </section>
+
+    <section id="install">
+      <h2>3. インストールとログイン</h2>
+      <p>ターミナルで次を実行します。この流れはローカルのCodexログインを使います。パスワード、APIキー、トークン、銀行情報、顧客の秘密情報をチャットに貼り付けないでください。</p>
+      <pre><code>git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git
+cd ai-automation-starter-kit
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m ensurepip --upgrade
+python3 -m pip install --upgrade pip setuptools
+python3 -m pip install -e .
+ai-automation-kit --version
+codex login status</code></pre>
+      <p><code>codex login status</code> でログイン未完了と表示された場合は、先にローカルのCodexログインを済ませます。この作業場所の流れでは、生のOpenAI APIキーを手入力する必要はありません。実会社の資料を置く場合は、その会社の情報管理ルールに従ってください。</p>
+      <p>パック一覧も確認します。</p>
+      <pre><code>ai-automation-kit office-workspace packs</code></pre>
+      <p>月報パック、既存の日次パック、そしてこの6つの統制パックが見えるはずです。この6パックの日付は <code>2026-07-13</code> のような <code>YYYY-MM-DD</code> 形式です。月報の <code>YYYY-MM</code> とは違います。</p>
+    </section>
+
+    <section id="packs">
+      <h2>4. 6つの正確なパック</h2>
+      <p>最初は1つだけ選んでください。財務、アクセス、取引先、助成金、品質、規程を1つの大きな作業場所に混ぜると、承認者、リスク、禁止事項があいまいになります。</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>パックID</th><th>用途</th><th>必須入力</th><th>AIが確認する質問</th><th>下書きファイル名</th><th>承認者の役割</th></tr></thead>
+          <tbody>
+            <tr><td><code>spreadsheet-reconciliation-daily</code></td><td>台帳、銀行明細、補助元帳の差異確認。</td><td><code>ledger_export</code>、<code>bank_or_subledger_statement</code></td><td><code>reconciliation_cutoff_rule</code>、<code>unreconciled_item_escalation_rule</code>、任意の <code>same_day_journal_hold_required</code></td><td><code>spreadsheet_reconciliation_daily.md</code></td><td><code>finance_approver</code></td></tr>
+            <tr><td><code>policy-change-impact-daily</code></td><td>規程変更通知と統制一覧、業務一覧の影響整理。</td><td><code>policy_change_notice</code>、<code>control_or_process_inventory</code></td><td><code>material_impact_definition</code>、<code>mandatory_approval_or_training_rule</code>、任意の <code>immediate_control_freeze_required</code></td><td><code>policy_change_impact_daily.md</code></td><td><code>compliance_owner</code></td></tr>
+            <tr><td><code>quality-incident-capa-daily</code></td><td>品質事故、封じ込め、是正予防措置のリスク整理。</td><td><code>quality_incident_log</code>、<code>capa_tracker</code></td><td><code>critical_quality_risk_definition</code>、<code>containment_and_capa_escalation_rule</code>、任意の <code>shipment_or_release_hold_required</code></td><td><code>quality_incident_capa_daily.md</code></td><td><code>quality_owner</code></td></tr>
+            <tr><td><code>vendor-onboarding-daily</code></td><td>取引先登録の準備状況と不足資料の整理。</td><td><code>vendor_intake_register</code>、<code>vendor_due_diligence_documents</code></td><td><code>minimum_vendor_readiness_rule</code>、<code>required_approvals_and_due_diligence_rule</code>、任意の <code>same_day_vendor_activation_hold_required</code></td><td><code>vendor_onboarding_daily.md</code></td><td><code>procurement_or_finance_approver</code></td></tr>
+            <tr><td><code>access-review-daily</code></td><td>アクセス権限、ロール、例外の棚卸確認。</td><td><code>access_review_export</code>、<code>role_or_entitlement_matrix</code></td><td><code>privileged_access_scope_rule</code>、<code>review_escalation_and_approval_rule</code>、任意の <code>same_day_access_change_hold_required</code></td><td><code>access_review_daily.md</code></td><td><code>security_or_it_approver</code></td></tr>
+            <tr><td><code>grant-packet-daily</code></td><td>助成金申請資料、適格性根拠、添付資料の整理。</td><td><code>grant_notice_or_program_guidelines</code>、<code>eligibility_and_budget_workbook</code></td><td><code>eligibility_boundary_rule</code>、<code>narrative_and_attachment_expectation_rule</code>、任意の <code>same_day_submission_hold_required</code></td><td><code>grant_packet_daily.md</code></td><td><code>grant_or_finance_approver</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout"><strong>初心者へのおすすめ:</strong> 規制や専門判断に慣れていない場合、まずは架空データで <code>spreadsheet-reconciliation-daily</code> を試してください。実案件では、読み取り専用の小さな検証から始め、承認者と禁止事項を先に決めます。</div>
+    </section>
+
+    <section id="create">
+      <h2>5. 作業場所を作る</h2>
+      <p>初心者はローカル画面から始めるのが簡単です。パック一覧と日付形式が画面に出ます。</p>
+      <pre><code>ai-automation-kit office-workspace serve --root "$HOME/AI-Office-Workspaces" --language ja</code></pre>
+      <p>ターミナルに <code>http://127.0.0.1:8080/</code> のようなアドレスが表示されます。同じパソコンのブラウザで開きます。この画面は公開用のウェブアプリではありません。<code>127.0.0.1</code> のローカル画面として使います。</p>
+      <p>コマンドで作る場合の例です。2026年7月13日の表計算照合作業場所を作ります。</p>
+      <pre><code>ai-automation-kit office-workspace create \
+  --root ./workspaces \
+  --name "Client A Spreadsheet Reconciliation" \
+  --approver "Finance Manager" \
+  --pin 482913 \
+  --period 2026-07-13 \
+  --pack spreadsheet-reconciliation-daily \
+  --language ja
+
+ai-automation-kit office-workspace status \
+  --workspace ./workspaces/Client_A_Spreadsheet_Reconciliation \
+  --json</code></pre>
+      <p>PINはローカル承認のための番号です。銀行PIN、端末PIN、アカウントパスワードではありません。顧客のルールに合わせて、作業用の一時PINとして管理してください。</p>
+    </section>
+
+    <section id="folders">
+      <h2>6. 正確なフォルダと入れるもの</h2>
+      <div class="folder-grid">
+        <article><strong><code>00_START_HERE</code></strong>最初に状態メモを読みます。作業場所の現在地を知るための入口です。</article>
+        <article><strong><code>01_APPROVED_PAST_OUTPUTS</code></strong>過去に承認済みの完成物を入れます。文体と構成の参考であり、今日の事実ではありません。</article>
+        <article><strong><code>02_PAST_SUPPORTING_FILES</code></strong>規程、権限表、テンプレート、承認済みの統制文言、過去メモ、定義を入れます。</article>
+        <article><strong><code>03_CURRENT_INPUTS/YYYY-MM-DD</code></strong>今日の根拠資料だけを入れます。2026年7月13日なら <code>03_CURRENT_INPUTS/2026-07-13</code> です。</article>
+        <article><strong><code>04_QUESTIONS/YYYY-MM-DD</code></strong>情報が足りないとき、追加質問のファイルがここに出ます。</article>
+        <article><strong><code>05_DRAFTS/YYYY-MM-DD</code></strong>下書きがここに出ます。承認済み成果物ではありません。</article>
+        <article><strong><code>06_APPROVED_OUTPUTS/YYYY-MM-DD</code></strong>人間が確認し、承認者名とPINで承認したファイルだけがここに保存されます。</article>
+        <article><strong><code>07_AUDIT</code></strong>承認記録と監査用のローカル記録があります。通常作業では手で編集しません。</article>
+      </div>
+      <h3>パック別の入力例</h3>
+      <div class="pack">
+        <h3><code>spreadsheet-reconciliation-daily</code></h3>
+        <p><code>ledger_export_2026-07-13.csv</code>、<code>bank_statement_2026-07-13.xlsx</code>、任意の <code>reconciliation_policy.md</code> などを使います。下書きは、照合済み合計、未照合項目、不明担当者、締め時刻の問題、エスカレーション対象を整理します。仕訳登録、残高修正、支払い、照合サインオフは行いません。</p>
+      </div>
+      <div class="pack">
+        <h3><code>policy-change-impact-daily</code></h3>
+        <p><code>policy_notice_vendor_security.pdf</code>、<code>control_inventory.xlsx</code>、任意の <code>exception_log.csv</code> などを使います。下書きは、影響を受ける統制、業務、教育、承認、未確認事項を整理します。規程公開、統制変更、教育割り当て、証跡依頼は行いません。</p>
+      </div>
+      <div class="pack">
+        <h3><code>quality-incident-capa-daily</code></h3>
+        <p><code>quality_incident_log.csv</code>、<code>capa_tracker.xlsx</code>、任意の監査メモを使います。下書きは、重大度、封じ込め担当者、期限、検証状態、期限超過、根拠不足を整理します。是正予防措置の完了、製品判定変更、出荷承認、サプライヤー通知は行いません。</p>
+      </div>
+      <div class="pack">
+        <h3><code>vendor-onboarding-daily</code></h3>
+        <p><code>vendor_intake_register.xlsx</code>、デューデリジェンス資料、税務メモ、銀行設定メモを使います。下書きは、登録可能、保留、不足資料ありを分けます。取引先有効化、税務書類受理、銀行情報更新、支払い、取引先連絡は行いません。</p>
+      </div>
+      <div class="pack">
+        <h3><code>access-review-daily</code></h3>
+        <p><code>access_review_export.csv</code>、<code>role_entitlement_matrix.xlsx</code>、任意の入社異動退職ログを使います。下書きは、特権アクセス、ロール不一致、承認証跡不足、例外理由を整理します。権限付与、権限剥奪、棚卸認証、利用者連絡は行いません。</p>
+      </div>
+      <div class="pack">
+        <h3><code>grant-packet-daily</code></h3>
+        <p><code>grant_notice.pdf</code>、<code>eligibility_budget_workbook.xlsx</code>、添付資料を使います。下書きは、適格性根拠、予算根拠、本文根拠、添付状況、期限、未解決質問を整理します。提出、適格性証明、署名、採択約束は行いません。</p>
+      </div>
+    </section>
+
+    <section id="operate">
+      <h2>7. 実際の操作</h2>
+      <h3>先に資料を確認する</h3>
+      <p>資料を置いたら、画面で「資料確認」を実行します。コマンドで行う場合は次の形です。</p>
+      <pre><code>ai-automation-kit office-workspace inspect \
+  --workspace ./workspaces/Client_A_Spreadsheet_Reconciliation \
+  --period 2026-07-13</code></pre>
+      <p>受理、拒否、除外されたファイルを確認します。期待した資料が読み込まれているか、必須資料が足りているかを見ます。必須入力が足りない場合は、無理に下書きを作らず、資料を追加するか、根拠がないことを明示します。</p>
+      <h3>AIへの質問に答える</h3>
+      <p>AIへの質問は、下書きの判断基準そのものです。短く、具体的に、責任者が確認できる形で答えます。</p>
+      <ul>
+        <li>照合: 「500ドル超の未照合、担当者不明の手数料、当日締め時刻の不一致はエスカレーション」。</li>
+        <li>規程影響: 「顧客向け統制、規制対象業務、教育義務、役員承認に影響するものを重要影響とする」。</li>
+        <li>品質事故: 「出荷済み製品の封じ込め未完了、検証期限超過、再発欠陥、根本原因担当者不明を重大リスクとする」。</li>
+        <li>取引先登録: 「正式名称、税務書類、制裁確認、支払条件、担当承認、銀行根拠がそろうこと」。</li>
+        <li>アクセス棚卸: 「管理者権限、本番書き込み、財務承認、セキュリティ管理画面、共有所有者アカウントを特権範囲とする」。</li>
+        <li>助成金資料: 「適格性は公募要領、申請者記録、予算表、添付根拠で確認できる場合だけ記載。不明は未解決にする」。</li>
+      </ul>
+      <h3>下書きを作り、元資料と見比べる</h3>
+      <p>実行可能になったら下書きを作ります。下書きファイル名は正確に、<code>spreadsheet_reconciliation_daily.md</code>、<code>policy_change_impact_daily.md</code>、<code>quality_incident_capa_daily.md</code>、<code>vendor_onboarding_daily.md</code>、<code>access_review_daily.md</code>、<code>grant_packet_daily.md</code> です。</p>
+      <p><code>05_DRAFTS/YYYY-MM-DD</code> のファイルを開き、数字、日付、担当者、システム名、取引先名、規程名、制度名、期限、金額、推奨事項を元資料と照合します。根拠がない文章は削除するか、「根拠不足」として残します。</p>
+      <h3>確認後だけPIN承認する</h3>
+      <p>承認すると、確認済み下書きが <code>06_APPROVED_OUTPUTS/YYYY-MM-DD</code> にコピーされ、監査記録が残ります。承認しても、送信、公開、提出、本番更新、通知は行われません。外部で使うかどうかは、責任者が別途判断します。</p>
+    </section>
+
+    <section id="reuse">
+      <h2>8. 翌日に再利用する</h2>
+      <p>承認後、次の日付を準備します。日次パックなので、2026年7月13日の次は <code>2026-07-14</code> です。画面に表示される場合、直近の承認済み成果物を文体と構成の参考として使えます。</p>
+      <ol>
+        <li>今日の承認済みファイルが、翌日の参考にしたい内容か確認します。</li>
+        <li>画面から次の期間を準備します。</li>
+        <li>新しい日の資料だけを <code>03_CURRENT_INPUTS/2026-07-14</code> に置きます。</li>
+        <li>規程、表、テンプレートなどの固定資料は <code>02_PAST_SUPPORTING_FILES</code> に残します。</li>
+        <li>もう一度、資料確認を行います。昨日の事実を今日の事実として扱わせません。</li>
+        <li>ルール、承認者、保留条件が変わった場合は、新しい質問に答えます。</li>
+        <li>下書き、資料照合、PIN承認を繰り返します。</li>
+      </ol>
+      <div class="callout warning"><strong>再利用は学習ではありません。</strong> 過去の承認済みファイルを、構成や文体の確認済み参考として渡すだけです。AIモデルを恒久的に学習させる機能ではありません。</div>
+    </section>
+
+    <section id="safety">
+      <h2>9. 統制業務の安全ルール</h2>
+      <div class="boundary-grid">
+        <article><strong>資料照合を省略しない</strong>見た目が整った下書きでも間違うことがあります。読み込まれた資料一覧と原本を確認します。</article>
+        <article><strong>高リスク業務を自己承認しない</strong>財務、法務、品質、調達、セキュリティ、IT、助成金の責任者を承認者にします。</article>
+        <article><strong>外部アクションに変えない</strong>メール自動化、アクセス変更、取引先有効化、支払い、助成金提出、規程公開はこの6パックの範囲外です。</article>
+        <article><strong>不確実性を隠さない</strong>根拠がない場合は、不明または未解決として書きます。適格性、承認、根本原因をAIに推測させません。</article>
+      </div>
+      <p>実会社や顧客の資料を使う前に、必ずサンプルまたは匿名化資料で試してください。個人情報、財務情報、セキュリティ情報、医療、法務、輸出管理、助成金証明を扱う場合、その組織の責任者がAI利用可否を判断する必要があります。</p>
+    </section>
+
+    <section id="troubleshooting">
+      <h2>10. 困ったとき</h2>
+      <details><summary>画面が開かない</summary><p><code>office-workspace serve</code> を実行したターミナルが動いているか確認します。表示された <code>127.0.0.1</code> のアドレスをそのまま開きます。ポートが使われている場合は、サーバーを起動し直し、新しく表示されたアドレスを使います。</p></details>
+      <details><summary>Codexにログインできていない</summary><p><code>codex login status</code> を実行します。ローカルログインを完了してください。APIキー、パスワード、トークンをチャットや画面に貼り付けないでください。</p></details>
+      <details><summary>日付が拒否される</summary><p><code>YYYY-MM-DD</code> を使います。例は <code>2026-07-13</code>、<code>2026-12-01</code> です。月だけ、存在しない日付、あいまいな表現は使えません。</p></details>
+      <details><summary>ファイルが除外または拒否される</summary><p>拡張子、破損、サイズ、ショートカット、クラウドのプレースホルダーではないかを確認します。パックごとに、<code>.csv</code>、<code>.xlsx</code>、<code>.json</code>、<code>.pdf</code>、<code>.docx</code>、<code>.md</code>、<code>.txt</code> の一部が使えます。</p></details>
+      <details><summary>AIの質問が多すぎる</summary><p>資料だけでは根拠が足りない可能性があります。規程、表、担当者一覧、期限、しきい値、過去の承認済み成果物を追加します。組織の正式ルールがある場合は、推測で答えないでください。</p></details>
+      <details><summary>下書きが根拠なく断定している</summary><p>その文章を削除する、根拠資料を追加する、または未解決として明示します。承認は、根拠と照合したうえで行います。</p></details>
+      <details><summary>承認できない</summary><p>承認者名、PIN、対象日、現在の下書きファイル名を確認します。回避策として <code>06_APPROVED_OUTPUTS</code> に手でコピーしないでください。</p></details>
+      <details><summary>手動復旧が必要と表示される</summary><p><code>00_START_HERE/workspace_status.json</code>、<code>.system/workspace.json</code>、<code>.system/periods/YYYY-MM-DD/state.json</code>、<code>.system/runs/</code>、<code>07_AUDIT/audit.jsonl</code> を確認します。手で直す前に、分かっている状態を整理して止まってください。</p></details>
+    </section>
+
+    <section id="business">
+      <h2>11. 副業としての提案方法</h2>
+      <p>「コンプライアンスを完全自動化します」と言うのは危険です。初心者が売りやすい表現は、「1つの日次統制下書きワークスペースをローカルで作り、サンプルデータで効果を確認し、最終承認は責任者に残します」です。フォルダ、資料一覧、質問、下書き、承認記録、禁止事項が見えるため、相手も判断しやすくなります。</p>
+      <h3>最初の有料検証の進め方</h3>
+      <ol>
+        <li>買い手を1人に絞ります。例は、財務責任者、コンプライアンス担当、品質責任者、調達責任者、ITまたはセキュリティ責任者、助成金担当者です。</li>
+        <li>毎日つらい確認作業を1つだけ聞きます。資料と承認者がある業務を選びます。</li>
+        <li>デモは匿名化またはサンプル資料で行い、本番システムには触りません。</li>
+        <li>下書き時間、根拠不足の数、修正数、最終確認時間を測ります。</li>
+        <li>作業場所、この手順書、1ページの範囲表、人間だけが行う作業一覧を納品します。</li>
+        <li>恒久的な自律エージェントではなく、セットアップと1〜2回の確認サイクルとして価格を決めます。</li>
+      </ol>
+      <div class="callout danger"><strong>完全自動化を約束しないでください。</strong> 正確性保証、統制承認、監査証明、アクセス変更、取引先有効化、助成金提出、支払い、外部連絡を自動で行うとは言わないでください。価値は、管理された下書き作成と再現できる確認手順です。</div>
+    </section>
+
+    <section>
+      <h2>12. 関連資料</h2>
+      <ul>
+        <li><a href="office-workspace.ja.html">月報オペレーター作業場所マニュアル</a></li>
+        <li><a href="daily-workflows.ja.html">日次業務自動化マニュアル</a></li>
+        <li><a href="work-relief-workflows.ja.html">作業負担軽減パック手順書</a></li>
+        <li><a href="../START_WITH_CODEX.ja.md">Codexではじめる</a></li>
+        <li><a href="research/OFFICE_CONTROL_AUTOMATION_RESEARCH_2026-07.md">2026年7月の統制自動化リサーチメモ</a></li>
+        <li><a href="INDEX.md">ドキュメント索引</a></li>
+      </ul>
+    </section>
+  </div>
+</main>
+<footer>
+  <div class="wrap">AI Automation Starter Kit は、ローカルで確認できる業務下書きと承認記録を作るための道具です。判断と外部アクションの責任は人間に残ります。</div>
+</footer>
+</body>
+</html>

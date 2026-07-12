@@ -182,6 +182,12 @@ DAILY_PACK_IDS = [
     "contract-intake-daily",
     "quote-comparison-daily",
     "compliance-deadline-daily",
+    "spreadsheet-reconciliation-daily",
+    "policy-change-impact-daily",
+    "quality-incident-capa-daily",
+    "vendor-onboarding-daily",
+    "access-review-daily",
+    "grant-packet-daily",
 ]
 
 

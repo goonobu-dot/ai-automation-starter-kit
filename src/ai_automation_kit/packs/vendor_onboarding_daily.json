@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "id": "vendor-onboarding-daily",
+  "display_name": {
+    "ja": "取引先登録日次整理",
+    "en": "Vendor Onboarding Daily"
+  },
+  "category": "procurement",
+  "period_type": "day",
+  "risk_tier": "high",
+  "business_outcome": "Prepare a sourced daily vendor onboarding draft for human review",
+  "inputs": [
+    {
+      "id": "vendor_intake_register",
+      "required": true,
+      "accepted_extensions": [
+        ".csv",
+        ".xlsx",
+        ".json",
+        ".md",
+        ".txt"
+      ]
+    },
+    {
+      "id": "vendor_due_diligence_documents",
+      "required": true,
+      "accepted_extensions": [
+        ".pdf",
+        ".docx",
+        ".md",
+        ".txt",
+        ".json"
+      ]
+    },
+    {
+      "id": "tax_or_banking_setup_notes",
+      "required": false,
+      "accepted_extensions": [
+        ".csv",
+        ".xlsx",
+        ".json",
+        ".md",
+        ".txt",
+        ".pdf"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "minimum_vendor_readiness_rule",
+      "type": "short_text",
+      "required": true,
+      "max_length": 160
+    },
+    {
+      "id": "required_approvals_and_due_diligence_rule",
+      "type": "long_text",
+      "required": true,
+      "max_length": 600
+    },
+    {
+      "id": "same_day_vendor_activation_hold_required",
+      "type": "confirmation",
+      "required": false
+    }
+  ],
+  "prompt_template_id": "vendor-onboarding-daily-v1",
+  "allowed_prompt_variables": [
+    "period_id",
+    "source_manifest",
+    "answers"
+  ],
+  "outputs": [
+    {
+      "id": "draft",
+      "relative_path": "vendor_onboarding_daily.md",
+      "max_bytes": 1048576
+    }
+  ],
+  "approval": {
+    "required": true,
+    "role": "procurement_or_finance_approver"
+  },
+  "prohibited_actions": [
+    "external_send",
+    "publish",
+    "payment",
+    "production_write",
+    "self_approve",
+    "vendor_activation",
+    "banking_update",
+    "tax_form_acceptance"
+  ],
+  "success_metrics": [
+    "onboarding_readiness_accuracy",
+    "missing_fact_count",
+    "review_minutes"
+  ]
+}

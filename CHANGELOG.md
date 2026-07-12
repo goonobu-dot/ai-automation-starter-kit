@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Control workflow manuals and research (2026-07)
+
+- Added `docs/control-workflows.ja.html` and `docs/control-workflows.html`: separate Japanese and English beginner manuals for six daily control packs: `spreadsheet-reconciliation-daily`, `policy-change-impact-daily`, `quality-incident-capa-daily`, `vendor-onboarding-daily`, `access-review-daily`, and `grant-packet-daily`.
+- Added `docs/research/OFFICE_CONTROL_AUTOMATION_RESEARCH_2026-07.md` with July 2026 selection evidence, public links, X research signal labeled anecdotal, GitHub pattern snapshot, license notes, no-vendoring/no-dependency-adoption notes, risks, and rejected high-liability ideas.
+- Linked the new manuals from `README.md`, `START_WITH_CODEX.md`, `START_WITH_CODEX.ja.md`, and `docs/INDEX.md`.
+- Updated the public office-workspace status from one monthly pack plus 15 daily packs to one monthly pack plus 21 daily packs.
+- Stated explicitly that email automation is out of scope and that the control packs create local drafts for human review, not full automation.
+
 ### Work relief workflow manuals (2026-07)
 
 - Added `docs/work-relief-workflows.ja.html` and `docs/work-relief-workflows.html`: separate Japanese and English manuals for five email-free packs covering install and login, pack choice, exact folder inputs, localhost UI workflow, AI questions, draft review, PIN approval, next-day reuse, trusted prior outputs, troubleshooting, safety boundaries, and a bounded side-business delivery route.

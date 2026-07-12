@@ -35,6 +35,24 @@ _TRANSLATIONS = {
         "name_label": "作業場所名",
         "pack_label": "ワークフローパック",
         "pack_help": "作りたい仕事の種類を選ぶと、期間の入力形式が自動で切り替わります。",
+        "pack_draft_boundary": "下書き作成専用です。人が確認して承認します。",
+        "pack_category_label": "分類",
+        "pack_risk_label": "確認レベル",
+        "category_labels": {
+            "reports": "報告書",
+            "support": "問い合わせ",
+            "sales": "営業",
+            "finance": "経理・照合",
+            "operations": "業務運営",
+            "people": "人事・勤怠",
+            "people_ops": "人事・勤怠",
+            "projects": "プロジェクト",
+            "executive": "経営要約",
+            "legal": "契約・法務確認",
+            "compliance": "規程・統制",
+            "procurement": "調達・取引先",
+        },
+        "risk_labels": {"low": "通常", "medium": "注意", "high": "重要"},
         "first_period_label": "最初の期間",
         "approver_label": "承認者名",
         "pin_label": "承認用PIN",
@@ -226,6 +244,24 @@ _TRANSLATIONS = {
         "name_label": "Workspace name",
         "pack_label": "Workflow pack",
         "pack_help": "Choose the kind of work first. The period format updates automatically.",
+        "pack_draft_boundary": "Draft preparation only; a person must review and approve.",
+        "pack_category_label": "Category",
+        "pack_risk_label": "Review level",
+        "category_labels": {
+            "reports": "Reports",
+            "support": "Support",
+            "sales": "Sales",
+            "finance": "Finance and reconciliation",
+            "operations": "Operations",
+            "people": "People and attendance",
+            "people_ops": "People operations",
+            "projects": "Projects",
+            "executive": "Executive review",
+            "legal": "Contract and legal review",
+            "compliance": "Policy and controls",
+            "procurement": "Procurement and vendors",
+        },
+        "risk_labels": {"low": "Standard", "medium": "Caution", "high": "High attention"},
         "first_period_label": "First period",
         "approver_label": "Approver name",
         "pin_label": "Approval PIN",
@@ -838,6 +874,7 @@ def render_office_workspace_ui(language: str, token: str) -> str:
           <div>
             <label for="workflow-pack-select">{pack_label}</label>
             <select id="workflow-pack-select"></select>
+            <p id="workflow-pack-help" class="muted">{pack_help}</p>
           </div>
           <div>
             <label for="first-period-input">{first_period_label}</label>
@@ -1257,6 +1294,18 @@ def render_office_workspace_ui(language: str, token: str) -> str:
         return "";
       }}
 
+      function localizedCategory(entry) {{
+        const category = entry && typeof entry === "object" ? text(entry.category) : "";
+        const labels = STRINGS.category_labels || {{}};
+        return text(labels[category] || category || STRINGS.pack_category_label);
+      }}
+
+      function localizedRisk(entry) {{
+        const risk = entry && typeof entry === "object" ? text(entry.risk_tier) : "";
+        const labels = STRINGS.risk_labels || {{}};
+        return text(labels[risk] || risk || "-");
+      }}
+
       function periodFormat(periodType) {{
         const formats = STRINGS.period_formats || {{}};
         return formats[periodType] || formats.month || {{ placeholder: "", help: "" }};
@@ -1313,15 +1362,36 @@ def render_office_workspace_ui(language: str, token: str) -> str:
         }});
       }}
 
+      function updatePackChoiceHelp(pack) {{
+        const outcome = pack && PAGE_LANG === "en" ? text(pack.business_outcome) : "";
+        byId("workflow-pack-help").textContent = pack
+          ? STRINGS.pack_category_label + ": " + localizedCategory(pack) + " / " +
+            STRINGS.pack_risk_label + ": " + localizedRisk(pack) + ". " +
+            (outcome ? outcome + ". " : "") + STRINGS.pack_draft_boundary
+          : STRINGS.pack_help;
+      }}
+
       function renderPackChoices() {{
         const select = byId("workflow-pack-select");
         const previous = select.value;
         select.replaceChildren();
+        const groups = {{}};
+        const groupOrder = [];
         (state.packCatalog || []).forEach(function (pack) {{
+          const category = text(pack.category || "other");
+          if (!groups[category]) {{
+            const group = document.createElement("optgroup");
+            group.label = localizedCategory(pack);
+            groups[category] = group;
+            groupOrder.push(category);
+          }}
           const option = document.createElement("option");
           option.value = text(pack.id);
-          option.textContent = localizedDisplayName(pack) || text(pack.id);
-          select.appendChild(option);
+          option.textContent = (localizedDisplayName(pack) || text(pack.id)) + " · " + localizedRisk(pack);
+          groups[category].appendChild(option);
+        }});
+        groupOrder.forEach(function (category) {{
+          select.appendChild(groups[category]);
         }});
         if (previous) {{
           select.value = previous;
@@ -1331,6 +1401,7 @@ def render_office_workspace_ui(language: str, token: str) -> str:
         }}
         const pack = selectedCreatePack();
         applyPeriodFormat("first-period-input", "first-period-help", pack ? text(pack.period_type) : "month");
+        updatePackChoiceHelp(pack);
       }}
 
       function renderWorkspaceRows() {{
@@ -1806,6 +1877,7 @@ def render_office_workspace_ui(language: str, token: str) -> str:
       byId("workflow-pack-select").addEventListener("change", function () {{
         const pack = selectedCreatePack();
         applyPeriodFormat("first-period-input", "first-period-help", pack ? text(pack.period_type) : "month");
+        updatePackChoiceHelp(pack);
       }});
       byId("create-workspace-button").addEventListener("click", function () {{
         createWorkspace().catch(function (error) {{

@@ -8,6 +8,8 @@ Choose from ten daily workflows in the [English beginner guide](docs/daily-workf
 
 For five email-free work relief packs, open the [English manual](docs/work-relief-workflows.html) or the [Japanese manual](docs/work-relief-workflows.ja.html). Gmail and email automation are out of scope there and will be a separate project.
 
+For six daily control workflow packs, open the [English manual](docs/control-workflows.html) or the [Japanese manual](docs/control-workflows.ja.html). These packs cover spreadsheet reconciliation, policy change impact, quality incident CAPA, vendor onboarding, access review, and grant packet drafts. Email automation is out of scope here too.
+
 This file is for a beginner who wants Codex to prepare the local monthly-report workspace without guessing hidden steps.
 
 Ask only one question at a time.
@@ -31,11 +33,19 @@ codex login status
 
 If login is not ready, Codex should stop and explain the next human step. It should not ask for an API key, token, secret, password, or shell bypass. This flow is based on local Codex login, not on copying credentials into chat.
 
-After the four setup answers are confirmed, Codex should run:
+After the four setup answers are confirmed, Codex should run this monthly default:
 
 ```bash
 ai-automation-kit office-workspace create --root "<save-root>" --name "<workspace-name>" --approver "<approver-name>" --pin "<6-to-32-digit-pin>" --period "<YYYY-MM>" --language en
 ```
+
+For a daily control workflow, use strict `YYYY-MM-DD` and add the exact pack id:
+
+```bash
+ai-automation-kit office-workspace create --root "<save-root>" --name "<workspace-name>" --approver "<approver-name>" --pin "<6-to-32-digit-pin>" --period "<YYYY-MM-DD>" --pack "spreadsheet-reconciliation-daily" --language en
+```
+
+Other control pack ids are `policy-change-impact-daily`, `quality-incident-capa-daily`, `vendor-onboarding-daily`, `access-review-daily`, and `grant-packet-daily`.
 
 Then Codex should validate the result before opening the UI:
 

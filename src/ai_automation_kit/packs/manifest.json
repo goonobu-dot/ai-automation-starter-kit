@@ -126,5 +126,53 @@
     "output_schema_sha256": "5d9ddb4180589ea9d714af99a0c3eebbac958ff03e101e011557905de42b0236",
     "prompt_template_file": "compliance_deadline_daily_prompt.json",
     "prompt_template_sha256": "1f920a843d445b45bfeca00e39a64fd1a04ccf606a4f32a69124da588bc40e20"
+  },
+  "spreadsheet-reconciliation-daily": {
+    "pack_file": "spreadsheet_reconciliation_daily.json",
+    "pack_sha256": "8481232eccb2e38c37ae5b64c39250740ffafa202bc6514d8caf0337a084f144",
+    "output_schema_file": "monthly_report_output.schema.json",
+    "output_schema_sha256": "5d9ddb4180589ea9d714af99a0c3eebbac958ff03e101e011557905de42b0236",
+    "prompt_template_file": "spreadsheet_reconciliation_daily_prompt.json",
+    "prompt_template_sha256": "7d7d0fcce4583c6a9c3786b28b7e4deb3a769f396302cf0a5ca3b9966e4605b7"
+  },
+  "policy-change-impact-daily": {
+    "pack_file": "policy_change_impact_daily.json",
+    "pack_sha256": "d6d9c5bb57818acc4d0b940fb494138dee997998e9201c047cc598276af4b1a7",
+    "output_schema_file": "monthly_report_output.schema.json",
+    "output_schema_sha256": "5d9ddb4180589ea9d714af99a0c3eebbac958ff03e101e011557905de42b0236",
+    "prompt_template_file": "policy_change_impact_daily_prompt.json",
+    "prompt_template_sha256": "45628df2c26b417abcd47f12c9e547f032fe911af9ec6544e620cbb194cdb88a"
+  },
+  "quality-incident-capa-daily": {
+    "pack_file": "quality_incident_capa_daily.json",
+    "pack_sha256": "1aa4f93b4eda596287c259372d639bc0090a9a92a606101fa545d87181d562f9",
+    "output_schema_file": "monthly_report_output.schema.json",
+    "output_schema_sha256": "5d9ddb4180589ea9d714af99a0c3eebbac958ff03e101e011557905de42b0236",
+    "prompt_template_file": "quality_incident_capa_daily_prompt.json",
+    "prompt_template_sha256": "0524cd2292336adf80eccfd6f84026d2631060865f896f664871d7ae986a9976"
+  },
+  "vendor-onboarding-daily": {
+    "pack_file": "vendor_onboarding_daily.json",
+    "pack_sha256": "10566186d6c8055ebfc20dc285198f851fee82a68fd4dcb7cd674488ac27f46d",
+    "output_schema_file": "monthly_report_output.schema.json",
+    "output_schema_sha256": "5d9ddb4180589ea9d714af99a0c3eebbac958ff03e101e011557905de42b0236",
+    "prompt_template_file": "vendor_onboarding_daily_prompt.json",
+    "prompt_template_sha256": "2f31caabdd095c8b818c6cfd3f99289c46c17dce1604c71060376665d952e1cb"
+  },
+  "access-review-daily": {
+    "pack_file": "access_review_daily.json",
+    "pack_sha256": "f40b250b5370fafb39a0f22ccdca4cf96cb763c6ee12ed686f6e002f3a622a90",
+    "output_schema_file": "monthly_report_output.schema.json",
+    "output_schema_sha256": "5d9ddb4180589ea9d714af99a0c3eebbac958ff03e101e011557905de42b0236",
+    "prompt_template_file": "access_review_daily_prompt.json",
+    "prompt_template_sha256": "f79d7a4c0209727c2a7546a7c2c16868bfc272dc0dde0213b5c797245c8b57ac"
+  },
+  "grant-packet-daily": {
+    "pack_file": "grant_packet_daily.json",
+    "pack_sha256": "1b636a9be79a359625b9b369065ad4c3693fefcdf3bbd2f015c555e2ade11608",
+    "output_schema_file": "monthly_report_output.schema.json",
+    "output_schema_sha256": "5d9ddb4180589ea9d714af99a0c3eebbac958ff03e101e011557905de42b0236",
+    "prompt_template_file": "grant_packet_daily_prompt.json",
+    "prompt_template_sha256": "fe03b38fdfeaa43cee86470af3e71dd33cba30991c63f1f7794a4829126f3f41"
   }
 }

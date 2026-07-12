@@ -39,6 +39,12 @@ OFFICE_WORKSPACE_PACK_IDS = [
     "contract-intake-daily",
     "quote-comparison-daily",
     "compliance-deadline-daily",
+    "spreadsheet-reconciliation-daily",
+    "policy-change-impact-daily",
+    "quality-incident-capa-daily",
+    "vendor-onboarding-daily",
+    "access-review-daily",
+    "grant-packet-daily",
 ]
 
 
@@ -1456,13 +1462,13 @@ def _assert_installed_daily_workspace_create(cli_bin: Path, env: dict[str, str],
             "--root",
             str(office_root),
             "--name",
-            "Daily Inquiry",
+            "Daily Reconciliation",
             "--approver",
             "Release QA",
             "--pin",
             "482913",
             "--pack",
-            "inquiry-daily",
+            "spreadsheet-reconciliation-daily",
             "--period",
             "2026-07-12",
             "--language",
@@ -1481,7 +1487,7 @@ def _assert_installed_daily_workspace_create(cli_bin: Path, env: dict[str, str],
             cwd=cwd,
         ).stdout
     )
-    if status.get("pack_id") != "inquiry-daily":
+    if status.get("pack_id") != "spreadsheet-reconciliation-daily":
         raise RuntimeError(f"unexpected daily office workspace pack: {status}")
     if status.get("current_period") != "2026-07-12" or status.get("current_stage") != "created":
         raise RuntimeError(f"unexpected daily office workspace status: {status}")
