@@ -1055,6 +1055,47 @@ def test_readme_and_start_docs_link_daily_workflow_manuals_when_published():
         assert doc_path in start_ja, f"START_WITH_CODEX.ja.md missing daily workflow manual link: {doc_path}"
 
 
+def test_english_daily_workflow_manual_is_complete_and_beginner_operable():
+    path = Path("docs/daily-workflows.html")
+    text = path.read_text(encoding="utf-8")
+
+    assert len(text) > 14000
+    assert '<html lang="en">' in text
+    assert not re.search(r"[\u3040-\u30ff\u4e00-\u9fff]", text)
+    for snippet in [
+        "Complete Beginner Manual",
+        "The complete seven-step loop",
+        "Install and confirm Codex",
+        "No separate OpenAI API key is required",
+        "Choose the right daily pack",
+        "Open and use the operator UI",
+        "Reuse the same system tomorrow",
+        "How trusted reuse is protected",
+        "What Codex does and what a person must do",
+        "Troubleshooting",
+        "Use it for a small automation side business",
+        "Final approval checklist",
+        "ai-automation-kit office-workspace serve",
+        "01_APPROVED_PAST_OUTPUTS",
+        "06_APPROVED_OUTPUTS",
+    ]:
+        assert snippet in text
+    for relative_link in [
+        "office-workspace.html",
+        "daily-workflows.ja.html",
+        "../START_WITH_CODEX.md",
+        "INDEX.md",
+    ]:
+        assert (path.parent / relative_link).resolve().exists()
+    assert "font-size:clamp" not in text
+
+
+def test_documentation_index_links_both_daily_workflow_manuals():
+    text = Path("docs/INDEX.md").read_text(encoding="utf-8")
+    assert "daily-workflows.ja.html" in text
+    assert "daily-workflows.html" in text
+
+
 def test_office_workspace_manuals_define_mobile_overflow_contracts():
     for path in ["docs/office-workspace.html", "docs/office-workspace.ja.html"]:
         text = Path(path).read_text(encoding="utf-8")
