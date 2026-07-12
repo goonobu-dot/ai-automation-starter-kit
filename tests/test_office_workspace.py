@@ -214,6 +214,20 @@ def test_every_daily_pack_completes_local_draft_and_approval_flow(tmp_path, pack
     assert approved["stage"] == "approved"
     assert (root / "06_APPROVED_OUTPUTS" / period_id / output_name).is_file()
 
+    approved_output = approved["approved_outputs"][-1]
+    next_period = create_period(
+        root,
+        "2026-07-13",
+        style_reference={
+            "relative_path": approved_output["path"],
+            "sha256": approved_output["sha256"],
+        },
+    )
+    assert next_period["style_reference"] == {
+        "relative_path": approved_output["path"],
+        "sha256": approved_output["sha256"],
+    }
+
 
 @pytest.mark.parametrize("period_id", ["2026-13", "2026-7", "July-2026"])
 def test_invalid_period_ids_are_rejected(tmp_path, period_id):

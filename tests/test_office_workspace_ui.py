@@ -354,6 +354,11 @@ def test_ui_uses_pack_catalog_and_period_type_to_drive_beginner_period_inputs():
     assert 'period_id: byId("first-period-input").value' in html
     assert 'applyPeriodFormat("first-period-input", "first-period-help"' in html
     assert 'applyPeriodFormat("next-period-input", "next-period-help"' in html
+    assert 'id="reuse-style-checkbox" type="checkbox" checked' in html
+    assert "function suggestedNextPeriod" in html
+    assert "suggestedNextPeriod(workspace.current_period, workspace.period_type)" in html
+    assert "Approved example in use" in html
+    assert "workspace.period.style_reference" in html
     assert "Monthly packs use YYYY-MM." in html
     assert "Daily packs use YYYY-MM-DD." in html
 

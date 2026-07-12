@@ -8,6 +8,7 @@
 - Added ten daily packs in a guided order: inquiries, sales, finance, projects, attendance, meeting actions, expenses, invoice/order checks, internal requests, and executive digest.
 - Added strict real-date validation, pack selection and first-period creation in the browser UI and CLI, local draft/PIN approval coverage for every pack, and cleanup of failed first-period setup.
 - Added separate Japanese and English beginner HTML guides plus installed-wheel checks for the pack catalog, packaged resources, daily creation, invalid dates, and monthly compatibility.
+- Made daily reuse operational rather than metadata-only: a confirmed prior approved output is hash-verified again at run start, copied into the next Codex input snapshot, shown in the UI, and covered by next-day end-to-end tests. The UI now suggests the next calendar date and selects approved-style reuse by default.
 
 ### Office workspace public release integration (2026-07)
 

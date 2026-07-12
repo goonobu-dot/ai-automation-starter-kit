@@ -22,6 +22,7 @@ _TRANSLATIONS = {
         "detail_help": "現在の期間の状態を確認して、必要な操作だけを進めます。",
         "workspace_name": "作業場所名",
         "active_month": "進行中の期間",
+        "active_style_reference": "再利用する承認済み見本",
         "pack_name": "ワークフローパック",
         "codex_preflight": "Codex事前確認",
         "recent_run": "直近の実行",
@@ -212,6 +213,7 @@ _TRANSLATIONS = {
         "detail_help": "Check the current period, then run only the next required action.",
         "workspace_name": "Workspace name",
         "active_month": "Active period",
+        "active_style_reference": "Approved example in use",
         "pack_name": "Workflow pack",
         "codex_preflight": "Codex preflight",
         "recent_run": "Recent run",
@@ -981,7 +983,7 @@ def render_office_workspace_ui(language: str, token: str) -> str:
             </div>
             <div>
               <label for="reuse-style-checkbox">{reuse_style}</label>
-              <input id="reuse-style-checkbox" type="checkbox">
+              <input id="reuse-style-checkbox" type="checkbox" checked>
             </div>
             <div class="button-row">
               <button id="rollover-button" class="secondary-button" type="button">{rollover}</button>
@@ -1260,6 +1262,19 @@ def render_office_workspace_ui(language: str, token: str) -> str:
         return formats[periodType] || formats.month || {{ placeholder: "", help: "" }};
       }}
 
+      function suggestedNextPeriod(currentPeriod, periodType) {{
+        const value = text(currentPeriod);
+        if (periodType === "day" && /^[0-9]{{4}}-[0-9]{{2}}-[0-9]{{2}}$/.test(value)) {{
+          const parts = value.split("-").map(Number);
+          return new Date(Date.UTC(parts[0], parts[1] - 1, parts[2] + 1)).toISOString().slice(0, 10);
+        }}
+        if (periodType === "month" && /^[0-9]{{4}}-[0-9]{{2}}$/.test(value)) {{
+          const parts = value.split("-").map(Number);
+          return new Date(Date.UTC(parts[0], parts[1], 1)).toISOString().slice(0, 7);
+        }}
+        return "";
+      }}
+
       function applyPeriodFormat(inputId, helpId, periodType) {{
         const format = periodFormat(periodType);
         byId(inputId).placeholder = text(format.placeholder);
@@ -1379,6 +1394,12 @@ def render_office_workspace_ui(language: str, token: str) -> str:
         appendMetaItem(list, STRINGS.workspace_name, workspace ? workspace.name : STRINGS.not_selected);
         appendMetaItem(list, STRINGS.pack_name, workspace ? (localizedDisplayName(workspace) || text(workspace.pack_id)) : "-");
         appendMetaItem(list, STRINGS.active_month, workspace && workspace.current_period ? workspace.current_period : "-");
+        const styleReference = workspace && workspace.period ? workspace.period.style_reference : null;
+        appendMetaItem(
+          list,
+          STRINGS.active_style_reference,
+          styleReference && styleReference.relative_path ? text(styleReference.relative_path) : "-"
+        );
         appendMetaItem(list, STRINGS.codex_preflight, formatPreflight(state.preflight));
         appendMetaItem(list, STRINGS.recent_run, formatRun(workspace ? workspace.run : null));
         appendMetaItem(list, STRINGS.next_action, workspace ? formatNextAction(workspace, state.preflight) : STRINGS.status_idle);
@@ -1564,6 +1585,9 @@ def render_office_workspace_ui(language: str, token: str) -> str:
 
       function renderDetail(workspace) {{
         state.selectedWorkspace = workspace || null;
+        byId("next-period-input").value = workspace && workspace.period && workspace.period.stage === "approved"
+          ? suggestedNextPeriod(workspace.current_period, workspace.period_type)
+          : "";
         renderWorkspaceMeta(workspace);
         renderFolderButtons(workspace);
         renderProgress(workspace);
@@ -1843,6 +1867,7 @@ def render_office_workspace_ui(language: str, token: str) -> str:
         list_help=strings["list_help"],
         workspace_name=strings["workspace_name"],
         active_month=strings["active_month"],
+        active_style_reference=strings["active_style_reference"],
         codex_preflight=strings["codex_preflight"],
         recent_run=strings["recent_run"],
         next_action=strings["next_action"],

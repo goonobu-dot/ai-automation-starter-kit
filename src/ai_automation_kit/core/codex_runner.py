@@ -42,6 +42,7 @@ from ai_automation_kit.core.office_workspace_state import (
     _load_workspace_state,
     _save_period_state,
     _transition_period,
+    _validated_style_reference,
     promote_run_result,
 )
 from ai_automation_kit.core.report_intake import MAX_FILE_BYTES
@@ -199,6 +200,9 @@ def start_codex_run(
     load_bundled_output_schema(pack["id"])
     prompt_template = load_bundled_prompt_template(pack["id"])
     accepted_records, source_manifest_hash = _load_verified_accepted_records(root, period_id, period_state)
+    style_record = _verified_style_reference_record(root, period_id, period_state)
+    if style_record is not None:
+        accepted_records.append(style_record)
     run_id = _new_run_id(root / ".system" / "runs")
     run_root = root / ".system" / "runs" / run_id
     sandbox = run_root / "sandbox"
@@ -727,6 +731,28 @@ def _load_verified_accepted_records(workspace: Path, period_id: str, period_stat
     return accepted, actual_hash
 
 
+def _verified_style_reference_record(workspace: Path, period_id: str, period_state: Dict) -> Optional[Dict]:
+    style_reference = _validated_style_reference(
+        workspace,
+        period_id,
+        period_state.get("style_reference"),
+    )
+    if style_reference is None:
+        return None
+    source = workspace / style_reference["relative_path"]
+    payload = _read_bytes_no_follow(source, "style_reference")
+    if len(payload) > MAX_FILE_BYTES:
+        raise ValueError("style_reference exceeds the allowed file size")
+    return {
+        "source_role": "style_reference",
+        "original_path": str(source),
+        "name": source.name,
+        "sha256": style_reference["sha256"],
+        "bytes": len(payload),
+        "extraction_status": "extracted",
+    }
+
+
 def _snapshot_sources(
     input_snapshot: Path,
     accepted_records: List[Dict],
@@ -771,7 +797,7 @@ def _copy_snapshot_record(
     if not isinstance(record, dict) or not required <= set(record):
         raise ValueError("accepted record is missing integrity metadata")
     source_role = record["source_role"]
-    if source_role not in {"past_output", "past_supporting", "current_material"}:
+    if source_role not in {"past_output", "past_supporting", "current_material", "style_reference"}:
         raise ValueError("accepted record source_role is invalid")
     if (
         not isinstance(record["extraction_status"], str)
@@ -808,6 +834,7 @@ def _validate_snapshot_source_path(source: Path, source_role: str, workspace: Pa
         "past_output": workspace / "01_APPROVED_PAST_OUTPUTS",
         "past_supporting": workspace / "02_PAST_SUPPORTING_FILES",
         "current_material": workspace / "03_CURRENT_INPUTS" / period_id,
+        "style_reference": workspace / "06_APPROVED_OUTPUTS",
     }
     authorized_root = authorized_roots.get(source_role)
     if authorized_root is None:

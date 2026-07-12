@@ -828,10 +828,27 @@ def test_successful_monthly_http_flow_rolls_over_inspects_answers_generates_open
         assert payload["data"]["workspace"]["period"]["stage"] == "approved"
         assert len(payload["data"]["workspace"]["period"]["approved_outputs"]) == 1
 
-        status, _, payload = _rollover(server, workspace_id, _action_nonce(payload), "2026-08")
+        approved_output = payload["data"]["workspace"]["period"]["approved_outputs"][-1]
+        style_reference = {
+            "confirmed": True,
+            "relative_path": approved_output["path"],
+            "sha256": approved_output["sha256"],
+        }
+
+        status, _, payload = _rollover(
+            server,
+            workspace_id,
+            _action_nonce(payload),
+            "2026-08",
+            style_reference=style_reference,
+        )
         assert status == 200
         assert payload["data"]["workspace"]["current_period"] == "2026-08"
         assert payload["data"]["workspace"]["periods"] == ["2026-07", "2026-08"]
+        assert payload["data"]["workspace"]["period"]["style_reference"] == {
+            "relative_path": approved_output["path"],
+            "sha256": approved_output["sha256"],
+        }
 
         status, _, payload = _workspace_detail(server, workspace_id)
         assert status == 200

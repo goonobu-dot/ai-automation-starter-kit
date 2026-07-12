@@ -12,7 +12,13 @@ from pathlib import Path
 import pytest
 
 from ai_automation_kit.core.office_workspace_builder import create_office_workspace
-from ai_automation_kit.core.office_workspace_state import create_period, inspect_period, save_answer
+from ai_automation_kit.core.office_workspace_state import (
+    approve_draft,
+    create_period,
+    inspect_period,
+    promote_run_result,
+    save_answer,
+)
 from ai_automation_kit.core.codex_runner import (
     MAX_RUN_TIMEOUT_SECONDS,
     MIN_RUN_TIMEOUT_SECONDS,
@@ -463,6 +469,57 @@ def test_runner_snapshots_supporting_evidence_and_keeps_prompt_metadata_only(fak
     ]
     assert '"relative_path": "input_snapshot/past_supporting/recurring-notes.md"' in prompt
     assert supporting_text not in prompt
+
+
+def test_next_daily_run_snapshots_confirmed_prior_approved_output_as_style_reference(fake_codex, tmp_path):
+    root = create_office_workspace(
+        tmp_path,
+        name="Daily Inquiry",
+        approver="Owner",
+        pin="482913",
+        pack_id="inquiry-daily",
+    )
+    create_period(root, "2026-07-12")
+    write_text(root / "03_CURRENT_INPUTS/2026-07-12/current.md", "# Inquiry\nFirst day facts\n")
+    state = inspect_period(root, "2026-07-12")
+    for question_id in list(state["pending_question_ids"]):
+        state = save_answer(root, "2026-07-12", question_id, "Owner confirmed")
+    promote_run_result(
+        root,
+        "2026-07-12",
+        "first-day-run",
+        {"missing_questions": [], "draft_markdown": "# Approved style\nUse this structure tomorrow.\n"},
+    )
+    approved = approve_draft(root, "2026-07-12", "inquiry_daily.md", "Owner", "482913")[
+        "approved_outputs"
+    ][-1]
+
+    create_period(
+        root,
+        "2026-07-13",
+        style_reference={"relative_path": approved["path"], "sha256": approved["sha256"]},
+    )
+    write_text(root / "03_CURRENT_INPUTS/2026-07-13/current.md", "# Inquiry\nSecond day facts\n")
+    state = inspect_period(root, "2026-07-13")
+    for question_id in list(state["pending_question_ids"]):
+        save_answer(root, "2026-07-13", question_id, "Owner confirmed")
+
+    run = start_codex_run(root, "2026-07-13", executable=str(fake_codex.path))
+    wait_for_run(root, run["run_id"], timeout_seconds=5)
+
+    run_root = root / ".system/runs" / run["run_id"]
+    snapshot = json.loads(
+        (run_root / "sandbox/input_snapshot/source_manifest.json").read_text(encoding="utf-8")
+    )
+    style_records = [
+        item for item in snapshot["records"] if item["provenance"]["source_role"] == "style_reference"
+    ]
+    assert len(style_records) == 1
+    assert style_records[0]["sha256"] == approved["sha256"]
+    assert style_records[0]["provenance"]["workspace_relative_path"] == approved["path"]
+    assert (run_root / "sandbox" / style_records[0]["relative_path"]).read_text(encoding="utf-8") == (
+        "# Approved style\nUse this structure tomorrow.\n"
+    )
 
 
 def test_runner_rejects_oversized_rendered_prompt_before_launch(fake_codex, monthly_workspace, monkeypatch):
