@@ -1096,6 +1096,48 @@ def test_documentation_index_links_both_daily_workflow_manuals():
     assert "daily-workflows.html" in text
 
 
+def test_work_relief_manuals_are_bilingual_complete_and_email_free():
+    manuals = {
+        "docs/work-relief-workflows.ja.html": [
+            "業務引き継ぎ",
+            "入社・異動・退職",
+            "契約書・申込書",
+            "見積比較",
+            "監査・許認可",
+            "メール自動化は対象外",
+        ],
+        "docs/work-relief-workflows.html": [
+            "Handover",
+            "Employee lifecycle",
+            "Contract and application",
+            "Quote comparison",
+            "Compliance and license",
+            "Email automation is out of scope",
+        ],
+    }
+    for path, snippets in manuals.items():
+        text = Path(path).read_text(encoding="utf-8")
+        assert len(text) > 12000
+        assert "office-workspace serve" in text
+        assert "01_APPROVED_PAST_OUTPUTS" in text
+        assert "06_APPROVED_OUTPUTS" in text
+        assert "PIN" in text
+        assert "YYYY-MM-DD" in text
+        for snippet in snippets:
+            assert snippet in text, f"{path} missing {snippet}"
+    assert not re.search(
+        r"[\u3040-\u30ff\u4e00-\u9fff]",
+        Path("docs/work-relief-workflows.html").read_text(encoding="utf-8"),
+    )
+
+
+def test_public_entrypoints_link_work_relief_manuals():
+    for path in ["README.md", "START_WITH_CODEX.md", "START_WITH_CODEX.ja.md", "docs/INDEX.md"]:
+        text = Path(path).read_text(encoding="utf-8")
+        assert "work-relief-workflows.ja.html" in text, path
+        assert "work-relief-workflows.html" in text, path
+
+
 def test_office_workspace_manuals_define_mobile_overflow_contracts():
     for path in ["docs/office-workspace.html", "docs/office-workspace.ja.html"]:
         text = Path(path).read_text(encoding="utf-8")

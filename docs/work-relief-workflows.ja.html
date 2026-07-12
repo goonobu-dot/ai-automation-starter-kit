@@ -1,0 +1,889 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>作業負担軽減5パック手順書 | AI Automation Starter Kit</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f3f5f7;
+      --panel: #ffffff;
+      --panel-soft: #eef2f6;
+      --ink: #16202b;
+      --muted: #556270;
+      --line: #cad3dc;
+      --accent: #1f6feb;
+      --accent-soft: #dce9fb;
+      --warn: #8a5200;
+      --warn-soft: #fff0d8;
+      --danger: #9d1c1c;
+      --danger-soft: #f9dddd;
+      --shadow: 0 12px 24px rgba(22, 32, 43, 0.08);
+      --radius: 6px;
+      --content: 1120px;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.75;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration-thickness: 0.08em;
+      text-underline-offset: 0.16em;
+    }
+
+    a:hover {
+      text-decoration-thickness: 0.12em;
+    }
+
+    a:focus-visible,
+    summary:focus-visible,
+    code:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      transform: translateY(-160%);
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      background: var(--ink);
+      color: #ffffff;
+      z-index: 20;
+    }
+
+    .skip-link:focus-visible {
+      transform: translateY(0);
+    }
+
+    .site-header,
+    .site-nav,
+    .site-footer {
+      padding: 0 20px;
+    }
+
+    .header-inner,
+    .nav-inner,
+    .main-inner,
+    .footer-inner {
+      max-width: var(--content);
+      margin: 0 auto;
+    }
+
+    .site-header,
+    .site-nav {
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .header-inner {
+      padding: 28px 0 24px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .eyebrow {
+      margin: 0;
+      font-size: 13px;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 36px;
+    }
+
+    h2 {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+
+    h3 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    p,
+    li,
+    td,
+    th {
+      max-width: 78ch;
+    }
+
+    .lede {
+      margin: 0;
+      font-size: 18px;
+      color: var(--muted);
+    }
+
+    .status-strip,
+    .card-grid,
+    .step-grid,
+    .boundary-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .status-card,
+    .callout,
+    .card,
+    .step-card,
+    .boundary-card,
+    .command-card,
+    .trouble-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .status-card,
+    .callout,
+    .card,
+    .boundary-card,
+    .command-card,
+    .trouble-card {
+      padding: 18px;
+    }
+
+    .step-card {
+      padding: 18px;
+      border-top: 4px solid var(--accent);
+    }
+
+    .status-card strong,
+    .callout strong,
+    .card strong,
+    .boundary-card strong,
+    .command-card strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .status-card p,
+    .callout p,
+    .card p,
+    .boundary-card p,
+    .command-card p,
+    .trouble-card p,
+    .step-card p {
+      margin: 0;
+    }
+
+    .callout-info {
+      background: var(--accent-soft);
+    }
+
+    .callout-warn {
+      background: var(--warn-soft);
+      border-color: #e6b25c;
+    }
+
+    .callout-danger {
+      background: var(--danger-soft);
+      border-color: #e0a8a8;
+    }
+
+    .nav-inner {
+      padding: 12px 0;
+    }
+
+    .nav-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-list a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .nav-list a:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .main-inner {
+      padding: 28px 0 52px;
+      display: grid;
+      gap: 22px;
+    }
+
+    section {
+      padding: 10px 20px;
+    }
+
+    .section-shell {
+      display: grid;
+      gap: 18px;
+    }
+
+    .command-card code,
+    code,
+    pre {
+      font-family: var(--mono);
+    }
+
+    code {
+      padding: 2px 5px;
+      background: var(--panel-soft);
+      border-radius: 4px;
+    }
+
+    pre {
+      margin: 0;
+      padding: 16px;
+      overflow-x: auto;
+      border-radius: var(--radius);
+      background: #152030;
+      color: #ffffff;
+    }
+
+    pre code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      min-width: 940px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th:last-child,
+    td:last-child {
+      border-right: 0;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    th {
+      background: var(--panel-soft);
+    }
+
+    .folder-tree {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .folder-tree pre {
+      background: transparent;
+      color: var(--ink);
+      padding: 0;
+      margin: 0;
+      overflow-x: auto;
+    }
+
+    .folder-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .folder-item {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .folder-item h3 {
+      margin-bottom: 8px;
+    }
+
+    .faq-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    details {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    details p {
+      margin: 10px 0 0;
+    }
+
+    .site-footer {
+      border-top: 1px solid var(--line);
+      background: #ffffff;
+    }
+
+    .footer-inner {
+      padding: 22px 0 38px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 760px) {
+      h1 {
+        font-size: 30px;
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+
+      h3 {
+        font-size: 18px;
+      }
+
+      .lede {
+        font-size: 17px;
+      }
+
+      .site-header,
+      .site-nav,
+      .site-footer,
+      section {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">本文へ移動</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <p class="eyebrow">AI Automation Starter Kit</p>
+      <h1>作業負担軽減5パック: メール送信なしのローカル確認フロー</h1>
+      <p class="lede">この手順書は、業務引き継ぎと期限確認、入社・異動・退職手続き確認、契約書・申込書の完備確認、見積比較と購入前確認、監査・許認可の期限確認の5パックを対象にしています。すべてローカルのフォルダ、ローカルUI、PIN承認で完結します。メール自動化は対象外です。</p>
+      <div class="status-strip">
+        <div class="status-card">
+          <strong>ローカル完結</strong>
+          <p>資料確認、下書き、承認、監査記録は作業端末内で完結します。</p>
+        </div>
+        <div class="status-card">
+          <strong>最後は人が決める</strong>
+          <p>Codex は質問と下書きを担当し、承認者が内容確認と PIN 承認を担当します。</p>
+        </div>
+        <div class="status-card">
+          <strong>メール送信は対象外</strong>
+          <p>Gmail とメール自動化はこの5パックの対象外で、別プロジェクトとして扱います。</p>
+        </div>
+      </div>
+    </div>
+  </header>
+  <nav class="site-nav" aria-label="ページ内移動">
+    <div class="nav-inner">
+      <ul class="nav-list">
+        <li><a href="#start">最初に読む</a></li>
+        <li><a href="#install">導入とログイン</a></li>
+        <li><a href="#packs">パック選択</a></li>
+        <li><a href="#folders">フォルダ入力</a></li>
+        <li><a href="#workflow">画面操作</a></li>
+        <li><a href="#reuse">翌日の再利用</a></li>
+        <li><a href="#troubleshooting">困ったとき</a></li>
+        <li><a href="#safety">安全境界</a></li>
+        <li><a href="#delivery">副業としての納品</a></li>
+        <li><a href="work-relief-workflows.html">英語版</a></li>
+      </ul>
+    </div>
+  </nav>
+  <main id="main">
+    <div class="main-inner">
+      <section id="start">
+        <div class="section-shell">
+          <h2>1. このルートが向いている仕事</h2>
+          <div class="callout callout-warn">
+            <strong>最初に境界を確認してください</strong>
+            <p>この5パックは、繰り返し発生する確認作業を軽くするためのものです。メール送信、Gmail 更新、顧客返信、法的提出、人事記録の変更、購買確定、外部システム更新は行いません。Gmail とメール自動化は別プロジェクトです。</p>
+          </div>
+          <div class="card-grid">
+            <div class="card">
+              <strong>向いている例</strong>
+              <p>毎日または頻繁に同じ種類の資料が届き、下書きや確認票の形が決まっていて、責任者が最後に確認できる仕事です。</p>
+            </div>
+            <div class="card">
+              <strong>向いていない例</strong>
+              <p>受信トレイを常時監視する仕事、メール送信が本体の仕事、顧客への約束を含む仕事、法務提出や給与反映のような不可逆処理です。</p>
+            </div>
+            <div class="card">
+              <strong>得られるもの</strong>
+              <p>ローカル作業場所、パック別の確認フロー、AI からの確認質問、下書き、PIN 承認記録、翌日の準備済みフォルダです。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="install">
+        <div class="section-shell">
+          <h2>2. 導入、ログイン、実行確認</h2>
+          <div class="command-card">
+            <strong>プロジェクトを導入する</strong>
+            <pre><code>git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git
+cd ai-automation-starter-kit
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -e .</code></pre>
+          </div>
+          <div class="command-card">
+            <strong>道具の準備を確認する</strong>
+            <pre><code>ai-automation-kit --version
+ai-automation-kit office-workspace packs
+codex login status</code></pre>
+          </div>
+          <div class="card-grid">
+            <div class="card">
+              <strong>対応環境の事実</strong>
+              <p>このローカル作業場所の安全な作成と承認更新は、macOS または Linux を前提にしています。</p>
+            </div>
+            <div class="card">
+              <strong>ログインの事実</strong>
+              <p><code>codex login status</code> が未完了なら、そこで止めて先にログインを完了してください。この手順で API キー方式へ切り替える必要はありません。</p>
+            </div>
+            <div class="card">
+              <strong>Codex への頼み方</strong>
+              <p>月報用の案内は <a href="../START_WITH_CODEX.ja.md">Codexではじめる</a> にあります。この5パックは、そのローカル確認ループを踏まえて使います。</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="packs">
+        <div class="section-shell">
+          <h2>3. 5つのパックから選ぶ</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>パック</th>
+                  <th>使う場面</th>
+                  <th>主な当日資料</th>
+                  <th>人が最後に決めること</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>引き継ぎ・期限確認</td>
+                  <td>当日の引き継ぎ内容と期限変更、遅延、保留事項を整理したいとき</td>
+                  <td>案件ボード、引き継ぎメモ、期限変更メモ</td>
+                  <td>顧客に見える約束、正式担当者、正式な期限変更</td>
+                </tr>
+                <tr>
+                  <td>従業員ライフサイクル確認</td>
+                  <td>入社、異動、休職、復帰、退職まわりの抜け漏れ確認をしたいとき</td>
+                  <td>従業員状態変更一覧、チェックリスト、管理者メモ</td>
+                  <td>人事判断、記録修正、給与やアクセス変更</td>
+                </tr>
+                <tr>
+                  <td>契約書類・申請書完備確認</td>
+                  <td>法務や審査へ回す前に、必要項目と添付の不足を確認したいとき</td>
+                  <td>受付台帳、書類一覧、完備メモ</td>
+                  <td>法務判断、受理、署名、提出</td>
+                </tr>
+                <tr>
+                  <td>見積比較・購入前確認</td>
+                  <td>購入や発注の前に、比較表と確認項目を揃えたいとき</td>
+                  <td>見積比較表、購入依頼書、評価メモ</td>
+                  <td>取引先選定、購入判断、例外承認、支払</td>
+                </tr>
+                <tr>
+                  <td>コンプライアンス・ライセンス期限確認</td>
+                  <td>更新期限、証跡期限、期限超過候補をローカルに整理したいとき</td>
+                  <td>期限一覧、ライセンス台帳、担当者更新メモ</td>
+                  <td>更新提出、コンプライアンス承認、外部提出</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout callout-info">
+            <strong>選び方の軸</strong>
+            <p>部署名ではなく、最後に何が残るかで選びます。チェックリスト、比較表、期限キューで終わり、人が最後の外部行動を持つならこのルートです。メール送信や Gmail 更新で終わるなら別ルートです。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="folders">
+        <div class="section-shell">
+          <h2>4. 入れる場所を固定する</h2>
+          <div class="folder-tree">
+            <pre><code>Client_Work_Relief/
+├── 00_START_HERE/
+├── 01_APPROVED_PAST_OUTPUTS/
+├── 02_PAST_SUPPORTING_FILES/
+├── 03_CURRENT_INPUTS/
+│   └── 2026-07-12/
+├── 04_QUESTIONS/
+├── 05_DRAFTS/
+├── 06_APPROVED_OUTPUTS/
+└── 07_AUDIT/</code></pre>
+          </div>
+          <div class="folder-list">
+            <div class="folder-item">
+              <h3><code>01_APPROVED_PAST_OUTPUTS</code></h3>
+              <p>ここには、すでに承認済みの完成版だけを入れます。例:</p>
+              <ul>
+                <li><code>approved_handover_deadline_2026-07-11.md</code></li>
+                <li><code>approved_employee_lifecycle_2026-07-11.md</code></li>
+                <li><code>approved_contract_completeness_2026-07-11.md</code></li>
+                <li><code>approved_quote_review_2026-07-11.md</code></li>
+                <li><code>approved_compliance_deadlines_2026-07-11.md</code></li>
+              </ul>
+            </div>
+            <div class="folder-item">
+              <h3><code>02_PAST_SUPPORTING_FILES</code></h3>
+              <p>ここには、繰り返し参照する固定資料を入れます。例: <code>priority_rules.md</code>、<code>required_fields_checklist.pdf</code>、<code>approval_thresholds.md</code>、<code>renewal_policy.pdf</code>。</p>
+            </div>
+            <div class="folder-item">
+              <h3><code>03_CURRENT_INPUTS/2026-07-12</code></h3>
+              <p>ここには、その日だけの資料を入れます。下の表の置き方を固定すると、誰が見ても迷いません。</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>パック</th>
+                  <th><code>02_PAST_SUPPORTING_FILES</code> に置くもの</th>
+                  <th><code>03_CURRENT_INPUTS/2026-07-12</code> に置くもの</th>
+                  <th>後で <code>05_DRAFTS/2026-07-12</code> に出る下書き</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>引き継ぎ・期限確認</td>
+                  <td><code>deadline_rules.md</code><br><code>handover_template.md</code></td>
+                  <td><code>task_board.csv</code><br><code>handover_notes.md</code><br><code>deadline_changes.md</code></td>
+                  <td><code>handover_deadline_daily.md</code></td>
+                </tr>
+                <tr>
+                  <td>従業員ライフサイクル確認</td>
+                  <td><code>employee_lifecycle_policy.pdf</code><br><code>required_documents.md</code></td>
+                  <td><code>employee_status_changes.csv</code><br><code>lifecycle_checklist.xlsx</code><br><code>manager_notes.md</code></td>
+                  <td><code>employee_lifecycle_daily.md</code></td>
+                </tr>
+                <tr>
+                  <td>契約書類・申請書完備確認</td>
+                  <td><code>required_fields_checklist.md</code><br><code>review_policy.pdf</code></td>
+                  <td><code>contract_application_register.csv</code><br><code>packet_index.xlsx</code><br><code>completeness_notes.md</code></td>
+                  <td><code>contract_intake_daily.md</code></td>
+                </tr>
+                <tr>
+                  <td>見積比較・購入前確認</td>
+                  <td><code>approval_thresholds.md</code><br><code>budget_rules.pdf</code></td>
+                  <td><code>quote_comparison.xlsx</code><br><code>purchase_request.pdf</code><br><code>evaluation_notes.md</code></td>
+                  <td><code>quote_comparison_daily.md</code></td>
+                </tr>
+                <tr>
+                  <td>コンプライアンス・ライセンス期限確認</td>
+                  <td><code>renewal_policy.pdf</code><br><code>escalation_rules.md</code></td>
+                  <td><code>deadline_register.csv</code><br><code>license_inventory.xlsx</code><br><code>owner_updates.md</code></td>
+                  <td><code>compliance_deadline_daily.md</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout callout-warn">
+            <strong>対象外の資料を混ぜないでください</strong>
+            <p>この5パックはファイルベースで、メール送信なしの確認フローです。受信トレイの生データを置いて、そのまま返信や送信までやってくれる前提で使わないでください。Gmail とメール自動化は別プロジェクトです。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="workflow">
+        <div class="section-shell">
+          <h2>5. ローカル UI で進める順番</h2>
+          <div class="command-card">
+            <strong>ローカル UI を起動する</strong>
+            <pre><code>ai-automation-kit office-workspace serve \
+  --root "$HOME/AI-Office-Workspaces" \
+  --language ja</code></pre>
+          </div>
+          <div class="step-grid">
+            <div class="step-card">
+              <strong>1. 作業場所を作る</strong>
+              <p>パックを選び、最初の日付を <code>YYYY-MM-DD</code> で入力し、作業場所名、承認者名、ローカル承認 PIN を設定します。</p>
+            </div>
+            <div class="step-card">
+              <strong>2. フォルダを開く</strong>
+              <p>フォルダ一覧から <code>01_APPROVED_PAST_OUTPUTS</code>、<code>02_PAST_SUPPORTING_FILES</code>、<code>03_CURRENT_INPUTS/&lt;日付&gt;</code> を開き、置き場を見えるようにします。</p>
+            </div>
+            <div class="step-card">
+              <strong>3. 資料を確認する</strong>
+              <p><strong>資料を確認</strong> を押し、受け付けた資料、却下された資料、対象外になった資料を確認してから次へ進みます。</p>
+            </div>
+            <div class="step-card">
+              <strong>4. AI の質問に答える</strong>
+              <p>資料だけでは決められないルールや例外条件だけを質問されます。曖昧なまま進めないでください。</p>
+            </div>
+            <div class="step-card">
+              <strong>5. 下書きを作る</strong>
+              <p><strong>下書きを作成</strong> を押すと、<code>05_DRAFTS/&lt;日付&gt;</code> に確認用の下書きが出ます。</p>
+            </div>
+            <div class="step-card">
+              <strong>6. 内容を確認する</strong>
+              <p>名前、日付、数量、担当、期限、不足証跡、例外扱いを確認し、外部に影響する記述は特に慎重に見ます。</p>
+            </div>
+            <div class="step-card">
+              <strong>7. PIN で承認する</strong>
+              <p>承認者が名前と PIN を入れると、承認済み完成版が <code>06_APPROVED_OUTPUTS/&lt;日付&gt;</code> に保存され、監査記録がローカルで更新されます。</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>パック</th>
+                  <th>AI がよく聞く質問</th>
+                  <th>人が丁寧に答えるべき点</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>引き継ぎ・期限確認</td>
+                  <td>どの遅延を高リスクとみなすか。未解決事項の当日担当は誰か。</td>
+                  <td>顧客に見える期限変更、例外承認、正式エスカレーション</td>
+                </tr>
+                <tr>
+                  <td>従業員ライフサイクル確認</td>
+                  <td>当日中に終えるべき項目は何か。どの項目で管理者確認が必要か。</td>
+                  <td>人事例外、給与影響、アクセス付与や停止の判断</td>
+                </tr>
+                <tr>
+                  <td>契約書類・申請書完備確認</td>
+                  <td>必須項目は何か。どこまで揃えば人の審査へ回せるか。</td>
+                  <td>法務解釈、受理、提出、署名の判断</td>
+                </tr>
+                <tr>
+                  <td>見積比較・購入前確認</td>
+                  <td>承認基準はいくらか。どの欠落が購入確認を止めるか。</td>
+                  <td>仕入先選定、購入判断、価格例外、確約</td>
+                </tr>
+                <tr>
+                  <td>コンプライアンス・ライセンス期限確認</td>
+                  <td>何日前から緊急扱いにするか。同日エスカレーション対象は何か。</td>
+                  <td>更新承認、外部提出、コンプライアンス承認、法務連携</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="reuse">
+        <div class="section-shell">
+          <h2>6. 翌日にそのまま再利用する</h2>
+          <div class="card-grid">
+            <div class="card">
+              <strong>次の日付を準備する</strong>
+              <p>承認後に UI から次の日付を準備します。作成前に候補日付を確認してください。</p>
+            </div>
+            <div class="card">
+              <strong>承認済み完成版を見本にする</strong>
+              <p>直前の承認済み完成版は、次回の構成や書きぶりの見本として再利用できます。</p>
+            </div>
+            <div class="card">
+              <strong>当日資料を混ぜない</strong>
+              <p>新しい <code>03_CURRENT_INPUTS/&lt;日付&gt;</code> には新しい日の資料だけを入れてください。前日分を混ぜないことが大切です。</p>
+            </div>
+          </div>
+          <div class="callout callout-info">
+            <strong>信頼できる過去完成版の扱い</strong>
+            <p>再利用できるのは同じ作業場所で承認済みになった完成版だけです。次回実行前に記録済みハッシュを再確認し、改変されたファイルは見本として使わずに止まります。</p>
+          </div>
+          <div class="callout callout-danger">
+            <strong>再利用の意味を広げすぎないでください</strong>
+            <p>これは永続的な学習ではありません。次回の隔離された入力に、承認済み見本を参照として渡すだけです。新しい日の正しさは新しい資料で決まります。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="troubleshooting">
+        <div class="section-shell">
+          <h2>7. 困ったときの確認順</h2>
+          <div class="faq-list">
+            <details>
+              <summary>Codex の準備ができていない</summary>
+              <p><code>codex login status</code> を実行し、先にローカルログインを完了してください。この流れで API キーを貼り付ける必要はありません。</p>
+            </details>
+            <details>
+              <summary>UI は開くがパックが使えない</summary>
+              <p>作業場所一覧を更新し、最初の日付が <code>YYYY-MM-DD</code> 形式か、起動した保存先ルート配下に作業場所があるかを確認してください。</p>
+            </details>
+            <details>
+              <summary>資料が却下または対象外になった</summary>
+              <p>拡張子、破損、実際の配置場所を確認してください。当日資料は <code>03_CURRENT_INPUTS/&lt;日付&gt;</code> に直接置く必要があります。</p>
+            </details>
+            <details>
+              <summary>下書きが薄い、または根拠が足りない</summary>
+              <p>不足資料や固定資料を追加し、再度資料確認を行い、追加質問に答えてから下書きを作り直してください。推測を承認で通さないでください。</p>
+            </details>
+            <details>
+              <summary>承認者が承認できない</summary>
+              <p>承認者名と PIN が作業場所作成時の設定と一致しているか確認してください。承認はこの作業場所とこの端末のローカル記録です。</p>
+            </details>
+            <details>
+              <summary>翌日の見本が正しく出ない</summary>
+              <p>当日分が承認済みか、承認後にファイルが変更されていないかを確認してください。改変済みファイルは次回実行で拒否されます。</p>
+            </details>
+            <details>
+              <summary>途中で実行が止まった</summary>
+              <p>まず状態更新を行ってください。手動復旧が必要なら、<code>00_START_HERE/workspace_status.json</code>、<code>.system/workspace.json</code>、現在周期の状態ファイル、未完了 run、<code>07_AUDIT/audit.jsonl</code> を順に確認します。</p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section id="safety">
+        <div class="section-shell">
+          <h2>8. 安全境界</h2>
+          <div class="boundary-grid">
+            <div class="boundary-card">
+              <strong>Codex がしてよいこと</strong>
+              <p>対応形式のローカル資料を読み、事実を整理し、不足ルールを質問し、ローカル下書きを作り、承認済み過去完成版を見本として参照することです。</p>
+            </div>
+            <div class="boundary-card">
+              <strong>Codex がしてはいけないこと</strong>
+              <p>メール送信、Gmail 更新、仕入先連絡、期限の本番更新、人事記録変更、外部提出、支払、自己承認です。</p>
+            </div>
+            <div class="boundary-card">
+              <strong>人が必ず行うこと</strong>
+              <p>正しい資料選定、業務ルールへの回答、下書き確認、PIN 承認、ローカル外でどう扱うかの判断です。</p>
+            </div>
+          </div>
+          <div class="callout callout-danger">
+            <strong>対象外を明記します</strong>
+            <p>Gmail とメール自動化はこの手順書の対象外で、別プロジェクトとして扱います。この5パックを受信トレイ自動化として説明しないでください。</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="delivery">
+        <div class="section-shell">
+          <h2>9. 副業として納品するときの範囲</h2>
+          <div class="step-grid">
+            <div class="step-card">
+              <strong>1. まず1パックだけ売る</strong>
+              <p>入力が明確で、承認者が1人に定まり、確認時間を測りやすいパックから始めます。</p>
+            </div>
+            <div class="step-card">
+              <strong>2. サンプルはマスク済みで受ける</strong>
+              <p>最初は匿名化済みや承認済みの資料だけでデモを作り、ローカル環境で見せます。</p>
+            </div>
+            <div class="step-card">
+              <strong>3. AI の止まる場所を見せる</strong>
+              <p>AI が止まるのは下書き、確認票、比較表、期限キューまでだと明言し、その先は顧客側の責任者が持つ形にします。</p>
+            </div>
+            <div class="step-card">
+              <strong>4. 地味な効果を測る</strong>
+              <p>削減できた確認時間、不足項目率、修正回数、承認までの時間を測ってから次の提案へ進みます。</p>
+            </div>
+            <div class="step-card">
+              <strong>5. Gmail は別件で切り出す</strong>
+              <p>受信トレイ自動化や提案メール送信まで求められたら、別プロジェクトとして要件、権限、監査、失敗時対応を分けて見積もります。</p>
+            </div>
+          </div>
+          <div class="callout callout-warn">
+            <strong>約束しないこと</strong>
+            <p>完全自動のバックオフィス運用、自動法令順守、自動人事完了、自動購買、自動メール対応は約束しないでください。約束するのは、ローカルで見える確認フローと承認境界です。</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-shell">
+          <h2>10. 関連リンク</h2>
+          <ul>
+            <li><a href="../README.md">README</a></li>
+            <li><a href="../START_WITH_CODEX.ja.md">Codexではじめる</a></li>
+            <li><a href="INDEX.md">ドキュメント索引</a></li>
+            <li><a href="office-workspace.ja.html">月報オペレーター作業場所マニュアル</a></li>
+            <li><a href="daily-workflows.ja.html">日次業務ガイド</a></li>
+            <li><a href="work-relief-workflows.html">英語版</a></li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      作業負担軽減パックは、ローカルの下書き、確認キュー、承認記録を作る道具です。人の責任を隠さずに、繰り返し確認作業だけを軽くするために使います。
+    </div>
+  </footer>
+</body>
+</html>

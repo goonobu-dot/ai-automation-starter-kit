@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "id": "employee-lifecycle-daily",
+  "display_name": {
+    "ja": "入退社・異動日次整理",
+    "en": "Employee Lifecycle Daily"
+  },
+  "category": "people",
+  "period_type": "day",
+  "risk_tier": "high",
+  "business_outcome": "Prepare a sourced daily employee lifecycle change draft for human review",
+  "inputs": [
+    {
+      "id": "personnel_change_register",
+      "required": true,
+      "accepted_extensions": [
+        ".csv",
+        ".xlsx",
+        ".json",
+        ".md"
+      ]
+    },
+    {
+      "id": "policy_or_checklist_notes",
+      "required": true,
+      "accepted_extensions": [
+        ".md",
+        ".txt",
+        ".pdf",
+        ".docx"
+      ]
+    },
+    {
+      "id": "access_or_asset_status_export",
+      "required": false,
+      "accepted_extensions": [
+        ".csv",
+        ".xlsx",
+        ".json",
+        ".md"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "required_effective_date_rule",
+      "type": "short_text",
+      "required": true,
+      "max_length": 160
+    },
+    {
+      "id": "approval_boundary_for_people_changes",
+      "type": "long_text",
+      "required": true,
+      "max_length": 500
+    },
+    {
+      "id": "same_day_access_freeze_required",
+      "type": "confirmation",
+      "required": false
+    }
+  ],
+  "prompt_template_id": "employee-lifecycle-daily-v1",
+  "allowed_prompt_variables": [
+    "period_id",
+    "source_manifest",
+    "answers"
+  ],
+  "outputs": [
+    {
+      "id": "draft",
+      "relative_path": "employee_lifecycle_daily.md",
+      "max_bytes": 1048576
+    }
+  ],
+  "approval": {
+    "required": true,
+    "role": "hr_owner"
+  },
+  "prohibited_actions": [
+    "external_send",
+    "publish",
+    "payment",
+    "production_write",
+    "self_approve",
+    "employment_status_change",
+    "access_revocation",
+    "payroll_update"
+  ],
+  "success_metrics": [
+    "change_capture_rate",
+    "missing_fact_count",
+    "review_minutes"
+  ]
+}

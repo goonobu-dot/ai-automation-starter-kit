@@ -6,6 +6,8 @@
 
 問い合わせ、営業、日次収支など10種類の日次業務は、[初心者向けHTMLガイド](docs/daily-workflows.ja.html)から選べます。英語版は[こちら](docs/daily-workflows.html)です。
 
+メール送信なしの作業負担軽減5パックは、[日本語手順書](docs/work-relief-workflows.ja.html)と[英語版](docs/work-relief-workflows.html)から見られます。Gmail とメール自動化はその対象外で、別プロジェクトとして扱います。
+
 このファイルは、月報作業場所を Codex にローカルで整えてもらうための、初心者向けの実務メモです。宣伝ではなく、実際に何を確認して何を実行するかだけを書いています。
 
 ## 最初に Codex へ送る内容

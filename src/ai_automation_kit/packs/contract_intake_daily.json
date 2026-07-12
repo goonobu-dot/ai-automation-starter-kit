@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "id": "contract-intake-daily",
+  "display_name": {
+    "ja": "契約受付日次整理",
+    "en": "Contract Intake Daily"
+  },
+  "category": "legal",
+  "period_type": "day",
+  "risk_tier": "medium",
+  "business_outcome": "Prepare a sourced daily contract intake triage draft for human review",
+  "inputs": [
+    {
+      "id": "contract_request_intake",
+      "required": true,
+      "accepted_extensions": [
+        ".csv",
+        ".xlsx",
+        ".json",
+        ".md",
+        ".txt"
+      ]
+    },
+    {
+      "id": "contract_documents",
+      "required": true,
+      "accepted_extensions": [
+        ".pdf",
+        ".docx",
+        ".txt",
+        ".md"
+      ]
+    },
+    {
+      "id": "policy_or_clause_playbook",
+      "required": false,
+      "accepted_extensions": [
+        ".md",
+        ".txt",
+        ".pdf",
+        ".docx"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "intake_priority_rule",
+      "type": "short_text",
+      "required": true,
+      "max_length": 160
+    },
+    {
+      "id": "nonstandard_term_definition",
+      "type": "long_text",
+      "required": true,
+      "max_length": 600
+    },
+    {
+      "id": "legal_review_hold_required",
+      "type": "confirmation",
+      "required": false
+    }
+  ],
+  "prompt_template_id": "contract-intake-daily-v1",
+  "allowed_prompt_variables": [
+    "period_id",
+    "source_manifest",
+    "answers"
+  ],
+  "outputs": [
+    {
+      "id": "draft",
+      "relative_path": "contract_intake_daily.md",
+      "max_bytes": 1048576
+    }
+  ],
+  "approval": {
+    "required": true,
+    "role": "legal_or_procurement_approver"
+  },
+  "prohibited_actions": [
+    "external_send",
+    "publish",
+    "payment",
+    "production_write",
+    "self_approve",
+    "contract_acceptance",
+    "counterparty_commitment",
+    "signature_request"
+  ],
+  "success_metrics": [
+    "intake_triage_accuracy",
+    "missing_fact_count",
+    "review_minutes"
+  ]
+}

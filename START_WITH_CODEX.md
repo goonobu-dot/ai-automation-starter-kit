@@ -6,6 +6,8 @@ After creation, open and explain where to place past approved reports, past supp
 
 Choose from ten daily workflows in the [English beginner guide](docs/daily-workflows.html). The [Japanese guide](docs/daily-workflows.ja.html) is also available.
 
+For five email-free work relief packs, open the [English manual](docs/work-relief-workflows.html) or the [Japanese manual](docs/work-relief-workflows.ja.html). Gmail and email automation are out of scope there and will be a separate project.
+
 This file is for a beginner who wants Codex to prepare the local monthly-report workspace without guessing hidden steps.
 
 Ask only one question at a time.

@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "id": "quote-comparison-daily",
+  "display_name": {
+    "ja": "見積比較日次整理",
+    "en": "Quote Comparison Daily"
+  },
+  "category": "procurement",
+  "period_type": "day",
+  "risk_tier": "medium",
+  "business_outcome": "Prepare a sourced daily quote comparison draft for human review",
+  "inputs": [
+    {
+      "id": "quote_register",
+      "required": true,
+      "accepted_extensions": [
+        ".csv",
+        ".xlsx",
+        ".json",
+        ".pdf"
+      ]
+    },
+    {
+      "id": "supplier_comparison_sheet",
+      "required": true,
+      "accepted_extensions": [
+        ".csv",
+        ".xlsx",
+        ".json",
+        ".md"
+      ]
+    },
+    {
+      "id": "specification_or_scope_notes",
+      "required": false,
+      "accepted_extensions": [
+        ".md",
+        ".txt",
+        ".pdf",
+        ".docx"
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "id": "selection_criteria_rule",
+      "type": "short_text",
+      "required": true,
+      "max_length": 160
+    },
+    {
+      "id": "deal_breaker_conditions",
+      "type": "long_text",
+      "required": true,
+      "max_length": 500
+    },
+    {
+      "id": "same_day_award_hold_required",
+      "type": "confirmation",
+      "required": false
+    }
+  ],
+  "prompt_template_id": "quote-comparison-daily-v1",
+  "allowed_prompt_variables": [
+    "period_id",
+    "source_manifest",
+    "answers"
+  ],
+  "outputs": [
+    {
+      "id": "draft",
+      "relative_path": "quote_comparison_daily.md",
+      "max_bytes": 1048576
+    }
+  ],
+  "approval": {
+    "required": true,
+    "role": "procurement_owner"
+  },
+  "prohibited_actions": [
+    "external_send",
+    "publish",
+    "payment",
+    "production_write",
+    "self_approve",
+    "vendor_selection",
+    "quote_acceptance",
+    "purchase_commitment"
+  ],
+  "success_metrics": [
+    "comparison_completeness",
+    "missing_fact_count",
+    "review_minutes"
+  ]
+}

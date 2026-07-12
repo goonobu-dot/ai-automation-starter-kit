@@ -34,6 +34,11 @@ OFFICE_WORKSPACE_PACK_IDS = [
     "invoice-order-check-daily",
     "internal-requests-daily",
     "executive-digest-daily",
+    "handover-deadline-daily",
+    "employee-lifecycle-daily",
+    "contract-intake-daily",
+    "quote-comparison-daily",
+    "compliance-deadline-daily",
 ]
 
 

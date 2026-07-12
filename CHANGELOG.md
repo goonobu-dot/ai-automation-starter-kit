@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Work relief workflow manuals (2026-07)
+
+- Added `docs/work-relief-workflows.ja.html` and `docs/work-relief-workflows.html`: separate Japanese and English manuals for five email-free packs covering install and login, pack choice, exact folder inputs, localhost UI workflow, AI questions, draft review, PIN approval, next-day reuse, trusted prior outputs, troubleshooting, safety boundaries, and a bounded side-business delivery route.
+- Linked the new manuals from `README.md`, `START_WITH_CODEX.md`, `START_WITH_CODEX.ja.md`, and `docs/INDEX.md`.
+- Stated explicitly that Gmail and email automation are out of scope for these packs and will be handled as a separate project.
+
 ### Daily office workflow packs (2026-07)
 
 - Expanded the hardened monthly office workspace into a cadence-aware pack system while preserving the existing monthly default.

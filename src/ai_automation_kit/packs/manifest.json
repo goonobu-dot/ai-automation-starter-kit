@@ -86,5 +86,45 @@
     "output_schema_sha256": "5d9ddb4180589ea9d714af99a0c3eebbac958ff03e101e011557905de42b0236",
     "prompt_template_file": "executive_digest_daily_prompt.json",
     "prompt_template_sha256": "b6e6cafb662239ad87fdc75699764825117ced6e9f6aaf348bc4b0cf9d5af04f"
+  },
+  "handover-deadline-daily": {
+    "pack_file": "handover_deadline_daily.json",
+    "pack_sha256": "80d40c8d0a7dcaf0a55080d422cf06670c3adfc0a36a769404c4b610674e409e",
+    "output_schema_file": "monthly_report_output.schema.json",
+    "output_schema_sha256": "5d9ddb4180589ea9d714af99a0c3eebbac958ff03e101e011557905de42b0236",
+    "prompt_template_file": "handover_deadline_daily_prompt.json",
+    "prompt_template_sha256": "8974575cad17c862b9fa92c509d2746230532431df4ef53850f7d7bf672b47bd"
+  },
+  "employee-lifecycle-daily": {
+    "pack_file": "employee_lifecycle_daily.json",
+    "pack_sha256": "51371a6098f0fb0d104ad2642144a12aea06a519ecbf17a0cd26363d0bf95dcc",
+    "output_schema_file": "monthly_report_output.schema.json",
+    "output_schema_sha256": "5d9ddb4180589ea9d714af99a0c3eebbac958ff03e101e011557905de42b0236",
+    "prompt_template_file": "employee_lifecycle_daily_prompt.json",
+    "prompt_template_sha256": "551cd18afd9c70716f23d66d94e49c81c1fc855a6df8e3a23a005b782dc2ff88"
+  },
+  "contract-intake-daily": {
+    "pack_file": "contract_intake_daily.json",
+    "pack_sha256": "55099eb3e9c3fac867737ec47673ce03772b308b14706b7bee3f8bcac863cc02",
+    "output_schema_file": "monthly_report_output.schema.json",
+    "output_schema_sha256": "5d9ddb4180589ea9d714af99a0c3eebbac958ff03e101e011557905de42b0236",
+    "prompt_template_file": "contract_intake_daily_prompt.json",
+    "prompt_template_sha256": "26679f3d348a695fc3f1cc3c3366a8304e561531b19e568dd342c19b7a957e02"
+  },
+  "quote-comparison-daily": {
+    "pack_file": "quote_comparison_daily.json",
+    "pack_sha256": "8da3f9336f9a6445f2ca61e349a82324a681d689c1f9c9e8a34690ac6b3799af",
+    "output_schema_file": "monthly_report_output.schema.json",
+    "output_schema_sha256": "5d9ddb4180589ea9d714af99a0c3eebbac958ff03e101e011557905de42b0236",
+    "prompt_template_file": "quote_comparison_daily_prompt.json",
+    "prompt_template_sha256": "0e5ea4fc1c596637644cf1e937e490bb7b3a777913ca0b2b152f02f7843fea56"
+  },
+  "compliance-deadline-daily": {
+    "pack_file": "compliance_deadline_daily.json",
+    "pack_sha256": "89256f9ddacdc9a52182857c2927d2235c9406c9aef3a8b4231e79f9528d20b4",
+    "output_schema_file": "monthly_report_output.schema.json",
+    "output_schema_sha256": "5d9ddb4180589ea9d714af99a0c3eebbac958ff03e101e011557905de42b0236",
+    "prompt_template_file": "compliance_deadline_daily_prompt.json",
+    "prompt_template_sha256": "1f920a843d445b45bfeca00e39a64fd1a04ccf606a4f32a69124da588bc40e20"
   }
 }

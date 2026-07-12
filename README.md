@@ -2,6 +2,8 @@
 
 Daily workflow automation: [日本語の初心者ガイド](docs/daily-workflows.ja.html) | [English beginner guide](docs/daily-workflows.html)
 
+Email-free work relief packs: [日本語の手順書](docs/work-relief-workflows.ja.html) | [English manual](docs/work-relief-workflows.html)
+
 AI Automation Starter Kit is a GitHub-data-driven AI agent skill kit for people who want to propose and deliver small, safe business automation projects — especially beginners selling automation to small and medium companies. One command generates client-ready artifacts: demos, discovery questions, proposals, pricing menus, dry-run flow projects, and delivery checklists. Nothing is sent externally: every risky action stays behind a human approval step.
 
 ## 日本語の方へ：3ステップで始める
@@ -40,7 +42,9 @@ If you want a Codex-led monthly office workspace instead of the broader sales or
 
 - Setup prompt for Codex: [START_WITH_CODEX.ja.md](START_WITH_CODEX.ja.md) / [START_WITH_CODEX.md](START_WITH_CODEX.md)
 - Browser manual for the monthly office workspace: [docs/office-workspace.ja.html](docs/office-workspace.ja.html) / [docs/office-workspace.html](docs/office-workspace.html)
-- Honest status: Phase 1A is one monthly office workspace and one monthly-report pack. No API key is required, and no external sending occurs.
+- Browser manual for five email-free work relief packs: [docs/work-relief-workflows.ja.html](docs/work-relief-workflows.ja.html) / [docs/work-relief-workflows.html](docs/work-relief-workflows.html)
+- Honest status: the office workspace supports one monthly-report pack and 15 reusable daily packs, including five email-free work relief packs. No API key is required, and no external sending occurs.
+- Separate scope note: Gmail and email automation are intentionally out of scope for the work relief packs and will be handled as a separate project.
 
 ## English Quick Start
 
@@ -76,6 +80,7 @@ Key documents:
 | Browser manual (click to open as a web page) | [ブラウザ版マニュアル（クリックで開きます）](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.ja.html) | [Browser Manual](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.html) |
 | Codex monthly setup prompt | [Codexではじめる](START_WITH_CODEX.ja.md) | [Start With Codex](START_WITH_CODEX.md) |
 | Monthly office workspace manual | [月報オペレーター作業場所マニュアル](docs/office-workspace.ja.html) | [Monthly Operator Workspace Manual](docs/office-workspace.html) |
+| Email-free work relief packs manual | [作業負担軽減5パック手順書](docs/work-relief-workflows.ja.html) | [Work Relief Workflows Manual](docs/work-relief-workflows.html) |
 | Report wizard manual | [レポートウィザード手順書](docs/report-automation-wizard.ja.html) | [Report Wizard Manual](docs/report-automation-wizard.html) |
 | Selling automation responsibly | [提案ガイド](docs/SELLING_AUTOMATION_GUIDE.ja.md) | [Selling Automation Guide](docs/SELLING_AUTOMATION_GUIDE.md) |
 | Choosing what to sell | [副業ブループリント](docs/SIDE_HUSTLE_BLUEPRINTS.ja.md) | [Side Hustle Blueprints](docs/SIDE_HUSTLE_BLUEPRINTS.md) |
@@ -100,7 +105,7 @@ The fastest path is `complete-workspace`: one command creates a full local deliv
 - **Runnable flows** — `flows` installs one of 60+ dry-run automation projects with `flow.yaml`, `workflow_map.mmd`, `operator_ui/index.html`, `.env.example`, `SYSTEM_RUNBOOK.md`, and scripts that generate `automation_output` work queues, approval queues, and `local_outbox` drafts. Nothing is sent externally.
 - **Folder-based report automation** — `report-automation` creates a daily, weekly, or monthly report workspace with past-output folders, current-material folders, `START_HERE_REPORT_AUTOMATION.md`, AI prompts, `grill_me_report_questions.md`, drafts, approval checklists, and a client-facing `demo_report_automation.html`.
 - **Resumable report wizard** — `report-wizard` adds `report_wizard_state.json`, `03_templates/*_report_template.md`, `04_ai_analysis/{source_manifest.json,schema_proposal.json,provenance.json,ai_agent_review_instructions.md}`, `05_grill_me_questions/session.json`, `06_drafts/*_report_draft.md`, and `07_approval/approval.json` so a human can inspect, answer, build, approve, and resume a local reporting session.
-- **Codex-led monthly office workspace** — `office-workspace` creates a monthly office workspace with `00_START_HERE`, `01_APPROVED_PAST_OUTPUTS`, `02_PAST_SUPPORTING_FILES`, `03_CURRENT_INPUTS/<YYYY-MM>`, `04_QUESTIONS`, `05_DRAFTS`, `06_APPROVED_OUTPUTS`, and `07_AUDIT`, then serves a localhost UI for inspect, answer, generate, cancel, approve, and rollover. This Phase 1A route is local-only, monthly-report only, and intended for macOS or Linux.
+- **Codex-led monthly and daily office workspace** — `office-workspace` creates a local workspace with `00_START_HERE`, `01_APPROVED_PAST_OUTPUTS`, `02_PAST_SUPPORTING_FILES`, dated `03_CURRENT_INPUTS`, `04_QUESTIONS`, `05_DRAFTS`, `06_APPROVED_OUTPUTS`, and `07_AUDIT`, then serves a localhost UI for inspect, answer, generate, cancel, approve, and rollover. It supports one monthly pack and 15 daily packs on macOS or Linux.
 - **Delivery evidence** — `FINAL_DELIVERY_GUIDE.md`, `completion_checklist.md`, `client_report.md`, `client_demo_package.zip`, `revenue_readiness_scorecard.md`, `paid_poc_scope.md`, and `share_check.md` (scan before sharing).
 - **Setup and cloud planning** — `guided-setup`, `guided-review`, and `cloud-plan` write question lists, readiness reports, and provider-specific runbooks such as `workload_architecture.md`, `deploy_runbook.md`, and `human_approval_required.md`.
 - **GitHub discovery** — `github-discover` and `onboard` turn public GitHub research into `run_summary.md`, `executive_decision_brief.md`, `pilot_scorecard.csv`, `value_realization_plan.md`, `value_measurement_report.md`, `stakeholder_rollout_map.md`, `risk_exception_register.md`, `operational_audit_plan.md`, `enterprise_readiness.md`, `artifact_index.md`, and an `adapter_starter/` dry-run skeleton.

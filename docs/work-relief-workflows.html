@@ -1,0 +1,895 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Work Relief Workflows Manual | AI Automation Starter Kit</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f3f5f7;
+      --panel: #ffffff;
+      --panel-soft: #eef2f6;
+      --ink: #16202b;
+      --muted: #556270;
+      --line: #cad3dc;
+      --accent: #1f6feb;
+      --accent-soft: #dce9fb;
+      --good: #12663a;
+      --good-soft: #ddf3e5;
+      --warn: #8a5200;
+      --warn-soft: #fff0d8;
+      --danger: #9d1c1c;
+      --danger-soft: #f9dddd;
+      --shadow: 0 12px 24px rgba(22, 32, 43, 0.08);
+      --radius: 6px;
+      --content: 1120px;
+      --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --mono: "SFMono-Regular", "SF Mono", Menlo, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+
+      * {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.65;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration-thickness: 0.08em;
+      text-underline-offset: 0.16em;
+    }
+
+    a:hover {
+      text-decoration-thickness: 0.12em;
+    }
+
+    a:focus-visible,
+    summary:focus-visible,
+    code:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: 12px;
+      top: 12px;
+      transform: translateY(-160%);
+      padding: 10px 14px;
+      border-radius: var(--radius);
+      background: var(--ink);
+      color: #ffffff;
+      z-index: 20;
+    }
+
+    .skip-link:focus-visible {
+      transform: translateY(0);
+    }
+
+    .site-header,
+    .site-nav,
+    .site-footer {
+      padding: 0 20px;
+    }
+
+    .header-inner,
+    .nav-inner,
+    .main-inner,
+    .footer-inner {
+      max-width: var(--content);
+      margin: 0 auto;
+    }
+
+    .site-header,
+    .site-nav {
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .header-inner {
+      padding: 28px 0 24px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .eyebrow {
+      margin: 0;
+      font-size: 13px;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      line-height: 1.22;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: 36px;
+    }
+
+    h2 {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+
+    h3 {
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    p,
+    li,
+    td,
+    th {
+      max-width: 78ch;
+    }
+
+    .lede {
+      margin: 0;
+      font-size: 18px;
+      color: var(--muted);
+    }
+
+    .status-strip,
+    .card-grid,
+    .step-grid,
+    .boundary-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    .status-card,
+    .callout,
+    .card,
+    .step-card,
+    .boundary-card,
+    .command-card,
+    .trouble-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .status-card,
+    .callout,
+    .card,
+    .boundary-card,
+    .command-card,
+    .trouble-card {
+      padding: 18px;
+    }
+
+    .step-card {
+      padding: 18px;
+      border-top: 4px solid var(--accent);
+    }
+
+    .status-card strong,
+    .callout strong,
+    .card strong,
+    .boundary-card strong,
+    .command-card strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .status-card p,
+    .callout p,
+    .card p,
+    .boundary-card p,
+    .command-card p,
+    .trouble-card p,
+    .step-card p {
+      margin: 0;
+    }
+
+    .callout-info {
+      background: var(--accent-soft);
+    }
+
+    .callout-warn {
+      background: var(--warn-soft);
+      border-color: #e6b25c;
+    }
+
+    .callout-danger {
+      background: var(--danger-soft);
+      border-color: #e0a8a8;
+    }
+
+    .site-nav {
+      padding: 0 20px;
+    }
+
+    .nav-inner {
+      padding: 12px 0;
+    }
+
+    .nav-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-list a {
+      display: inline-flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .nav-list a:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .main-inner {
+      padding: 28px 0 52px;
+      display: grid;
+      gap: 22px;
+    }
+
+    section {
+      padding: 10px 20px;
+    }
+
+    .section-shell {
+      display: grid;
+      gap: 18px;
+    }
+
+    .command-card code,
+    code,
+    pre {
+      font-family: var(--mono);
+    }
+
+    code {
+      padding: 2px 5px;
+      background: var(--panel-soft);
+      border-radius: 4px;
+    }
+
+    pre {
+      margin: 0;
+      padding: 16px;
+      overflow-x: auto;
+      border-radius: var(--radius);
+      background: #152030;
+      color: #ffffff;
+    }
+
+    pre code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      min-width: 940px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      padding: 14px;
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th:last-child,
+    td:last-child {
+      border-right: 0;
+    }
+
+    tbody tr:last-child td {
+      border-bottom: 0;
+    }
+
+    th {
+      background: var(--panel-soft);
+    }
+
+    .folder-tree {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .folder-tree pre {
+      background: transparent;
+      color: var(--ink);
+      padding: 0;
+      margin: 0;
+      overflow-x: auto;
+    }
+
+    .folder-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .folder-item {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .folder-item h3 {
+      margin-bottom: 8px;
+    }
+
+    .faq-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    details {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 14px 16px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    details p {
+      margin: 10px 0 0;
+    }
+
+    .site-footer {
+      border-top: 1px solid var(--line);
+      background: #ffffff;
+    }
+
+    .footer-inner {
+      padding: 22px 0 38px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 760px) {
+      h1 {
+        font-size: 30px;
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+
+      h3 {
+        font-size: 18px;
+      }
+
+      .lede {
+        font-size: 17px;
+      }
+
+      .site-header,
+      .site-nav,
+      .site-footer,
+      section {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <p class="eyebrow">AI Automation Starter Kit</p>
+      <h1>Work Relief Workflows: Five Email-Free Review Packs</h1>
+      <p class="lede">This manual covers five local, human-approved packs for administrative relief work: Handover and deadline review, Employee lifecycle checks, Contract and application document checks, Quote comparison and pre-purchase review, and Compliance and license deadline tracking. Every pack stays inside a local folder workflow, a localhost UI, and a PIN approval gate. Email automation is out of scope.</p>
+      <div class="status-strip">
+        <div class="status-card">
+          <strong>Local first</strong>
+          <p>Files stay on the operator machine during inspection, drafting, and approval.</p>
+        </div>
+        <div class="status-card">
+          <strong>Human last word</strong>
+          <p>Codex drafts and asks questions. A named approver reviews and approves the final local copy.</p>
+        </div>
+        <div class="status-card">
+          <strong>Email-free scope</strong>
+          <p>Gmail and email automation are out of scope for these packs and will be handled as a separate project.</p>
+        </div>
+      </div>
+    </div>
+  </header>
+  <nav class="site-nav" aria-label="Section navigation">
+    <div class="nav-inner">
+      <ul class="nav-list">
+        <li><a href="#start">Start here</a></li>
+        <li><a href="#install">Install and login</a></li>
+        <li><a href="#packs">Choose a pack</a></li>
+        <li><a href="#folders">Folder inputs</a></li>
+        <li><a href="#workflow">UI workflow</a></li>
+        <li><a href="#reuse">Reuse tomorrow</a></li>
+        <li><a href="#troubleshooting">Troubleshooting</a></li>
+        <li><a href="#safety">Safety</a></li>
+        <li><a href="#delivery">Side business</a></li>
+        <li><a href="work-relief-workflows.ja.html">Japanese manual</a></li>
+      </ul>
+    </div>
+  </nav>
+  <main id="main">
+    <div class="main-inner">
+      <section id="start">
+        <div class="section-shell">
+          <h2>1. What this route is for</h2>
+          <div class="callout callout-warn">
+            <strong>Read this before you start</strong>
+            <p>These five packs reduce repetitive review work. They do not send mail, update Gmail, reply to customers, file legal documents, correct HR records, issue approvals on their own, or make production changes. Gmail and email automation will be a separate project.</p>
+          </div>
+          <div class="card-grid">
+            <div class="card">
+              <strong>Good fit</strong>
+              <p>You already receive files in folders or exports, the final output follows a known structure, and a responsible person can review the result.</p>
+            </div>
+            <div class="card">
+              <strong>Bad fit</strong>
+              <p>The work depends on live inbox activity, direct email sending, customer promises, payroll mutation, legal submission, or any irreversible external action.</p>
+            </div>
+            <div class="card">
+              <strong>What you get</strong>
+              <p>A local workspace, a pack-specific review loop, AI clarification questions, a draft, a PIN approval record, and a prepared next-day folder.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="install">
+        <div class="section-shell">
+          <h2>2. Install, sign in, and confirm the local runner</h2>
+          <div class="command-card">
+            <strong>Install the project</strong>
+            <pre><code>git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git
+cd ai-automation-starter-kit
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install -e .</code></pre>
+          </div>
+          <div class="command-card">
+            <strong>Confirm the toolchain</strong>
+            <pre><code>ai-automation-kit --version
+ai-automation-kit office-workspace packs
+codex login status</code></pre>
+          </div>
+          <div class="card-grid">
+            <div class="card">
+              <strong>Platform truth</strong>
+              <p>Safe workspace creation and approval mutation are intended for macOS or Linux in this local route.</p>
+            </div>
+            <div class="card">
+              <strong>Login truth</strong>
+              <p>If <code>codex login status</code> is not ready, stop there and finish login first. Do not switch to an API key flow for this manual.</p>
+            </div>
+            <div class="card">
+              <strong>How to ask Codex</strong>
+              <p>Open <a href="../START_WITH_CODEX.md">Start With Codex</a> for the guided monthly route, then use this manual for the five email-free review packs.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="packs">
+        <div class="section-shell">
+          <h2>3. Choose the right pack</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pack</th>
+                  <th>Use it when</th>
+                  <th>Main current-period source</th>
+                  <th>Human-only decision</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Handover and Deadline Review</td>
+                  <td>You need a clean daily handover and a clear list of changed, at-risk, or blocked deadlines.</td>
+                  <td>Task board export, handover notes, deadline change note</td>
+                  <td>Customer-visible promise, final owner, actual deadline change</td>
+                </tr>
+                <tr>
+                  <td>Employee Lifecycle Checklist</td>
+                  <td>You need to check onboarding, transfer, leave, return, or offboarding steps without changing HR systems.</td>
+                  <td>Employee status change export, checklist tracker, manager note</td>
+                  <td>HR judgment, record correction, payroll or access change</td>
+                </tr>
+                <tr>
+                  <td>Contract and Application Completeness</td>
+                  <td>You need to confirm whether intake packets are complete before a human review.</td>
+                  <td>Contract or application register, packet index, completeness note</td>
+                  <td>Legal or compliance interpretation, filing, signature, acceptance</td>
+                </tr>
+                <tr>
+                  <td>Quote Comparison and Pre-Purchase Review</td>
+                  <td>You need a structured comparison before someone buys, signs, or places an order.</td>
+                  <td>Quote comparison sheet, purchase request, evaluation note</td>
+                  <td>Supplier selection, commitment, purchase approval, payment</td>
+                </tr>
+                <tr>
+                  <td>Compliance and License Deadline Tracking</td>
+                  <td>You need a local queue of renewals, evidence deadlines, and escalation candidates.</td>
+                  <td>Deadline register, license inventory, owner update note</td>
+                  <td>Renewal submission, compliance sign-off, external filing</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout callout-info">
+            <strong>Simple selection rule</strong>
+            <p>Pick the pack by the decision boundary, not the department name. If the pack ends in a checklist, comparison, or deadline queue and a human still owns the final action, it belongs here. If it ends in sending mail, editing Gmail, or auto-issuing messages, it does not.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="folders">
+        <div class="section-shell">
+          <h2>4. Use the exact folder inputs</h2>
+          <div class="folder-tree">
+            <pre><code>Client_Work_Relief/
+├── 00_START_HERE/
+├── 01_APPROVED_PAST_OUTPUTS/
+├── 02_PAST_SUPPORTING_FILES/
+├── 03_CURRENT_INPUTS/
+│   └── 2026-07-12/
+├── 04_QUESTIONS/
+├── 05_DRAFTS/
+├── 06_APPROVED_OUTPUTS/
+└── 07_AUDIT/</code></pre>
+          </div>
+          <div class="folder-list">
+            <div class="folder-item">
+              <h3><code>01_APPROVED_PAST_OUTPUTS</code></h3>
+              <p>Put only previously approved local outputs here. Good example names:</p>
+              <ul>
+                <li><code>approved_handover_deadline_2026-07-11.md</code></li>
+                <li><code>approved_employee_lifecycle_2026-07-11.md</code></li>
+                <li><code>approved_contract_completeness_2026-07-11.md</code></li>
+                <li><code>approved_quote_review_2026-07-11.md</code></li>
+                <li><code>approved_compliance_deadlines_2026-07-11.md</code></li>
+              </ul>
+            </div>
+            <div class="folder-item">
+              <h3><code>02_PAST_SUPPORTING_FILES</code></h3>
+              <p>Put stable rules and reference files here. Good examples: <code>priority_rules.md</code>, <code>required_fields_checklist.pdf</code>, <code>approval_thresholds.md</code>, <code>renewal_policy.pdf</code>.</p>
+            </div>
+            <div class="folder-item">
+              <h3><code>03_CURRENT_INPUTS/2026-07-12</code></h3>
+              <p>Put only the current day’s files here. Use the exact placements below so the operator can see the pack contents quickly.</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pack</th>
+                  <th>Place in <code>02_PAST_SUPPORTING_FILES</code></th>
+                  <th>Place in <code>03_CURRENT_INPUTS/2026-07-12</code></th>
+                  <th>Draft saved later in <code>05_DRAFTS/2026-07-12</code></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Handover and Deadline Review</td>
+                  <td><code>deadline_rules.md</code><br><code>handover_template.md</code></td>
+                  <td><code>task_board.csv</code><br><code>handover_notes.md</code><br><code>deadline_changes.md</code></td>
+                  <td><code>handover_deadline_daily.md</code></td>
+                </tr>
+                <tr>
+                  <td>Employee Lifecycle Checklist</td>
+                  <td><code>employee_lifecycle_policy.pdf</code><br><code>required_documents.md</code></td>
+                  <td><code>employee_status_changes.csv</code><br><code>lifecycle_checklist.xlsx</code><br><code>manager_notes.md</code></td>
+                  <td><code>employee_lifecycle_daily.md</code></td>
+                </tr>
+                <tr>
+                  <td>Contract and Application Completeness</td>
+                  <td><code>required_fields_checklist.md</code><br><code>review_policy.pdf</code></td>
+                  <td><code>contract_application_register.csv</code><br><code>packet_index.xlsx</code><br><code>completeness_notes.md</code></td>
+                  <td><code>contract_intake_daily.md</code></td>
+                </tr>
+                <tr>
+                  <td>Quote Comparison and Pre-Purchase Review</td>
+                  <td><code>approval_thresholds.md</code><br><code>budget_rules.pdf</code></td>
+                  <td><code>quote_comparison.xlsx</code><br><code>purchase_request.pdf</code><br><code>evaluation_notes.md</code></td>
+                  <td><code>quote_comparison_daily.md</code></td>
+                </tr>
+                <tr>
+                  <td>Compliance and License Deadline Tracking</td>
+                  <td><code>renewal_policy.pdf</code><br><code>escalation_rules.md</code></td>
+                  <td><code>deadline_register.csv</code><br><code>license_inventory.xlsx</code><br><code>owner_updates.md</code></td>
+                  <td><code>compliance_deadline_daily.md</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout callout-warn">
+            <strong>Scope reminder</strong>
+            <p>These inputs are file-based and email-free. Do not drop live inbox exports here and assume this pack will send or answer mail. Gmail and email automation are a different product boundary.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="workflow">
+        <div class="section-shell">
+          <h2>5. Walk through the localhost UI</h2>
+          <div class="command-card">
+            <strong>Start the local operator UI</strong>
+            <pre><code>ai-automation-kit office-workspace serve \
+  --root "$HOME/AI-Office-Workspaces" \
+  --language en</code></pre>
+          </div>
+          <div class="step-grid">
+            <div class="step-card">
+              <strong>1. Create the workspace</strong>
+              <p>Choose the work relief pack, enter the first day in <code>YYYY-MM-DD</code>, name the workspace, set the approver name, and create a local approval PIN.</p>
+            </div>
+            <div class="step-card">
+              <strong>2. Open the folders</strong>
+              <p>Open <code>01_APPROVED_PAST_OUTPUTS</code>, <code>02_PAST_SUPPORTING_FILES</code>, and <code>03_CURRENT_INPUTS/&lt;day&gt;</code> from the folder panel so the operator sees the right drop zones.</p>
+            </div>
+            <div class="step-card">
+              <strong>3. Inspect materials</strong>
+              <p>Select <strong>Inspect materials</strong>. Check accepted, rejected, and skipped files before you move forward.</p>
+            </div>
+            <div class="step-card">
+              <strong>4. Answer AI questions</strong>
+              <p>The pack asks only for missing policy choices or operating boundaries that the files do not answer cleanly.</p>
+            </div>
+            <div class="step-card">
+              <strong>5. Generate the draft</strong>
+              <p>Select <strong>Generate draft</strong>. The draft appears under <code>05_DRAFTS/&lt;day&gt;</code> for review.</p>
+            </div>
+            <div class="step-card">
+              <strong>6. Review the draft</strong>
+              <p>Check names, dates, quantities, owners, deadlines, missing evidence, and anything that could create a business promise or compliance error.</p>
+            </div>
+            <div class="step-card">
+              <strong>7. Approve with PIN</strong>
+              <p>The named approver enters the stored name and PIN. The approved file moves to <code>06_APPROVED_OUTPUTS/&lt;day&gt;</code> and the audit trail updates locally.</p>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Pack</th>
+                  <th>Typical AI questions</th>
+                  <th>What the human must answer carefully</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Handover and Deadline Review</td>
+                  <td>What counts as high-risk delay? Which owner takes unresolved items today?</td>
+                  <td>Any customer-visible deadline change, escalation rule, or exception approval</td>
+                </tr>
+                <tr>
+                  <td>Employee Lifecycle Checklist</td>
+                  <td>Which checklist items must be complete the same day? Which steps require manager confirmation?</td>
+                  <td>HR exceptions, payroll effect, access enable or disable decision</td>
+                </tr>
+                <tr>
+                  <td>Contract and Application Completeness</td>
+                  <td>What fields are mandatory? What is the cutoff for “complete enough for review”?</td>
+                  <td>Legal interpretation, acceptance, filing, or signature decision</td>
+                </tr>
+                <tr>
+                  <td>Quote Comparison and Pre-Purchase Review</td>
+                  <td>What is the approval threshold? Which missing detail blocks purchase review?</td>
+                  <td>Supplier selection, purchase decision, price exception, commitment</td>
+                </tr>
+                <tr>
+                  <td>Compliance and License Deadline Tracking</td>
+                  <td>How many days before deadline counts as urgent? Which licenses must escalate same day?</td>
+                  <td>Renewal approval, external filing, compliance sign-off, legal escalation</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="reuse">
+        <div class="section-shell">
+          <h2>6. Reuse the pack the next day</h2>
+          <div class="card-grid">
+            <div class="card">
+              <strong>Prepare next day</strong>
+              <p>After approval, use the UI to prepare the next day. Confirm the suggested date before the new folder is created.</p>
+            </div>
+            <div class="card">
+              <strong>Reuse the approved example</strong>
+              <p>The latest approved output can be reused as a trusted style and structure reference for the next run.</p>
+            </div>
+            <div class="card">
+              <strong>Keep inputs clean</strong>
+              <p>Put only the new day’s files into the next <code>03_CURRENT_INPUTS/&lt;day&gt;</code> folder. Do not mix days.</p>
+            </div>
+          </div>
+          <div class="callout callout-info">
+            <strong>How trusted prior outputs are protected</strong>
+            <p>The reused example must come from an approved local output in the same workspace. Its recorded hash is checked again before the next draft run. A changed or substituted file is rejected instead of silently reused.</p>
+          </div>
+          <div class="callout callout-danger">
+            <strong>What reuse does not mean</strong>
+            <p>Reuse is not permanent model training. It is a bounded reference to an approved local example inside the next isolated run. The new day still depends on the new day’s files.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="troubleshooting">
+        <div class="section-shell">
+          <h2>7. Troubleshooting</h2>
+          <div class="faq-list">
+            <details>
+              <summary>Codex is not ready</summary>
+              <p>Run <code>codex login status</code>. Finish the local login first. Do not paste an API key into the browser or this workflow.</p>
+            </details>
+            <details>
+              <summary>The UI opens but the pack is not usable</summary>
+              <p>Refresh the workspace list, confirm the first day format is <code>YYYY-MM-DD</code>, and confirm that the workspace was created under the root you served.</p>
+            </details>
+            <details>
+              <summary>Files were rejected or skipped</summary>
+              <p>Check the extension, corruption, and actual placement. Put current files in <code>03_CURRENT_INPUTS/&lt;day&gt;</code>, not in a parent folder.</p>
+            </details>
+            <details>
+              <summary>The draft is thin or misses facts</summary>
+              <p>Add the missing current file or reference document, inspect again, answer the follow-up questions, and regenerate. Do not approve a draft that guesses.</p>
+            </details>
+            <details>
+              <summary>The approver cannot approve</summary>
+              <p>Confirm the approver name and PIN match the workspace setup. Approval is local to this workspace and this device.</p>
+            </details>
+            <details>
+              <summary>The next day does not show the right prior example</summary>
+              <p>Confirm the current day is approved and the approved file has not changed after approval. The next run will reject a tampered example.</p>
+            </details>
+            <details>
+              <summary>The run stopped halfway</summary>
+              <p>Refresh the workspace state first. If manual recovery is required, inspect <code>00_START_HERE/workspace_status.json</code>, <code>.system/workspace.json</code>, the current cycle state file, unfinished runs, and <code>07_AUDIT/audit.jsonl</code>.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      <section id="safety">
+        <div class="section-shell">
+          <h2>8. Safety boundaries</h2>
+          <div class="boundary-grid">
+            <div class="boundary-card">
+              <strong>Codex may</strong>
+              <p>Read supported local files, organize facts, ask for missing policy choices, produce a local draft, and reference a trusted prior approved output.</p>
+            </div>
+            <div class="boundary-card">
+              <strong>Codex may not</strong>
+              <p>Send email, update Gmail, message vendors, change deadlines in production systems, alter HR records, submit compliance filings, pay invoices, or approve its own output.</p>
+            </div>
+            <div class="boundary-card">
+              <strong>The human must</strong>
+              <p>Choose the correct files, answer the business questions, verify the draft, enter the approval PIN, and decide what happens outside the local workspace.</p>
+            </div>
+          </div>
+          <div class="callout callout-danger">
+            <strong>Explicit scope line</strong>
+            <p>Gmail and email automation are out of scope for this manual and will be a separate project. Do not sell or describe these packs as inbox automation.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="delivery">
+        <div class="section-shell">
+          <h2>9. Deliver it as a bounded side business</h2>
+          <div class="step-grid">
+            <div class="step-card">
+              <strong>1. Sell one pack</strong>
+              <p>Pick one pack with obvious inputs, one clear approver, and one measurable review bottleneck.</p>
+            </div>
+            <div class="step-card">
+              <strong>2. Use sanitized samples</strong>
+              <p>Ask for masked or approved examples first. Build the demonstration with safe local data.</p>
+            </div>
+            <div class="step-card">
+              <strong>3. Show the boundary</strong>
+              <p>Explain exactly where AI stops: draft, checklist, queue, or comparison. The client keeps the final operational action.</p>
+            </div>
+            <div class="step-card">
+              <strong>4. Measure the boring work</strong>
+              <p>Track review minutes saved, missing-item rate, corrections per draft, and approval cycle time.</p>
+            </div>
+            <div class="step-card">
+              <strong>5. Keep Gmail separate</strong>
+              <p>If the client later wants inbox automation, proposal sending, or follow-up emails, scope that as a separate project with separate controls.</p>
+            </div>
+          </div>
+          <div class="callout callout-warn">
+            <strong>Do not promise</strong>
+            <p>Do not promise fully autonomous back office operation, automatic legal compliance, automatic HR completion, automatic purchasing, or automatic email handling. Promise a local review loop with a visible approval boundary.</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <div class="section-shell">
+          <h2>10. Related links</h2>
+          <ul>
+            <li><a href="../README.md">Project README</a></li>
+            <li><a href="../START_WITH_CODEX.md">Start With Codex</a></li>
+            <li><a href="INDEX.md">Documentation index</a></li>
+            <li><a href="office-workspace.html">Monthly operator workspace manual</a></li>
+            <li><a href="daily-workflows.html">Daily workflow manual</a></li>
+            <li><a href="work-relief-workflows.ja.html">Japanese manual</a></li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </main>
+  <footer class="site-footer">
+    <div class="footer-inner">
+      Work relief packs create local drafts, review queues, and approval records. They are designed to reduce repetitive coordination work without hiding where human responsibility begins and ends.
+    </div>
+  </footer>
+</body>
+</html>

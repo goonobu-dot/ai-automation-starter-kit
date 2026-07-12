@@ -24,6 +24,19 @@ EXPECTED_PACK_ORDER = [
     "invoice-order-check-daily",
     "internal-requests-daily",
     "executive-digest-daily",
+    "handover-deadline-daily",
+    "employee-lifecycle-daily",
+    "contract-intake-daily",
+    "quote-comparison-daily",
+    "compliance-deadline-daily",
+]
+
+EMAIL_FREE_DAILY_PACKS = [
+    "handover-deadline-daily",
+    "employee-lifecycle-daily",
+    "contract-intake-daily",
+    "quote-comparison-daily",
+    "compliance-deadline-daily",
 ]
 
 EXPECTED_PERIOD_TYPES = {
@@ -38,6 +51,11 @@ EXPECTED_PERIOD_TYPES = {
     "invoice-order-check-daily": "day",
     "internal-requests-daily": "day",
     "executive-digest-daily": "day",
+    "handover-deadline-daily": "day",
+    "employee-lifecycle-daily": "day",
+    "contract-intake-daily": "day",
+    "quote-comparison-daily": "day",
+    "compliance-deadline-daily": "day",
 }
 
 
@@ -145,6 +163,11 @@ def test_list_bundled_packs_returns_manifest_order_and_deep_copies():
     assert refreshed[0]["display_name"]["ja"] == "月報作成"
 
 
+def test_new_daily_packs_follow_executive_digest_in_exact_order():
+    start = EXPECTED_PACK_ORDER.index("executive-digest-daily") + 1
+    assert EXPECTED_PACK_ORDER[start:] == EMAIL_FREE_DAILY_PACKS
+
+
 @pytest.mark.parametrize("pack_id", EXPECTED_PACK_ORDER)
 def test_output_schema_is_draft_only_and_closed(pack_id):
     schema = load_bundled_output_schema(pack_id)
@@ -232,3 +255,18 @@ def test_manifest_hash_matches_bundled_pack_bytes():
         assert entry["pack_sha256"] == hashlib.sha256(pack_bytes).hexdigest()
         assert entry["output_schema_sha256"] == hashlib.sha256(schema_bytes).hexdigest()
         assert entry["prompt_template_sha256"] == hashlib.sha256(prompt_bytes).hexdigest()
+
+
+@pytest.mark.parametrize("pack_id", EMAIL_FREE_DAILY_PACKS)
+def test_new_daily_pack_and_prompt_content_do_not_reference_email_or_gmail(pack_id):
+    manifest_path = resources.files("ai_automation_kit").joinpath("packs", "manifest.json")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    entry = manifest[pack_id]
+
+    pack_text = resources.files("ai_automation_kit").joinpath("packs", entry["pack_file"]).read_text(encoding="utf-8")
+    prompt_text = resources.files("ai_automation_kit").joinpath("packs", entry["prompt_template_file"]).read_text(encoding="utf-8")
+
+    combined = (pack_text + "\n" + prompt_text).lower()
+
+    assert "email" not in combined
+    assert "gmail" not in combined
