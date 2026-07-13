@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Autopilot readiness design (2026-07)
+
+- Added a human-first Japanese design and an English technical design for assessing whether any of the 22 office packs can progress from assisted drafting to shadow mode, conditional automation, or an evidence-backed `not_ready` decision.
+- Defined hard readiness gates, one-question-at-a-time discovery, rule confirmation, gap remediation, shadow comparison, honest refusal, generated delivery artifacts, and a separate trust boundary for any future external-action runtime.
+
 ### Control workflow manuals and research (2026-07)
 
 - Added `docs/control-workflows.ja.html` and `docs/control-workflows.html`: separate Japanese and English beginner manuals for six daily control packs: `spreadsheet-reconciliation-daily`, `policy-change-impact-daily`, `quality-incident-capa-daily`, `vendor-onboarding-daily`, `access-review-daily`, and `grant-packet-daily`.

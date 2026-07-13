@@ -47,6 +47,7 @@
 | [実行ブリッジ](EXECUTION_BRIDGES.ja.md) | [Execution Bridges](EXECUTION_BRIDGES.md) | n8n等の実行基盤への橋渡し / Bridges to runtimes |
 | [業務自動化 拡充機能ガイド](AUTOMATION_EXPANSION_GUIDE.ja.md) | [Automation Expansion Guide](AUTOMATION_EXPANSION_GUIDE.md) | command-center等の応用機能 / Advanced packs |
 | [AIエージェント Grill Me スキル](AI_AGENT_GRILL_ME_SKILL.ja.md) | [AI Agent Grill Me Skill](AI_AGENT_GRILL_ME_SKILL.md) | AIに1問ずつ質問させるスキル / One-question-at-a-time skill |
+| [完全自動化の適格性診断設計](AUTOPILOT_READINESS_DESIGN.ja.md) | [Autopilot Readiness Builder Technical Design](superpowers/specs/2026-07-13-autopilot-readiness-builder-design.md) | 自動化できる条件、解決ロードマップ、無理と判断する基準 / Readiness gates, remediation, and honest refusal |
 
 ## ☁️ クラウド / Cloud
 
