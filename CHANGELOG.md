@@ -6,6 +6,7 @@
 
 - Added a human-first Japanese design and an English technical design for assessing whether any of the 22 office packs can progress from assisted drafting to shadow mode, conditional automation, or an evidence-backed `not_ready` decision.
 - Defined hard readiness gates, one-question-at-a-time discovery, rule confirmation, gap remediation, shadow comparison, honest refusal, generated delivery artifacts, and a separate trust boundary for any future external-action runtime.
+- Added a complete human-first English design with the same readiness levels, refusal rules, shadow-test minimums, decision expiration, and current-product approval boundaries as the Japanese design.
 
 ### Control workflow manuals and research (2026-07)
 

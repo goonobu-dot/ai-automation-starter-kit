@@ -1194,6 +1194,36 @@ def test_control_workflow_release_links_and_research_are_public():
     assert "email" in research.lower()
 
 
+def test_autopilot_readiness_design_is_human_first_and_bilingual():
+    ja_path = Path("docs/AUTOPILOT_READINESS_DESIGN.ja.md")
+    en_path = Path("docs/AUTOPILOT_READINESS_DESIGN.md")
+    technical_path = Path("docs/superpowers/specs/2026-07-13-autopilot-readiness-builder-design.md")
+
+    ja = ja_path.read_text(encoding="utf-8")
+    en = en_path.read_text(encoding="utf-8")
+    technical = technical_path.read_text(encoding="utf-8")
+
+    assert len(ja) > 6000
+    assert len(en) > 10000
+    assert len(technical) > 12000
+    for snippet in ["一問ずつ聞く", "自動化不可", "監視運転の最低基準", "判定失効", "22パック"]:
+        assert snippet in ja
+    for snippet in [
+        "Ask one primary question at a time",
+        "L0: Not ready",
+        "Minimum shadow-test contract",
+        "Decision expiration",
+        "Applying it to all 22 packs",
+    ]:
+        assert snippet in en
+    assert not re.search(r"[\u3040-\u30ff\u4e00-\u9fff]", en)
+
+    for path in ["README.md", "docs/INDEX.md"]:
+        text = Path(path).read_text(encoding="utf-8")
+        assert "AUTOPILOT_READINESS_DESIGN.ja.md" in text
+        assert "AUTOPILOT_READINESS_DESIGN.md" in text
+
+
 def test_office_workspace_manuals_define_mobile_overflow_contracts():
     for path in ["docs/office-workspace.html", "docs/office-workspace.ja.html"]:
         text = Path(path).read_text(encoding="utf-8")

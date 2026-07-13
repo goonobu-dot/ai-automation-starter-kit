@@ -8,6 +8,8 @@ Control workflow packs: [日本語の手順書](docs/control-workflows.ja.html) 
 
 Research basis: [Office control automation research snapshot](docs/research/OFFICE_CONTROL_AUTOMATION_RESEARCH_2026-07.md)
 
+Autopilot readiness design: [日本語](docs/AUTOPILOT_READINESS_DESIGN.ja.md) | [English](docs/AUTOPILOT_READINESS_DESIGN.md)
+
 AI Automation Starter Kit is a GitHub-data-driven AI agent skill kit for people who want to propose and deliver small, safe business automation projects — especially beginners selling automation to small and medium companies. One command generates client-ready artifacts: demos, discovery questions, proposals, pricing menus, dry-run flow projects, and delivery checklists. Nothing is sent externally: every risky action stays behind a human approval step.
 
 ## 日本語の方へ：3ステップで始める
