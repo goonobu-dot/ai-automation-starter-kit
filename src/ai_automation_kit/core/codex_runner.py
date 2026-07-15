@@ -996,16 +996,25 @@ def _remove_launch_marker(root: Path, run_id: str) -> None:
 
 
 def _capture_process_identity(pid: int) -> Dict:
-    process_group_id = os.getpgid(pid)
-    session_id = os.getsid(pid)
+    try:
+        process_group_id = os.getpgid(pid)
+        session_id = os.getsid(pid)
+    except ProcessLookupError as error:
+        raise RuntimeError("Codex process exited before its identity could be captured") from error
     if process_group_id != pid or session_id != pid:
         raise RuntimeError("Codex process did not start in its own session and process group")
-    start_token = _process_start_token(pid)
+    try:
+        start_token = _process_start_token(pid)
+    except (FileNotFoundError, ProcessLookupError) as error:
+        raise RuntimeError("Codex process exited before its identity could be captured") from error
     executable_identity = None
     stable_observations = 0
     deadline = time.time() + 0.5
     while time.time() < deadline:
-        observed = _process_executable_identity(pid)
+        try:
+            observed = _process_executable_identity(pid)
+        except (FileNotFoundError, ProcessLookupError) as error:
+            raise RuntimeError("Codex process exited before its identity could be captured") from error
         if observed == executable_identity:
             stable_observations += 1
         else:

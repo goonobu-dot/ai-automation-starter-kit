@@ -570,7 +570,7 @@ def test_valid_staged_output_is_quarantined_when_prompt_delivery_fails(fake_code
     from ai_automation_kit.core import codex_runner
 
     monthly_workspace = create_ready_workspace(tmp_path, extra_current_files=60)
-    fake_codex.configure(close_stdin_immediately=True)
+    fake_codex.configure(close_stdin_immediately=True, sleep_seconds=0.2)
     monkeypatch.setattr(
         codex_runner,
         "_before_prompt_writer",
@@ -584,6 +584,22 @@ def test_valid_staged_output_is_quarantined_when_prompt_delivery_fails(fake_code
     assert completed["error_code"] == "prompt_delivery_failed"
     assert completed["prompt_delivered"] is False
     assert not any((monthly_workspace / "05_DRAFTS" / "2026-07").glob("*.md"))
+    assert not (monthly_workspace / ".system" / RUN_LOCK_NAME).exists()
+    period = json.loads(
+        (monthly_workspace / ".system" / "periods" / "2026-07" / "state.json").read_text(encoding="utf-8")
+    )
+    assert period["stage"] == "ready_for_run"
+
+
+def test_process_exit_before_identity_capture_fails_cleanly(fake_codex, monthly_workspace, monkeypatch):
+    from ai_automation_kit.core import codex_runner
+
+    fake_codex.configure(close_stdin_immediately=True, skip_output_write=True)
+    monkeypatch.setattr(codex_runner, "_after_popen", lambda process: process.wait(timeout=5))
+
+    with pytest.raises(RuntimeError, match="exited before its identity could be captured"):
+        start_codex_run(monthly_workspace, "2026-07", executable=str(fake_codex.path))
+
     assert not (monthly_workspace / ".system" / RUN_LOCK_NAME).exists()
     period = json.loads(
         (monthly_workspace / ".system" / "periods" / "2026-07" / "state.json").read_text(encoding="utf-8")
