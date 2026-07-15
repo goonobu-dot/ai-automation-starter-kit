@@ -6,6 +6,7 @@ import json
 import os
 import shutil
 import sys
+import webbrowser
 from pathlib import Path
 
 from ai_automation_kit import __version__
@@ -44,6 +45,7 @@ from ai_automation_kit.core.offer_pack import generate_offer_pack
 from ai_automation_kit.core.operator_console import generate_client_report
 from ai_automation_kit.core.operator_console import generate_cloud_plan
 from ai_automation_kit.core.operator_console import generate_complete_workspace
+from ai_automation_kit.core.operator_console import generate_first_project_workspace
 from ai_automation_kit.core.operator_console import generate_connector_doctor
 from ai_automation_kit.core.operator_console import generate_demo_site
 from ai_automation_kit.core.operator_console import generate_flow_guide
@@ -58,6 +60,16 @@ from ai_automation_kit.core.operator_console import generate_recommended_flow_fr
 from ai_automation_kit.core.operator_console import generate_share_check
 from ai_automation_kit.core.operator_console import generate_website_side_hustle_pack
 from ai_automation_kit.core.operator_console import package_client_demo
+from ai_automation_kit.core.manual_studio import build_manual_with_codex
+from ai_automation_kit.core.manual_studio import answer_manual_question
+from ai_automation_kit.core.manual_studio import approve_manual
+from ai_automation_kit.core.manual_studio import create_manual_studio
+from ai_automation_kit.core.manual_studio import load_manual_question_status
+from ai_automation_kit.core.manual_studio import load_manual_studio_status
+from ai_automation_kit.core.manual_studio import prepare_manual_completion
+from ai_automation_kit.core.manual_studio import prepare_manual_recordings
+from ai_automation_kit.core.manual_studio import transcribe_manual_recordings
+from ai_automation_kit.core.manual_studio_frame_picker import run_manual_frame_picker_server
 from ai_automation_kit.core.report_automation import generate_report_automation_pack
 from ai_automation_kit.core.report_wizard import answer_current_question
 from ai_automation_kit.core.report_wizard import approve_report
@@ -139,6 +151,16 @@ def build_parser() -> argparse.ArgumentParser:
     quickstart.add_argument("--client-type", default="local-business")
     quickstart.add_argument("--niche", default="accounting")
     quickstart.add_argument("--output", required=True)
+
+    start = subparsers.add_parser("start", help="Create one safe, working beginner project with no required options.")
+    start.add_argument("--flow-id")
+    start.add_argument("--industry", default="finance")
+    start.add_argument("--client-type", default="local-business")
+    start.add_argument("--niche", default="accounting")
+    start.add_argument("--approver", default="local-operator")
+    start.add_argument("--language", choices=["ja", "en"], default="ja")
+    start.add_argument("--output", default="my-first-automation")
+    start.add_argument("--open", dest="open_browser", action="store_true")
 
     demo_site = subparsers.add_parser("demo-site")
     demo_site.add_argument("--source", required=True)
@@ -351,6 +373,77 @@ def build_parser() -> argparse.ArgumentParser:
     report_wizard_serve.add_argument("--port", type=int, default=0)
     report_wizard_serve.add_argument("--no-open", action="store_true")
 
+    proof_lab = subparsers.add_parser("autopilot-proof-lab")
+    proof_lab_subparsers = proof_lab.add_subparsers(dest="proof_lab_command", required=True)
+
+    proof_lab_init = proof_lab_subparsers.add_parser("init")
+    proof_lab_init.add_argument("--workspace", required=True)
+    proof_lab_init.add_argument("--pack-id", required=True)
+    proof_lab_init.add_argument("--organization", required=True)
+    proof_lab_init.add_argument("--objective", required=True)
+    proof_lab_init.add_argument("--requested-level", default="L3", choices=["L1", "L2", "L3", "L4"])
+    proof_lab_init.add_argument("--language", default="ja", choices=["ja", "en"])
+
+    proof_lab_evidence = proof_lab_subparsers.add_parser("add-evidence")
+    proof_lab_evidence.add_argument("--workspace", required=True)
+    proof_lab_evidence.add_argument("--source", required=True)
+    proof_lab_evidence.add_argument("--role", required=True)
+    proof_lab_evidence.add_argument("--classification", default="internal")
+    proof_lab_evidence.add_argument("--provided-by", required=True)
+
+    proof_lab_case = proof_lab_subparsers.add_parser("add-case")
+    proof_lab_case.add_argument("--workspace", required=True)
+    proof_lab_case.add_argument("--case-id", required=True)
+    proof_lab_case.add_argument("--input", required=True)
+    proof_lab_case.add_argument("--expected", required=True)
+    proof_lab_case.add_argument("--proposed", required=True)
+    proof_lab_case.add_argument("--risk-tier", required=True, choices=["low", "medium", "high", "critical"])
+    proof_lab_case.add_argument(
+        "--case-class",
+        required=True,
+        choices=[
+            "normal",
+            "near_limit",
+            "missing_data",
+            "duplicate",
+            "conflicting",
+            "expired",
+            "external_failure",
+        ],
+    )
+    proof_lab_case.add_argument("--expected-route", required=True, choices=["standard", "quarantine"])
+    proof_lab_case.add_argument("--proposed-route", required=True, choices=["standard", "quarantine"])
+    proof_lab_case.add_argument("--exception-expected", action="store_true")
+    proof_lab_case.add_argument("--exception-detected", action="store_true")
+    proof_lab_case.add_argument("--recovery-tested", action="store_true")
+    proof_lab_case.add_argument("--recovery-passed", action="store_true")
+    proof_lab_case.add_argument("--unsupported-claims", type=int, default=0)
+    proof_lab_case.add_argument("--duplicate-action-simulations", type=int, default=0)
+    proof_lab_case.add_argument("--elapsed-seconds", type=float, default=0.0)
+    proof_lab_case.add_argument("--estimated-cost", type=float, default=0.0)
+    proof_lab_case.add_argument("--correction-category", default="")
+
+    proof_lab_gate = proof_lab_subparsers.add_parser("set-gate")
+    proof_lab_gate.add_argument("--workspace", required=True)
+    proof_lab_gate.add_argument("--gate", required=True)
+    proof_lab_gate.add_argument("--status", required=True, choices=["pass", "fail", "unknown"])
+    proof_lab_gate.add_argument("--owner", required=True)
+    proof_lab_gate.add_argument("--evidence-id", action="append", default=[])
+    proof_lab_gate.add_argument("--note", default="")
+
+    proof_lab_evaluate = proof_lab_subparsers.add_parser("evaluate")
+    proof_lab_evaluate.add_argument("--workspace", required=True)
+
+    proof_lab_status = proof_lab_subparsers.add_parser("status")
+    proof_lab_status.add_argument("--workspace", required=True)
+    proof_lab_status.add_argument("--json", action="store_true")
+
+    proof_lab_serve = proof_lab_subparsers.add_parser("serve")
+    proof_lab_serve.add_argument("--workspace", required=True)
+    proof_lab_serve.add_argument("--language", default="ja", choices=["ja", "en"])
+    proof_lab_serve.add_argument("--port", type=int, default=0)
+    proof_lab_serve.add_argument("--no-open", action="store_true")
+
     office_workspace = subparsers.add_parser("office-workspace")
     office_workspace_subparsers = office_workspace.add_subparsers(dest="office_workspace_command", required=True)
 
@@ -379,6 +472,66 @@ def build_parser() -> argparse.ArgumentParser:
     office_workspace_serve.add_argument("--language", default="ja", choices=["ja", "en"])
     office_workspace_serve.add_argument("--port", type=int, default=0)
     office_workspace_serve.add_argument("--no-open", action="store_true")
+
+    manual_studio = subparsers.add_parser("manual-studio")
+    manual_studio_subparsers = manual_studio.add_subparsers(dest="manual_studio_command", required=True)
+
+    manual_studio_create = manual_studio_subparsers.add_parser("create")
+    manual_studio_create.add_argument("--output", required=True)
+    manual_studio_create.add_argument("--name", required=True)
+    manual_studio_create.add_argument("--language", default="ja", choices=["ja", "en"])
+
+    manual_studio_prepare = manual_studio_subparsers.add_parser("prepare")
+    manual_studio_prepare.add_argument("--workspace", required=True)
+    manual_studio_prepare.add_argument("--transcribe", action="store_true")
+    manual_studio_prepare.add_argument(
+        "--transcription-model", default="small", choices=["tiny", "base", "small"]
+    )
+    manual_studio_prepare.add_argument("--whisper-model-path")
+    manual_studio_prepare.add_argument("--transcription-language", choices=["auto", "ja", "en"])
+
+    manual_studio_build = manual_studio_subparsers.add_parser("build")
+    manual_studio_build.add_argument("--workspace", required=True)
+    manual_studio_build.add_argument("--title", required=True)
+    manual_studio_build.add_argument("--timeout", type=int, default=600)
+    manual_studio_build.add_argument("--open", dest="open_browser", action="store_true")
+
+    manual_studio_images = manual_studio_subparsers.add_parser("images")
+    manual_studio_images.add_argument("--workspace", required=True)
+    manual_studio_images.add_argument("--port", type=int, default=0)
+    manual_studio_images.add_argument("--no-open", dest="open_browser", action="store_false")
+    manual_studio_images.set_defaults(open_browser=True)
+
+    manual_studio_questions = manual_studio_subparsers.add_parser("questions")
+    manual_studio_questions.add_argument("--workspace", required=True)
+    manual_studio_questions.add_argument("--json", dest="as_json", action="store_true")
+
+    manual_studio_answer = manual_studio_subparsers.add_parser("answer")
+    manual_studio_answer.add_argument("--workspace", required=True)
+    manual_studio_answer.add_argument("--question-id")
+    manual_studio_answer_mode = manual_studio_answer.add_mutually_exclusive_group(required=True)
+    manual_studio_answer_mode.add_argument("--answer")
+    manual_studio_answer_mode.add_argument("--defer", action="store_true")
+    manual_studio_answer.add_argument(
+        "--source-kind", default="operator", choices=["operator", "document", "recording", "other"]
+    )
+    manual_studio_answer.add_argument("--source", required=True)
+    manual_studio_answer.add_argument("--answered-by", required=True)
+
+    manual_studio_complete = manual_studio_subparsers.add_parser("complete")
+    manual_studio_complete.add_argument("--workspace", required=True)
+    manual_studio_complete.add_argument("--title", required=True)
+    manual_studio_complete.add_argument("--timeout", type=int, default=600)
+    manual_studio_complete.add_argument("--open", dest="open_browser", action="store_true")
+
+    manual_studio_approve = manual_studio_subparsers.add_parser("approve")
+    manual_studio_approve.add_argument("--workspace", required=True)
+    manual_studio_approve.add_argument("--approved-by", required=True)
+    manual_studio_approve.add_argument("--open", dest="open_browser", action="store_true")
+
+    manual_studio_status = manual_studio_subparsers.add_parser("status")
+    manual_studio_status.add_argument("--workspace", required=True)
+    manual_studio_status.add_argument("--json", dest="as_json", action="store_true")
 
     flow_export = subparsers.add_parser("flow-export")
     flow_export.add_argument("--flow-id", required=True)
@@ -727,6 +880,109 @@ def _run_report_wizard_command(args: argparse.Namespace) -> int:
     return 2
 
 
+def _print_proof_lab_state(state: dict, *, as_json: bool = False) -> None:
+    if as_json:
+        print(json.dumps(state, ensure_ascii=False, indent=2))
+        return
+    for key in (
+        "assessment_id",
+        "pack_id",
+        "evidence_id",
+        "case_id",
+        "gate",
+        "status",
+        "stage",
+        "decision",
+        "maximum_level",
+        "next_action",
+    ):
+        value = state.get(key)
+        if value is not None:
+            print(f"{key}={value}")
+    print("external_actions_enabled=false")
+
+
+def _run_autopilot_proof_lab_command(args: argparse.Namespace) -> int:
+    try:
+        module = importlib.import_module("ai_automation_kit.core.autopilot_proof_lab")
+        command = args.proof_lab_command
+        workspace = Path(args.workspace)
+        if command == "init":
+            state = module.create_assessment(
+                workspace,
+                args.pack_id,
+                args.organization,
+                args.objective,
+                requested_level=args.requested_level,
+                language=args.language,
+            )
+        elif command == "add-evidence":
+            state = module.add_evidence(
+                workspace,
+                Path(args.source),
+                args.role,
+                args.classification,
+                args.provided_by,
+            )
+        elif command == "add-case":
+            state = module.add_shadow_case(
+                workspace,
+                args.case_id,
+                Path(args.input),
+                Path(args.expected),
+                Path(args.proposed),
+                args.risk_tier,
+                args.case_class,
+                args.expected_route,
+                args.proposed_route,
+                exception_expected=args.exception_expected,
+                exception_detected=args.exception_detected,
+                recovery_tested=args.recovery_tested,
+                recovery_passed=args.recovery_passed,
+                unsupported_claims=args.unsupported_claims,
+                duplicate_action_simulations=args.duplicate_action_simulations,
+                elapsed_seconds=args.elapsed_seconds,
+                estimated_cost=args.estimated_cost,
+                correction_category=args.correction_category,
+            )
+        elif command == "set-gate":
+            gate_state = module.set_gate(
+                workspace,
+                args.gate,
+                args.status,
+                args.owner,
+                evidence_ids=args.evidence_id,
+                note=args.note,
+            )
+            state = {"gate": args.gate, **gate_state}
+        elif command == "evaluate":
+            state = module.evaluate_assessment(workspace)
+        elif command == "status":
+            state = module.assessment_status(workspace)
+            _print_proof_lab_state(state, as_json=args.json)
+            return 0
+        elif command == "serve":
+            server_module = importlib.import_module("ai_automation_kit.core.autopilot_proof_lab_server")
+            server_module.run_autopilot_proof_lab_server(
+                workspace,
+                args.language,
+                args.port,
+                open_browser=not args.no_open,
+            )
+            return 0
+        else:
+            print("unknown autopilot-proof-lab command", file=sys.stderr)
+            return 2
+    except (ValueError, OSError) as exc:
+        print(str(exc), file=sys.stderr)
+        return 2
+    except (ImportError, AttributeError) as exc:
+        print(str(exc), file=sys.stderr)
+        return 1
+    _print_proof_lab_state(state)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     if argv is None:
         argv = sys.argv[1:]
@@ -735,10 +991,120 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     parser = build_parser()
     args = parser.parse_args(argv)
+    if args.command == "autopilot-proof-lab":
+        return _run_autopilot_proof_lab_command(args)
     if args.command == "report-wizard":
         return _run_report_wizard_command(args)
     if args.command == "office-workspace":
         return _run_office_workspace_command(args)
+    if args.command == "manual-studio":
+        try:
+            if args.manual_studio_command == "create":
+                payload = create_manual_studio(Path(args.output), name=args.name, language=args.language)
+                print(f"status={payload['stage']}")
+                print(f"start_here={Path(args.output) / '00_START_HERE' / 'START_HERE.html'}")
+                print(f"recordings={Path(args.output) / '01_RECORDINGS'}")
+                return 0
+            if args.manual_studio_command == "prepare":
+                if args.transcribe:
+                    transcription = transcribe_manual_recordings(
+                        Path(args.workspace),
+                        model_path=Path(args.whisper_model_path) if args.whisper_model_path else None,
+                        model_name=args.transcription_model,
+                        language=args.transcription_language,
+                    )
+                    print(f"transcripts_generated={transcription['generated']}")
+                    print(f"transcripts_skipped={transcription['skipped']}")
+                payload = prepare_manual_recordings(Path(args.workspace))
+                print(f"status={payload['stage']}")
+                print(f"accepted_videos={payload['accepted_videos']}")
+                print(f"candidate_frames={payload['candidate_frames']}")
+                print(f"manifest={payload['manifest']}")
+                return 0
+            if args.manual_studio_command == "build":
+                payload = build_manual_with_codex(
+                    Path(args.workspace),
+                    title=args.title,
+                    timeout_seconds=args.timeout,
+                    open_browser=args.open_browser,
+                )
+                print(f"status={payload['stage']}")
+                print(f"manual={payload['manual']}")
+                print(f"steps={payload['steps']}")
+                print(f"missing_questions={payload['missing_questions']}")
+                return 0
+            if args.manual_studio_command == "images":
+                return run_manual_frame_picker_server(
+                    Path(args.workspace),
+                    port=args.port,
+                    open_browser=args.open_browser,
+                )
+            if args.manual_studio_command == "questions":
+                payload = load_manual_question_status(Path(args.workspace))
+                if args.as_json:
+                    print(json.dumps(payload, ensure_ascii=False, indent=2))
+                else:
+                    print(f"status={payload['stage']}")
+                    print(f"answered={payload['answered']}")
+                    print(f"pending={payload['pending']}")
+                    print(f"deferred={payload['deferred']}")
+                    if payload["current_question"]:
+                        print(f"question_id={payload['current_question']['question_id']}")
+                        print(f"question={payload['current_question']['question']}")
+                    print(f"guide={payload['guide']}")
+                return 0
+            if args.manual_studio_command == "answer":
+                payload = answer_manual_question(
+                    Path(args.workspace),
+                    question_id=args.question_id,
+                    answer=args.answer,
+                    source_kind=args.source_kind,
+                    source_reference=args.source,
+                    answered_by=args.answered_by,
+                    deferred=args.defer,
+                )
+                print(f"status={payload['stage']}")
+                print(f"answered={payload['answered']}")
+                print(f"pending={payload['pending']}")
+                print(f"deferred={payload['deferred']}")
+                print(f"guide={payload['guide']}")
+                return 0
+            if args.manual_studio_command == "complete":
+                payload = prepare_manual_completion(
+                    Path(args.workspace),
+                    title=args.title,
+                    timeout_seconds=args.timeout,
+                    open_browser=args.open_browser,
+                )
+                print(f"status={payload['stage']}")
+                print(f"missing_questions={payload['missing_questions']}")
+                if payload.get("review"):
+                    print(f"review={payload['review']}")
+                if payload.get("guide"):
+                    print(f"guide={payload['guide']}")
+                return 0
+            if args.manual_studio_command == "approve":
+                payload = approve_manual(
+                    Path(args.workspace), approved_by=args.approved_by, open_browser=args.open_browser
+                )
+                print(f"status={payload['stage']}")
+                print(f"manual={payload['manual']}")
+                print(f"record={payload['record']}")
+                return 0
+            if args.manual_studio_command == "status":
+                payload = load_manual_studio_status(Path(args.workspace))
+                if args.as_json:
+                    print(json.dumps(payload, ensure_ascii=False, indent=2))
+                else:
+                    print(f"status={payload['stage']}")
+                    print(f"name={payload['name']}")
+                    print(f"candidate_frames={payload['candidate_frames']}")
+                return 0
+        except (ValueError, OSError) as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        print("unknown manual-studio command", file=sys.stderr)
+        return 2
     if args.command == "research-agent":
         run = run_research_agent(config_path=args.config, output_dir=args.output)
         print(f"run_id={run.run_id}")
@@ -842,6 +1208,28 @@ def main(argv: list[str] | None = None) -> int:
         print(f"quickstart={args.output}/START_HERE.md")
         print(f"flow_project={payload['flow_project']}")
         print(f"demo_site={payload['demo_site']}")
+        return 0
+    if args.command == "start":
+        try:
+            payload = generate_first_project_workspace(
+                flow_id=args.flow_id,
+                industry=args.industry,
+                client_type=args.client_type,
+                niche=args.niche,
+                approver=args.approver,
+                language=args.language,
+                output=Path(args.output),
+            )
+        except (FileExistsError, KeyError, ValueError) as exc:
+            print(f"start_error={exc}", file=sys.stderr)
+            return 1
+        print(f"start_here={payload['start_here']}")
+        print(f"working_demo={payload['demo_site']}")
+        print(f"ai_next_step={payload['ai_next_step']}")
+        print(f"client_input={payload['client_input']}")
+        print(f"status={payload['status']}")
+        if args.open_browser:
+            webbrowser.open(Path(payload["start_here"]).resolve().as_uri())
         return 0
     if args.command == "demo-site":
         payload = generate_demo_site(source=Path(args.source), output=Path(args.output), title=args.title)

@@ -1,17 +1,23 @@
 from pathlib import Path
 
 
-def test_project_readme_leads_with_japanese_three_step_entrance():
+def test_project_readme_leads_with_one_paste_beginner_entrance():
     text = Path("README.md").read_text()
     assert "AI Automation Starter Kit" in text
     assert "GitHub-data-driven AI agent skill kit" in text
-    # Japanese three-step entrance near the top.
-    assert "日本語の方へ：3ステップで始める" in text
-    assert "ai-automation-kit beginner" in text
+    # One-paste Japanese entrance near the top.
+    assert "日本語の方へ：まず、ダブルクリックだけ" in text
+    assert "python3 scripts/first_start.py --open" in text
+    assert "START_HERE.command" in text
+    assert "START_WITH_AI.ja.txt" in text
+    assert "ai-automation-kit start" in text
+    assert "my-first-automation/START_HERE.html" in text
+    assert "docs/FIRST_PROJECT.ja.html" in text
+    assert "docs/FIRST_PROJECT.html" in text
     assert "docs/GETTING_STARTED.ja.md" in text
     assert "docs/INDEX.md" in text
     assert "最初から全部読まないでください" in text
-    assert "唯一の入口" in text
+    assert "最初の入口" in text
     # The Japanese section must appear before the English quick start.
     assert text.index("日本語の方へ") < text.index("English Quick Start")
     # English quick start.
@@ -64,6 +70,40 @@ def test_project_readme_leads_with_japanese_three_step_entrance():
     # The old giant feature listing must stay retired.
     assert "3-Minute Walkthrough" not in text
     assert len(text) < 25000
+
+
+def test_one_command_start_has_separate_japanese_and_english_browser_guides():
+    japanese = Path("docs/FIRST_PROJECT.ja.html").read_text(encoding="utf-8")
+    english = Path("docs/FIRST_PROJECT.html").read_text(encoding="utf-8")
+
+    assert '<html lang="ja">' in japanese
+    assert "一行を貼り付ける" in japanese
+    assert "ダブルクリック" in japanese
+    assert "START_HERE.command" in japanese
+    assert "START_WITH_AI.ja.txt" in japanese
+    assert "python3 scripts/first_start.py --open" in japanese
+    assert "見本データ" in japanese
+    assert "外部送信しません" in japanese
+    assert "収益を保証" in japanese
+    assert "Paste one line" in english
+    assert "double-click" in english
+    assert "START_HERE_WINDOWS.bat" in english
+    assert "python3 scripts/first_start.py --open --language en" in english
+    assert "sample data" in english
+    assert "does not send anything externally" in english
+    assert "does not guarantee income" in english
+    assert "一行を貼り付ける" not in english
+
+
+def test_project_readme_and_index_link_the_automation_proof_lab():
+    readme = Path("README.md").read_text(encoding="utf-8")
+    index = Path("docs/INDEX.md").read_text(encoding="utf-8")
+
+    assert "docs/AUTOMATION_PROOF_LAB.ja.html" in readme
+    assert "docs/AUTOMATION_PROOF_LAB.html" in readme
+    assert "AUTOMATION_PROOF_LAB.ja.html" in index
+    assert "AUTOMATION_PROOF_LAB.html" in index
+    assert "autopilot-proof-lab" in readme
 
 
 def test_beginner_guides_explain_project_in_english_and_japanese():

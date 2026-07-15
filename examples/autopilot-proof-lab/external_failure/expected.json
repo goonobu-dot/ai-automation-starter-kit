@@ -1,0 +1,10 @@
+{
+  "case_id": "external-failure-001",
+  "route": "quarantine",
+  "decision": "quarantine_external_dependency_failure",
+  "status": "needs_human_review",
+  "severity": "critical",
+  "dependency_reason": "upstream_export_timeout",
+  "notes_en": "Stop and quarantine when a required external export is unavailable.",
+  "notes_ja": "必要な外部エクスポートが使えない場合は停止して隔離します。"
+}

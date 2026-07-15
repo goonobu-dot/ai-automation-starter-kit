@@ -1,0 +1,12 @@
+{
+  "case_id": "normal-001",
+  "route": "standard",
+  "decision": "match_invoice_to_order",
+  "status": "ready_for_human_review",
+  "invoice_id": "INV-1001",
+  "order_id": "PO-2001",
+  "currency": "USD",
+  "amount": 2480.0,
+  "notes_en": "Amounts match and the draft can stay on the standard path.",
+  "notes_ja": "金額一致のため、下書きは標準経路に残せます。"
+}

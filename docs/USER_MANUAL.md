@@ -4,7 +4,7 @@ This is the operating manual for every core command. The primary audience is beg
 
 This is a concise English edition. The Japanese edition ([USER_MANUAL.ja.md](USER_MANUAL.ja.md)) is the full version with real command outputs for every command; both share the same chapter structure.
 
-- New here? Read the Japanese entrance guide [GETTING_STARTED.ja.md](GETTING_STARTED.ja.md), or run the English quick start in the [README](../README.md).
+- New here? Use the [double-click First Project guide](FIRST_PROJECT.html). The longer Japanese route remains in [GETTING_STARTED.ja.md](GETTING_STARTED.ja.md).
 - For the end-to-end sales walkthrough (outreach to invoicing), see the tutorial ([TUTORIAL_SME_PROPOSAL.ja.md](TUTORIAL_SME_PROPOSAL.ja.md), Japanese).
 - Looking for another document? Use the [Documentation Index](INDEX.md). Older documents live in the [archive](archive/README.md).
 
@@ -31,6 +31,18 @@ flowchart TD
 The kit's job ends at drafts and checklists; there is no external send capability at all. Reviewing, approving, and sending are always human steps. That is why a beginner cannot accidentally send anything to a client.
 
 ## 1. Install
+
+The easiest route is to double-click `START_HERE.command` on macOS or `START_HERE_WINDOWS.bat` on Windows. You can also give `START_WITH_AI.txt` to Codex. No API key is required.
+
+If you prefer a terminal, use this one line:
+
+```bash
+git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git && cd ai-automation-starter-kit && python3 scripts/first_start.py --open --language en
+```
+
+If the package is already installed, run `ai-automation-kit start --open --language en`. It creates `my-first-automation/START_HERE.html`, a working sample, a guarded client-input folder, sales assets, and `AI_NEXT_STEP.md`. It never overwrites a non-empty output folder.
+
+The traditional install remains available for people who want every command:
 
 ```bash
 git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git

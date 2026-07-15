@@ -241,6 +241,25 @@ def _run_beginner_sales_smoke(output: Path, env: dict[str, str]) -> None:
 
 
 def _run_operator_console_smoke(output: Path, env: dict[str, str]) -> None:
+    first_project_output = output / "first-project-source-smoke"
+    _run(
+        [
+            sys.executable,
+            "-m",
+            "ai_automation_kit.cli",
+            "start",
+            "--language",
+            "en",
+            "--output",
+            str(first_project_output),
+        ],
+        env=env,
+    )
+    _require_file(first_project_output / "START_HERE.html")
+    _require_file(first_project_output / "AI_NEXT_STEP.md")
+    _require_file(first_project_output / "01_CLIENT_INPUT" / "README.txt")
+    _require_file(first_project_output / "first_project.json")
+
     quickstart_output = output / "quickstart-accounting"
     _run(
         [
@@ -1274,6 +1293,8 @@ def _verify_wheel_install(wheelhouse: Path, output: Path) -> None:
     _run([str(cli_bin), "doctor", "--output", str(output / "installed-doctor")], env=os.environ.copy())
     _run_report_wizard_installed_smoke(cli_bin, python_bin, output)
     _run_office_workspace_installed_smoke(cli_bin, python_bin, output)
+    _run_autopilot_proof_lab_installed_smoke(cli_bin, output)
+    _run_first_project_installed_smoke(cli_bin, output)
 
 
 def _venv_python(venv_dir: Path) -> Path:
@@ -1281,6 +1302,134 @@ def _venv_python(venv_dir: Path) -> Path:
     if posix_python.exists():
         return posix_python
     return venv_dir / "Scripts" / "python.exe"
+
+
+def _run_first_project_installed_smoke(cli_bin: Path, output: Path) -> None:
+    workspace = output / "installed-first-project"
+    _run(
+        [
+            str(cli_bin),
+            "start",
+            "--language",
+            "en",
+            "--output",
+            str(workspace),
+        ],
+        env=_isolated_installed_env(cli_bin),
+    )
+    _require_file(workspace / "START_HERE.html")
+    _require_file(workspace / "AI_NEXT_STEP.md")
+    _require_file(workspace / "01_CLIENT_INPUT" / "README.txt")
+    _require_file(workspace / "first_project.json")
+
+
+def _run_autopilot_proof_lab_installed_smoke(cli_bin: Path, output: Path) -> None:
+    env = _isolated_installed_env(cli_bin)
+    fixture = output / "installed-proof-lab-fixture"
+    fixture.mkdir(parents=True, exist_ok=True)
+    workspace = output / "installed-proof-lab"
+    evidence = fixture / "approved-policy.md"
+    case_input = fixture / "input.json"
+    expected = fixture / "expected.json"
+    proposed = fixture / "proposed.json"
+    evidence.write_text("# Approved policy\nDraft locally and keep human approval.\n", encoding="utf-8")
+    case_input.write_text('{"invoice_id":"INV-001","amount":1200}\n', encoding="utf-8")
+    expected.write_text('{"route":"standard","decision":"draft"}\n', encoding="utf-8")
+    proposed.write_text('{"route":"standard","decision":"draft"}\n', encoding="utf-8")
+
+    commands = [
+        [
+            str(cli_bin),
+            "autopilot-proof-lab",
+            "init",
+            "--workspace",
+            str(workspace),
+            "--pack-id",
+            "invoice-order-check-daily",
+            "--organization",
+            "Release Smoke Co",
+            "--objective",
+            "Verify the installed advisory proof lab",
+            "--requested-level",
+            "L3",
+            "--language",
+            "en",
+        ],
+        [
+            str(cli_bin),
+            "autopilot-proof-lab",
+            "add-evidence",
+            "--workspace",
+            str(workspace),
+            "--source",
+            str(evidence),
+            "--role",
+            "approved_policy",
+            "--classification",
+            "internal",
+            "--provided-by",
+            "Release QA",
+        ],
+        [
+            str(cli_bin),
+            "autopilot-proof-lab",
+            "add-case",
+            "--workspace",
+            str(workspace),
+            "--case-id",
+            "normal-001",
+            "--input",
+            str(case_input),
+            "--expected",
+            str(expected),
+            "--proposed",
+            str(proposed),
+            "--risk-tier",
+            "low",
+            "--case-class",
+            "normal",
+            "--expected-route",
+            "standard",
+            "--proposed-route",
+            "standard",
+        ],
+        [str(cli_bin), "autopilot-proof-lab", "evaluate", "--workspace", str(workspace)],
+    ]
+    for command in commands:
+        _run(command, env=env, cwd=output)
+
+    status = json.loads(
+        _run_capture(
+            [str(cli_bin), "autopilot-proof-lab", "status", "--workspace", str(workspace), "--json"],
+            env=env,
+            cwd=output,
+        ).stdout
+    )
+    if not str(status.get("assessment_id", "")).startswith("asmt_"):
+        raise RuntimeError(f"installed proof lab did not return an assessment id: {status}")
+    if status.get("decision") not in {"not_ready", "assist_only"}:
+        raise RuntimeError(f"installed proof lab returned an unsafe sample decision: {status}")
+    if status.get("external_actions_activated") is not False or status.get("advisory_only") is not True:
+        raise RuntimeError(f"installed proof lab crossed its advisory boundary: {status}")
+
+    reports = workspace / "05_REPORTS"
+    for name in (
+        "current_workflow.md",
+        "automation_scope.md",
+        "source_inventory.csv",
+        "decision_table.csv",
+        "exception_register.csv",
+        "connector_permissions.md",
+        "recovery_plan.md",
+        "kill_switch_plan.md",
+        "shadow_test_cases.csv",
+        "comparison_report.md",
+        "readiness_decision.json",
+        "readiness_report.html",
+        "improvement_roadmap.md",
+        "proposal_scope.md",
+    ):
+        _require_file(reports / name)
 
 
 def _venv_console_script(venv_dir: Path, name: str) -> Path:

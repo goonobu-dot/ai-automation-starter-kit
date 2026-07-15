@@ -1,0 +1,13 @@
+{
+  "amount": 4995.0,
+  "case_id": "near-limit-001",
+  "currency": "USD",
+  "decision": "match_invoice_to_order",
+  "invoice_id": "INV-1002",
+  "notes_en": "Edge case remains on the standard path because the amount stays within the approved sample rule.",
+  "notes_ja": "金額が承認済みサンプルルール内のため、境界ケースでも標準経路です。",
+  "order_id": "PO-2002",
+  "route": "standard",
+  "status": "ready_for_human_review",
+  "threshold_used": 5000.0
+}

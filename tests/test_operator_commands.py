@@ -1,6 +1,9 @@
 import json
 import zipfile
 
+import pytest
+
+import ai_automation_kit.cli as cli_module
 from ai_automation_kit.cli import build_parser
 from ai_automation_kit.cli import main
 from ai_automation_kit.core.operator_console import generate_client_report
@@ -10,6 +13,7 @@ from ai_automation_kit.core.operator_console import generate_flow_guide
 from ai_automation_kit.core.operator_console import generate_install_bundle
 from ai_automation_kit.core.operator_console import generate_business_launch_pack
 from ai_automation_kit.core.operator_console import generate_complete_workspace
+from ai_automation_kit.core.operator_console import generate_first_project_workspace
 from ai_automation_kit.core.operator_console import generate_opportunity_catalog
 from ai_automation_kit.core.operator_console import generate_quickstart_workspace
 from ai_automation_kit.core.operator_console import generate_recommended_flow_from_intake
@@ -236,6 +240,89 @@ def test_generate_complete_workspace_creates_done_for_you_delivery(tmp_path):
     assert "Before / After Demo" in (output / "before_after_demo.html").read_text()
     assert "Starter 10" in (output / "side_business_starter_10.md").read_text()
     assert "企業向け自動化導入" in (output / "business_launch" / "first_client_offer.md").read_text()
+
+
+def test_generate_first_project_workspace_creates_one_entrance_for_beginner(tmp_path):
+    output = tmp_path / "my-first-automation"
+
+    payload = generate_first_project_workspace(
+        flow_id="invoice-document-followup",
+        industry="finance",
+        client_type="local-business",
+        niche="accounting",
+        approver="local-operator",
+        language="ja",
+        output=output,
+    )
+
+    assert payload["status"] == "ready_to_try"
+    assert payload["safe_mode"] == "local_dry_run"
+    assert payload["external_actions"] == "blocked"
+    assert (output / "START_HERE.html").exists()
+    assert (output / "AI_NEXT_STEP.md").exists()
+    assert (output / "01_CLIENT_INPUT" / "README.txt").exists()
+    assert (output / "first_project.json").exists()
+    assert (output / "client_command_center.html").exists()
+    assert (output / "quickstart" / "flow_project" / "automation_output" / "run_log.json").exists()
+
+    start = (output / "START_HERE.html").read_text()
+    assert '<html lang="ja">' in start
+    assert "まず、この見本を見る" in start
+    assert "顧客データはまだ入れない" in start
+    assert "副業の最初の一件" in start
+    assert "次はこれだけ" in start
+    assert "AI_NEXT_STEP.md をCodexへドラッグ" in start
+    assert "client_command_center.html" in start
+    assert "AI_NEXT_STEP.md" in start
+
+
+def test_generate_first_project_workspace_refuses_to_overwrite_existing_files(tmp_path):
+    output = tmp_path / "existing"
+    output.mkdir()
+    marker = output / "keep.txt"
+    marker.write_text("do not replace")
+
+    with pytest.raises(FileExistsError, match="not empty"):
+        generate_first_project_workspace(
+            flow_id=None,
+            industry="finance",
+            client_type="local-business",
+            niche="accounting",
+            approver="local-operator",
+            language="en",
+            output=output,
+        )
+
+    assert marker.read_text() == "do not replace"
+
+
+def test_generate_first_project_workspace_refuses_file_output_and_unknown_industry(tmp_path):
+    output_file = tmp_path / "already-a-file"
+    output_file.write_text("keep me")
+
+    with pytest.raises(FileExistsError, match="not a directory"):
+        generate_first_project_workspace(
+            flow_id=None,
+            industry="finance",
+            client_type="local-business",
+            niche="accounting",
+            approver="local-operator",
+            language="ja",
+            output=output_file,
+        )
+
+    with pytest.raises(ValueError, match="No automation flow"):
+        generate_first_project_workspace(
+            flow_id=None,
+            industry="not-a-real-industry",
+            client_type="local-business",
+            niche="accounting",
+            approver="local-operator",
+            language="ja",
+            output=tmp_path / "unknown-industry",
+        )
+
+    assert output_file.read_text() == "keep me"
 
 
 def test_generate_website_side_hustle_pack_creates_public_side_hustle_assets(tmp_path):
@@ -528,6 +615,12 @@ def test_parser_accepts_operator_commands():
     assert parser.parse_args(["client-report", "--flow-project", "flow", "--output", "out"]).command == "client-report"
     assert parser.parse_args(["package-client-demo", "--source", "src", "--output", "out"]).command == "package-client-demo"
     assert parser.parse_args(["complete-workspace", "--output", "out"]).command == "complete-workspace"
+    start = parser.parse_args(["start"])
+    assert start.command == "start"
+    assert start.output == "my-first-automation"
+    assert start.language == "ja"
+    assert start.open_browser is False
+    assert parser.parse_args(["start", "--open"]).open_browser is True
     assert parser.parse_args(["opportunity-catalog", "--output", "out"]).command == "opportunity-catalog"
     assert parser.parse_args(["recommend-flow", "--pain", "late invoices", "--output", "out"]).command == "recommend-flow"
     assert parser.parse_args(["share-check", "--source", "src", "--output", "out"]).command == "share-check"
@@ -535,6 +628,10 @@ def test_parser_accepts_operator_commands():
 
 
 def test_main_runs_operator_commands(tmp_path, capsys):
+    first_project = tmp_path / "first-project"
+    assert main(["start", "--output", str(first_project)]) == 0
+    assert (first_project / "START_HERE.html").exists()
+
     quickstart = tmp_path / "quickstart"
     assert main(["quickstart", "--flow-id", "invoice-document-followup", "--output", str(quickstart)]) == 0
     assert (quickstart / "START_HERE.md").exists()
@@ -572,6 +669,7 @@ def test_main_runs_operator_commands(tmp_path, capsys):
     assert main(["business-launch", "--industry", "finance", "--niche", "accounting", "--output", str(business_launch)]) == 0
 
     captured = capsys.readouterr()
+    assert "start_here=" in captured.out
     assert "quickstart=" in captured.out
     assert "client_demo_package=" in captured.out
     assert "final_delivery_guide=" in captured.out
@@ -580,3 +678,13 @@ def test_main_runs_operator_commands(tmp_path, capsys):
     assert "share_check=" in captured.out
     assert "business_launch=" in captured.out
     assert json.loads((package / "client_demo_manifest.json").read_text())["file_count"] >= 1
+
+
+def test_main_start_can_open_generated_beginner_page(tmp_path, monkeypatch):
+    opened = []
+    output = tmp_path / "open-first-project"
+    monkeypatch.setattr(cli_module.webbrowser, "open", lambda url: opened.append(url) or True)
+
+    assert main(["start", "--open", "--output", str(output)]) == 0
+
+    assert opened == [(output / "START_HERE.html").resolve().as_uri()]

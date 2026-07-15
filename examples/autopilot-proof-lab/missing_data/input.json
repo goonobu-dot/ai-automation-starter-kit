@@ -1,0 +1,26 @@
+{
+  "fixture_class": "missing_data",
+  "case_id": "missing-data-001",
+  "review_date": "2026-07-01",
+  "invoice": {
+    "invoice_id": "INV-1003",
+    "supplier_code": "SUP-GAMMA",
+    "order_id": "PO-2003",
+    "currency": "USD",
+    "amount": 1120.0,
+    "due_date": "2026-07-14",
+    "required_documents_complete": false
+  },
+  "order": {
+    "order_id": "PO-2003",
+    "supplier_code": "SUP-GAMMA",
+    "currency": "USD",
+    "approved_amount": 1120.0
+  },
+  "missing_fields": [
+    "packing_slip_id",
+    "receiving_confirmation"
+  ],
+  "notes_en": "Required supporting data is incomplete.",
+  "notes_ja": "必要な補助データが不足しています。"
+}

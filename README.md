@@ -1,44 +1,55 @@
 # AI Automation Starter Kit
 
-Daily workflow automation: [日本語の初心者ガイド](docs/daily-workflows.ja.html) | [English beginner guide](docs/daily-workflows.html)
+Automation Proof Lab: [日本語マニュアル](docs/AUTOMATION_PROOF_LAB.ja.html) | [English manual](docs/AUTOMATION_PROOF_LAB.html)
 
-Email-free work relief packs: [日本語の手順書](docs/work-relief-workflows.ja.html) | [English manual](docs/work-relief-workflows.html)
-
-Control workflow packs: [日本語の手順書](docs/control-workflows.ja.html) | [English manual](docs/control-workflows.html)
-
-Research basis: [Office control automation research snapshot](docs/research/OFFICE_CONTROL_AUTOMATION_RESEARCH_2026-07.md)
-
-Autopilot readiness design: [日本語](docs/AUTOPILOT_READINESS_DESIGN.ja.md) | [English](docs/AUTOPILOT_READINESS_DESIGN.md)
+Existing assisted routes: daily [日本語](docs/daily-workflows.ja.html)/[EN](docs/daily-workflows.html) | [work relief](docs/work-relief-workflows.html) | [control](docs/control-workflows.html) | readiness [日本語](docs/AUTOPILOT_READINESS_DESIGN.ja.md)/[EN](docs/AUTOPILOT_READINESS_DESIGN.md) | [research](docs/research/OFFICE_CONTROL_AUTOMATION_RESEARCH_2026-07.md)
 
 AI Automation Starter Kit is a GitHub-data-driven AI agent skill kit for people who want to propose and deliver small, safe business automation projects — especially beginners selling automation to small and medium companies. One command generates client-ready artifacts: demos, discovery questions, proposals, pricing menus, dry-run flow projects, and delivery checklists. Nothing is sent externally: every risky action stays behind a human approval step.
 
-## 日本語の方へ：3ステップで始める
+## 日本語の方へ：まず、ダブルクリックだけ
 
-このキットは「AIエージェント初心者が、中小企業へ業務自動化を提案する副業」を想定して作られています。最初から全部読まないでください。次の3ステップだけで始められます。
+このキットは「AIエージェント初心者が、中小企業へ業務自動化を提案する副業」を想定しています。最初から全部読まないでください。
 
-**ステップ1: インストール**
+1. GitHubの「Code」から「Download ZIP」を選び、ZIPを開きます。
+2. 展開したフォルダの `START_HERE.command` をダブルクリックします。
+3. ブラウザが開いたら「次はこれだけ」に従います。
 
-```bash
-git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git
-cd ai-automation-starter-kit
-python3 -m venv .venv
-source .venv/bin/activate
-python3 -m ensurepip --upgrade
-python3 -m pip install --upgrade pip setuptools
-python3 -m pip install -e .
-```
+Macが初回だけ確認を出した場合は、`START_HERE.command`を右クリックして「開く」を選んでください。APIキーや顧客データは不要です。Windowsでは`START_HERE_WINDOWS.bat`をダブルクリックします。
 
-**ステップ2: 初心者ナビを起動**
+Codexへ任せたい場合は、[START_WITH_AI.ja.txt](START_WITH_AI.ja.txt)の全文を渡してください。Codexが準備を行い、その後は一度に一問だけ質問します。
+
+ターミナルに慣れている場合だけ、次の一行を使います。
 
 ```bash
-ai-automation-kit beginner
+git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git && cd ai-automation-starter-kit && python3 scripts/first_start.py --open
 ```
 
-日本語のナビが「今のあなたの段階」に合わせて、次にやることを教えてくれます。
+標準のPythonだけで専用環境を作り、見本データを実行し、`my-first-automation/START_HERE.html` を開きます。画面には、動く見本、顧客への聞き取り、提案資料、実データを入れる前の注意、AIエージェントへ渡す次の依頼文がまとまっています。
 
-**ステップ3: 入口ドキュメントを読む**
+すでにインストール済みなら、最初の入口はこれだけです。
 
-[docs/GETTING_STARTED.ja.md（はじめかた）](docs/GETTING_STARTED.ja.md) が唯一の入口です。30分で最初のデモまで完走できます。その先は [docs/INDEX.md（ドキュメント索引）](docs/INDEX.md) から必要なものだけ開いてください。
+```bash
+ai-automation-kit start --open
+```
+
+これは「本番が自動で完成する」仕組みではありません。安全な見本と副業準備を一度に作り、その後はAIが一度に一問ずつ確認しながら顧客向けに変える入口です。外部送信や本番更新は、人が承認するまで止まっています。詳しくは [ダブルクリック手順書](docs/FIRST_PROJECT.ja.html)、従来の詳しい手順は [docs/GETTING_STARTED.ja.md](docs/GETTING_STARTED.ja.md)、全資料は [docs/INDEX.md](docs/INDEX.md) を開いてください。
+
+### 録画から画像付きマニュアルを作る
+
+録画からAIが文字起こし、画像付き手順、質問を作ります。回答と根拠を保存し、完成版へ進めます。APIキー不要です。
+
+[日本語ガイド](docs/MANUAL_STUDIO.ja.html) | [English guide](docs/MANUAL_STUDIO.html)
+
+```bash
+ai-automation-kit manual-studio create
+ai-automation-kit manual-studio prepare
+ai-automation-kit manual-studio build
+ai-automation-kit manual-studio images
+ai-automation-kit manual-studio questions
+ai-automation-kit manual-studio answer
+ai-automation-kit manual-studio complete
+ai-automation-kit manual-studio approve
+```
 
 > **Phase 1A platform note / 対応OS:** Safe monthly office-workspace creation and approval mutation require macOS or Linux. Windows stops before creating or changing this workspace because the required race-resistant no-follow filesystem operations are unavailable in this design. Existing read-only and unrelated kit features are unaffected. / 安全な月次オフィスワークスペースの作成・承認更新は macOS または Linux 専用です。Windows では必要な安全機能がないため、フォルダを作成・変更する前に停止します。既存の読み取り専用機能や他の機能には影響しません。
 
@@ -55,6 +66,8 @@ If you want a Codex-led monthly office workspace instead of the broader sales or
 
 ## English Quick Start
 
+For the easiest path, download the repository and double-click `START_HERE.command` on macOS or `START_HERE_WINDOWS.bat` on Windows. You can also give [START_WITH_AI.txt](START_WITH_AI.txt) to Codex. The terminal route is documented in the [First Project guide](docs/FIRST_PROJECT.html).
+
 Do not read everything first. Install, run the doctor, and generate one complete demo workspace:
 
 ```bash
@@ -70,7 +83,7 @@ ai-automation-kit complete-workspace --flow-id invoice-document-followup --clien
 
 Then open `.tmp/complete-accounting/client_command_center.html` and `.tmp/complete-accounting/FINAL_DELIVERY_GUIDE.md`. To verify the install, run `python3 -m pytest -q` and `python3 scripts/run_all_demos.py`.
 
-The CLI is optional: this project is also an AI agent skill kit. It is not a requirement to use a CLI-based AI agent. Open the [AI Agent Grill Me Skill](docs/AI_AGENT_GRILL_ME_SKILL.md) ([日本語](docs/AI_AGENT_GRILL_ME_SKILL.ja.md)), paste it into ChatGPT, Claude, Gemini, Cursor, Codex, or Claude Code, and ask the AI to read the skill document and interview you one question at a time. Keep real API keys, passwords, and client private data out of chat.
+The CLI is optional. It is not a requirement to use a CLI-based AI agent: ask the AI to read the skill document in [AI Agent Grill Me Skill](docs/AI_AGENT_GRILL_ME_SKILL.md) ([日本語](docs/AI_AGENT_GRILL_ME_SKILL.ja.md)), then interview you one question at a time. Keep secrets and client data out of chat.
 
 ## Documentation
 
@@ -80,11 +93,14 @@ Key documents:
 
 | Purpose | 日本語 | English |
 |---|---|---|
+| Double-click first working project | [ダブルクリックで開始](docs/FIRST_PROJECT.ja.html) | [First Project](docs/FIRST_PROJECT.html) |
+| Recording to illustrated work manual | [録画マニュアル作成](docs/MANUAL_STUDIO.ja.html) | [Manual Studio](docs/MANUAL_STUDIO.html) |
 | The single entrance (install to first demo) | [はじめかた](docs/GETTING_STARTED.ja.md) | – |
 | Choose your route | [初心者ルートマップ](docs/BEGINNER_ROUTE_MAP.ja.md) | [Beginner Route Map](docs/BEGINNER_ROUTE_MAP.md) |
 | Plain-language overview | [やさしい解説](docs/BEGINNER_GUIDE.ja.md) | [Beginner Guide](docs/BEGINNER_GUIDE.md) |
 | Operating manual | [使い方マニュアル](docs/USER_MANUAL.ja.md) | [User Manual](docs/USER_MANUAL.md) |
 | Browser manual (click to open as a web page) | [ブラウザ版マニュアル（クリックで開きます）](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.ja.html) | [Browser Manual](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.html) |
+| Test whether a workflow is ready for more automation | [Automation Proof Lab](docs/AUTOMATION_PROOF_LAB.ja.html) | [Automation Proof Lab](docs/AUTOMATION_PROOF_LAB.html) |
 | Codex monthly setup prompt | [Codexではじめる](START_WITH_CODEX.ja.md) | [Start With Codex](START_WITH_CODEX.md) |
 | Monthly office workspace manual | [月報オペレーター作業場所マニュアル](docs/office-workspace.ja.html) | [Monthly Operator Workspace Manual](docs/office-workspace.html) |
 | Email-free work relief packs manual | [作業負担軽減5パック手順書](docs/work-relief-workflows.ja.html) | [Work Relief Workflows Manual](docs/work-relief-workflows.html) |
@@ -133,6 +149,7 @@ ai-automation-kit beginner
 The main one-command paths:
 
 ```bash
+ai-automation-kit start --open
 ai-automation-kit complete-workspace --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/complete-accounting
 ai-automation-kit quickstart --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/quickstart-accounting
 ai-automation-kit beginner-sales --flow-id invoice-document-followup --client-type local-business --niche accounting --output .tmp/beginner-sales
@@ -172,6 +189,7 @@ ai-automation-kit report-wizard status --workspace .tmp/report-wizard-weekly --j
 ai-automation-kit report-wizard build --workspace .tmp/report-wizard-weekly
 ai-automation-kit report-wizard approve --workspace .tmp/report-wizard-weekly --approver owner@example.com
 ai-automation-kit report-wizard serve --workspace .tmp/report-wizard-weekly --language en --no-open
+ai-automation-kit autopilot-proof-lab init --workspace .tmp/proof-lab --pack-id monthly-report --organization "Example Co" --objective "Test monthly reporting" --requested-level L3 --language en
 ai-automation-kit opportunity-catalog --industry finance --output .tmp/opportunity-catalog
 ai-automation-kit recommend-flow --industry finance --pain "missing invoice follow up" --tools "Google Sheets Gmail" --output .tmp/recommend-flow
 ai-automation-kit flow-guide --industry finance --niche accounting --output .tmp/flow-guide

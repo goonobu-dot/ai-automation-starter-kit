@@ -1,0 +1,9 @@
+{
+  "case_id": "duplicate-001",
+  "route": "quarantine",
+  "decision": "quarantine_duplicate_invoice",
+  "status": "needs_human_review",
+  "duplicate_reference": "INV-0998",
+  "notes_en": "Potential replay or duplicate billing must be stopped.",
+  "notes_ja": "再実行または二重請求の可能性があるため停止します。"
+}

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Start a Business Automation Project by Double-Clicking</title>
+  <style>
+    :root { --ink:#172033; --muted:#536175; --line:#d9dee7; --paper:#fff; --bg:#f5f7f9; --blue:#155eef; --green:#16784a; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:var(--bg); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; line-height:1.7; }
+    header { background:var(--paper); border-bottom:1px solid var(--line); padding:44px 22px 34px; }
+    header div, main { width:min(980px,100%); margin:0 auto; }
+    h1 { font-size:clamp(32px,5vw,50px); line-height:1.2; margin:8px 0 14px; letter-spacing:0; }
+    h2 { letter-spacing:0; }
+    .eyebrow { color:var(--green); font-weight:700; }
+    .lead { color:var(--muted); max-width:760px; font-size:18px; }
+    main { padding:28px 22px 56px; }
+    section { padding:22px 0; border-bottom:1px solid var(--line); }
+    pre { overflow:auto; background:#101828; color:#fff; padding:18px; border-radius:6px; }
+    code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .flow { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+    .flow div { background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:16px; }
+    .flow strong { display:block; color:var(--blue); margin-bottom:6px; }
+    .notice { background:#fff8e8; border-left:5px solid #d97706; padding:15px 18px; }
+    a { color:var(--blue); }
+    @media (max-width:760px) { .flow { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header><div>
+    <div class="eyebrow">A working example for an AI automation side business</div>
+    <h1>Double-click. Start there.</h1>
+    <p class="lead">Create a workflow that runs on sample data, a review screen, client questions, proposal assets, and the next AI-agent prompt. You do not need to learn terminal commands first.</p>
+  </div></header>
+  <main>
+    <section>
+      <h2>1. Recommended: double-click a file</h2>
+      <ol>
+        <li>Choose “Code” and “Download ZIP” on GitHub.</li>
+        <li>Open the ZIP and double-click <code>START_HERE.command</code> on macOS.</li>
+        <li>On Windows, double-click <code>START_HERE_WINDOWS.bat</code>.</li>
+        <li>Continue from “Do only this next” in the browser.</li>
+      </ol>
+      <p>No API key or cloud account is required. On macOS, if the first launch is blocked, right-click the file and choose Open.</p>
+    </section>
+    <section>
+      <h2>2. Let Codex prepare it</h2>
+      <p>Give <code>START_WITH_AI.txt</code> to Codex. It will prepare the example and then ask you one question at a time without requesting client data or API keys.</p>
+    </section>
+    <section>
+      <h2>3. Terminal fallback: Paste one line</h2>
+      <pre><code>git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git &amp;&amp; cd ai-automation-starter-kit &amp;&amp; python3 scripts/first_start.py --open --language en</code></pre>
+    </section>
+    <section>
+      <h2>4. Follow four visible steps</h2>
+      <div class="flow">
+        <div><strong>See the example</strong>Follow sample input through drafts and approval records.</div>
+        <div><strong>Ask one question</strong>Let AI confirm the client pain, exceptions, and owner.</div>
+        <div><strong>Adapt safely</strong>Change and test the workflow with sample data first.</div>
+        <div><strong>Offer a pilot</strong>Propose a bounded paid pilot with value and stop conditions.</div>
+      </div>
+    </section>
+    <section>
+      <h2>5. What it creates</h2>
+      <ul>
+        <li><code>START_HERE.html</code>: the human-friendly first screen</li>
+        <li><code>AI_NEXT_STEP.md</code>: the next request for Codex or another AI coding agent</li>
+        <li><code>01_CLIENT_INPUT</code>: a boundary check before client files are added</li>
+        <li><code>client_command_center.html</code>: demo, proposal, pilot, and go-live navigation</li>
+        <li>Sample drafts, approval evidence, a client report, proposal assets, and pricing worksheets</li>
+      </ul>
+    </section>
+    <section>
+      <h2>6. Honest limits</h2>
+      <div class="notice"><strong>This one line does not create a finished production system for a client.</strong><br>It creates a working example and side-business preparation. For a real client, AI asks one question at a time about the workflow, data, exceptions, and owner. It does not send anything externally, and production changes remain blocked until a human approves them. It does not guarantee income.</div>
+    </section>
+    <section>
+      <h2>What to open next</h2>
+      <p>After generation, open only <code>my-first-automation/START_HERE.html</code>. Use the <a href="INDEX.md">documentation index</a> only when you need deeper material. The <a href="FIRST_PROJECT.ja.html">Japanese guide</a> is separate.</p>
+    </section>
+  </main>
+</body>
+</html>

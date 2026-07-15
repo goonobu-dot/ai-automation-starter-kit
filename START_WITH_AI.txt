@@ -1,0 +1,9 @@
+Prepare this GitHub project so I can try it safely as a beginner.
+
+1. Set up the project on my computer.
+2. Run `python3 scripts/first_start.py --open --language en`.
+3. If it fails, diagnose the cause without asking for secrets or API keys.
+4. When ready, open `my-first-automation/START_HERE.html`.
+5. Then ask me one question at a time and begin by showing me the sample-data workflow.
+
+Do not add client data, send anything externally, or update production until I explicitly approve it. Do not guess missing facts. Explain each next step in plain language.

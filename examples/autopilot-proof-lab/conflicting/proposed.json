@@ -1,0 +1,10 @@
+{
+  "case_id": "conflicting-001",
+  "route": "quarantine",
+  "decision": "quarantine_conflicting_amount",
+  "status": "needs_human_review",
+  "approved_amount": 2100.0,
+  "invoice_amount": 2250.0,
+  "notes_en": "Quarantine because the invoice amount conflicts with the order tax note.",
+  "notes_ja": "税メモとの矛盾として隔離します。"
+}

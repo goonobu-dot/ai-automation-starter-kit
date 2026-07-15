@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ダブルクリックではじめる業務自動化</title>
+  <style>
+    :root { --ink:#172033; --muted:#536175; --line:#d9dee7; --paper:#fff; --bg:#f5f7f9; --blue:#155eef; --green:#16784a; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:var(--bg); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; line-height:1.7; }
+    header { background:var(--paper); border-bottom:1px solid var(--line); padding:44px 22px 34px; }
+    header div, main { width:min(980px,100%); margin:0 auto; }
+    h1 { font-size:clamp(32px,5vw,44px); line-height:1.2; margin:8px 0 14px; letter-spacing:0; }
+    h2 { letter-spacing:0; }
+    .eyebrow { color:var(--green); font-weight:700; }
+    .lead { color:var(--muted); max-width:760px; font-size:18px; }
+    main { padding:28px 22px 56px; }
+    section { padding:22px 0; border-bottom:1px solid var(--line); }
+    pre { overflow:auto; background:#101828; color:#fff; padding:18px; border-radius:6px; }
+    code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+    .flow { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+    .flow div { background:var(--paper); border:1px solid var(--line); border-radius:8px; padding:16px; }
+    .flow strong { display:block; color:var(--blue); margin-bottom:6px; }
+    .notice { background:#fff8e8; border-left:5px solid #d97706; padding:15px 18px; }
+    a { color:var(--blue); }
+    @media (max-width:760px) { .flow { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body>
+  <header><div>
+    <div class="eyebrow">AI初心者の副業を、動く見本から</div>
+    <h1>ダブルクリックする。まずは、それだけです。</h1>
+    <p class="lead">見本データで動く業務フロー、確認画面、顧客への質問、提案資料、AIへの次の依頼文をまとめて作ります。ターミナルを覚えるところから始める必要はありません。</p>
+  </div></header>
+  <main>
+    <section>
+      <h2>1. おすすめ: ファイルをダブルクリック</h2>
+      <ol>
+        <li>GitHubの「Code」から「Download ZIP」を選びます。</li>
+        <li>ZIPを開き、展開したフォルダの <code>START_HERE.command</code> をダブルクリックします。</li>
+        <li>Macが確認を出した場合は、ファイルを右クリックして「開く」を選びます。</li>
+        <li>ブラウザの「次はこれだけ」から進みます。</li>
+      </ol>
+      <p>Windowsでは <code>START_HERE_WINDOWS.bat</code> をダブルクリックします。APIキーやクラウド契約は不要です。</p>
+    </section>
+    <section>
+      <h2>2. Codexへ準備を任せる</h2>
+      <p><code>START_WITH_AI.ja.txt</code>を開き、全文をCodexへ渡してください。Codexが見本を準備し、完了後は一度に一問だけ質問します。顧客データやAPIキーは求めません。</p>
+    </section>
+    <section>
+      <h2>3. ターミナルに慣れている場合</h2>
+      <p>一行を貼り付ける方法も残しています。</p>
+      <pre><code>git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git &amp;&amp; cd ai-automation-starter-kit &amp;&amp; python3 scripts/first_start.py --open</code></pre>
+    </section>
+    <section>
+      <h2>4. 画面に出る4つの順番</h2>
+      <div class="flow">
+        <div><strong>見本を見る</strong>入力が下書きと確認記録になる流れを見ます。</div>
+        <div><strong>一問ずつ聞く</strong>AIが顧客の困りごと、例外、承認者を確認します。</div>
+        <div><strong>顧客向けに変える</strong>最初は見本データで変更とテストを進めます。</div>
+        <div><strong>小さく提案する</strong>効果と停止条件を決めた有料PoCとして提案します。</div>
+      </div>
+    </section>
+    <section>
+      <h2>5. 作られるもの</h2>
+      <ul>
+        <li><code>START_HERE.html</code>: 人が迷わない最初の画面</li>
+        <li><code>AI_NEXT_STEP.md</code>: CodexなどのAIエージェントに渡す次の依頼</li>
+        <li><code>01_CLIENT_INPUT</code>: 顧客資料を入れる前に安全条件を確認する場所</li>
+        <li><code>client_command_center.html</code>: デモ、提案、PoC、導入判断の案内</li>
+        <li>見本実行の下書き、確認記録、顧客レポート、提案書、料金検討表</li>
+      </ul>
+    </section>
+    <section>
+      <h2>6. 正直な境界</h2>
+      <div class="notice"><strong>この一行だけで、顧客企業の本番システムが完成するわけではありません。</strong><br>見本と副業準備までは自動で作ります。実案件では、顧客の業務、データ、例外、責任者をAIが一度に一問ずつ確認します。外部送信しません。本番更新は人が承認するまで止めます。収益を保証するものでもありません。</div>
+    </section>
+    <section>
+      <h2>次に開くもの</h2>
+      <p>生成後は <code>my-first-automation/START_HERE.html</code> だけを開いてください。詳しい資料が必要になった時だけ、<a href="INDEX.md">ドキュメント索引</a>へ進みます。英語で使う場合は<a href="FIRST_PROJECT.html">英語版</a>を開いてください。</p>
+    </section>
+  </main>
+</body>
+</html>

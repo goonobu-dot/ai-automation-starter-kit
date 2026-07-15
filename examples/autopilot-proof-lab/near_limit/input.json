@@ -1,0 +1,22 @@
+{
+  "fixture_class": "near_limit",
+  "case_id": "near-limit-001",
+  "review_date": "2026-07-01",
+  "invoice": {
+    "invoice_id": "INV-1002",
+    "supplier_code": "SUP-BETA",
+    "order_id": "PO-2002",
+    "currency": "USD",
+    "amount": 4995.0,
+    "due_date": "2026-07-18",
+    "required_documents_complete": true
+  },
+  "order": {
+    "order_id": "PO-2002",
+    "supplier_code": "SUP-BETA",
+    "currency": "USD",
+    "approved_amount": 4995.0
+  },
+  "notes_en": "Near the sample threshold but still within policy.",
+  "notes_ja": "サンプル上限に近いですが、まだポリシー内です。"
+}

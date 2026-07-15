@@ -1,0 +1,26 @@
+{
+  "fixture_class": "external_failure",
+  "case_id": "external-failure-001",
+  "review_date": "2026-07-01",
+  "invoice": {
+    "invoice_id": "INV-1007",
+    "supplier_code": "SUP-OMEGA",
+    "order_id": "PO-2007",
+    "currency": "USD",
+    "amount": 3510.0,
+    "due_date": "2026-07-24",
+    "required_documents_complete": true
+  },
+  "order": {
+    "order_id": "PO-2007",
+    "supplier_code": "SUP-OMEGA",
+    "currency": "USD",
+    "approved_amount": 3510.0
+  },
+  "dependency_check": {
+    "inventory_snapshot_available": false,
+    "reason": "upstream_export_timeout"
+  },
+  "notes_en": "Critical exception because the supporting export is unavailable.",
+  "notes_ja": "補助エクスポートが取れないため、重大例外として扱います。"
+}

@@ -701,6 +701,53 @@ def generate_complete_workspace(
     return payload
 
 
+def generate_first_project_workspace(
+    flow_id: str | None,
+    industry: str,
+    client_type: str,
+    niche: str,
+    approver: str,
+    language: str,
+    output: Path,
+) -> dict:
+    if output.exists():
+        if not output.is_dir():
+            raise FileExistsError(f"Output path exists and is not a directory: {output}")
+        if any(output.iterdir()):
+            raise FileExistsError(f"Output directory is not empty: {output}")
+    if language not in {"ja", "en"}:
+        raise ValueError(f"Unsupported language: {language}")
+    if flow_id is None and not list_flows(industry=industry):
+        raise ValueError(f"No automation flow was found for industry: {industry}")
+
+    delivery = generate_complete_workspace(
+        flow_id=flow_id,
+        industry=industry,
+        client_type=client_type,
+        niche=niche,
+        approver=approver,
+        output=output,
+    )
+    client_input = output / "01_CLIENT_INPUT"
+    client_input.mkdir(exist_ok=True)
+    payload = {
+        **delivery,
+        "status": "ready_to_try",
+        "delivery_status": delivery["status"],
+        "language": language,
+        "safe_mode": "local_dry_run",
+        "external_actions": "blocked",
+        "start_here": str(output / "START_HERE.html"),
+        "ai_next_step": str(output / "AI_NEXT_STEP.md"),
+        "client_input": str(client_input),
+    }
+    (output / "START_HERE.html").write_text(_render_first_project_start(payload), encoding="utf-8")
+    (output / "AI_NEXT_STEP.md").write_text(_render_first_project_ai_prompt(payload), encoding="utf-8")
+    (client_input / "README.txt").write_text(_render_first_project_input_note(payload), encoding="utf-8")
+    (output / "first_project.json").write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    return payload
+
+
 def _ranked_flow(flow: dict, niche: str, index: int) -> dict:
     score = max(60, 101 - index * 3)
     if niche.lower() in {flow["industry"].lower(), flow["genre"].lower()}:
@@ -1428,6 +1475,184 @@ def _render_complete_delivery_guide(payload: dict) -> str:
             "",
         ]
     )
+
+
+def _render_first_project_start(payload: dict) -> str:
+    ja = payload["language"] == "ja"
+    copy = {
+        "title": "はじめての業務自動化" if ja else "Your First Business Automation",
+        "eyebrow": "副業の最初の一件を、安全な見本から始めます" if ja else "Start a first client project from a safe working example",
+        "lead": (
+            "見本データを使った処理、確認画面、顧客提案のひな型まで作成済みです。"
+            "まず動いているものを見てから、顧客の仕事に合わせて変えてください。"
+            if ja
+            else "A sample workflow, review screen, and client proposal assets are ready. See the working example before adapting it to a client's work."
+        ),
+        "warning": "顧客データはまだ入れない" if ja else "Do not add client data yet",
+        "warning_body": (
+            "この段階はローカルの見本です。外部送信は行いません。顧客と対象業務、扱う情報、承認者を確認してから実データへ進みます。"
+            if ja
+            else "This is a local example. It sends nothing externally. Confirm the workflow, data, and approver with the client before using real data."
+        ),
+        "step1": "まず、この見本を見る" if ja else "1. See the working example",
+        "step1_body": "見本データがどのように整理され、下書きと確認記録になったかを確認します。" if ja else "See how sample data became a work queue, drafts, and approval records.",
+        "step2": "顧客の困りごとを聞く" if ja else "2. Interview the client",
+        "step2_body": "対象業務、現在の手順、例外、最終確認者を一つずつ聞きます。" if ja else "Ask about the task, current steps, exceptions, and final approver.",
+        "step3": "AIと一緒に作り替える" if ja else "3. Adapt it with AI",
+        "step3_body": "AI_NEXT_STEP.mdをCodexなどのAIエージェントに渡すと、次に必要な質問から始められます。" if ja else "Give AI_NEXT_STEP.md to an AI coding agent such as Codex to begin with the next required question.",
+        "step4": "小さな有料テストを提案する" if ja else "4. Propose a small paid pilot",
+        "step4_body": "いきなり完全自動化を約束せず、見本、効果、停止条件を確認する小さな実証から始めます。" if ja else "Do not promise full automation. Start with a bounded pilot that proves value and stop conditions.",
+        "open_demo": "動く見本を開く" if ja else "Open the working demo",
+        "open_center": "副業・提案メニューを開く" if ja else "Open the delivery and sales menu",
+        "open_ai": "AIへの次の依頼文を開く" if ja else "Open the next AI prompt",
+        "input": "顧客資料の置き場を確認" if ja else "Review the client input folder",
+        "next_title": "次はこれだけ" if ja else "Do only this next",
+        "next_body": (
+            "AI_NEXT_STEP.md をCodexへドラッグしてください。Codexが一度に一問だけ聞き、この見本を顧客向けに変える作業を案内します。"
+            if ja
+            else "Drag AI_NEXT_STEP.md into Codex. Codex will ask one question at a time and guide you while adapting this example for a client."
+        ),
+        "next_action": "AIへ渡す依頼文を開く" if ja else "Open the prompt for AI",
+        "other": "必要になった時だけ開くもの" if ja else "Open these only when needed",
+        "truth": "ここまででできていること" if ja else "What is ready now",
+        "truth_items": [
+            "見本データによるローカル実行" if ja else "Local run with sample data",
+            "下書き、確認記録、顧客向けレポート" if ja else "Drafts, approval records, and a client report",
+            "提案、料金検討、PoC、導入判断のひな型" if ja else "Proposal, pricing, pilot, and go-live templates",
+            "外部送信を止めた安全な初期状態" if ja else "A safe initial state with external actions blocked",
+        ],
+    }
+    truth_items = "".join(f"<li>{html.escape(item)}</li>" for item in copy["truth_items"])
+    return f'''<!doctype html>
+<html lang="{payload['language']}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{html.escape(copy['title'])}</title>
+  <style>
+    :root {{ color-scheme: light; --ink: #152033; --muted: #526073; --line: #d9dee7; --paper: #fff; --bg: #f4f6f8; --blue: #155eef; --green: #16784a; --amber: #8a4b08; }}
+    * {{ box-sizing: border-box; }}
+    body {{ margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: var(--ink); background: var(--bg); line-height: 1.65; }}
+    header {{ background: var(--paper); border-bottom: 1px solid var(--line); padding: 44px 22px 34px; }}
+    header > div, main {{ width: min(1040px, 100%); margin: 0 auto; }}
+    .eyebrow {{ color: var(--green); font-weight: 700; }}
+    h1 {{ font-size: clamp(32px, 5vw, 52px); line-height: 1.16; margin: 8px 0 14px; letter-spacing: 0; }}
+    .lead {{ max-width: 760px; color: var(--muted); font-size: 18px; }}
+    main {{ padding: 26px 22px 56px; }}
+    .notice {{ border-left: 5px solid #d97706; background: #fff8e8; padding: 16px 18px; margin-bottom: 22px; }}
+    .notice strong {{ display: block; color: var(--amber); font-size: 18px; }}
+    .next {{ background: var(--paper); border: 2px solid var(--blue); border-radius: 8px; padding: 22px; margin-bottom: 22px; }}
+    .next h2 {{ margin: 0 0 8px; font-size: 24px; letter-spacing: 0; }}
+    .next p {{ color: var(--muted); margin: 0 0 14px; }}
+    .primary {{ display: inline-flex; min-height: 46px; align-items: center; padding: 10px 16px; border-radius: 6px; color: #fff; background: var(--blue); font-weight: 700; text-decoration: none; }}
+    .other {{ font-size: 18px; margin: 28px 0 8px; letter-spacing: 0; }}
+    .actions {{ display: flex; flex-wrap: wrap; gap: 10px; margin: 22px 0 30px; }}
+    .actions a {{ display: inline-flex; min-height: 44px; align-items: center; padding: 10px 15px; border: 1px solid var(--blue); border-radius: 6px; color: var(--blue); background: var(--paper); font-weight: 700; text-decoration: none; }}
+    .actions a:first-child {{ color: #fff; background: var(--blue); }}
+    .steps {{ display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }}
+    article, .ready {{ background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 20px; }}
+    article h2, .ready h2 {{ font-size: 20px; margin: 0 0 8px; letter-spacing: 0; }}
+    article p {{ margin: 0; color: var(--muted); }}
+    .ready {{ margin-top: 16px; }}
+    .ready ul {{ margin-bottom: 0; }}
+    @media (max-width: 700px) {{ .steps {{ grid-template-columns: 1fr; }} header {{ padding-top: 30px; }} }}
+  </style>
+</head>
+<body>
+  <header><div>
+    <div class="eyebrow">{html.escape(copy['eyebrow'])}</div>
+    <h1>{html.escape(copy['title'])}</h1>
+    <p class="lead">{html.escape(copy['lead'])}</p>
+  </div></header>
+  <main>
+    <div class="notice"><strong>{html.escape(copy['warning'])}</strong>{html.escape(copy['warning_body'])}</div>
+    <section class="next">
+      <h2>{html.escape(copy['next_title'])}</h2>
+      <p>{html.escape(copy['next_body'])}</p>
+      <a class="primary" href="AI_NEXT_STEP.md">{html.escape(copy['next_action'])}</a>
+    </section>
+    <h2 class="other">{html.escape(copy['other'])}</h2>
+    <nav class="actions" aria-label="Next actions">
+      <a href="demo_site/index.html">{html.escape(copy['open_demo'])}</a>
+      <a href="client_command_center.html">{html.escape(copy['open_center'])}</a>
+      <a href="AI_NEXT_STEP.md">{html.escape(copy['open_ai'])}</a>
+      <a href="01_CLIENT_INPUT/README.txt">{html.escape(copy['input'])}</a>
+    </nav>
+    <section class="steps">
+      <article><h2>{html.escape(copy['step1'])}</h2><p>{html.escape(copy['step1_body'])}</p></article>
+      <article><h2>{html.escape(copy['step2'])}</h2><p>{html.escape(copy['step2_body'])}</p></article>
+      <article><h2>{html.escape(copy['step3'])}</h2><p>{html.escape(copy['step3_body'])}</p></article>
+      <article><h2>{html.escape(copy['step4'])}</h2><p>{html.escape(copy['step4_body'])}</p></article>
+    </section>
+    <section class="ready"><h2>{html.escape(copy['truth'])}</h2><ul>{truth_items}</ul></section>
+  </main>
+</body>
+</html>
+'''
+
+
+def _render_first_project_ai_prompt(payload: dict) -> str:
+    if payload["language"] == "ja":
+        return f"""# AIエージェントへの次の依頼
+
+このフォルダは、`{payload['flow_name']}` の見本データで動作確認済みの業務自動化プロジェクトです。
+
+あなたは初心者の案内役です。最初に `first_project.json`、`01_CLIENT_INPUT/README.txt`、`client_onboarding_form.md`、`go_live_decision.md` を確認してください。その後、私へ一度に一問だけ質問し、次の順番で顧客向けの小さな有料PoCへ作り替えてください。
+
+1. 顧客が減らしたい作業を一つ確認する。
+2. 現在の入力、完成物、例外、最終確認者を確認する。
+3. 実データを読む前に、個人情報、秘密情報、保存期間、共有範囲を確認する。
+4. 見本データで変更後の処理をテストする。
+5. 外部送信や本番更新は行わず、人の承認地点を示す。
+6. 効果、停止条件、費用範囲をまとめたPoC提案を更新する。
+
+分からない情報を推測しないでください。完全自動化を約束しないでください。顧客データをチャットへ貼り付けるよう求めないでください。
+"""
+    return f"""# Next request for an AI agent
+
+This folder is a working sample automation project for `{payload['flow_name']}`.
+
+Act as a beginner's guide. Read `first_project.json`, `01_CLIENT_INPUT/README.txt`, `client_onboarding_form.md`, and `go_live_decision.md`. Then ask me one question at a time and adapt this project into a small paid client pilot.
+
+1. Confirm one task the client wants to reduce.
+2. Confirm current inputs, finished outputs, exceptions, and final approver.
+3. Before reading real data, confirm privacy, secrets, retention, and sharing boundaries.
+4. Test the adapted workflow with sample data.
+5. Keep external sending and production updates blocked, and show the human approval point.
+6. Update the pilot proposal with value, stop conditions, and fee boundaries.
+
+Do not guess missing facts. Do not promise full automation. Do not ask me to paste client data into chat.
+"""
+
+
+def _render_first_project_input_note(payload: dict) -> str:
+    if payload["language"] == "ja":
+        return """顧客資料を入れる前に読んでください
+
+このフォルダは、顧客から受け取った資料の置き場候補です。最初は空のままにしてください。
+
+先に確認すること:
+1. 何の作業を自動化するか
+2. 入れてよい資料と入れてはいけない資料
+3. 個人情報や秘密情報を含むか
+4. 誰が完成物を確認するか
+5. いつ削除するか、誰と共有するか
+
+確認後も、元資料のコピーを使い、原本は変更しないでください。外部送信や本番更新は人が明示的に承認するまで行いません。
+"""
+    return """Read this before adding client files
+
+This folder is a possible intake location for client-provided files. Leave it empty at first.
+
+Confirm first:
+1. The single task being automated
+2. Which files are allowed and excluded
+3. Whether personal or confidential information is present
+4. Who approves the finished output
+5. Retention and sharing rules
+
+After approval, work from copies and never modify source records. External sends and production updates remain blocked until a human explicitly approves them.
+"""
 
 
 def _render_completion_checklist(payload: dict) -> str:

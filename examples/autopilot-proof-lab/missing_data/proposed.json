@@ -1,0 +1,12 @@
+{
+  "case_id": "missing-data-001",
+  "route": "quarantine",
+  "decision": "quarantine_missing_data",
+  "status": "needs_human_review",
+  "missing_fields": [
+    "packing_slip_id",
+    "receiving_confirmation"
+  ],
+  "notes_en": "Do not continue on the standard path until the missing documents are available.",
+  "notes_ja": "不足書類がそろうまで標準経路へ進めません。"
+}

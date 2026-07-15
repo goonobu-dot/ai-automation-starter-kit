@@ -1,0 +1,23 @@
+{
+  "fixture_class": "conflicting",
+  "case_id": "conflicting-001",
+  "review_date": "2026-07-01",
+  "invoice": {
+    "invoice_id": "INV-1005",
+    "supplier_code": "SUP-EPSILON",
+    "order_id": "PO-2005",
+    "currency": "USD",
+    "amount": 2250.0,
+    "due_date": "2026-07-16",
+    "required_documents_complete": true
+  },
+  "order": {
+    "order_id": "PO-2005",
+    "supplier_code": "SUP-EPSILON",
+    "currency": "USD",
+    "approved_amount": 2100.0
+  },
+  "conflict_type": "amount_mismatch",
+  "notes_en": "Invoice amount exceeds the approved order amount.",
+  "notes_ja": "請求金額が承認済み注文金額を上回っています。"
+}

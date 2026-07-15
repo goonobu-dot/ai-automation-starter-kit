@@ -2,6 +2,7 @@ from html.parser import HTMLParser
 import importlib.util
 from pathlib import Path
 import re
+import stat
 import subprocess
 import sys
 
@@ -126,12 +127,96 @@ def test_public_repo_metadata_files_exist():
         "AGENTS.md",
         "START_WITH_CODEX.md",
         "START_WITH_CODEX.ja.md",
+        "START_HERE.command",
+        "START_HERE_WINDOWS.bat",
+        "START_WITH_AI.txt",
+        "START_WITH_AI.ja.txt",
         "docs/PUBLISHING.md",
         "docs/RELEASE_CHECKLIST.md",
         ".github/workflows/ci.yml",
     ]
     for path in expected_files:
         assert Path(path).exists(), path
+    assert Path("START_HERE.command").stat().st_mode & stat.S_IXUSR
+
+
+def test_public_release_audit_requires_beginner_launchers():
+    text = Path("scripts/public_release_audit.py").read_text(encoding="utf-8")
+    for name in ["START_HERE.command", "START_HERE_WINDOWS.bat", "START_WITH_AI.txt", "START_WITH_AI.ja.txt"]:
+        assert name in text
+    assert "stat.S_IXUSR" in text
+
+
+def test_automation_proof_lab_has_bilingual_beginner_browser_manuals():
+    japanese_path = Path("docs/AUTOMATION_PROOF_LAB.ja.html")
+    english_path = Path("docs/AUTOMATION_PROOF_LAB.html")
+    assert japanese_path.exists()
+    assert english_path.exists()
+
+    japanese = japanese_path.read_text(encoding="utf-8")
+    english = english_path.read_text(encoding="utf-8")
+    for command in [
+        "autopilot-proof-lab init",
+        "autopilot-proof-lab add-evidence",
+        "autopilot-proof-lab add-case",
+        "autopilot-proof-lab set-gate",
+        "autopilot-proof-lab evaluate",
+        "autopilot-proof-lab status",
+        "autopilot-proof-lab serve",
+    ]:
+        assert command in japanese
+        assert command in english
+    assert "外部実行は起動しない" in japanese
+    assert "人間承認" in japanese
+    assert "収益を保証" in japanese
+    assert "no external actions activated" in english
+    assert "human approval" in english
+    assert "No income is guaranteed" in english
+    for contract_name in [
+        "input_identifiable",
+        "completion_testable",
+        "standard_policy_confirmed",
+        "exceptions_detectable",
+        "exception_owner_assigned",
+        "least_privilege_available",
+        "idempotency_defined",
+        "recovery_defined",
+        "kill_switch_owned",
+        "data_use_permitted",
+        "shadow_test_passed",
+        "near_limit",
+        "missing_data",
+        "external_failure",
+        ".proof_lab",
+        "proposal_scope.md",
+    ]:
+        assert contract_name in japanese
+        assert contract_name in english
+    assert "sample-evidence" not in japanese
+    assert "sample-evidence" not in english
+    assert "sample-cases" not in japanese
+    assert "sample-cases" not in english
+    _assert_no_broken_local_hrefs(str(japanese_path), japanese)
+    _assert_no_broken_local_hrefs(str(english_path), english)
+
+
+def test_first_project_browser_manuals_have_no_broken_local_links():
+    for path in ["docs/FIRST_PROJECT.ja.html", "docs/FIRST_PROJECT.html"]:
+        text = Path(path).read_text(encoding="utf-8")
+        _assert_no_broken_local_hrefs(path, text)
+
+
+def test_release_smoke_covers_first_project_with_source_and_installed_cli():
+    text = Path("scripts/release_smoke.py").read_text(encoding="utf-8")
+
+    assert "first-project-source-smoke" in text
+    assert "_run_first_project_installed_smoke" in text
+    assert '"start"' in text
+    assert '"--language",' in text
+    assert '"en",' in text
+    assert '"START_HERE.html"' in text
+    assert '"AI_NEXT_STEP.md"' in text
+    assert '"01_CLIENT_INPUT"' in text
 
 
 def test_readme_links_entrance_and_key_docs():
@@ -929,10 +1014,10 @@ def test_ai_beginner_support_docs_cover_current_practical_follow_up():
 def test_beginner_docs_are_written_for_non_developers_first():
     expected_docs = {
         "README.md": [
-            "\u65e5\u672c\u8a9e\u306e\u65b9\u3078\uff1a3\u30b9\u30c6\u30c3\u30d7\u3067\u59cb\u3081\u308b",
-            "\u521d\u5fc3\u8005\u30ca\u30d3",
-            "\u552f\u4e00\u306e\u5165\u53e3",
-            "ai-automation-kit beginner",
+            "\u65e5\u672c\u8a9e\u306e\u65b9\u3078\uff1a\u307e\u305a\u3001\u30c0\u30d6\u30eb\u30af\u30ea\u30c3\u30af\u3060\u3051",
+            "\u6700\u521d\u304b\u3089\u5168\u90e8\u8aad\u307e\u306a\u3044\u3067\u304f\u3060\u3055\u3044",
+            "\u6700\u521d\u306e\u5165\u53e3",
+            "ai-automation-kit start",
         ],
         "docs/archive/AI_BEGINNER_SUPPORT_MAP.md": [
             "First, do this",
@@ -1601,6 +1686,40 @@ def test_public_release_audit_script_exposes_loop_quality_checks():
     assert "REQUIRED_GITHUB_SMOKE_SNIPPETS" in text
 
 
+def test_public_release_audit_requires_manual_studio_guides_and_commands():
+    text = Path("scripts/public_release_audit.py").read_text(encoding="utf-8")
+
+    for snippet in (
+        "docs/MANUAL_STUDIO.ja.html",
+        "docs/MANUAL_STUDIO.html",
+        "ai-automation-kit manual-studio create",
+        "ai-automation-kit manual-studio prepare",
+        "ai-automation-kit manual-studio build",
+        "ai-automation-kit manual-studio images",
+        "ai-automation-kit manual-studio questions",
+        "ai-automation-kit manual-studio answer",
+        "ai-automation-kit manual-studio complete",
+        "ai-automation-kit manual-studio approve",
+    ):
+        assert snippet in text
+
+    result = subprocess.run(
+        [sys.executable, "scripts/public_release_audit.py"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    for check in (
+        "README.md::docs/MANUAL_STUDIO.ja.html",
+        "README.md::docs/MANUAL_STUDIO.html",
+        "docs/INDEX.md::MANUAL_STUDIO.ja.html",
+        "docs/INDEX.md::MANUAL_STUDIO.html",
+        "CHANGELOG.md::manual-studio",
+    ):
+        assert check in result.stdout
+
+
 def test_release_smoke_uses_installed_cli_subprocess_for_report_wizard_server():
     text = Path("scripts/release_smoke.py").read_text(encoding="utf-8")
 
@@ -1670,6 +1789,8 @@ def test_release_smoke_installed_wheel_flow_keeps_virtualenv_entrypoints(tmp_pat
     commands: list[list[str]] = []
     report_calls: list[tuple[Path, Path, Path]] = []
     office_calls: list[tuple[Path, Path, Path]] = []
+    proof_lab_calls: list[tuple[Path, Path]] = []
+    first_project_calls: list[tuple[Path, Path]] = []
 
     def fake_run(command, cwd=None, env=None):
         normalized = [str(part) for part in command]
@@ -1694,6 +1815,16 @@ def test_release_smoke_installed_wheel_flow_keeps_virtualenv_entrypoints(tmp_pat
         "_run_office_workspace_installed_smoke",
         lambda cli_bin, python_bin, output_path: office_calls.append((cli_bin, python_bin, output_path)),
     )
+    monkeypatch.setattr(
+        release_smoke,
+        "_run_autopilot_proof_lab_installed_smoke",
+        lambda cli_bin, output_path: proof_lab_calls.append((cli_bin, output_path)),
+    )
+    monkeypatch.setattr(
+        release_smoke,
+        "_run_first_project_installed_smoke",
+        lambda cli_bin, output_path: first_project_calls.append((cli_bin, output_path)),
+    )
 
     release_smoke._verify_wheel_install(wheelhouse, output)
 
@@ -1707,6 +1838,8 @@ def test_release_smoke_installed_wheel_flow_keeps_virtualenv_entrypoints(tmp_pat
     assert version_command[0].endswith("/install-venv/bin/ai-automation-kit")
     assert report_calls == [(Path(version_command[0]), Path(install_command[0]), expected_output)]
     assert office_calls == [(Path(version_command[0]), Path(install_command[0]), expected_output)]
+    assert proof_lab_calls == [(Path(version_command[0]), expected_output)]
+    assert first_project_calls == [(Path(version_command[0]), expected_output)]
 
 
 def test_release_smoke_office_workspace_flow_uses_local_cryptography_fallback_without_source_tree(

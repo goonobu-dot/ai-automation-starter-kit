@@ -1,0 +1,22 @@
+{
+  "fixture_class": "expired",
+  "case_id": "expired-001",
+  "review_date": "2026-07-01",
+  "invoice": {
+    "invoice_id": "INV-1006",
+    "supplier_code": "SUP-ZETA",
+    "order_id": "PO-2006",
+    "currency": "USD",
+    "amount": 930.0,
+    "due_date": "2026-06-20",
+    "required_documents_complete": true
+  },
+  "order": {
+    "order_id": "PO-2006",
+    "supplier_code": "SUP-ZETA",
+    "currency": "USD",
+    "approved_amount": 930.0
+  },
+  "notes_en": "The due date is older than the review date.",
+  "notes_ja": "支払期日がレビュー日より前です。"
+}

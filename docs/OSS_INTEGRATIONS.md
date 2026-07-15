@@ -6,7 +6,7 @@ This starter kit references popular OSS and source-available tools as integratio
 
 - Review each integration license before bundling code, Docker images, workflow exports, or templates derived from that project.
 - Keep third-party API keys in environment variables or `.env`; never commit real secrets.
-- Treat n8n, Dify, Directus, Open WebUI, Supabase, Ollama, Firecrawl, Crawl4AI, browser-use, Playwright, MarkItDown, and Docling as external integrations unless a later license review says otherwise.
+- Treat n8n, Dify, Directus, Open WebUI, Supabase, Ollama, Firecrawl, Crawl4AI, browser-use, Playwright, MarkItDown, Docling, FFmpeg, and whisper.cpp as external integrations unless a later license review says otherwise.
 - Document commercial-use and redistribution notes before publishing packaged deployments.
 
 ## Initial Status
@@ -23,3 +23,5 @@ This starter kit references popular OSS and source-available tools as integratio
 | Dify | referenced | no | license terms require review |
 | Directus | referenced | no | source-available terms require review |
 | Open WebUI | referenced | no | license/branding terms require review |
+| FFmpeg | optional local executable | no | obtain separately and review the selected build configuration |
+| whisper.cpp | optional local executable | no | MIT-licensed upstream; model files are downloaded separately and integrity-checked |

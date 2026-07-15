@@ -72,6 +72,73 @@ def test_parser_accepts_remaining_template_commands():
         assert args.output == "out"
 
 
+def test_parser_accepts_manual_studio_commands():
+    parser = build_parser()
+
+    create = parser.parse_args(
+        ["manual-studio", "create", "--output", "manual", "--name", "Invoice entry", "--language", "en"]
+    )
+    assert create.command == "manual-studio"
+    assert create.manual_studio_command == "create"
+    assert create.output == "manual"
+    assert create.name == "Invoice entry"
+
+    prepare = parser.parse_args(
+        ["manual-studio", "prepare", "--workspace", "manual", "--transcribe", "--transcription-model", "small"]
+    )
+    assert prepare.manual_studio_command == "prepare"
+    assert prepare.transcribe is True
+    assert prepare.transcription_model == "small"
+
+    build = parser.parse_args(
+        ["manual-studio", "build", "--workspace", "manual", "--title", "Invoice entry", "--open"]
+    )
+    assert build.manual_studio_command == "build"
+    assert build.open_browser is True
+
+    images = parser.parse_args(
+        ["manual-studio", "images", "--workspace", "manual", "--port", "4314", "--no-open"]
+    )
+    assert images.manual_studio_command == "images"
+    assert images.port == 4314
+    assert images.open_browser is False
+
+    status = parser.parse_args(["manual-studio", "status", "--workspace", "manual", "--json"])
+    assert status.manual_studio_command == "status"
+    assert status.as_json is True
+
+    questions = parser.parse_args(["manual-studio", "questions", "--workspace", "manual", "--json"])
+    assert questions.manual_studio_command == "questions"
+    assert questions.as_json is True
+
+    answer = parser.parse_args(
+        [
+            "manual-studio",
+            "answer",
+            "--workspace",
+            "manual",
+            "--answer",
+            "The finance manager",
+            "--source",
+            "Process owner confirmation",
+            "--answered-by",
+            "Process owner",
+        ]
+    )
+    assert answer.manual_studio_command == "answer"
+    assert answer.source_kind == "operator"
+
+    complete = parser.parse_args(
+        ["manual-studio", "complete", "--workspace", "manual", "--title", "Invoice entry"]
+    )
+    assert complete.manual_studio_command == "complete"
+
+    approve = parser.parse_args(
+        ["manual-studio", "approve", "--workspace", "manual", "--approved-by", "Process owner"]
+    )
+    assert approve.manual_studio_command == "approve"
+
+
 def test_parser_accepts_github_discover_command():
     parser = build_parser()
     args = parser.parse_args(
@@ -2309,3 +2376,97 @@ def test_doctor_keeps_existing_output_contract(tmp_path):
     assert payload["checks"][0]["name"] == "python_version"
     assert payload["status"] in {"ready", "warning", "blocked"}
     assert (output / "doctor_report.md").exists()
+
+
+def test_autopilot_proof_lab_cli_runs_local_assessment_loop(tmp_path, capsys):
+    workspace = tmp_path / "proof-lab"
+    evidence = tmp_path / "policy.md"
+    input_path = tmp_path / "input.json"
+    expected = tmp_path / "expected.json"
+    proposed = tmp_path / "proposed.json"
+    evidence.write_text("approved policy", encoding="utf-8")
+    input_path.write_text('{"amount": 10}', encoding="utf-8")
+    expected.write_text('{"route": "standard"}', encoding="utf-8")
+    proposed.write_text('{"route": "standard"}', encoding="utf-8")
+
+    exit_code = main(
+        [
+            "autopilot-proof-lab",
+            "init",
+            "--workspace",
+            str(workspace),
+            "--pack-id",
+            "monthly-report",
+            "--organization",
+            "Example Co",
+            "--objective",
+            "Test monthly report preparation",
+            "--requested-level",
+            "L3",
+            "--language",
+            "en",
+        ]
+    )
+    assert exit_code == 0
+    assert "assessment_id=" in capsys.readouterr().out
+
+    assert main(
+        [
+            "autopilot-proof-lab",
+            "add-evidence",
+            "--workspace",
+            str(workspace),
+            "--source",
+            str(evidence),
+            "--role",
+            "approved_policy",
+            "--classification",
+            "internal",
+            "--provided-by",
+            "Operations owner",
+        ]
+    ) == 0
+    assert "evidence_id=ev-0001" in capsys.readouterr().out
+    assert main(
+        [
+            "autopilot-proof-lab",
+            "add-case",
+            "--workspace",
+            str(workspace),
+            "--case-id",
+            "case-001",
+            "--input",
+            str(input_path),
+            "--expected",
+            str(expected),
+            "--proposed",
+            str(proposed),
+            "--risk-tier",
+            "low",
+            "--case-class",
+            "normal",
+            "--expected-route",
+            "standard",
+            "--proposed-route",
+            "standard",
+            "--duplicate-action-simulations",
+            "1",
+            "--elapsed-seconds",
+            "0.25",
+            "--estimated-cost",
+            "0.01",
+            "--correction-category",
+            "none",
+        ]
+    ) == 0
+    assert "case_id=case-001" in capsys.readouterr().out
+
+    exit_code = main(["autopilot-proof-lab", "evaluate", "--workspace", str(workspace)])
+    output = capsys.readouterr().out
+    decision = json.loads((workspace / "05_REPORTS" / "readiness_decision.json").read_text(encoding="utf-8"))
+
+    assert exit_code == 0
+    assert decision["decision"] in {"not_ready", "assist_only", "ready_conditional", "ready_unattended"}
+    assert decision["metrics"]["duplicate_action_simulations"] == 1
+    assert "decision=" in output
+    assert "external_actions_enabled=false" in output

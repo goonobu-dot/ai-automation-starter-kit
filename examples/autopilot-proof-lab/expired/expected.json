@@ -1,0 +1,9 @@
+{
+  "case_id": "expired-001",
+  "route": "quarantine",
+  "decision": "quarantine_expired_due_date",
+  "status": "needs_human_review",
+  "expired_on": "2026-06-20",
+  "notes_en": "Expired timing requires a human decision before any draft continues.",
+  "notes_ja": "期限切れのため、人の判断前に下書きを進められません。"
+}

@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
+import re
+import stat
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,6 +18,10 @@ REQUIRED_FILES = [
     "AGENTS.md",
     "START_WITH_CODEX.md",
     "START_WITH_CODEX.ja.md",
+    "START_HERE.command",
+    "START_HERE_WINDOWS.bat",
+    "START_WITH_AI.txt",
+    "START_WITH_AI.ja.txt",
     "pyproject.toml",
     "setup.py",
     ".gitignore",
@@ -34,6 +40,12 @@ REQUIRED_FILES = [
     "docs/report-automation-wizard.html",
     "docs/report-automation-wizard.ja.html",
     "docs/report-automation-wizard-flow.mmd",
+    "docs/AUTOMATION_PROOF_LAB.html",
+    "docs/AUTOMATION_PROOF_LAB.ja.html",
+    "docs/FIRST_PROJECT.html",
+    "docs/FIRST_PROJECT.ja.html",
+    "docs/MANUAL_STUDIO.html",
+    "docs/MANUAL_STUDIO.ja.html",
     "docs/GETTING_STARTED.ja.md",
     "docs/INDEX.md",
     "docs/archive/README.md",
@@ -89,6 +101,7 @@ REQUIRED_FILES = [
     "docs/FAQ.md",
     "docs/FAQ.ja.md",
     "scripts/release_smoke.py",
+    "scripts/first_start.py",
     "scripts/run_all_demos.py",
 ]
 
@@ -100,6 +113,9 @@ REQUIRED_PACK_RESOURCE_FILES = [
 ]
 
 REQUIRED_EXAMPLE_FILES = [
+    "examples/autopilot-proof-lab/README.md",
+    "examples/autopilot-proof-lab/normal/input.json",
+    "examples/autopilot-proof-lab/external_failure/expected.json",
     "examples/research-agent/sample_research.json",
     "examples/research-agent/github_search.json",
     "examples/docs-rag/sample_docs_rag.json",
@@ -150,6 +166,7 @@ REQUIRED_README_SNIPPETS = [
     "ai-automation-kit client-ready",
     "ai-automation-kit beginner-sales",
     "ai-automation-kit beginner",
+    "ai-automation-kit autopilot-proof-lab",
     "ai-automation-kit complete-workspace",
     "ai-automation-kit quickstart",
     "ai-automation-kit flow-guide",
@@ -193,6 +210,8 @@ REQUIRED_README_SNIPPETS = [
     "docs/report-automation-wizard.ja.html",
     "docs/office-workspace.html",
     "docs/office-workspace.ja.html",
+    "docs/MANUAL_STUDIO.html",
+    "docs/MANUAL_STUDIO.ja.html",
     "START_WITH_CODEX.md",
     "START_WITH_CODEX.ja.md",
     "docs/USER_MANUAL.md",
@@ -222,6 +241,11 @@ REQUIRED_README_SNIPPETS = [
     "docs/FAQ.md",
     "value_measurement_report.md",
     "enterprise_readiness.md",
+]
+
+REQUIRED_INDEX_SNIPPETS = [
+    "MANUAL_STUDIO.html",
+    "MANUAL_STUDIO.ja.html",
 ]
 
 REQUIRED_CLI_DOC_SNIPPETS = [
@@ -271,6 +295,14 @@ REQUIRED_CLI_DOC_SNIPPETS = [
     "ai-automation-kit report-wizard build",
     "ai-automation-kit report-wizard approve",
     "ai-automation-kit report-wizard serve",
+    "ai-automation-kit manual-studio create",
+    "ai-automation-kit manual-studio prepare",
+    "ai-automation-kit manual-studio build",
+    "ai-automation-kit manual-studio images",
+    "ai-automation-kit manual-studio questions",
+    "ai-automation-kit manual-studio answer",
+    "ai-automation-kit manual-studio complete",
+    "ai-automation-kit manual-studio approve",
     "ai-automation-kit office-workspace create",
     "ai-automation-kit office-workspace status --workspace",
     "ai-automation-kit office-workspace inspect --workspace",
@@ -392,6 +424,7 @@ REQUIRED_CHANGELOG_SNIPPETS = [
     "docs/office-workspace.ja.html",
     "installed-wheel",
     "release smoke",
+    "manual-studio",
 ]
 
 REQUIRED_CONTRIBUTING_SNIPPETS = [
@@ -498,10 +531,19 @@ FORBIDDEN_SECRET_SNIPPETS = [
     "file:///Users/",
 ]
 
+
+def _contains_secret_marker(text: str, marker: str) -> bool:
+    if marker == "sk-":
+        return re.search(r"(?<![A-Za-z0-9])sk-[A-Za-z0-9_-]{8,}", text) is not None
+    return marker in text
+
 REQUIRED_RELEASE_SMOKE_SNIPPETS = [
     ("public_release_audit.py", "public_release_audit.py"),
     ("pip wheel", '"pip", "wheel"'),
     ("_verify_wheel_install", "_verify_wheel_install"),
+    ("autopilot-proof-lab", "autopilot-proof-lab"),
+    ("proof lab installed smoke", "_run_autopilot_proof_lab_installed_smoke"),
+    ("proof lab readiness decision", "05_REPORTS"),
     ("onboard", "onboard"),
     ("onboarding_summary.md", "onboarding_summary.md"),
     ("offer-pack", "offer-pack"),
@@ -681,6 +723,11 @@ def main() -> int:
             failures.append(f"required file too large: {relative_path}")
         checks.append(relative_path)
 
+    mac_launcher = ROOT / "START_HERE.command"
+    if mac_launcher.exists() and not (mac_launcher.stat().st_mode & stat.S_IXUSR):
+        failures.append("START_HERE.command is not executable")
+    checks.append("START_HERE.command::executable")
+
     for relative_path in REQUIRED_PACK_RESOURCE_FILES:
         path = ROOT / relative_path
         if not path.exists():
@@ -725,6 +772,12 @@ def main() -> int:
         if snippet not in readme:
             failures.append(f"README.md missing CLI snippet: {snippet}")
         checks.append(f"README.md::{snippet}")
+
+    index_text = _read_text("docs/INDEX.md")
+    for snippet in REQUIRED_INDEX_SNIPPETS:
+        if snippet not in index_text:
+            failures.append(f"docs/INDEX.md missing snippet: {snippet}")
+        checks.append(f"docs/INDEX.md::{snippet}")
 
     for snippet in REQUIRED_GENERATED_ARTIFACT_SNIPPETS:
         if snippet not in readme:
@@ -813,7 +866,7 @@ def main() -> int:
     for relative_path in SECRET_SCAN_PATHS:
         scanned_text = _read_tree_text(relative_path)
         for snippet in FORBIDDEN_SECRET_SNIPPETS:
-            if snippet in scanned_text:
+            if _contains_secret_marker(scanned_text, snippet):
                 failures.append(f"potential secret marker found in {relative_path}: {snippet}")
         checks.append(f"secret-scan::{relative_path}")
 

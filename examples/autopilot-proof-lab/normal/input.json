@@ -1,0 +1,22 @@
+{
+  "fixture_class": "normal",
+  "case_id": "normal-001",
+  "review_date": "2026-07-01",
+  "invoice": {
+    "invoice_id": "INV-1001",
+    "supplier_code": "SUP-ALPHA",
+    "order_id": "PO-2001",
+    "currency": "USD",
+    "amount": 2480.0,
+    "due_date": "2026-07-20",
+    "required_documents_complete": true
+  },
+  "order": {
+    "order_id": "PO-2001",
+    "supplier_code": "SUP-ALPHA",
+    "currency": "USD",
+    "approved_amount": 2480.0
+  },
+  "notes_en": "Low-risk sample with complete data.",
+  "notes_ja": "低リスクで必要項目がそろったサンプルです。"
+}

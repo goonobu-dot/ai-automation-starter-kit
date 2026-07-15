@@ -6,6 +6,15 @@
 
 このページのゴールは1つだけです。**30分で、お客様に見せられるデモ一式を自分のパソコンの中に作ること。** プログラミングの知識は不要です。コマンドはすべてコピペで動きます。
 
+## 最初はターミナルを使わなくて大丈夫です
+
+1. GitHubの「Code」から「Download ZIP」を押します。
+2. ダウンロードしたZIPをダブルクリックして開きます。
+3. 中にある `START_HERE.command` をダブルクリックします。Windowsは `START_HERE_WINDOWS.bat` です。
+4. ブラウザが開いたら「次はこれだけ」に従います。
+
+Macが初回だけ止めた場合は、`START_HERE.command`を右クリックし、「開く」を選んでください。Codexに任せる場合は、`START_WITH_AI.ja.txt`の内容をそのまま渡します。ここから下のターミナル説明は、自分で詳しく操作したい場合だけ読んでください。
+
 ## このキットは何をするものか
 
 AI Automation Starter Kit は、業務自動化の提案に必要な資料（デモ画面・ヒアリングシート・提案書・価格表など）を、コマンド1つでまとめて生成するツールです。
@@ -56,6 +65,18 @@ python3 --version
 ```
 
 `Python 3.10` 以上の数字が出ればOKです。
+
+## ターミナルを使う場合: 一行で見本まで作る
+
+細かい設定を学ぶ前に、まず動く見本を見たい場合は、次の一行だけをターミナルへ貼り付けてEnterを押してください。
+
+```bash
+git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git && cd ai-automation-starter-kit && python3 scripts/first_start.py --open
+```
+
+`my-first-automation/START_HERE.html` が入口です。見本データ、顧客への聞き取り、提案準備、AIへの次の依頼文まで自動で用意します。APIキーや顧客データは使いません。詳しい画面付き説明は [ダブルクリック手順書](FIRST_PROJECT.ja.html) を開いてください。
+
+以下は、各コマンドも自分で使いたい人向けの従来手順です。
 
 ## ステップ1: インストール（約5分）
 

@@ -1,0 +1,23 @@
+{
+  "fixture_class": "duplicate",
+  "case_id": "duplicate-001",
+  "review_date": "2026-07-01",
+  "invoice": {
+    "invoice_id": "INV-1004",
+    "supplier_code": "SUP-DELTA",
+    "order_id": "PO-2004",
+    "currency": "USD",
+    "amount": 1600.0,
+    "due_date": "2026-07-22",
+    "required_documents_complete": true
+  },
+  "order": {
+    "order_id": "PO-2004",
+    "supplier_code": "SUP-DELTA",
+    "currency": "USD",
+    "approved_amount": 1600.0
+  },
+  "duplicate_reference": "INV-0998",
+  "notes_en": "The invoice fingerprint already exists in the local archive.",
+  "notes_ja": "請求書の指紋がローカル履歴に既に存在します。"
+}

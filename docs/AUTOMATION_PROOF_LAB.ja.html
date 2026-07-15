@@ -1,0 +1,960 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Automation Proof Lab 手順書 | AI Automation Starter Kit</title>
+<style>
+  :root {
+    color-scheme: light;
+    --paper: #fafaf7;
+    --card: #ffffff;
+    --ink: #22262e;
+    --muted: #656b76;
+    --line: #d8d9d4;
+    --blue: #2c4f9e;
+    --blue-soft: #e8edf8;
+    --red: #bc4430;
+    --red-soft: #f9ece8;
+    --green: #2f7d4f;
+    --green-soft: #ebf5ef;
+    --amber: #8a6125;
+    --amber-soft: #faf1df;
+    --code-bg: #21252d;
+    --code-ink: #dfe4ec;
+    --serif: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif;
+    --sans: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic", "Meiryo", system-ui, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; }
+  }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.85;
+    font-size: 15.5px;
+  }
+  a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover { text-decoration-thickness: 2px; }
+  :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 2px; }
+  .frame { max-width: 1160px; margin: 0 auto; padding: 0 20px; }
+  .layout { display: grid; grid-template-columns: 236px minmax(0, 1fr); gap: 42px; align-items: start; }
+  header.cover {
+    border-bottom: 3px double var(--ink);
+    padding: 42px 0 28px;
+    margin-bottom: 32px;
+  }
+  .cover-kicker {
+    margin: 0 0 10px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+  }
+  .cover-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: start;
+  }
+  .lang-link {
+    white-space: nowrap;
+    font-size: 13.5px;
+    color: var(--muted);
+    padding-top: 6px;
+  }
+  h1 {
+    margin: 0 0 14px;
+    font-family: var(--serif);
+    font-size: clamp(28px, 4.8vw, 42px);
+    line-height: 1.3;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .lede { max-width: 62ch; margin: 0 0 18px; }
+  .safety-strip {
+    display: inline-flex;
+    flex-wrap: wrap;
+    border: 1.5px solid var(--ink);
+    font-family: var(--serif);
+    font-size: 14px;
+  }
+  .safety-strip span { padding: 7px 15px; }
+  .safety-strip span + span { border-left: 1.5px solid var(--ink); }
+  .safety-strip .human { background: var(--red); color: #fff; }
+  .note { color: var(--muted); font-size: 13.5px; }
+  .toc {
+    position: sticky;
+    top: 18px;
+    border-left: 3px solid var(--ink);
+    padding-left: 16px;
+    font-size: 13.5px;
+  }
+  .toc-title {
+    margin: 0 0 10px;
+    font-family: var(--serif);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.26em;
+  }
+  .toc ol { list-style: none; padding: 0; margin: 0; }
+  .toc li { margin: 0 0 3px; }
+  .toc a {
+    display: block;
+    color: var(--ink);
+    text-decoration: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+  }
+  .toc a:hover { background: var(--blue-soft); }
+  .toc-no {
+    margin-right: 7px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .toc-mobile { display: none; }
+  main { min-width: 0; padding-bottom: 88px; }
+  section { margin-bottom: 54px; }
+  h2 {
+    margin: 0 0 6px;
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+  }
+  .sec-no {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--blue);
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+  }
+  .h2-rule { border: 0; border-top: 1px solid var(--ink); margin: 10px 0 20px; }
+  h3 {
+    margin: 26px 0 8px;
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 600;
+  }
+  p { margin: 0 0 14px; }
+  ul { margin: 0 0 16px 20px; padding: 0; }
+  li { margin-bottom: 7px; }
+  code {
+    font-family: var(--mono);
+    font-size: 0.92em;
+    background: #ecedea;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  pre {
+    margin: 10px 0 16px;
+    padding: 14px 16px;
+    border-radius: 6px;
+    overflow-x: auto;
+    background: var(--code-bg);
+    color: var(--code-ink);
+    font-family: var(--mono);
+    font-size: 12.9px;
+    line-height: 1.7;
+  }
+  pre code { background: none; padding: 0; }
+  pre .out { color: #9aa6b8; }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin: 14px 0 18px;
+  }
+  .panel {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 14px 16px;
+    background: var(--card);
+  }
+  .panel h3 { margin-top: 0; font-size: 17px; }
+  .mini-title {
+    margin: 0 0 8px;
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .callout {
+    margin: 16px 0;
+    padding: 14px 18px;
+    border: 1.5px solid var(--red);
+    border-radius: 6px;
+    background: var(--red-soft);
+  }
+  .callout strong:first-child {
+    color: var(--red);
+    font-family: var(--serif);
+  }
+  .callout.ok {
+    border-color: var(--green);
+    background: var(--green-soft);
+  }
+  .callout.ok strong:first-child { color: var(--green); }
+  .callout.warn {
+    border-color: var(--amber);
+    background: var(--amber-soft);
+  }
+  .callout.warn strong:first-child { color: var(--amber); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 18px;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  th {
+    font-family: var(--serif);
+    font-weight: 600;
+    border-bottom: 1.5px solid var(--ink);
+    white-space: nowrap;
+  }
+  .steps {
+    display: grid;
+    gap: 10px;
+    margin: 14px 0 18px;
+  }
+  .step {
+    display: grid;
+    grid-template-columns: 38px 1fr;
+    gap: 12px;
+    align-items: start;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--card);
+    padding: 12px 14px;
+  }
+  .step-no {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid var(--blue);
+    color: var(--blue);
+    font-family: var(--serif);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--paper);
+  }
+  .step p:last-child { margin-bottom: 0; }
+  .flow {
+    margin: 18px 0 12px;
+  }
+  .lane {
+    border: 1.5px solid var(--blue);
+    border-radius: 6px;
+    background: var(--card);
+    padding: 12px 14px 14px;
+  }
+  .lane + .lane { margin-top: 10px; }
+  .lane.human { border-color: var(--red); }
+  .lane-label {
+    margin: 0 0 10px;
+    color: var(--blue);
+    font-family: var(--serif);
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+  .lane.human .lane-label { color: var(--red); }
+  .lane-steps { display: flex; flex-wrap: wrap; align-items: stretch; }
+  .box {
+    flex: 1 1 0;
+    min-width: 132px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--blue-soft);
+    padding: 8px 10px;
+    font-size: 12.7px;
+    line-height: 1.55;
+  }
+  .lane.human .box { background: var(--red-soft); }
+  .box b {
+    display: block;
+    font-family: var(--serif);
+    font-size: 13px;
+  }
+  .arrow {
+    align-self: center;
+    padding: 0 8px;
+    color: var(--muted);
+    font-size: 16px;
+    flex: 0 0 auto;
+  }
+  .joint {
+    text-align: center;
+    color: var(--red);
+    font-family: var(--serif);
+    font-size: 13px;
+    padding: 6px 0;
+  }
+  .joint::before { content: "▼ "; }
+  .folder-tree {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--card);
+    padding: 14px 16px;
+    font-family: var(--mono);
+    font-size: 12.9px;
+    line-height: 1.75;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .levels {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+    margin: 16px 0 18px;
+  }
+  .level {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--card);
+    padding: 12px 12px 14px;
+  }
+  .level strong {
+    display: block;
+    margin-bottom: 6px;
+    font-family: var(--serif);
+    font-size: 16px;
+  }
+  details {
+    border-top: 1px solid var(--line);
+    padding: 10px 2px;
+  }
+  details:last-of-type { border-bottom: 1px solid var(--line); }
+  summary {
+    cursor: pointer;
+    font-family: var(--serif);
+    font-weight: 600;
+  }
+  footer {
+    border-top: 3px double var(--ink);
+    padding: 22px 0 46px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  @media (max-width: 920px) {
+    .layout { grid-template-columns: 1fr; gap: 0; }
+    .toc { display: none; }
+    .toc-mobile {
+      display: block;
+      position: sticky;
+      top: 0;
+      z-index: 6;
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+      margin: 0 -20px 24px;
+      padding: 0 20px;
+    }
+    .toc-mobile summary {
+      padding: 12px 0;
+      font-family: var(--serif);
+      font-weight: 600;
+      list-style: none;
+    }
+    .toc-mobile summary::before { content: "☰ "; color: var(--blue); }
+    .toc-mobile ol {
+      list-style: none;
+      margin: 0 0 14px;
+      padding: 0;
+      columns: 2;
+      column-gap: 20px;
+    }
+    .toc-mobile li { break-inside: avoid; margin-bottom: 6px; }
+    .toc-mobile a { text-decoration: none; }
+    .levels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 760px) {
+    body { font-size: 15px; }
+    header.cover { padding-top: 26px; }
+    .cover-head { flex-direction: column; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .lane-steps { flex-direction: column; }
+    .arrow {
+      transform: rotate(90deg);
+      padding: 2px 0;
+      align-self: flex-start;
+      margin-left: 18px;
+    }
+    .levels { grid-template-columns: 1fr; }
+    .safety-strip { flex-direction: column; }
+    .safety-strip span + span { border-left: 0; border-top: 1.5px solid var(--ink); }
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+
+<header class="cover">
+  <p class="cover-kicker">AI AUTOMATION STARTER KIT — AUTOMATION PROOF LAB MANUAL / v0.1.0</p>
+  <div class="cover-head">
+    <div>
+      <h1>Automation Proof Lab 手順書</h1>
+      <p class="lede">このページは、業務を強い自動化へ進めてよいかをローカルで確かめるための初心者向け手順書です。外部実行のスイッチではなく、証拠・比較・判断理由を整理するための検証場所だと考えてください。</p>
+    </div>
+    <p class="lang-link">English: <a href="AUTOMATION_PROOF_LAB.html">AUTOMATION_PROOF_LAB.html</a></p>
+  </div>
+  <div class="safety-strip" role="img" aria-label="安全境界: ローカル証拠、人間承認維持、外部実行なし">
+    <span>ローカル証拠だけ</span><span class="human">人間承認は残る</span><span>外部実行なし</span>
+  </div>
+  <p class="note" style="margin-top:12px">このProof Labは、メッセージ送信、支払、SaaS更新、申請提出、権限変更を行いません。L3とL4は将来の別実行系に進める準備度であり、既存の人間承認を消しません。収益を保証するものでもありません。</p>
+</header>
+
+<details class="toc-mobile">
+  <summary>目次</summary>
+  <ol>
+    <li><a href="#what">これは何か</a></li>
+    <li><a href="#install">インストール</a></li>
+    <li><a href="#init">初期化とフォルダー</a></li>
+    <li><a href="#evidence">証拠とケース準備</a></li>
+    <li><a href="#commands">操作の流れ</a></li>
+    <li><a href="#sample">通しサンプル</a></li>
+    <li><a href="#levels">L0-L4 と監視運転</a></li>
+    <li><a href="#delivery">納品と安全</a></li>
+    <li><a href="#trouble">困ったとき</a></li>
+  </ol>
+</details>
+
+<div class="layout">
+  <nav class="toc" aria-label="目次">
+    <p class="toc-title">目　次</p>
+    <ol>
+      <li><a href="#what"><span class="toc-no">01</span>これは何か</a></li>
+      <li><a href="#install"><span class="toc-no">02</span>インストール</a></li>
+      <li><a href="#init"><span class="toc-no">03</span>初期化とフォルダー</a></li>
+      <li><a href="#evidence"><span class="toc-no">04</span>証拠とケース準備</a></li>
+      <li><a href="#commands"><span class="toc-no">05</span>操作の流れ</a></li>
+      <li><a href="#sample"><span class="toc-no">06</span>通しサンプル</a></li>
+      <li><a href="#levels"><span class="toc-no">07</span>L0-L4 と監視運転</a></li>
+      <li><a href="#delivery"><span class="toc-no">08</span>納品と安全</a></li>
+      <li><a href="#trouble"><span class="toc-no">09</span>困ったとき</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+  <section id="what">
+    <h2><span class="sec-no">第 1 節</span>これは何か、何ではないか</h2>
+    <hr class="h2-rule" />
+    <div class="grid-2">
+      <div class="panel">
+        <h3>これは何か</h3>
+        <ul>
+          <li>1つの業務パックを、ローカルで検証するための作業場所です。</li>
+          <li>証拠、承認済み完成例、必須ゲート、過去ケースを整理するための道具です。</li>
+          <li>人の実結果と、候補システムの想定結果を比較する場所です。</li>
+          <li><code>not_ready</code> や <code>assist_only</code> も価値ある結論として返す道具です。</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>これは何ではないか</h3>
+        <ul>
+          <li>外部システムを実行するエンジンではありません。</li>
+          <li>Human Approval Edition の承認境界を弱める道具ではありません。</li>
+          <li>どの業務でも必ず L3 や L4 へ進めるという約束ではありません。</li>
+          <li>副業収入を保証する道具でもありません。</li>
+        </ul>
+      </div>
+    </div>
+    <div class="flow" role="img" aria-label="Proof Labはローカル評価まで。人間承認は残る">
+      <div class="lane">
+        <p class="lane-label">Proof Lab が行うこと</p>
+        <div class="lane-steps">
+          <div class="box"><b>証拠を集める</b>手順書、承認済み完成例、責任者メモ</div>
+          <span class="arrow">→</span>
+          <div class="box"><b>監視運転で比較</b>人の結果と候補システムの結果を照合</div>
+          <span class="arrow">→</span>
+          <div class="box"><b>必須ゲートを判定</b>復旧、二重防止、例外担当、データ利用許可など</div>
+          <span class="arrow">→</span>
+          <div class="box"><b>準備度を返す</b>L0-L4 と報告書、改善ロードマップ</div>
+        </div>
+      </div>
+      <p class="joint">ここで終わりです</p>
+      <div class="lane human">
+        <p class="lane-label">人間が残す仕事</p>
+        <div class="lane-steps">
+          <div class="box"><b>ルール確認</b>AI は候補まで、人が正式化</div>
+          <span class="arrow">→</span>
+          <div class="box"><b>承認境界の維持</b>今ある毎回承認は消えない</div>
+          <span class="arrow">→</span>
+          <div class="box"><b>納品判断</b>共有、保留、改善、中止を決める</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout">
+      <strong>大事な原則。</strong> 点数が高くても、必須ゲートが落ちていれば昇格しません。復旧不足、例外担当不足、監視運転の証拠不足は、通常ケースの見栄えでは打ち消せません。
+    </div>
+  </section>
+
+  <section id="install">
+    <h2><span class="sec-no">第 2 節</span>インストール</h2>
+    <hr class="h2-rule" />
+    <p>まずキット全体を入れます。Proof Lab も同じローカル前提で動きます。</p>
+    <pre><code>git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git
+cd ai-automation-starter-kit
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip setuptools
+python3 -m pip install -e .
+ai-automation-kit --version</code>
+<span class="out">ai-automation-kit 0.1.0</span></pre>
+    <p>始める前に環境診断を1回入れてください。</p>
+    <pre><code>ai-automation-kit doctor --output .tmp/proof-lab-doctor</code>
+<span class="out">status=warning
+report=.tmp/proof-lab-doctor/doctor_report.md</span></pre>
+    <p class="note"><code>ready</code> は問題なし、<code>warning</code> は注意しつつ続行可、<code>blocked</code> は先に対処が必要です。</p>
+  </section>
+
+  <section id="init">
+    <h2><span class="sec-no">第 3 節</span>初期化と、正確なフォルダー構成</h2>
+    <hr class="h2-rule" />
+    <p>Proof Lab は、1つの業務パックごとに1つの作業場所を作ります。共有ドライブや本番フォルダーを直接指さず、ローカルに閉じて始めてください。</p>
+    <pre><code>ai-automation-kit autopilot-proof-lab init \
+  --pack-id invoice-order-check-daily \
+  --organization "Example Co" \
+  --objective "請求書照合を安全に検証する" \
+  --workspace .tmp/proof-lab-invoice \
+  --language ja</code>
+<span class="out">assessment_id=asmt_...
+status=created
+stage=created
+decision=not_ready
+maximum_level=L0
+next_action=Add current-work evidence and accountable owners.
+external_actions_enabled=false</span></pre>
+    <p><code>init</code> の後、Proof Lab が次の管理用構成を作ります。<code>.proof_lab</code> の中は手で書き換えず、下のコマンドで操作してください。</p>
+    <div class="folder-tree" aria-label="Proof Lab のフォルダー構成">proof-lab-invoice/
+├── .proof_lab/
+│   ├── state.json
+│   ├── pack_manifest.json
+│   ├── audit.jsonl
+│   ├── evidence/
+│   │   └── ev-0001.md
+│   └── cases/
+│       └── case-001/
+│           ├── input.json
+│           ├── expected.json
+│           └── proposed.json
+└── 05_REPORTS/
+    ├── current_workflow.md
+    ├── automation_scope.md
+    ├── source_inventory.csv
+    ├── decision_table.csv
+    ├── exception_register.csv
+    ├── connector_permissions.md
+    ├── recovery_plan.md
+    ├── kill_switch_plan.md
+    ├── shadow_test_cases.csv
+    ├── comparison_report.md
+    ├── readiness_decision.json
+    ├── readiness_report.html
+    ├── improvement_roadmap.md
+    └── proposal_scope.md</div>
+    <div class="callout warn">
+      <strong>普通のファイルだけを置いてください。</strong> シンボリックリンク、実行スクリプト、秘密情報の丸ごと書き出し、未確認の本番データは置かないでください。Proof Lab は証拠ハッシュとスナップショット前提なので、入口の整理が重要です。
+    </div>
+  </section>
+
+  <section id="evidence">
+    <h2><span class="sec-no">第 4 節</span>証拠とケースの正確な準備</h2>
+    <hr class="h2-rule" />
+    <h3>証拠の準備</h3>
+    <p><code>add-evidence</code> の前に、元資料を管理用作業場所の外で役割ごとに分けます。コマンドを実行すると、選んだファイルが安全にコピーされ、ハッシュが記録されます。</p>
+    <table>
+      <tr><th>元資料の整理例</th><th>ここへ置くもの</th><th>なぜ必要か</th></tr>
+      <tr><td><code>source-evidence/current-process/</code></td><td>現在手順のメモ、担当者チェックリスト、入力画面の説明、個人情報を抜いた CSV など</td><td>いま実際にどう始まり、どう終わるかを示すため</td></tr>
+      <tr><td><code>source-evidence/approved-examples/</code></td><td>人が承認した完成物</td><td>「正しい結果」の基準にするため</td></tr>
+      <tr><td><code>source-evidence/policies/</code></td><td>社内ルール、契約条件、金額上限、止める条件</td><td>AI が勝手にルールを作らないため</td></tr>
+      <tr><td><code>source-evidence/exceptions/</code></td><td>例外案件の記録、エスカレーションメモ</td><td>例外を見つけて人へ戻せるか確かめるため</td></tr>
+      <tr><td><code>source-evidence/recovery/</code></td><td>取消手順、支払保留手順、緊急停止手順、復旧確認メモ</td><td>補助以上へ進むための必須材料だから</td></tr>
+    </table>
+    <h3>ケースの準備</h3>
+    <p>過去ケースは、同じ仕事を3つの見方でそろえます。</p>
+    <ul>
+      <li><strong>入力証拠:</strong> そのとき見えていた資料</li>
+      <li><strong>期待される人の結果:</strong> 実際に承認された人の完成結果</li>
+      <li><strong>候補システムの想定結果:</strong> 外部実行なしで「もし走ったらどうなるか」</li>
+    </ul>
+    <p>監視運転では、少なくとも次の7種類を用意してください。</p>
+    <div class="grid-2">
+      <div class="panel">
+        <p class="mini-title">必須ケース</p>
+        <ul>
+          <li><code>normal</code></li>
+          <li><code>near_limit</code></li>
+          <li><code>missing_data</code></li>
+          <li><code>duplicate</code></li>
+        </ul>
+      </div>
+      <div class="panel">
+        <p class="mini-title">さらに必要</p>
+        <ul>
+          <li><code>conflicting</code></li>
+          <li><code>expired</code></li>
+          <li><code>external_failure</code></li>
+        </ul>
+      </div>
+    </div>
+    <h3>11個の必須ゲート</h3>
+    <p>各ゲートは <code>pass</code>、<code>fail</code>、<code>unknown</code> のどれかです。点数が高くても、不合格や不明を飛び越えることはできません。</p>
+    <table>
+      <tr><th>ゲートID</th><th>人が確認する意味</th></tr>
+      <tr><td><code>input_identifiable</code></td><td>1件の仕事に必要な入力を区別できる。</td></tr>
+      <tr><td><code>completion_testable</code></td><td>「正しく完了した」を同じ方法で検査できる。</td></tr>
+      <tr><td><code>standard_policy_confirmed</code></td><td>通常時のルールを責任者が確認している。</td></tr>
+      <tr><td><code>exceptions_detectable</code></td><td>異常案件を実行前に見つけられる。</td></tr>
+      <tr><td><code>exception_owner_assigned</code></td><td>AIが決められない案件を受け取る人が決まっている。</td></tr>
+      <tr><td><code>least_privilege_available</code></td><td>将来の実行環境を必要最小限の権限にできる。</td></tr>
+      <tr><td><code>idempotency_defined</code></td><td>再試行や重複で同じ処理を二重実行しない。</td></tr>
+      <tr><td><code>recovery_defined</code></td><td>保留、取消、再開の手順が書かれ、確認できる。</td></tr>
+      <tr><td><code>kill_switch_owned</code></td><td>停止ボタンを扱う責任者が決まっている。</td></tr>
+      <tr><td><code>data_use_permitted</code></td><td>その資料を検証へ使う許可がある。</td></tr>
+      <tr><td><code>shadow_test_passed</code></td><td>過去ケース比較が合意した品質基準を満たした。</td></tr>
+    </table>
+    <div class="callout ok">
+      <strong>初心者向けの考え方。</strong> 10件しか集まっていなくても学びにはなります。ただし L3 や L4 の根拠には足りません。その場合は <code>assist_only</code>、<code>not_ready</code>、または「監視運転を続ける」を誠実な結論として納品します。
+    </div>
+  </section>
+
+  <section id="commands">
+    <h2><span class="sec-no">第 5 節</span>操作の流れ</h2>
+    <hr class="h2-rule" />
+    <div class="steps">
+      <div class="step">
+        <div class="step-no">1</div>
+        <div>
+          <p><strong>証拠を登録する。</strong> 各ファイルに役割、提供者、分類を付けます。こうしておくと、結論と証拠がきれいに結びつきます。</p>
+          <pre><code>ai-automation-kit autopilot-proof-lab add-evidence \
+  --workspace .tmp/proof-lab-invoice \
+  --source ./source-files/approved-example-001.md \
+  --role approved_example \
+  --provided-by "Operations owner" \
+  --classification confidential</code>
+<span class="out">evidence_id=ev-0001
+status=present
+external_actions_enabled=false</span></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-no">2</div>
+        <div>
+          <p><strong>過去ケースを登録する。</strong> 実際に起きた1案件ごとに、入力、人の結果、候補システムの結果を束ねます。</p>
+          <pre><code>ai-automation-kit autopilot-proof-lab add-case \
+  --workspace .tmp/proof-lab-invoice \
+  --case-id case-001 \
+  --input ./cases-source/case-001/input.json \
+  --expected ./cases-source/case-001/expected.json \
+  --proposed ./cases-source/case-001/proposed.json \
+  --case-class normal \
+  --risk-tier low \
+  --expected-route standard \
+  --proposed-route standard</code>
+<span class="out">case_id=case-001
+external_actions_enabled=false</span></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-no">3</div>
+        <div>
+          <p><strong>必須ゲートを記録する。</strong> 合格、不合格、または不明を明記し、責任者と根拠を残します。</p>
+          <pre><code>ai-automation-kit autopilot-proof-lab set-gate \
+  --workspace .tmp/proof-lab-invoice \
+  --gate recovery_defined \
+  --status fail \
+  --owner "Procurement systems owner" \
+  --evidence-id ev-0001 \
+  --note "No tested vendor deactivation path yet"</code>
+<span class="out">gate=recovery_defined
+status=fail
+external_actions_enabled=false</span></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-no">4</div>
+        <div>
+          <p><strong>評価する。</strong> 比較、ゲート判定、準備度決定、報告書生成をまとめて行います。</p>
+          <pre><code>ai-automation-kit autopilot-proof-lab evaluate \
+  --workspace .tmp/proof-lab-invoice</code>
+<span class="out">status=not_ready
+stage=not_ready
+decision=not_ready
+maximum_level=L0
+next_action=Resolve the blocking input or completion definition before automation.
+external_actions_enabled=false</span></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-no">5</div>
+        <div>
+          <p><strong>状態を確認する。</strong> 変更後は必ず <code>status</code> を見ます。次に何をするか、判断が古くなっていないかが分かります。</p>
+          <pre><code>ai-automation-kit autopilot-proof-lab status \
+  --workspace .tmp/proof-lab-invoice</code>
+<span class="out">status=stale_decision
+stage=stale_decision
+decision=not_ready
+maximum_level=L0
+next_action=Restore changed evidence or reassess the changed configuration.
+external_actions_enabled=false</span></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-no">6</div>
+        <div>
+          <p><strong>ローカル画面を開く。</strong> 同じPCのブラウザで使います。公開 Web アプリではありません。</p>
+          <pre><code>ai-automation-kit autopilot-proof-lab serve \
+  --workspace .tmp/proof-lab-invoice \
+  --language ja \
+  --no-open</code>
+<span class="out">http://127.0.0.1:8080/</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sample">
+    <h2><span class="sec-no">第 6 節</span>通しサンプル</h2>
+    <hr class="h2-rule" />
+    <p>これは請求書照合の小さな検証例です。派手な結論よりも、止まる理由をきちんと出す使い方を意識しています。</p>
+    <pre><code># 1) 作業場所を作る
+ai-automation-kit autopilot-proof-lab init \
+  --pack-id invoice-order-check-daily \
+  --organization "Example Co" \
+  --objective "請求書照合を安全に検証する" \
+  --workspace .tmp/proof-lab-invoice \
+  --language ja
+
+# 2) 証拠を入れる
+ai-automation-kit autopilot-proof-lab add-evidence --workspace .tmp/proof-lab-invoice \
+  --source ./examples/autopilot-proof-lab/evidence/current-process.md \
+  --role current_process_example \
+  --provided-by "Accounting lead" \
+  --classification internal
+
+ai-automation-kit autopilot-proof-lab add-evidence --workspace .tmp/proof-lab-invoice \
+  --source ./examples/autopilot-proof-lab/evidence/approved-policy.md \
+  --role approved_example \
+  --provided-by "Accounting lead" \
+  --classification internal
+
+ai-automation-kit autopilot-proof-lab add-evidence --workspace .tmp/proof-lab-invoice \
+  --source ./examples/autopilot-proof-lab/evidence/recovery-plan.md \
+  --role recovery_procedure \
+  --provided-by "Finance systems owner" \
+  --classification internal
+
+# 3) 過去ケースを入れる
+ai-automation-kit autopilot-proof-lab add-case --workspace .tmp/proof-lab-invoice \
+  --case-id normal-001 \
+  --input ./examples/autopilot-proof-lab/normal/input.json \
+  --expected ./examples/autopilot-proof-lab/normal/expected.json \
+  --proposed ./examples/autopilot-proof-lab/normal/proposed.json \
+  --case-class normal \
+  --risk-tier low \
+  --expected-route standard \
+  --proposed-route standard
+
+ai-automation-kit autopilot-proof-lab add-case --workspace .tmp/proof-lab-invoice \
+  --case-id near-limit-001 \
+  --input ./examples/autopilot-proof-lab/near_limit/input.json \
+  --expected ./examples/autopilot-proof-lab/near_limit/expected.json \
+  --proposed ./examples/autopilot-proof-lab/near_limit/proposed.json \
+  --case-class near_limit --risk-tier medium \
+  --expected-route standard --proposed-route standard
+
+ai-automation-kit autopilot-proof-lab add-case --workspace .tmp/proof-lab-invoice \
+  --case-id missing-data-001 \
+  --input ./examples/autopilot-proof-lab/missing_data/input.json \
+  --expected ./examples/autopilot-proof-lab/missing_data/expected.json \
+  --proposed ./examples/autopilot-proof-lab/missing_data/proposed.json \
+  --case-class missing_data --risk-tier medium \
+  --expected-route quarantine --proposed-route quarantine \
+  --exception-expected --exception-detected
+
+ai-automation-kit autopilot-proof-lab add-case --workspace .tmp/proof-lab-invoice \
+  --case-id duplicate-001 \
+  --input ./examples/autopilot-proof-lab/duplicate/input.json \
+  --expected ./examples/autopilot-proof-lab/duplicate/expected.json \
+  --proposed ./examples/autopilot-proof-lab/duplicate/proposed.json \
+  --case-class duplicate \
+  --risk-tier high \
+  --expected-route quarantine \
+  --proposed-route quarantine \
+  --exception-expected \
+  --exception-detected \
+  --duplicate-action-simulations 1
+
+ai-automation-kit autopilot-proof-lab add-case --workspace .tmp/proof-lab-invoice \
+  --case-id conflicting-001 \
+  --input ./examples/autopilot-proof-lab/conflicting/input.json \
+  --expected ./examples/autopilot-proof-lab/conflicting/expected.json \
+  --proposed ./examples/autopilot-proof-lab/conflicting/proposed.json \
+  --case-class conflicting --risk-tier high \
+  --expected-route quarantine --proposed-route quarantine \
+  --exception-expected --exception-detected
+
+ai-automation-kit autopilot-proof-lab add-case --workspace .tmp/proof-lab-invoice \
+  --case-id expired-001 \
+  --input ./examples/autopilot-proof-lab/expired/input.json \
+  --expected ./examples/autopilot-proof-lab/expired/expected.json \
+  --proposed ./examples/autopilot-proof-lab/expired/proposed.json \
+  --case-class expired --risk-tier medium \
+  --expected-route quarantine --proposed-route quarantine \
+  --exception-expected --exception-detected
+
+ai-automation-kit autopilot-proof-lab add-case --workspace .tmp/proof-lab-invoice \
+  --case-id external-failure-001 \
+  --input ./examples/autopilot-proof-lab/external_failure/input.json \
+  --expected ./examples/autopilot-proof-lab/external_failure/expected.json \
+  --proposed ./examples/autopilot-proof-lab/external_failure/proposed.json \
+  --case-class external_failure --risk-tier critical \
+  --expected-route quarantine --proposed-route quarantine \
+  --exception-expected --exception-detected \
+  --recovery-tested --recovery-passed
+
+# 4) 必須ゲートを記録する
+ai-automation-kit autopilot-proof-lab set-gate --workspace .tmp/proof-lab-invoice \
+  --gate input_identifiable --status pass --owner "Accounting lead"
+
+ai-automation-kit autopilot-proof-lab set-gate --workspace .tmp/proof-lab-invoice \
+  --gate completion_testable --status pass --owner "Accounting lead"
+
+ai-automation-kit autopilot-proof-lab set-gate --workspace .tmp/proof-lab-invoice \
+  --gate idempotency_defined --status fail --owner "Finance systems owner" \
+  --note "Duplicate invoice replay is not fully blocked yet"
+
+# 5) 評価する
+ai-automation-kit autopilot-proof-lab evaluate --workspace .tmp/proof-lab-invoice
+
+# 6) 結果を見る
+ai-automation-kit autopilot-proof-lab status --workspace .tmp/proof-lab-invoice</code></pre>
+    <p>初心者としての読み方は次の3点です。</p>
+    <ul>
+      <li><code>L1 assist_only</code> でも立派な納品結果です。</li>
+      <li>比較レポートでは、二重実行対策がまだ弱いことが理由として見えるはずです。</li>
+      <li>改善ロードマップには、担当者、やること、次回合格条件が並びます。</li>
+    </ul>
+  </section>
+
+  <section id="levels">
+    <h2><span class="sec-no">第 7 節</span>L0-L4、監視運転、古い証拠、誠実な中止</h2>
+    <hr class="h2-rule" />
+    <div class="levels" aria-label="自動化準備度レベル">
+      <div class="level"><strong>L0</strong>自動化不可。必要証拠、ルール、責任者、復旧のどれかが不足しています。</div>
+      <div class="level"><strong>L1</strong>AI補助。証拠整理や下書きはできるが、判断は人に残します。</div>
+      <div class="level"><strong>L2</strong>監視運転。本番のつもりで判定するが、外部変更はせず、人の結果と比較します。</div>
+      <div class="level"><strong>L3</strong>条件付き自動化の準備完了。将来の別実行系で、標準案件だけを進められる状態です。</div>
+      <div class="level"><strong>L4</strong>無人標準経路の準備完了。将来の別実行系で、停止・隔離・復旧・監査つきで回せる状態です。</div>
+    </div>
+    <h3>監視運転を平たく言うと</h3>
+    <p>「もし本番だったらどう動くか」を試すけれど、外へは何もしない運転です。候補システムの振る舞いを、人が実際に承認した結果と照らし合わせます。</p>
+    <table>
+      <tr><th>監視運転で見ること</th><th>意味</th></tr>
+      <tr><td>完全一致・実質一致</td><td>通常ケースで人の実務と合っているか</td></tr>
+      <tr><td>誤検知・見逃し</td><td>危険な失敗が平均値に埋もれていないか</td></tr>
+      <tr><td>二重実行の扱い</td><td>再実行しても事故らないか</td></tr>
+      <tr><td>例外検出</td><td>おかしな案件を人へ戻せるか</td></tr>
+      <tr><td>復旧シミュレーション</td><td>間違えたときの戻り道があるか</td></tr>
+    </table>
+    <h3>古い証拠（stale evidence）</h3>
+    <p>次のような変更があれば、以前の判定は古くなります。</p>
+    <ul>
+      <li>証拠ファイルが編集、差し替え、削除された</li>
+      <li>ポリシー版が変わった</li>
+      <li>責任者が変わった</li>
+      <li>新しい例外経路が見つかった</li>
+      <li>ケースや候補ルールが前回評価後に変わった</li>
+    </ul>
+    <div class="callout warn">
+      <strong>古い判定は止める合図です。</strong> 古い判定を根拠に、試験導入や外部実行計画を進めてはいけません。<code>status</code> を見て、変更を確認し、必要なら <code>evaluate</code> をやり直してください。
+    </div>
+    <h3>誠実な中止</h3>
+    <p>「できません」は価値のある納品です。Proof Lab は次を分けて伝えるべきです。</p>
+    <ul>
+      <li><strong>一時的な不足:</strong> 証拠や整備がそろえば再挑戦できる</li>
+      <li><strong>費用対効果が悪い:</strong> やれても元が取れない</li>
+      <li><strong>責任上やめるべき:</strong> 法務、人事、金銭、契約などで人判断を残すべき</li>
+      <li><strong>技術的に無理:</strong> 安全な開始条件、入力品質、復旧経路が作れない</li>
+    </ul>
+  </section>
+
+  <section id="delivery">
+    <h2><span class="sec-no">第 8 節</span>副業納品、プライバシー、安全</h2>
+    <hr class="h2-rule" />
+    <h3>副業としてどう納品するか</h3>
+    <p>完全自動化を約束しなくても、この評価作業は売れます。初心者が渡しやすい納品一式は次です。</p>
+    <ul>
+      <li><code>readiness_report.html</code>：非技術者向けの説明用</li>
+      <li><code>readiness_decision.json</code>：厳密な判定結果</li>
+      <li><code>comparison_report.md</code>：監視運転の比較結果</li>
+      <li><code>improvement_roadmap.md</code>：不足ごとの担当者、対応、合格条件</li>
+      <li><code>proposal_scope.md</code>：何を人に残すか、その理由</li>
+    </ul>
+    <div class="callout">
+      <strong>売り込みすぎないこと。</strong> 結果が <code>not_ready</code> や <code>assist_only</code> なら、それを価値として説明してください。危ない約束を防いだこと自体が成果です。
+    </div>
+    <h3>プライバシーと安全のルール</h3>
+    <ul>
+      <li>できる限りマスキング済み、または縮小したサンプルを使います。</li>
+      <li>秘密鍵、パスワード、生の本番トークンを置かないでください。</li>
+      <li>支払データ、人事データ、権限付与データを公開デモ用フォルダーへ混ぜないでください。</li>
+      <li>ローカル画面は <code>127.0.0.1</code> のまま使ってください。</li>
+      <li>AI が提案した内容は、人が確認するまで正式ルールではありません。</li>
+    </ul>
+  </section>
+
+  <section id="trouble">
+    <h2><span class="sec-no">第 9 節</span>困ったとき</h2>
+    <hr class="h2-rule" />
+    <details>
+      <summary>コマンドが見つからない</summary>
+      <p><code>source .venv/bin/activate</code> で仮想環境を有効化し直し、<code>python3 -m pip install -e .</code> を再実行してください。</p>
+    </details>
+    <details>
+      <summary>判定が stale になった</summary>
+      <p><code>ai-automation-kit autopilot-proof-lab status --workspace ...</code> を実行し、何が変わったかを見ます。意図した変更なら再評価、心当たりがないなら作業を止めて中身を確認します。</p>
+    </details>
+    <details>
+      <summary>ブラウザ画面が開かない</summary>
+      <p><code>ai-automation-kit autopilot-proof-lab serve</code> を実行した端末が動いたままかを確認し、表示された <code>127.0.0.1</code> のURLをそのまま開いてください。ポート競合なら起動し直して新しいURLを使います。</p>
+    </details>
+    <details>
+      <summary>ずっと L1 や L2 のまま</summary>
+      <p>まず必須ゲートの不合格を見ます。よくある原因は、復旧不足、二重防止不足、例外担当不足、監視運転の証拠不足です。対処は <code>improvement_roadmap.md</code> に出る前提です。</p>
+    </details>
+    <details>
+      <summary>お客様が「今すぐ完全自動化して」と言う</summary>
+      <p>約束しないでください。準備度レポートを見せ、現行の人間承認境界を説明し、外部実行は将来の別実行系と追加の法務・セキュリティ確認が必要だと伝えます。</p>
+    </details>
+    <div class="callout ok">
+      <strong>安全な止まり方。</strong> 証拠より大きな約束をしそうになったら、<code>assist_only</code>、<code>not_ready</code>、または監視運転継続で止めてください。それがこのProof Labの役目です。
+    </div>
+  </section>
+
+  </main>
+</div>
+
+<footer>
+  <div class="frame">
+    Automation Proof Lab — ローカル証拠、誠実な準備度判定、人間承認は維持、外部実行は起動しない、収益保証なし。English manual: <a href="AUTOMATION_PROOF_LAB.html">AUTOMATION_PROOF_LAB.html</a>
+  </div>
+</footer>
+</div>
+</body>
+</html>

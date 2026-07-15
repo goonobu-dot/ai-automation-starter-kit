@@ -1,0 +1,958 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Automation Proof Lab Manual | AI Automation Starter Kit</title>
+<style>
+  :root {
+    color-scheme: light;
+    --paper: #fafaf7;
+    --card: #ffffff;
+    --ink: #22262e;
+    --muted: #656b76;
+    --line: #d8d9d4;
+    --blue: #2c4f9e;
+    --blue-soft: #e8edf8;
+    --red: #bc4430;
+    --red-soft: #f9ece8;
+    --green: #2f7d4f;
+    --green-soft: #ebf5ef;
+    --amber: #8a6125;
+    --amber-soft: #faf1df;
+    --code-bg: #21252d;
+    --code-ink: #dfe4ec;
+    --serif: Georgia, "Times New Roman", serif;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; }
+  }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    line-height: 1.75;
+    font-size: 15.5px;
+  }
+  a { color: var(--blue); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+  a:hover { text-decoration-thickness: 2px; }
+  :focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; border-radius: 2px; }
+  .frame { max-width: 1160px; margin: 0 auto; padding: 0 20px; }
+  .layout { display: grid; grid-template-columns: 236px minmax(0, 1fr); gap: 42px; align-items: start; }
+  header.cover {
+    border-bottom: 3px double var(--ink);
+    padding: 42px 0 28px;
+    margin-bottom: 32px;
+  }
+  .cover-kicker {
+    margin: 0 0 10px;
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+  }
+  .cover-head {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    align-items: start;
+  }
+  .lang-link {
+    white-space: nowrap;
+    font-size: 13.5px;
+    color: var(--muted);
+    padding-top: 6px;
+  }
+  h1 {
+    margin: 0 0 14px;
+    font-family: var(--serif);
+    font-size: clamp(28px, 4.8vw, 42px);
+    line-height: 1.28;
+    font-weight: 600;
+  }
+  .lede { max-width: 68ch; margin: 0 0 18px; }
+  .safety-strip {
+    display: inline-flex;
+    flex-wrap: wrap;
+    border: 1.5px solid var(--ink);
+    font-family: var(--serif);
+    font-size: 14px;
+  }
+  .safety-strip span { padding: 7px 15px; }
+  .safety-strip span + span { border-left: 1.5px solid var(--ink); }
+  .safety-strip .human { background: var(--red); color: #fff; }
+  .note { color: var(--muted); font-size: 13.5px; }
+  .toc {
+    position: sticky;
+    top: 18px;
+    border-left: 3px solid var(--ink);
+    padding-left: 16px;
+    font-size: 13.5px;
+  }
+  .toc-title {
+    margin: 0 0 10px;
+    font-family: var(--serif);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.26em;
+  }
+  .toc ol { list-style: none; padding: 0; margin: 0; }
+  .toc li { margin: 0 0 3px; }
+  .toc a {
+    display: block;
+    color: var(--ink);
+    text-decoration: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+  }
+  .toc a:hover { background: var(--blue-soft); }
+  .toc-no {
+    margin-right: 7px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .toc-mobile { display: none; }
+  main { min-width: 0; padding-bottom: 88px; }
+  section { margin-bottom: 54px; }
+  h2 {
+    margin: 0 0 6px;
+    font-family: var(--serif);
+    font-size: 24px;
+    font-weight: 600;
+  }
+  .sec-no {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--blue);
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+  }
+  .h2-rule { border: 0; border-top: 1px solid var(--ink); margin: 10px 0 20px; }
+  h3 {
+    margin: 26px 0 8px;
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 600;
+  }
+  p { margin: 0 0 14px; }
+  ul { margin: 0 0 16px 20px; padding: 0; }
+  li { margin-bottom: 7px; }
+  code {
+    font-family: var(--mono);
+    font-size: 0.92em;
+    background: #ecedea;
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  pre {
+    margin: 10px 0 16px;
+    padding: 14px 16px;
+    border-radius: 6px;
+    overflow-x: auto;
+    background: var(--code-bg);
+    color: var(--code-ink);
+    font-family: var(--mono);
+    font-size: 12.9px;
+    line-height: 1.7;
+  }
+  pre code { background: none; padding: 0; }
+  pre .out { color: #9aa6b8; }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin: 14px 0 18px;
+  }
+  .panel {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 14px 16px;
+    background: var(--card);
+  }
+  .panel h3 { margin-top: 0; font-size: 17px; }
+  .mini-title {
+    margin: 0 0 8px;
+    font-family: var(--serif);
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .callout {
+    margin: 16px 0;
+    padding: 14px 18px;
+    border: 1.5px solid var(--red);
+    border-radius: 6px;
+    background: var(--red-soft);
+  }
+  .callout strong:first-child {
+    color: var(--red);
+    font-family: var(--serif);
+  }
+  .callout.ok {
+    border-color: var(--green);
+    background: var(--green-soft);
+  }
+  .callout.ok strong:first-child { color: var(--green); }
+  .callout.warn {
+    border-color: var(--amber);
+    background: var(--amber-soft);
+  }
+  .callout.warn strong:first-child { color: var(--amber); }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0 18px;
+    font-size: 14px;
+  }
+  th, td {
+    text-align: left;
+    vertical-align: top;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  th {
+    font-family: var(--serif);
+    font-weight: 600;
+    border-bottom: 1.5px solid var(--ink);
+    white-space: nowrap;
+  }
+  .steps {
+    display: grid;
+    gap: 10px;
+    margin: 14px 0 18px;
+  }
+  .step {
+    display: grid;
+    grid-template-columns: 38px 1fr;
+    gap: 12px;
+    align-items: start;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--card);
+    padding: 12px 14px;
+  }
+  .step-no {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 2px solid var(--blue);
+    color: var(--blue);
+    font-family: var(--serif);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--paper);
+  }
+  .step p:last-child { margin-bottom: 0; }
+  .flow {
+    margin: 18px 0 12px;
+  }
+  .lane {
+    border: 1.5px solid var(--blue);
+    border-radius: 6px;
+    background: var(--card);
+    padding: 12px 14px 14px;
+  }
+  .lane + .lane { margin-top: 10px; }
+  .lane.human { border-color: var(--red); }
+  .lane-label {
+    margin: 0 0 10px;
+    color: var(--blue);
+    font-family: var(--serif);
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+  .lane.human .lane-label { color: var(--red); }
+  .lane-steps { display: flex; flex-wrap: wrap; align-items: stretch; }
+  .box {
+    flex: 1 1 0;
+    min-width: 132px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--blue-soft);
+    padding: 8px 10px;
+    font-size: 12.7px;
+    line-height: 1.55;
+  }
+  .lane.human .box { background: var(--red-soft); }
+  .box b {
+    display: block;
+    font-family: var(--serif);
+    font-size: 13px;
+  }
+  .arrow {
+    align-self: center;
+    padding: 0 8px;
+    color: var(--muted);
+    font-size: 16px;
+    flex: 0 0 auto;
+  }
+  .joint {
+    text-align: center;
+    color: var(--red);
+    font-family: var(--serif);
+    font-size: 13px;
+    padding: 6px 0;
+  }
+  .joint::before { content: "▼ "; }
+  .folder-tree {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--card);
+    padding: 14px 16px;
+    font-family: var(--mono);
+    font-size: 12.9px;
+    line-height: 1.75;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .levels {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+    margin: 16px 0 18px;
+  }
+  .level {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--card);
+    padding: 12px 12px 14px;
+  }
+  .level strong {
+    display: block;
+    margin-bottom: 6px;
+    font-family: var(--serif);
+    font-size: 16px;
+  }
+  details {
+    border-top: 1px solid var(--line);
+    padding: 10px 2px;
+  }
+  details:last-of-type { border-bottom: 1px solid var(--line); }
+  summary {
+    cursor: pointer;
+    font-family: var(--serif);
+    font-weight: 600;
+  }
+  footer {
+    border-top: 3px double var(--ink);
+    padding: 22px 0 46px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+  @media (max-width: 920px) {
+    .layout { grid-template-columns: 1fr; gap: 0; }
+    .toc { display: none; }
+    .toc-mobile {
+      display: block;
+      position: sticky;
+      top: 0;
+      z-index: 6;
+      background: var(--paper);
+      border-bottom: 1px solid var(--line);
+      margin: 0 -20px 24px;
+      padding: 0 20px;
+    }
+    .toc-mobile summary {
+      padding: 12px 0;
+      font-family: var(--serif);
+      font-weight: 600;
+      list-style: none;
+    }
+    .toc-mobile summary::before { content: "☰ "; color: var(--blue); }
+    .toc-mobile ol {
+      list-style: none;
+      margin: 0 0 14px;
+      padding: 0;
+      columns: 2;
+      column-gap: 20px;
+    }
+    .toc-mobile li { break-inside: avoid; margin-bottom: 6px; }
+    .toc-mobile a { text-decoration: none; }
+    .levels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 760px) {
+    body { font-size: 15px; }
+    header.cover { padding-top: 26px; }
+    .cover-head { flex-direction: column; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .lane-steps { flex-direction: column; }
+    .arrow {
+      transform: rotate(90deg);
+      padding: 2px 0;
+      align-self: flex-start;
+      margin-left: 18px;
+    }
+    .levels { grid-template-columns: 1fr; }
+    .safety-strip { flex-direction: column; }
+    .safety-strip span + span { border-left: 0; border-top: 1.5px solid var(--ink); }
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+
+<header class="cover">
+  <p class="cover-kicker">AI AUTOMATION STARTER KIT — AUTOMATION PROOF LAB MANUAL / v0.1.0</p>
+  <div class="cover-head">
+    <div>
+      <h1>Automation Proof Lab Manual</h1>
+      <p class="lede">This beginner manual explains the local proof lab for testing whether a workflow is honestly ready for stronger automation. It is a preparation and evaluation tool, not a switch that turns on external actions.</p>
+    </div>
+    <p class="lang-link">Japanese: <a href="AUTOMATION_PROOF_LAB.ja.html">日本語</a></p>
+  </div>
+  <div class="safety-strip" role="img" aria-label="Safety boundary: local evidence, human approval stays, no external actions">
+    <span>Local evidence only</span><span class="human">Human approval stays in place</span><span>No external actions</span>
+  </div>
+  <p class="note" style="margin-top:12px">The proof lab does not send messages, pay vendors, update SaaS records, file forms, change permissions, or remove existing human approval. L3 and L4 are readiness labels for a future, separate runtime. No income is guaranteed.</p>
+</header>
+
+<details class="toc-mobile">
+  <summary>Contents</summary>
+  <ol>
+    <li><a href="#what">What This Is</a></li>
+    <li><a href="#install">Install</a></li>
+    <li><a href="#init">Init and Folders</a></li>
+    <li><a href="#evidence">Evidence and Cases</a></li>
+    <li><a href="#commands">Command Loop</a></li>
+    <li><a href="#sample">Complete Sample</a></li>
+    <li><a href="#levels">L0-L4 and Shadow Mode</a></li>
+    <li><a href="#delivery">Delivery and Safety</a></li>
+    <li><a href="#trouble">Troubleshooting</a></li>
+  </ol>
+</details>
+
+<div class="layout">
+  <nav class="toc" aria-label="Contents">
+    <p class="toc-title">CONTENTS</p>
+    <ol>
+      <li><a href="#what"><span class="toc-no">01</span>What This Is</a></li>
+      <li><a href="#install"><span class="toc-no">02</span>Install</a></li>
+      <li><a href="#init"><span class="toc-no">03</span>Init and Folders</a></li>
+      <li><a href="#evidence"><span class="toc-no">04</span>Evidence and Cases</a></li>
+      <li><a href="#commands"><span class="toc-no">05</span>Command Loop</a></li>
+      <li><a href="#sample"><span class="toc-no">06</span>Complete Sample</a></li>
+      <li><a href="#levels"><span class="toc-no">07</span>L0-L4 and Shadow Mode</a></li>
+      <li><a href="#delivery"><span class="toc-no">08</span>Delivery and Safety</a></li>
+      <li><a href="#trouble"><span class="toc-no">09</span>Troubleshooting</a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+  <section id="what">
+    <h2><span class="sec-no">SECTION 1</span>What this is, and what it is not</h2>
+    <hr class="h2-rule" />
+    <div class="grid-2">
+      <div class="panel">
+        <h3>What it is</h3>
+        <ul>
+          <li>A local proof lab for one workflow pack at a time.</li>
+          <li>A structured place to collect evidence, approved examples, hard-gate decisions, and historical cases.</li>
+          <li>A way to compare real human outcomes with proposed system outcomes before any future runtime is considered.</li>
+          <li>A safe route to useful conclusions such as <code>not_ready</code> or <code>assist_only</code>.</li>
+        </ul>
+      </div>
+      <div class="panel">
+        <h3>What it is not</h3>
+        <ul>
+          <li>Not an external action engine.</li>
+          <li>Not a way to weaken the Human Approval Edition.</li>
+          <li>Not a promise that every workflow can reach L3 or L4.</li>
+          <li>Not a business-income guarantee, even if a client pays for the assessment work.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="flow" role="img" aria-label="The proof lab stays local and advisory; human approval remains required">
+      <div class="lane">
+        <p class="lane-label">What the proof lab does</p>
+        <div class="lane-steps">
+          <div class="box"><b>Collect evidence</b>Policies, approved examples, and owner notes</div>
+          <span class="arrow">→</span>
+          <div class="box"><b>Run shadow comparisons</b>Expected human result versus proposed system result</div>
+          <span class="arrow">→</span>
+          <div class="box"><b>Evaluate hard gates</b>Recovery, idempotency, exception ownership, data use, and more</div>
+          <span class="arrow">→</span>
+          <div class="box"><b>Return a readiness label</b>L0-L4 plus a report and roadmap</div>
+        </div>
+      </div>
+      <p class="joint">The proof lab ends here</p>
+      <div class="lane human">
+        <p class="lane-label">What still requires humans</p>
+        <div class="lane-steps">
+          <div class="box"><b>Confirm rules</b>AI may suggest; humans authorize</div>
+          <span class="arrow">→</span>
+          <div class="box"><b>Keep approval boundaries</b>Current pack approvals do not disappear</div>
+          <span class="arrow">→</span>
+          <div class="box"><b>Decide delivery</b>Share the report, remain assisted, remediate, or stop</div>
+        </div>
+      </div>
+    </div>
+    <div class="callout">
+      <strong>Important boundary.</strong> A good score never overrides a failed hard gate. Missing recovery, missing exception ownership, or failed shadow evidence blocks promotion even when routine cases look strong.
+    </div>
+  </section>
+
+  <section id="install">
+    <h2><span class="sec-no">SECTION 2</span>Install</h2>
+    <hr class="h2-rule" />
+    <p>Install the kit first. The proof lab uses the same local setup style as the rest of the project.</p>
+    <pre><code>git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git
+cd ai-automation-starter-kit
+python3 -m venv .venv
+source .venv/bin/activate
+python3 -m pip install --upgrade pip setuptools
+python3 -m pip install -e .
+ai-automation-kit --version</code>
+<span class="out">ai-automation-kit 0.1.0</span></pre>
+    <p>Run a quick environment check before you start the proof lab:</p>
+    <pre><code>ai-automation-kit doctor --output .tmp/proof-lab-doctor</code>
+<span class="out">status=warning
+report=.tmp/proof-lab-doctor/doctor_report.md</span></pre>
+    <p class="note"><code>ready</code> means the local environment is fine. <code>warning</code> means you can usually continue, but you should read the report. <code>blocked</code> means fix the local setup first.</p>
+  </section>
+
+  <section id="init">
+    <h2><span class="sec-no">SECTION 3</span>Init and the exact workspace folders</h2>
+    <hr class="h2-rule" />
+    <p>Start one proof-lab workspace per workflow pack. Keep the workspace local. Do not point it at a network share or a live production folder.</p>
+    <pre><code>ai-automation-kit autopilot-proof-lab init \
+  --pack-id invoice-order-check-daily \
+  --organization "Example Co" \
+  --objective "Test invoice order checks safely" \
+  --workspace .tmp/proof-lab-invoice \
+  --language en</code>
+<span class="out">assessment_id=asmt_...
+status=created
+stage=created
+decision=not_ready
+maximum_level=L0
+next_action=Add current-work evidence and accountable owners.
+external_actions_enabled=false</span></pre>
+    <p>After <code>init</code>, Proof Lab creates this managed structure. Do not edit files inside <code>.proof_lab</code> by hand; use the commands below.</p>
+    <div class="folder-tree" aria-label="Proof lab workspace folder structure">proof-lab-invoice/
+├── .proof_lab/
+│   ├── state.json
+│   ├── pack_manifest.json
+│   ├── audit.jsonl
+│   ├── evidence/
+│   │   └── ev-0001.md
+│   └── cases/
+│       └── case-001/
+│           ├── input.json
+│           ├── expected.json
+│           └── proposed.json
+└── 05_REPORTS/
+    ├── current_workflow.md
+    ├── automation_scope.md
+    ├── source_inventory.csv
+    ├── decision_table.csv
+    ├── exception_register.csv
+    ├── connector_permissions.md
+    ├── recovery_plan.md
+    ├── kill_switch_plan.md
+    ├── shadow_test_cases.csv
+    ├── comparison_report.md
+    ├── readiness_decision.json
+    ├── readiness_report.html
+    ├── improvement_roadmap.md
+    └── proposal_scope.md</div>
+    <div class="callout warn">
+      <strong>Use regular files only.</strong> Do not place symlinks, scripts, secret dumps, or unreviewed production exports in the proof-lab folders. The approved design assumes evidence hashing and snapshot tracking, so clean file hygiene matters.
+    </div>
+  </section>
+
+  <section id="evidence">
+    <h2><span class="sec-no">SECTION 4</span>Exact evidence and case preparation</h2>
+    <hr class="h2-rule" />
+    <h3>Evidence preparation</h3>
+    <p>Before you run <code>add-evidence</code>, sort your source files by job outside the managed workspace. The command copies and hashes each selected file.</p>
+    <table>
+      <tr><th>Suggested source folder</th><th>Put these files here</th><th>Why they matter</th></tr>
+      <tr><td><code>source-evidence/current-process/</code></td><td>Current SOP notes, operator checklists, intake screenshots, CSV exports with sensitive data removed</td><td>Shows how the work really starts and finishes today</td></tr>
+      <tr><td><code>source-evidence/approved-examples/</code></td><td>Completed human-approved outputs</td><td>Defines what “correct” looks like</td></tr>
+      <tr><td><code>source-evidence/policies/</code></td><td>Policy notes, contract rules, amount limits, red-line conditions</td><td>Prevents invented rules</td></tr>
+      <tr><td><code>source-evidence/exceptions/</code></td><td>Known exception examples and escalation notes</td><td>Proves exceptions can be detected and owned</td></tr>
+      <tr><td><code>source-evidence/recovery/</code></td><td>Undo steps, hold procedures, emergency stop notes, recovery drills</td><td>Required for any level above assisted drafting</td></tr>
+    </table>
+    <h3>Case preparation</h3>
+    <p>Each historical case should contain three bounded views of the same work:</p>
+    <ul>
+      <li><strong>Input evidence:</strong> the files the workflow saw at the time.</li>
+      <li><strong>Expected human outcome:</strong> what the approved human result actually was.</li>
+      <li><strong>Proposed system outcome:</strong> what the candidate rule or draft system would have done, without external writes.</li>
+    </ul>
+    <p>Cover at least these seven case classes for shadow mode:</p>
+    <div class="grid-2">
+      <div class="panel">
+        <p class="mini-title">Required case classes</p>
+        <ul>
+          <li><code>normal</code></li>
+          <li><code>near_limit</code></li>
+          <li><code>missing_data</code></li>
+          <li><code>duplicate</code></li>
+        </ul>
+      </div>
+      <div class="panel">
+        <p class="mini-title">Also required</p>
+        <ul>
+          <li><code>conflicting</code></li>
+          <li><code>expired</code></li>
+          <li><code>external_failure</code></li>
+        </ul>
+      </div>
+    </div>
+    <h3>The 11 hard gates</h3>
+    <p>Every gate uses exactly one of <code>pass</code>, <code>fail</code>, or <code>unknown</code>. A score never overrides a failed or unknown gate.</p>
+    <table>
+      <tr><th>Gate ID</th><th>Plain meaning</th></tr>
+      <tr><td><code>input_identifiable</code></td><td>The system can tell which inputs belong to one job.</td></tr>
+      <tr><td><code>completion_testable</code></td><td>There is a repeatable check for “finished correctly.”</td></tr>
+      <tr><td><code>standard_policy_confirmed</code></td><td>An accountable human confirmed the normal rules.</td></tr>
+      <tr><td><code>exceptions_detectable</code></td><td>Known abnormal cases can be detected before action.</td></tr>
+      <tr><td><code>exception_owner_assigned</code></td><td>A named person owns cases the system cannot decide.</td></tr>
+      <tr><td><code>least_privilege_available</code></td><td>The future runtime can use only the minimum access needed.</td></tr>
+      <tr><td><code>idempotency_defined</code></td><td>Retries and duplicates cannot repeat the business action.</td></tr>
+      <tr><td><code>recovery_defined</code></td><td>Hold, undo, and restart steps are written and testable.</td></tr>
+      <tr><td><code>kill_switch_owned</code></td><td>A named owner can stop the workflow quickly.</td></tr>
+      <tr><td><code>data_use_permitted</code></td><td>The organization permits this data to be used for the test.</td></tr>
+      <tr><td><code>shadow_test_passed</code></td><td>Historical comparison met the agreed quality threshold.</td></tr>
+    </table>
+    <div class="callout ok">
+      <strong>Beginner rule.</strong> If you only have ten cases, that is enough to learn. It is not enough to claim L3 or L4. In that situation, use the proof lab to deliver a careful <code>assist_only</code>, <code>not_ready</code>, or “keep shadow mode running” result.
+    </div>
+  </section>
+
+  <section id="commands">
+    <h2><span class="sec-no">SECTION 5</span>The command loop</h2>
+    <hr class="h2-rule" />
+    <div class="steps">
+      <div class="step">
+        <div class="step-no">1</div>
+        <div>
+          <p><strong>Add evidence.</strong> Register each file with a role, provider, and classification so the report can trace every conclusion back to a real source.</p>
+          <pre><code>ai-automation-kit autopilot-proof-lab add-evidence \
+  --workspace .tmp/proof-lab-invoice \
+  --source ./source-files/approved-example-001.md \
+  --role approved_example \
+  --provided-by "Operations owner" \
+  --classification confidential</code>
+<span class="out">evidence_id=ev-0001
+status=present
+external_actions_enabled=false</span></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-no">2</div>
+        <div>
+          <p><strong>Add a historical case.</strong> Keep one case ID per real situation. Include input, expected human result, proposed system result, risk tier, and case class.</p>
+          <pre><code>ai-automation-kit autopilot-proof-lab add-case \
+  --workspace .tmp/proof-lab-invoice \
+  --case-id case-001 \
+  --input ./cases-source/case-001/input.json \
+  --expected ./cases-source/case-001/expected.json \
+  --proposed ./cases-source/case-001/proposed.json \
+  --case-class normal \
+  --risk-tier low \
+  --expected-route standard \
+  --proposed-route standard</code>
+<span class="out">case_id=case-001
+external_actions_enabled=false</span></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-no">3</div>
+        <div>
+          <p><strong>Set a hard gate.</strong> Record whether a gate passes, fails, or is still unknown. Give the accountable owner and supporting evidence.</p>
+          <pre><code>ai-automation-kit autopilot-proof-lab set-gate \
+  --workspace .tmp/proof-lab-invoice \
+  --gate recovery_defined \
+  --status fail \
+  --owner "Procurement systems owner" \
+  --evidence-id ev-0001 \
+  --note "No tested vendor deactivation path yet"</code>
+<span class="out">gate=recovery_defined
+status=fail
+external_actions_enabled=false</span></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-no">4</div>
+        <div>
+          <p><strong>Evaluate.</strong> This compares shadow cases, checks hard gates, writes the readiness decision, and generates the human-readable report.</p>
+          <pre><code>ai-automation-kit autopilot-proof-lab evaluate \
+  --workspace .tmp/proof-lab-invoice</code>
+<span class="out">status=not_ready
+stage=not_ready
+decision=not_ready
+maximum_level=L0
+next_action=Resolve the blocking input or completion definition before automation.
+external_actions_enabled=false</span></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-no">5</div>
+        <div>
+          <p><strong>Check status.</strong> Use this after every change. It tells you the current state, next action, and whether any decision has become stale.</p>
+          <pre><code>ai-automation-kit autopilot-proof-lab status \
+  --workspace .tmp/proof-lab-invoice</code>
+<span class="out">status=stale_decision
+stage=stale_decision
+decision=not_ready
+maximum_level=L0
+next_action=Restore changed evidence or reassess the changed configuration.
+external_actions_enabled=false</span></pre>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-no">6</div>
+        <div>
+          <p><strong>Serve the local browser UI.</strong> Open the proof lab on the same computer. Keep it on <code>127.0.0.1</code>; this is not a public web app.</p>
+          <pre><code>ai-automation-kit autopilot-proof-lab serve \
+  --workspace .tmp/proof-lab-invoice \
+  --language en \
+  --no-open</code>
+<span class="out">http://127.0.0.1:8080/</span></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sample">
+    <h2><span class="sec-no">SECTION 6</span>One complete sample</h2>
+    <hr class="h2-rule" />
+    <p>This sample shows a small bookkeeping workflow assessment for invoice order checks. It is intentionally modest: the proof lab is useful even when the answer is “stay assisted.”</p>
+    <pre><code># 1) create the workspace
+ai-automation-kit autopilot-proof-lab init \
+  --pack-id invoice-order-check-daily \
+  --organization "Example Co" \
+  --objective "Test invoice order checks safely" \
+  --workspace .tmp/proof-lab-invoice \
+  --language en
+
+# 2) add evidence
+ai-automation-kit autopilot-proof-lab add-evidence --workspace .tmp/proof-lab-invoice \
+  --source ./examples/autopilot-proof-lab/evidence/current-process.md \
+  --role current_process_example \
+  --provided-by "Accounting lead" \
+  --classification internal
+
+ai-automation-kit autopilot-proof-lab add-evidence --workspace .tmp/proof-lab-invoice \
+  --source ./examples/autopilot-proof-lab/evidence/approved-policy.md \
+  --role approved_example \
+  --provided-by "Accounting lead" \
+  --classification internal
+
+ai-automation-kit autopilot-proof-lab add-evidence --workspace .tmp/proof-lab-invoice \
+  --source ./examples/autopilot-proof-lab/evidence/recovery-plan.md \
+  --role recovery_procedure \
+  --provided-by "Finance systems owner" \
+  --classification internal
+
+# 3) add historical cases
+ai-automation-kit autopilot-proof-lab add-case --workspace .tmp/proof-lab-invoice \
+  --case-id normal-001 \
+  --input ./examples/autopilot-proof-lab/normal/input.json \
+  --expected ./examples/autopilot-proof-lab/normal/expected.json \
+  --proposed ./examples/autopilot-proof-lab/normal/proposed.json \
+  --case-class normal \
+  --risk-tier low \
+  --expected-route standard \
+  --proposed-route standard
+
+ai-automation-kit autopilot-proof-lab add-case --workspace .tmp/proof-lab-invoice \
+  --case-id near-limit-001 \
+  --input ./examples/autopilot-proof-lab/near_limit/input.json \
+  --expected ./examples/autopilot-proof-lab/near_limit/expected.json \
+  --proposed ./examples/autopilot-proof-lab/near_limit/proposed.json \
+  --case-class near_limit --risk-tier medium \
+  --expected-route standard --proposed-route standard
+
+ai-automation-kit autopilot-proof-lab add-case --workspace .tmp/proof-lab-invoice \
+  --case-id missing-data-001 \
+  --input ./examples/autopilot-proof-lab/missing_data/input.json \
+  --expected ./examples/autopilot-proof-lab/missing_data/expected.json \
+  --proposed ./examples/autopilot-proof-lab/missing_data/proposed.json \
+  --case-class missing_data --risk-tier medium \
+  --expected-route quarantine --proposed-route quarantine \
+  --exception-expected --exception-detected
+
+ai-automation-kit autopilot-proof-lab add-case --workspace .tmp/proof-lab-invoice \
+  --case-id duplicate-001 \
+  --input ./examples/autopilot-proof-lab/duplicate/input.json \
+  --expected ./examples/autopilot-proof-lab/duplicate/expected.json \
+  --proposed ./examples/autopilot-proof-lab/duplicate/proposed.json \
+  --case-class duplicate \
+  --risk-tier high \
+  --expected-route quarantine \
+  --proposed-route quarantine \
+  --exception-expected \
+  --exception-detected \
+  --duplicate-action-simulations 1
+
+ai-automation-kit autopilot-proof-lab add-case --workspace .tmp/proof-lab-invoice \
+  --case-id conflicting-001 \
+  --input ./examples/autopilot-proof-lab/conflicting/input.json \
+  --expected ./examples/autopilot-proof-lab/conflicting/expected.json \
+  --proposed ./examples/autopilot-proof-lab/conflicting/proposed.json \
+  --case-class conflicting --risk-tier high \
+  --expected-route quarantine --proposed-route quarantine \
+  --exception-expected --exception-detected
+
+ai-automation-kit autopilot-proof-lab add-case --workspace .tmp/proof-lab-invoice \
+  --case-id expired-001 \
+  --input ./examples/autopilot-proof-lab/expired/input.json \
+  --expected ./examples/autopilot-proof-lab/expired/expected.json \
+  --proposed ./examples/autopilot-proof-lab/expired/proposed.json \
+  --case-class expired --risk-tier medium \
+  --expected-route quarantine --proposed-route quarantine \
+  --exception-expected --exception-detected
+
+ai-automation-kit autopilot-proof-lab add-case --workspace .tmp/proof-lab-invoice \
+  --case-id external-failure-001 \
+  --input ./examples/autopilot-proof-lab/external_failure/input.json \
+  --expected ./examples/autopilot-proof-lab/external_failure/expected.json \
+  --proposed ./examples/autopilot-proof-lab/external_failure/proposed.json \
+  --case-class external_failure --risk-tier critical \
+  --expected-route quarantine --proposed-route quarantine \
+  --exception-expected --exception-detected \
+  --recovery-tested --recovery-passed
+
+# 4) record hard gates
+ai-automation-kit autopilot-proof-lab set-gate --workspace .tmp/proof-lab-invoice \
+  --gate input_identifiable --status pass --owner "Accounting lead"
+
+ai-automation-kit autopilot-proof-lab set-gate --workspace .tmp/proof-lab-invoice \
+  --gate completion_testable --status pass --owner "Accounting lead"
+
+ai-automation-kit autopilot-proof-lab set-gate --workspace .tmp/proof-lab-invoice \
+  --gate idempotency_defined --status fail --owner "Finance systems owner" \
+  --note "Duplicate invoice replay is not fully blocked yet"
+
+# 5) evaluate
+ai-automation-kit autopilot-proof-lab evaluate --workspace .tmp/proof-lab-invoice
+
+# 6) check the result
+ai-automation-kit autopilot-proof-lab status --workspace .tmp/proof-lab-invoice</code></pre>
+    <p>Expected beginner reading of the result:</p>
+    <ul>
+      <li><code>L1 assist_only</code> is still a successful client deliverable.</li>
+      <li>The comparison report should explain why duplicate control is still blocking promotion.</li>
+      <li>The improvement roadmap should name the owner, the fix, and the acceptance check for the next reassessment.</li>
+    </ul>
+  </section>
+
+  <section id="levels">
+    <h2><span class="sec-no">SECTION 7</span>L0-L4, shadow mode, stale evidence, and honest refusal</h2>
+    <hr class="h2-rule" />
+    <div class="levels" aria-label="Automation readiness levels">
+      <div class="level"><strong>L0</strong>Not ready. Required evidence, rules, ownership, or recovery is missing.</div>
+      <div class="level"><strong>L1</strong>Assisted drafting. AI helps organize evidence and drafts, but human decisions stay.</div>
+      <div class="level"><strong>L2</strong>Shadow mode. The proposed workflow runs locally without external writes and is compared against real human outcomes.</div>
+      <div class="level"><strong>L3</strong>Conditional autopilot readiness for a future separate runtime. Standard cases only; exceptions stop.</div>
+      <div class="level"><strong>L4</strong>Unattended standard-path readiness for a future separate runtime, with quarantine, stop, recovery, and audit controls.</div>
+    </div>
+    <h3>Shadow mode in plain language</h3>
+    <p>Shadow mode means “act as if the workflow were live, but do not change any outside system.” The proof lab compares what the proposed system would have done against what humans actually approved in the past.</p>
+    <table>
+      <tr><th>Shadow mode must show</th><th>Why it matters</th></tr>
+      <tr><td>Exact or material matches</td><td>Routine cases should line up with reality</td></tr>
+      <tr><td>False positives and false negatives</td><td>A high-risk miss cannot be hidden inside a nice average</td></tr>
+      <tr><td>Duplicate-action handling</td><td>Replay safety is mandatory for stronger automation</td></tr>
+      <tr><td>Exception detection</td><td>Unusual cases must be caught and routed to humans</td></tr>
+      <tr><td>Recovery simulation</td><td>There must be a tested way back when something goes wrong</td></tr>
+    </table>
+    <h3>Stale evidence</h3>
+    <p>A decision becomes stale when the evidence snapshot changes. Typical triggers:</p>
+    <ul>
+      <li>a source file was edited, replaced, or removed;</li>
+      <li>a policy version changed;</li>
+      <li>a responsible owner changed;</li>
+      <li>a new exception route appeared;</li>
+      <li>a case or proposed policy file changed after the last evaluation.</li>
+    </ul>
+    <div class="callout warn">
+      <strong>Stale means stop and reassess.</strong> A stale decision cannot justify a pilot, a deployment step, or any external action plan. Re-run <code>status</code>, review the changed evidence, then run <code>evaluate</code> again.
+    </div>
+    <h3>Honest refusal</h3>
+    <p>An honest refusal is a valuable result. The proof lab should clearly distinguish:</p>
+    <ul>
+      <li><strong>temporary gap:</strong> more evidence or one owned fix can reopen the path;</li>
+      <li><strong>poor economics:</strong> automation costs more than the real business value;</li>
+      <li><strong>responsibility boundary:</strong> the decision should remain human by policy or law;</li>
+      <li><strong>technical impossibility:</strong> there is no safe trigger, no safe input quality, or no safe reversal path.</li>
+    </ul>
+  </section>
+
+  <section id="delivery">
+    <h2><span class="sec-no">SECTION 8</span>Side-business delivery, privacy, and safety</h2>
+    <hr class="h2-rule" />
+    <h3>How to deliver this as a side-business service</h3>
+    <p>You can sell the assessment work without claiming full automation. A clean beginner delivery usually includes:</p>
+    <ul>
+      <li><code>readiness_report.html</code> for non-technical stakeholders;</li>
+      <li><code>readiness_decision.json</code> for the exact machine-readable result;</li>
+      <li><code>comparison_report.md</code> with shadow findings and failure classes;</li>
+      <li><code>improvement_roadmap.md</code> with owner, action, and acceptance check per gap;</li>
+      <li><code>proposal_scope.md</code> explaining what stays human and why.</li>
+    </ul>
+    <div class="callout">
+      <strong>Do not oversell.</strong> If the proof lab says <code>not_ready</code> or <code>assist_only</code>, present that as the service value. It prevented a risky promise. It did not “fail.”
+    </div>
+    <h3>Privacy and safety rules</h3>
+    <ul>
+      <li>Prefer masked or reduced sample data whenever possible.</li>
+      <li>Do not paste secrets, passwords, or raw production tokens into the workspace.</li>
+      <li>Do not place live payment files, live HR exports, or access-grant payloads in public demo folders.</li>
+      <li>Keep the local browser UI on <code>127.0.0.1</code> only.</li>
+      <li>Remember that AI suggestions never become production policy until an authorized human confirms them.</li>
+    </ul>
+  </section>
+
+  <section id="trouble">
+    <h2><span class="sec-no">SECTION 9</span>Troubleshooting</h2>
+    <hr class="h2-rule" />
+    <details>
+      <summary>The command is not found</summary>
+      <p>Activate the project environment again with <code>source .venv/bin/activate</code>, then reinstall the package with <code>python3 -m pip install -e .</code>.</p>
+    </details>
+    <details>
+      <summary>The proof lab says a decision is stale</summary>
+      <p>Run <code>ai-automation-kit autopilot-proof-lab status --workspace ...</code>. Review which evidence changed. If the change is intentional, re-run <code>evaluate</code>. If the change is suspicious, stop and inspect the workspace before continuing.</p>
+    </details>
+    <details>
+      <summary>The browser page does not open</summary>
+      <p>Make sure the terminal running <code>ai-automation-kit autopilot-proof-lab serve</code> is still active. Open the exact <code>127.0.0.1</code> address printed by the command. If the port is busy, restart the server and use the new printed address.</p>
+    </details>
+    <details>
+      <summary>The result is stuck at L1 or L2</summary>
+      <p>Read the blocking hard gates first. Common blockers are missing recovery, missing duplicate control, missing exception ownership, or too little shadow evidence. The remedy belongs in <code>improvement_roadmap.md</code>.</p>
+    </details>
+    <details>
+      <summary>A client wants “full automation now”</summary>
+      <p>Do not promise it. Show the readiness report, point to the current human-approval boundary, and explain that external actions would require a future separate runtime with new business, legal, and security approval.</p>
+    </details>
+    <div class="callout ok">
+      <strong>Good stopping point.</strong> When you feel pressure to promise more than the evidence supports, stop at <code>assist_only</code>, <code>not_ready</code>, or continued shadow mode. That is exactly what this proof lab is for.
+    </div>
+  </section>
+
+  </main>
+</div>
+
+<footer>
+  <div class="frame">
+    Automation Proof Lab — local evidence, honest readiness labels, existing human approval preserved, no external actions activated, no income guaranteed. Japanese manual: <a href="AUTOMATION_PROOF_LAB.ja.html">AUTOMATION_PROOF_LAB.ja.html</a>
+  </div>
+</footer>
+</div>
+</body>
+</html>

@@ -2,8 +2,28 @@
 
 ## Unreleased
 
+### Recording-to-manual studio (2026-07)
+
+- Added the local-first `manual-studio` workflow to create a guided workspace, inspect recordings, extract scene-change screenshots with FFmpeg, and ask Codex to produce an evidence-linked illustrated HTML draft.
+- Spread screenshot candidates across the full recording while retaining meaningful scene changes, preventing early UI animation bursts from consuming the complete 40-frame budget.
+- Added opt-in local speech transcription with whisper.cpp, verified multilingual model downloads, preserved user-edited transcripts, failure-safe staging, and source/model provenance.
+- Added recording, transcript, and frame integrity checks; safe workspace-relative paths; bounded structured AI output; HTML escaping; read-only Codex analysis; and explicit human-review boundaries.
+- Added separate Japanese and English browser guides plus generated review checklists, Mermaid workflow diagrams, open-question lists, and automation-candidate notes. Screenshot annotation, production actions, and external sending remain out of scope for this first stage.
+- Added a one-question-at-a-time completion loop with provenance-bound answers, explicit deferral, AI regeneration without unsupported guessing, side-by-side review, and approval-recorded promotion into `06_APPROVED_MANUAL`.
+- Added a secure localhost image picker that shows every verified candidate frame for each recorded step, lets the operator replace weak AI selections, regenerates the draft manual without losing recorded answers, and keeps a bounded local selection history.
+
+### One-paste beginner start (2026-07)
+
+- Added `ai-automation-kit start`, which creates a safe working sample, browser start page, client-input boundary, AI handoff prompt, sales assets, and delivery evidence with no required options.
+- Added `scripts/first_start.py` so a fresh clone can create an isolated local environment and the first project without API keys or a package-install step.
+- Added separate Japanese and English browser guides, a one-line README entrance, overwrite protection, and release checks. External actions remain blocked and income is not guaranteed.
+- Added double-click launchers for macOS and Windows, plain-language prompts that can be handed directly to Codex, automatic browser opening, and safe reopening of an already-created first project.
+- Simplified the generated start screen to one recommended next action while retaining the deeper demo and sales materials as optional links.
+
 ### Autopilot readiness design (2026-07)
 
+- Implemented the local-only `autopilot-proof-lab` command and browser UI for historical replay, seven required shadow-case classes, 11 hard readiness gates, tamper-evident audit verification, stale-decision detection, and 14 bilingual review artifacts under `05_REPORTS/`.
+- Added Japanese and English beginner manuals plus a privacy-safe runnable example. All readiness results remain advisory and never activate external actions or remove the current human approval boundary.
 - Added a human-first Japanese design and an English technical design for assessing whether any of the 22 office packs can progress from assisted drafting to shadow mode, conditional automation, or an evidence-backed `not_ready` decision.
 - Defined hard readiness gates, one-question-at-a-time discovery, rule confirmation, gap remediation, shadow comparison, honest refusal, generated delivery artifacts, and a separate trust boundary for any future external-action runtime.
 - Added a complete human-first English design with the same readiness levels, refusal rules, shadow-test minimums, decision expiration, and current-product approval boundaries as the Japanese design.

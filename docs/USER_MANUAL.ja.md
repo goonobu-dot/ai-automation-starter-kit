@@ -4,7 +4,7 @@
 
 各コマンドの出力例は、すべてこのキットを実際に動かして得たものです（バージョン 0.1.0 時点）。
 
-- はじめての方は、先に [はじめかた（GETTING_STARTED.ja.md）](GETTING_STARTED.ja.md) を読んでください。このマニュアルは「困ったときに該当コマンドの節だけ引く」使い方で十分です。
+- はじめての方は、[ダブルクリック手順書](FIRST_PROJECT.ja.html)から始めてください。従来の詳しい導入手順は[はじめかた](GETTING_STARTED.ja.md)に残しています。
 - 商談の進め方（営業〜請求）は [中小企業への自動化提案チュートリアル](TUTORIAL_SME_PROPOSAL.ja.md) にまとまっています。
 - ほかのドキュメントを探すときは [ドキュメント索引（INDEX.md）](INDEX.md) を使ってください。旧世代の文書は [アーカイブ](archive/README.md) に保管されています。
 
@@ -35,6 +35,18 @@ flowchart TD
 ---
 
 ## 1. インストール
+
+一番簡単な方法は、ZIPを開いて `START_HERE.command` をダブルクリックすることです。Windowsでは `START_HERE_WINDOWS.bat` を使います。Codexへ任せる場合は、`START_WITH_AI.ja.txt`を渡してください。APIキーは使いません。
+
+ターミナルに慣れている場合は、次の一行でも開始できます。
+
+```bash
+git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git && cd ai-automation-starter-kit && python3 scripts/first_start.py --open
+```
+
+すでにインストール済みなら `ai-automation-kit start --open` を実行します。`my-first-automation/START_HERE.html`、動く見本、顧客資料を入れる前の確認場所、提案資料、`AI_NEXT_STEP.md` が一度に作られます。中身のある既存フォルダは上書きしません。
+
+全コマンドを自分で使いたい人は、以下の従来手順でインストールしてください。
 
 ```bash
 git clone https://github.com/goonobu-dot/ai-automation-starter-kit.git

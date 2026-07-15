@@ -4,17 +4,20 @@
 >
 > **New here? Read only the 🔰 Getting Started category first.** Open the rest only when you actually need it.
 
-唯一の入口は [GETTING_STARTED.ja.md](GETTING_STARTED.ja.md) です。迷ったらターミナルで `ai-automation-kit beginner` を実行してください。
+最初の入口は [ダブルクリックで始める](FIRST_PROJECT.ja.html) です。すでにインストール済みなら `ai-automation-kit start --open` を実行してください。
 
 ## 🔰 入門 / Getting Started
 
 | 日本語 | English | 内容 / What it is |
 |---|---|---|
+| [ダブルクリックで始める](FIRST_PROJECT.ja.html) | [First Project](FIRST_PROJECT.html) | ダブルクリックで動く見本、提案準備、AIへの次の依頼を作成 / Double-click to create a working sample, sales preparation, and the next AI prompt |
+| [録画から画像付きマニュアルを作る](MANUAL_STUDIO.ja.html) | [Manual Studio](MANUAL_STUDIO.html) | 動画から手順と画像候補を作り、人が最適な画像を選び、AIの質問へ根拠付きで回答して完成版を保存 / Turn a recording into instructions and frame candidates, choose the clearest images, answer AI questions with sources, and save the approved manual |
 | [はじめかた（唯一の入口）](GETTING_STARTED.ja.md) | – | 30分でインストールから最初のデモまで / Install to first demo in 30 minutes |
 | [初心者ルートマップ](BEGINNER_ROUTE_MAP.ja.md) | [Beginner Route Map](BEGINNER_ROUTE_MAP.md) | 自分に合う入口の選び方 / Choose your route |
 | [やさしい解説](BEGINNER_GUIDE.ja.md) | [Beginner Guide](BEGINNER_GUIDE.md) | このプロジェクトの目的 / What this project is |
 | [使い方マニュアル](USER_MANUAL.ja.md) | [User Manual](USER_MANUAL.md) | 全コマンドの操作説明書 / Full operating manual |
 | [ブラウザ版マニュアル（クリックで開きます）](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.ja.html) | [Browser Manual](https://goonobu-dot.github.io/ai-automation-starter-kit/manual.html) | ブラウザで読める入門。手元の `docs/manual.ja.html` をダブルクリックしても同じものが開きます / Browser-friendly manual (or double-click the local file) |
+| [Automation Proof Lab](AUTOMATION_PROOF_LAB.ja.html) | [Automation Proof Lab](AUTOMATION_PROOF_LAB.html) | 過去ケースで再現性を比較し、自動化可能範囲と停止理由を確認 / Compare historical cases and receive an evidence-backed readiness decision |
 | [Codexではじめる](../START_WITH_CODEX.ja.md) | [Start With Codex](../START_WITH_CODEX.md) | Codex に月報作業場所を作ってもらう最初の依頼文 / The exact first Codex prompt for monthly setup |
 | [月報オペレーター作業場所マニュアル](office-workspace.ja.html) | [Monthly Operator Workspace Manual](office-workspace.html) | 月報のローカル作業場所を inspect → answer → generate → approve → rollover で回す手順 / Browser manual for the monthly office workspace |
 | [日次業務10パック初心者ガイド](daily-workflows.ja.html) | [Complete Daily Workflow Manual](daily-workflows.html) | 問い合わせ・営業・経費など10種類を毎日同じUIで回す手順 / Install, operate, approve, troubleshoot, and reuse ten daily workflow packs |
