@@ -17,6 +17,7 @@ setup(
     packages=find_packages("src"),
     include_package_data=True,
     package_data={"ai_automation_kit": ["packs/*.json"]},
+    install_requires=["cryptography>=41.0.0"],
     entry_points={
         "console_scripts": [
             "ai-automation-kit=ai_automation_kit.cli:main",

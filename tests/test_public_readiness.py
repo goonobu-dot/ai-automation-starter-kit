@@ -1538,6 +1538,14 @@ def test_cli_release_surface_includes_safe_office_workspace_commands():
         assert forbidden not in cli_text, f"cli.py must not expose unsafe office workspace flag {forbidden}"
 
 
+def test_packaging_installs_the_in_process_scrypt_fallback():
+    pyproject = Path("pyproject.toml").read_text(encoding="utf-8")
+    setup = Path("setup.py").read_text(encoding="utf-8")
+
+    assert '"cryptography>=41.0.0"' in pyproject
+    assert 'install_requires=["cryptography>=41.0.0"]' in setup
+
+
 def test_ci_runs_tests_from_project_root():
     workflow = Path(".github/workflows/ci.yml").read_text()
     assert "permissions:" in workflow

@@ -9,6 +9,7 @@ description = "Starter kit for reusable AI automation workflows."
 readme = "README.md"
 license = {file = "LICENSE"}
 requires-python = ">=3.9"
+dependencies = ["cryptography>=41.0.0"]
 keywords = ["ai", "automation", "github", "agents", "workflow", "starter-kit"]
 classifiers = [
     "Development Status :: 3 - Alpha",
