@@ -4,8 +4,6 @@ Automation Proof Lab: [日本語マニュアル](docs/AUTOMATION_PROOF_LAB.ja.ht
 
 Existing assisted routes: daily [日本語](docs/daily-workflows.ja.html)/[EN](docs/daily-workflows.html) | [work relief](docs/work-relief-workflows.html) | [control](docs/control-workflows.html) | readiness [日本語](docs/AUTOPILOT_READINESS_DESIGN.ja.md)/[EN](docs/AUTOPILOT_READINESS_DESIGN.md) | [research](docs/research/OFFICE_CONTROL_AUTOMATION_RESEARCH_2026-07.md)
 
-Recording-to-manual studio: [日本語のWebマニュアル](https://goonobu-dot.github.io/ai-automation-starter-kit/MANUAL_STUDIO.ja.html) | [English web manual](https://goonobu-dot.github.io/ai-automation-starter-kit/MANUAL_STUDIO.html)
-
 AI Automation Starter Kit is a GitHub-data-driven AI agent skill kit for people who want to propose and deliver small, safe business automation projects — especially beginners selling automation to small and medium companies. One command generates client-ready artifacts: demos, discovery questions, proposals, pricing menus, dry-run flow projects, and delivery checklists. Nothing is sent externally: every risky action stays behind a human approval step.
 
 ## 日本語の方へ：まず、ダブルクリックだけ
@@ -52,8 +50,6 @@ ai-automation-kit manual-studio answer
 ai-automation-kit manual-studio complete
 ai-automation-kit manual-studio approve
 ```
-
-動画から画像付き業務マニュアルを作りたい場合は、[Manual Studioの日本語Webマニュアル](https://goonobu-dot.github.io/ai-automation-starter-kit/MANUAL_STUDIO.ja.html)を開いてください。動画と補足資料からCodexが下書きを作り、不足情報を一問ずつ確認し、回答反映前後の比較と承認済み完成版の保存まで案内します。
 
 > **Phase 1A platform note / 対応OS:** Safe monthly office-workspace creation and approval mutation require macOS or Linux. Windows stops before creating or changing this workspace because the required race-resistant no-follow filesystem operations are unavailable in this design. Existing read-only and unrelated kit features are unaffected. / 安全な月次オフィスワークスペースの作成・承認更新は macOS または Linux 専用です。Windows では必要な安全機能がないため、フォルダを作成・変更する前に停止します。既存の読み取り専用機能や他の機能には影響しません。
 
