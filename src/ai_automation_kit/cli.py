@@ -58,6 +58,15 @@ from ai_automation_kit.core.operator_console import generate_recommended_flow_fr
 from ai_automation_kit.core.operator_console import generate_share_check
 from ai_automation_kit.core.operator_console import generate_website_side_hustle_pack
 from ai_automation_kit.core.operator_console import package_client_demo
+from ai_automation_kit.core.manual_studio import answer_manual_question
+from ai_automation_kit.core.manual_studio import approve_manual
+from ai_automation_kit.core.manual_studio import build_manual_with_codex
+from ai_automation_kit.core.manual_studio import create_manual_studio
+from ai_automation_kit.core.manual_studio import load_manual_question_status
+from ai_automation_kit.core.manual_studio import load_manual_studio_status
+from ai_automation_kit.core.manual_studio import prepare_manual_completion
+from ai_automation_kit.core.manual_studio import prepare_manual_recordings
+from ai_automation_kit.core.manual_studio import transcribe_manual_recordings
 from ai_automation_kit.core.report_automation import generate_report_automation_pack
 from ai_automation_kit.core.report_wizard import answer_current_question
 from ai_automation_kit.core.report_wizard import approve_report
@@ -379,6 +388,60 @@ def build_parser() -> argparse.ArgumentParser:
     office_workspace_serve.add_argument("--language", default="ja", choices=["ja", "en"])
     office_workspace_serve.add_argument("--port", type=int, default=0)
     office_workspace_serve.add_argument("--no-open", action="store_true")
+
+    manual_studio = subparsers.add_parser("manual-studio")
+    manual_studio_subparsers = manual_studio.add_subparsers(dest="manual_studio_command", required=True)
+
+    manual_studio_create = manual_studio_subparsers.add_parser("create")
+    manual_studio_create.add_argument("--output", required=True)
+    manual_studio_create.add_argument("--name", required=True)
+    manual_studio_create.add_argument("--language", default="ja", choices=["ja", "en"])
+
+    manual_studio_prepare = manual_studio_subparsers.add_parser("prepare")
+    manual_studio_prepare.add_argument("--workspace", required=True)
+    manual_studio_prepare.add_argument("--transcribe", action="store_true")
+    manual_studio_prepare.add_argument(
+        "--transcription-model", default="small", choices=["tiny", "base", "small"]
+    )
+    manual_studio_prepare.add_argument("--whisper-model-path")
+    manual_studio_prepare.add_argument("--transcription-language", choices=["auto", "ja", "en"])
+
+    manual_studio_build = manual_studio_subparsers.add_parser("build")
+    manual_studio_build.add_argument("--workspace", required=True)
+    manual_studio_build.add_argument("--title", required=True)
+    manual_studio_build.add_argument("--timeout", type=int, default=600)
+    manual_studio_build.add_argument("--open", dest="open_browser", action="store_true")
+
+    manual_studio_questions = manual_studio_subparsers.add_parser("questions")
+    manual_studio_questions.add_argument("--workspace", required=True)
+    manual_studio_questions.add_argument("--json", dest="as_json", action="store_true")
+
+    manual_studio_answer = manual_studio_subparsers.add_parser("answer")
+    manual_studio_answer.add_argument("--workspace", required=True)
+    manual_studio_answer.add_argument("--question-id")
+    manual_studio_answer_mode = manual_studio_answer.add_mutually_exclusive_group(required=True)
+    manual_studio_answer_mode.add_argument("--answer")
+    manual_studio_answer_mode.add_argument("--defer", action="store_true")
+    manual_studio_answer.add_argument(
+        "--source-kind", default="operator", choices=["operator", "document", "recording", "other"]
+    )
+    manual_studio_answer.add_argument("--source", required=True)
+    manual_studio_answer.add_argument("--answered-by", required=True)
+
+    manual_studio_complete = manual_studio_subparsers.add_parser("complete")
+    manual_studio_complete.add_argument("--workspace", required=True)
+    manual_studio_complete.add_argument("--title", required=True)
+    manual_studio_complete.add_argument("--timeout", type=int, default=600)
+    manual_studio_complete.add_argument("--open", dest="open_browser", action="store_true")
+
+    manual_studio_approve = manual_studio_subparsers.add_parser("approve")
+    manual_studio_approve.add_argument("--workspace", required=True)
+    manual_studio_approve.add_argument("--approved-by", required=True)
+    manual_studio_approve.add_argument("--open", dest="open_browser", action="store_true")
+
+    manual_studio_status = manual_studio_subparsers.add_parser("status")
+    manual_studio_status.add_argument("--workspace", required=True)
+    manual_studio_status.add_argument("--json", dest="as_json", action="store_true")
 
     flow_export = subparsers.add_parser("flow-export")
     flow_export.add_argument("--flow-id", required=True)
@@ -739,6 +802,108 @@ def main(argv: list[str] | None = None) -> int:
         return _run_report_wizard_command(args)
     if args.command == "office-workspace":
         return _run_office_workspace_command(args)
+    if args.command == "manual-studio":
+        try:
+            if args.manual_studio_command == "create":
+                payload = create_manual_studio(Path(args.output), name=args.name, language=args.language)
+                print(f"status={payload['stage']}")
+                print(f"start_here={Path(args.output) / '00_START_HERE' / 'START_HERE.html'}")
+                print(f"recordings={Path(args.output) / '01_RECORDINGS'}")
+                return 0
+            if args.manual_studio_command == "prepare":
+                if args.transcribe:
+                    transcription = transcribe_manual_recordings(
+                        Path(args.workspace),
+                        model_path=Path(args.whisper_model_path) if args.whisper_model_path else None,
+                        model_name=args.transcription_model,
+                        language=args.transcription_language,
+                    )
+                    print(f"transcripts_generated={transcription['generated']}")
+                    print(f"transcripts_skipped={transcription['skipped']}")
+                payload = prepare_manual_recordings(Path(args.workspace))
+                print(f"status={payload['stage']}")
+                print(f"accepted_videos={payload['accepted_videos']}")
+                print(f"candidate_frames={payload['candidate_frames']}")
+                print(f"manifest={payload['manifest']}")
+                return 0
+            if args.manual_studio_command == "build":
+                payload = build_manual_with_codex(
+                    Path(args.workspace),
+                    title=args.title,
+                    timeout_seconds=args.timeout,
+                    open_browser=args.open_browser,
+                )
+                print(f"status={payload['stage']}")
+                print(f"manual={payload['manual']}")
+                print(f"steps={payload['steps']}")
+                print(f"missing_questions={payload['missing_questions']}")
+                return 0
+            if args.manual_studio_command == "questions":
+                payload = load_manual_question_status(Path(args.workspace))
+                if args.as_json:
+                    print(json.dumps(payload, ensure_ascii=False, indent=2))
+                else:
+                    print(f"status={payload['stage']}")
+                    print(f"answered={payload['answered']}")
+                    print(f"pending={payload['pending']}")
+                    print(f"deferred={payload['deferred']}")
+                    if payload["current_question"]:
+                        print(f"question_id={payload['current_question']['question_id']}")
+                        print(f"question={payload['current_question']['question']}")
+                    print(f"guide={payload['guide']}")
+                return 0
+            if args.manual_studio_command == "answer":
+                payload = answer_manual_question(
+                    Path(args.workspace),
+                    question_id=args.question_id,
+                    answer=args.answer,
+                    source_kind=args.source_kind,
+                    source_reference=args.source,
+                    answered_by=args.answered_by,
+                    deferred=args.defer,
+                )
+                print(f"status={payload['stage']}")
+                print(f"answered={payload['answered']}")
+                print(f"pending={payload['pending']}")
+                print(f"deferred={payload['deferred']}")
+                print(f"guide={payload['guide']}")
+                return 0
+            if args.manual_studio_command == "complete":
+                payload = prepare_manual_completion(
+                    Path(args.workspace),
+                    title=args.title,
+                    timeout_seconds=args.timeout,
+                    open_browser=args.open_browser,
+                )
+                print(f"status={payload['stage']}")
+                print(f"missing_questions={payload['missing_questions']}")
+                if payload.get("review"):
+                    print(f"review={payload['review']}")
+                if payload.get("guide"):
+                    print(f"guide={payload['guide']}")
+                return 0
+            if args.manual_studio_command == "approve":
+                payload = approve_manual(
+                    Path(args.workspace), approved_by=args.approved_by, open_browser=args.open_browser
+                )
+                print(f"status={payload['stage']}")
+                print(f"manual={payload['manual']}")
+                print(f"record={payload['record']}")
+                return 0
+            if args.manual_studio_command == "status":
+                payload = load_manual_studio_status(Path(args.workspace))
+                if args.as_json:
+                    print(json.dumps(payload, ensure_ascii=False, indent=2))
+                else:
+                    print(f"status={payload['stage']}")
+                    print(f"name={payload['name']}")
+                    print(f"candidate_frames={payload['candidate_frames']}")
+                return 0
+        except (ValueError, OSError) as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
+        print("unknown manual-studio command", file=sys.stderr)
+        return 2
     if args.command == "research-agent":
         run = run_research_agent(config_path=args.config, output_dir=args.output)
         print(f"run_id={run.run_id}")

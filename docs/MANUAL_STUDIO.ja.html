@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>録画から画像付き業務マニュアルを作る</title>
+  <style>
+    :root { color-scheme: light; --ink:#172033; --muted:#536176; --line:#d8dee9; --blue:#165dff; --green:#087443; --paper:#fff; --bg:#f4f6f8; --warn:#fff6df; }
+    * { box-sizing:border-box; } body { margin:0; color:var(--ink); background:var(--bg); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; line-height:1.75; letter-spacing:0; }
+    header,main { width:min(980px,calc(100% - 32px)); margin:auto; } header { padding:28px 0; } h1 { margin:8px 0 14px; font-size:48px; line-height:1.22; } h1 span { display:block; }
+    nav { display:flex; flex-wrap:wrap; gap:10px; padding:18px 0 8px; } nav a { color:var(--blue); background:var(--paper); border:1px solid var(--line); border-radius:6px; padding:8px 12px; font-weight:700; text-decoration:none; } nav a:hover { border-color:var(--blue); }
+    .eyebrow { color:var(--green); font-weight:800; } .lead { max-width:760px; color:var(--muted); font-size:18px; }
+    section { padding:26px 0; border-top:1px solid var(--line); } h2 { margin:0 0 14px; font-size:27px; } h3 { margin:0 0 8px; }
+    .next { padding:24px; background:var(--paper); border:2px solid var(--blue); border-radius:8px; } .warning { padding:18px; background:var(--warn); border-left:4px solid #df8600; }
+    .flow { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; align-items:stretch; } .flow div { min-height:110px; padding:16px; background:var(--paper); border:1px solid var(--line); border-radius:6px; }
+    .step-number { display:block; color:var(--blue); font-weight:900; } pre { overflow:auto; padding:18px; color:#f5f7ff; background:#172033; border-radius:6px; } code { font-family:"SFMono-Regular",Consolas,monospace; }
+    .grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; } .card { padding:20px; background:var(--paper); border:1px solid var(--line); border-radius:6px; }
+    li { margin:8px 0; } footer { padding:32px 0 56px; color:var(--muted); }
+    @media (max-width:760px) { .flow,.grid { grid-template-columns:1fr; } header { padding-top:20px; } h1 { font-size:34px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <nav aria-label="マニュアルの案内">
+      <a href="manual.ja.html">全体マニュアル</a>
+      <a href="MANUAL_STUDIO.html" lang="en">English</a>
+      <a href="https://github.com/goonobu-dot/ai-automation-starter-kit">GitHub本体</a>
+    </nav>
+    <p class="eyebrow">Manual Studio 第1段階</p>
+    <h1><span>録画から、画像付きの</span><span>業務マニュアルを作る</span></h1>
+    <p class="lead">普段の仕事を説明しながら録画し、動画をフォルダーへ入れます。システムが音声を文字にし、画面変化と動画全体から画像候補を作ります。Codexが声と画像を合わせ、文章、注意点、例外、フロー図へ整理します。</p>
+  </header>
+  <main>
+    <section>
+      <div class="next">
+        <h2>最初にすること</h2>
+        <p><strong>顧客情報やパスワードが映っていない短い見本動画を1本用意してください。</strong></p>
+        <p>最初は3分から10分程度の業務がおすすめです。例えば「請求書の下書きを保存する」「顧客情報を登録する」など、開始と終了が分かる仕事を選びます。</p>
+      </div>
+    </section>
+    <section>
+      <h2>作成の流れ</h2>
+      <div class="flow">
+        <div><span class="step-number">1</span><strong>録画する</strong><br>作業しながら、何を確認しているか声でも説明します。</div>
+        <div><span class="step-number">2</span><strong>動画を入れる</strong><br><code>01_RECORDINGS</code>へ動画を入れます。</div>
+        <div><span class="step-number">3</span><strong>声と画面を読む</strong><br>説明を文字にし、変化した場面を動画の最後まで拾います。</div>
+        <div><span class="step-number">4</span><strong>AIが整理する</strong><br>画像と補足文から手順書の下書きを作ります。</div>
+        <div><span class="step-number">5</span><strong>AIが質問する</strong><br>不足している温度、時間、数量、判断基準などを一問ずつ聞きます。</div>
+        <div><span class="step-number">6</span><strong>回答と根拠を保存</strong><br>回答、資料名、回答者、日時を記録します。</div>
+        <div><span class="step-number">7</span><strong>前後を比較する</strong><br>AIが回答を反映し、最初の版と完成候補を並べます。</div>
+        <div><span class="step-number">8</span><strong>完成版を保存</strong><br>内容が正しいことを確認し、完成版フォルダーへ保存します。</div>
+      </div>
+    </section>
+    <section>
+      <h2>実際の操作</h2>
+      <div class="warning">
+        <strong>最初の1回だけ:</strong> Codexへログインし、FFmpegとwhisper.cppを使える状態にします。MacではCodexへ「FFmpegとwhisper.cppをインストールし、このプロジェクトのManual Studioを使えるようにして」と依頼できます。APIキーは不要です。顧客情報やパスワードを含む動画は使いません。
+      </div>
+      <h3>1. 作業場所を作る</h3>
+      <pre><code>ai-automation-kit manual-studio create --output "my-manual" --name "請求入力" --language ja</code></pre>
+      <h3>2. 動画を入れる</h3>
+      <p><code>my-manual/01_RECORDINGS</code>を開き、音声付きの画面録画を入れます。「このボタンを押します」「ここで金額を確認します」のように、判断の理由も声で説明すると詳しい手順になります。</p>
+      <h3>3. 音声を文字にして、重要画面の候補を作る</h3>
+      <p><code>--transcribe</code>を付けると、動画の声をパソコン内で文字にして<code>03_TRANSCRIPTS</code>へ保存します。初回だけ多言語モデル（small、約466MB）を取得し、照合後は同じモデルを再利用します。すでに同名の文字起こしがある場合は上書きしません。</p>
+      <pre><code>ai-automation-kit manual-studio prepare --workspace "my-manual" --transcribe</code></pre>
+      <p>音声がない動画では<code>--transcribe</code>を外してください。自分で直した文字起こしを使う場合は、動画と同じ名前の<code>.txt</code>を<code>03_TRANSCRIPTS</code>へ入れてから通常の準備を実行します。</p>
+      <h3>4. Codexで画像付きマニュアルを作る</h3>
+      <pre><code>ai-automation-kit manual-studio build --workspace "my-manual" --title "請求入力" --open</code></pre>
+      <h3>5. AIに不足情報を一つずつ聞いてもらう</h3>
+      <p>Codexへ次のように依頼できます。</p>
+      <pre><code>このManual Studioの不足質問を一つずつ聞いてください。
+私の回答と根拠を保存し、完成前プレビューまで進めてください。</code></pre>
+      <p>質問だけを確認する場合は、次の処理を実行します。</p>
+      <pre><code>ai-automation-kit manual-studio questions --workspace "my-manual"</code></pre>
+      <h3>6. 回答と根拠を保存する</h3>
+      <p>温度、時間、数量、機械設定、安全基準はAIに推測させません。正式な資料名、または業務責任者が確認したことを根拠として保存します。</p>
+      <pre><code>ai-automation-kit manual-studio answer --workspace "my-manual" \
+  --answer "220度で18分" \
+  --source-kind document \
+  --source "工程標準書B-12 2026年4月版" \
+  --answered-by "製造責任者"</code></pre>
+      <p>今は分からない場合は<code>--answer</code>の代わりに<code>--defer</code>を使い、<code>--source</code>へ保留理由、<code>--answered-by</code>へ確認した人を入れます。保留が残っている間は完成処理が止まります。</p>
+      <h3>7. 回答を反映して完成候補を作る</h3>
+      <pre><code>ai-automation-kit manual-studio complete --workspace "my-manual" --title "請求入力" --open</code></pre>
+      <p>AIが新しい不足を見つけた場合は、無理に完成扱いにせず、質問画面へ戻ります。不足がなければ、回答前と回答後を並べた比較画面が開きます。</p>
+      <h3>8. 確認した内容だけを完成版として保存する</h3>
+      <pre><code>ai-automation-kit manual-studio approve --workspace "my-manual" \
+  --approved-by "業務責任者" --open</code></pre>
+      <p>完成版は<code>06_APPROVED_MANUAL</code>へ保存され、承認者、日時、ファイル照合値も記録されます。</p>
+    </section>
+    <section>
+      <h2>自動で作られるもの</h2>
+      <div class="grid">
+        <div class="card"><h3>画像付きHTML</h3><p>各手順にスクリーンショット、説明、動画名、時刻、注意点を表示します。</p></div>
+        <div class="card"><h3>ローカル文字起こし</h3><p>動画の説明音声をパソコン内でテキスト化し、元動画と使用モデルの記録も残します。</p></div>
+        <div class="card"><h3>フロー図</h3><p>作業の順番をMermaid形式で保存し、後から編集できます。</p></div>
+        <div class="card"><h3>確認チェックリスト</h3><p>画像の一致、秘密情報、例外、別の人による再現を確認します。</p></div>
+        <div class="card"><h3>自動化候補</h3><p>録画から確認できた作業と、不足している質問を分けて保存します。</p></div>
+        <div class="card"><h3>回答ガイド</h3><p>AIが次に聞く質問、回答数、保留数をHTMLで表示します。</p></div>
+        <div class="card"><h3>回答台帳</h3><p>回答、根拠、回答者、日時をJSONへ保存し、下書きが変わった場合は混同しないよう検知します。</p></div>
+        <div class="card"><h3>完成前の比較</h3><p>最初のマニュアルと回答反映後を左右に並べ、変更内容を確認できます。</p></div>
+        <div class="card"><h3>完成版</h3><p>確認したHTML、手順データ、承認記録を<code>06_APPROVED_MANUAL</code>へ保存します。</p></div>
+      </div>
+    </section>
+    <section>
+      <h2>今回まだ自動化しない部分</h2>
+      <div class="warning">
+        <ul>
+          <li>雑音、固有名詞、早口では誤認識が起こります。完成前に文字と画像が合っているか確認します。</li>
+          <li>AIが選んだ画像と、回答が反映された文章は完成版へ保存する前に確認します。</li>
+          <li>根拠がない温度、時間、数量、設定値はAIが推測せず、質問を未解決として残します。</li>
+          <li>回答資料だけで追加された工程には、無関係な動画画像を付けません。「回答根拠」と質問番号を表示します。</li>
+          <li>作成した手順書から、実際の顧客システムを自動操作することはまだ行いません。</li>
+          <li>外部送信、公開、支払い、承認は実行しません。</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+  <footer><main>まずは短い見本動画で、画像と文章が正しく対応するところまで確認してください。<br><a href="manual.ja.html">プロジェクト全体のマニュアルへ戻る</a></main></footer>
+</body>
+</html>

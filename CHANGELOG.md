@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Recording-to-manual studio (2026-07)
+
+- Added the local-first `manual-studio` workflow for recording inspection, local transcription, screenshot extraction, and Codex-generated illustrated HTML drafts.
+- Added one-question-at-a-time completion with provenance-bound answers, explicit deferral, regeneration, side-by-side review, and approval-recorded promotion into `06_APPROVED_MANUAL`.
+- Published separate Japanese and English browser manuals with direct navigation between the manuals, the main guide, and the GitHub project.
+
 ### Autopilot readiness design (2026-07)
 
 - Added a human-first Japanese design and an English technical design for assessing whether any of the 22 office packs can progress from assisted drafting to shadow mode, conditional automation, or an evidence-backed `not_ready` decision.
