@@ -10,6 +10,8 @@ Research basis: [Office control automation research snapshot](docs/research/OFFI
 
 Autopilot readiness design: [日本語](docs/AUTOPILOT_READINESS_DESIGN.ja.md) | [English](docs/AUTOPILOT_READINESS_DESIGN.md)
 
+Recording-to-manual studio: [日本語のWebマニュアル](https://goonobu-dot.github.io/ai-automation-starter-kit/MANUAL_STUDIO.ja.html) | [English web manual](https://goonobu-dot.github.io/ai-automation-starter-kit/MANUAL_STUDIO.html)
+
 AI Automation Starter Kit is a GitHub-data-driven AI agent skill kit for people who want to propose and deliver small, safe business automation projects — especially beginners selling automation to small and medium companies. One command generates client-ready artifacts: demos, discovery questions, proposals, pricing menus, dry-run flow projects, and delivery checklists. Nothing is sent externally: every risky action stays behind a human approval step.
 
 ## 日本語の方へ：3ステップで始める
@@ -39,6 +41,8 @@ ai-automation-kit beginner
 **ステップ3: 入口ドキュメントを読む**
 
 [docs/GETTING_STARTED.ja.md（はじめかた）](docs/GETTING_STARTED.ja.md) が唯一の入口です。30分で最初のデモまで完走できます。その先は [docs/INDEX.md（ドキュメント索引）](docs/INDEX.md) から必要なものだけ開いてください。
+
+動画から画像付き業務マニュアルを作りたい場合は、[Manual Studioの日本語Webマニュアル](https://goonobu-dot.github.io/ai-automation-starter-kit/MANUAL_STUDIO.ja.html)を開いてください。動画と補足資料からCodexが下書きを作り、不足情報を一問ずつ確認し、回答反映前後の比較と承認済み完成版の保存まで案内します。
 
 > **Phase 1A platform note / 対応OS:** Safe monthly office-workspace creation and approval mutation require macOS or Linux. Windows stops before creating or changing this workspace because the required race-resistant no-follow filesystem operations are unavailable in this design. Existing read-only and unrelated kit features are unaffected. / 安全な月次オフィスワークスペースの作成・承認更新は macOS または Linux 専用です。Windows では必要な安全機能がないため、フォルダを作成・変更する前に停止します。既存の読み取り専用機能や他の機能には影響しません。
 
@@ -80,6 +84,7 @@ Key documents:
 
 | Purpose | 日本語 | English |
 |---|---|---|
+| Recording to illustrated work manual | [録画マニュアル作成](https://goonobu-dot.github.io/ai-automation-starter-kit/MANUAL_STUDIO.ja.html) | [Manual Studio](https://goonobu-dot.github.io/ai-automation-starter-kit/MANUAL_STUDIO.html) |
 | The single entrance (install to first demo) | [はじめかた](docs/GETTING_STARTED.ja.md) | – |
 | Choose your route | [初心者ルートマップ](docs/BEGINNER_ROUTE_MAP.ja.md) | [Beginner Route Map](docs/BEGINNER_ROUTE_MAP.md) |
 | Plain-language overview | [やさしい解説](docs/BEGINNER_GUIDE.ja.md) | [Beginner Guide](docs/BEGINNER_GUIDE.md) |

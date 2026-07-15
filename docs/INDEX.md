@@ -10,6 +10,7 @@
 
 | 日本語 | English | 内容 / What it is |
 |---|---|---|
+| [録画から画像付きマニュアルを作る](https://goonobu-dot.github.io/ai-automation-starter-kit/MANUAL_STUDIO.ja.html) | [Manual Studio](https://goonobu-dot.github.io/ai-automation-starter-kit/MANUAL_STUDIO.html) | 動画から手順を作り、AIの質問へ根拠付きで回答し、比較確認後に完成版を保存 / Turn a recording into instructions, answer AI questions with sources, compare versions, and save the approved manual |
 | [はじめかた（唯一の入口）](GETTING_STARTED.ja.md) | – | 30分でインストールから最初のデモまで / Install to first demo in 30 minutes |
 | [初心者ルートマップ](BEGINNER_ROUTE_MAP.ja.md) | [Beginner Route Map](BEGINNER_ROUTE_MAP.md) | 自分に合う入口の選び方 / Choose your route |
 | [やさしい解説](BEGINNER_GUIDE.ja.md) | [Beginner Guide](BEGINNER_GUIDE.md) | このプロジェクトの目的 / What this project is |
